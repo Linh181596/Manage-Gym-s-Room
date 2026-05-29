@@ -19,13 +19,13 @@ Hệ thống quản lý vận hành phòng tập Gym chuyên nghiệp thế hệ
    git clone https://gitlab.com/linhnthe181596/manage-gym.git
    ```
 2. **Cấu hình Database:**
-   - Tạo database `GymCenterDB` trên SQL Server.
+   - Tạo database `GymCenterManagement` trên SQL Server.
    - Chạy các script SQL khởi tạo trong thư mục tài liệu để tạo bảng và nạp dữ liệu mẫu.
 3. **Cấu hình kết nối cơ sở dữ liệu:**
    - Mở file cấu hình kết nối tại: `GymCenterManagement/src/main/resources/db.properties`
    - Điều chỉnh các thông số kết nối phù hợp với máy của bạn:
      ```properties
-     db.url=jdbc:sqlserver://localhost:1433;databaseName=GymCenterDB;encrypt=true;trustServerCertificate=true;
+     db.url=jdbc:sqlserver://localhost:1433;databaseName=GymCenterManagement;encrypt=true;trustServerCertificate=true;
      db.username=your_username
      db.password=your_password
      ```
@@ -71,7 +71,7 @@ GCMS được thiết kế theo mô hình **3-Layer Architecture** kết hợp v
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │                  MICROSOFT SQL SERVER                  │
-│                 Database: GymCenterDB                  │
+│             Database: GymCenterManagement              │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -81,7 +81,7 @@ GCMS được thiết kế theo mô hình **3-Layer Architecture** kết hợp v
 - **Frontend Template:** DashMin (dựa trên Bootstrap 5, Chart.js, TempusDominus Datepicker).
 - **Icons:** Font Awesome 5 + Bootstrap Icons.
 
-Để biết chi tiết về sơ đồ tuần tự đăng nhập, sơ đồ quan hệ class và thiết kế DB, vui lòng tham khảo tài liệu [architecture.md](file:///c:/Projects/%5BJava%5D/Servlet/manage-gym/GymCenterManagement/documentations/architecture.md).
+Để biết chi tiết về sơ đồ tuần tự đăng nhập, sơ đồ quan hệ class và thiết kế DB, vui lòng tham khảo tài liệu [architecture.md](GymCenterManagement/documentations/architecture.md).
 
 ---
 
@@ -165,8 +165,11 @@ Xem thông tin chi tiết đầy đủ tại file hướng dẫn quy tắc: [dev
 
 ## 📖 Tài Liệu Tham Khảo (Documentations)
 
-Các tài liệu phân tích thiết kế chi tiết khác nằm trong thư mục [documentations/](file:///c:/Projects/%5BJava%5D/Servlet/manage-gym/GymCenterManagement/documentations):
-- 📐 Phân tích thiết kế cấu trúc chi tiết: [architecture.md](file:///c:/Projects/%5BJava%5D/Servlet/manage-gym/GymCenterManagement/documentations/architecture.md)
-- 📝 Danh sách Use Cases của hệ thống: [GCM UseCases List.md](file:///c:/Projects/%5BJava%5D/Servlet/manage-gym/GymCenterManagement/documentations/GCM%20UseCases%20List.md)
-- 📋 Đặc tả yêu cầu phần mềm chi tiết (SRS): [SRS Document.md](file:///c:/Projects/%5BJava%5D/Servlet/manage-gym/GymCenterManagement/documentations/SRS%20Document.md)
-- 🎨 Đặc tả giao diện UI/UX và Style Guide dự án: [ui_ux_design.md](file:///c:/Projects/%5BJava%5D/Servlet/manage-gym/GymCenterManagement/documentations/UI%20&%20UX%20documentations/ui_ux_design.md)
+Các tài liệu phân tích thiết kế chi tiết khác nằm trong thư mục [documentations/](GymCenterManagement/documentations):
+- 📐 Phân tích thiết kế cấu trúc chi tiết: [architecture.md](GymCenterManagement/documentations/architecture.md)
+- 📝 Danh sách Use Cases của hệ thống: [uc_lists.md](GymCenterManagement/documentations/uc_lists.md)
+- 📋 Đặc tả yêu cầu phần mềm chi tiết (SRS): [srs_document.md](GymCenterManagement/documentations/srs_document.md)
+- 🎨 Đặc tả giao diện UI/UX và Style Guide dự án: [ui_ux requirement document.md](GymCenterManagement/documentations/ui_ux%20requirement%20document.md)
+- 📝 Quy định viết mã nguồn: [development_guideline.md](GymCenterManagement/documentations/development_guideline.md)
+- 🏗️ Đặc tả thiết kế chi tiết hệ thống (SDS): [sds_document.md](GymCenterManagement/documentations/sds_document.md)
+- 📜 Lịch sử bàn giao và triển khai: [deployment_and_history.md](GymCenterManagement/documentations/deployment_and_history.md)
