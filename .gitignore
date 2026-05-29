@@ -7,6 +7,7 @@ DashMin/
 GymCenterManagement/documentations/
 .agents/
 design-system/
+demo UIUX/
 
 # Maven build outputs
 **/target/
