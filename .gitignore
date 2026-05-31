@@ -1,0 +1,23 @@
+# Build output
+/target/
+/build/
+/dist/
+
+# Java compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# NetBeans private config
+/nbproject/private/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment config
+.env
