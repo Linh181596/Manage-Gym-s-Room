@@ -8,7 +8,6 @@ import com.mycompany.gymcentermanagement.utils.PasswordUtils;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +47,6 @@ public class UserServiceImpl implements UserService {
             }
 
             // Set user identifiers and system attributes
-            user.setUserId(UUID.randomUUID().toString());
             user.setPasswordHash(PasswordUtils.hashPassword(rawPassword));
             user.setRole(User.Role.Member);
             user.setAccountStatus(User.AccountStatus.Active);
@@ -63,7 +61,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getProfile(String userId) {
+    public User getProfile(int userId) {
         try {
             return userDAO.findById(userId);
         } catch (SQLException ex) {
@@ -84,7 +82,7 @@ public class UserServiceImpl implements UserService {
             existing.setFullName(user.getFullName());
             existing.setPhoneNumber(user.getPhoneNumber());
             existing.setEmail(user.getEmail());
-            existing.setUpdatedBy(user.getUserId());
+            existing.setUpdatedBy(String.valueOf(user.getUserId()));
             existing.setUpdatedDate(LocalDateTime.now());
 
             return userDAO.update(existing);
