@@ -15,7 +15,7 @@ public class User {
         Active, Inactive, Pending, Rejected
     }
 
-    private String userId;
+    private int userId;
     private String email;
     private String passwordHash;
     private String fullName;
@@ -33,7 +33,7 @@ public class User {
     public User() {
     }
 
-    public User(String userId, String email, String passwordHash, String fullName, String phoneNumber, Role role, AccountStatus accountStatus) {
+    public User(int userId, String email, String passwordHash, String fullName, String phoneNumber, Role role, AccountStatus accountStatus) {
         this.userId = userId;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -44,11 +44,11 @@ public class User {
     }
 
     // Getters and Setters
-    public String getUserId() {
+    public int getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(int userId) {
         this.userId = userId;
     }
 
@@ -143,7 +143,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "userId='" + userId + '\'' +
+                "userId=" + userId +
                 ", email='" + email + '\'' +
                 ", fullName='" + fullName + '\'' +
                 ", role=" + role +

@@ -31,7 +31,7 @@ public interface UserService {
      * @param userId The ID of the user.
      * @return User entity or null if not found.
      */
-    User getProfile(String userId);
+    User getProfile(int userId);
 
     /**
      * Updates profile details of a user.
