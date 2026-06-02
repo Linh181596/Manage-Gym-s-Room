@@ -66,6 +66,7 @@
                         <c:when test="${role == 'Admin'}">
                             <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-users me-2"></i>Manage Users</a>
+                            <a href="${pageContext.request.contextPath}/admin/packages" class="nav-item nav-link"><i class="fa fa-box me-2"></i>Gym Packages</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-dumbbell me-2"></i>Gym Equipment</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-alt me-2"></i>Classes & Schedule</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-chart-line me-2"></i>Reports</a>
@@ -73,7 +74,8 @@
                         <c:when test="${role == 'Staff'}">
                             <a href="${pageContext.request.contextPath}/staff/dashboard" class="nav-item nav-link active"><i class="fa fa-tachometer-alt me-2"></i>Dashboard</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-clipboard-check me-2"></i>Check-in</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-user-plus me-2"></i>Registrations</a>
+                            <a href="${pageContext.request.contextPath}/staff/register-package" class="nav-item nav-link"><i class="fa fa-user-plus me-2"></i>Register Package</a>
+                            <a href="${pageContext.request.contextPath}/staff/record-payment" class="nav-item nav-link"><i class="fa fa-cash-register me-2"></i>Record Payment</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-check me-2"></i>Bookings</a>
                         </c:when>
                         <c:when test="${role == 'PT'}">
