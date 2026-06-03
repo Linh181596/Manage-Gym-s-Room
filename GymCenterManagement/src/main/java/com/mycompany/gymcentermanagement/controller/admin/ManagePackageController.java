@@ -43,7 +43,7 @@ public class ManagePackageController extends HttpServlet {
         try {
             switch (action) {
                 case "create":
-                    request.setAttribute("formTitle", "Create Gym Package");
+                    request.setAttribute("formTitle", "Thêm gói tập mới");
                     request.getRequestDispatcher("/WEB-INF/views/admin/package-form.jsp").forward(request, response);
                     break;
                 case "edit":
@@ -53,7 +53,7 @@ public class ManagePackageController extends HttpServlet {
                         GymPackage pkg = gymPackageService.getPackageById(id);
                         if (pkg != null) {
                             request.setAttribute("pkg", pkg);
-                            request.setAttribute("formTitle", "Edit Gym Package");
+                            request.setAttribute("formTitle", "Sửa gói tập");
                             request.getRequestDispatcher("/WEB-INF/views/admin/package-form.jsp").forward(request, response);
                             return;
                         }
@@ -76,7 +76,7 @@ public class ManagePackageController extends HttpServlet {
                     break;
             }
         } catch (SQLException | NumberFormatException ex) {
-            request.setAttribute("errorMessage", "Error processing request: " + ex.getMessage());
+            request.setAttribute("errorMessage", "Lỗi xử lý yêu cầu: " + ex.getMessage());
             try {
                 List<GymPackage> list = gymPackageService.getAllPackages();
                 request.setAttribute("packages", list);
@@ -108,8 +108,8 @@ public class ManagePackageController extends HttpServlet {
             priceStr == null || priceStr.trim().isEmpty() ||
             status == null || status.trim().isEmpty()) {
             
-            request.setAttribute("errorMessage", "All fields except description are required.");
-            request.setAttribute("formTitle", idStr == null || idStr.isEmpty() ? "Create Gym Package" : "Edit Gym Package");
+            request.setAttribute("errorMessage", "Vui lòng nhập đầy đủ các trường thông tin (trừ mô tả).");
+            request.setAttribute("formTitle", idStr == null || idStr.isEmpty() ? "Thêm gói tập mới" : "Sửa gói tập");
             
             GymPackage pkg = new GymPackage();
             if (idStr != null && !idStr.isEmpty()) {
@@ -154,8 +154,8 @@ public class ManagePackageController extends HttpServlet {
             }
             response.sendRedirect(request.getContextPath() + "/admin/packages");
         } catch (SQLException | NumberFormatException ex) {
-            request.setAttribute("errorMessage", "Database or formatting error: " + ex.getMessage());
-            request.setAttribute("formTitle", idStr == null || idStr.isEmpty() ? "Create Gym Package" : "Edit Gym Package");
+            request.setAttribute("errorMessage", "Lỗi cơ sở dữ liệu hoặc định dạng: " + ex.getMessage());
+            request.setAttribute("formTitle", idStr == null || idStr.isEmpty() ? "Thêm gói tập mới" : "Sửa gói tập");
             request.getRequestDispatcher("/WEB-INF/views/admin/package-form.jsp").forward(request, response);
         }
     }

@@ -66,15 +66,15 @@
     <div class="mb-4 no-print">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/record-payment">Payments</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Invoice Details</li>
+                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/dashboard">Bảng điều khiển</a></li>
+                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/record-payment">Hóa đơn</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Chi tiết hóa đơn</li>
             </ol>
         </nav>
         <div class="d-flex align-items-center justify-content-between">
-            <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-file-invoice-dollar me-2 text-primary"></i>Invoice Details</h4>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-file-invoice-dollar me-2 text-primary"></i>Chi tiết hóa đơn</h4>
             <a href="${pageContext.request.contextPath}/staff/record-payment" class="btn btn-outline-secondary d-flex align-items-center">
-                <i class="fa fa-arrow-left me-2"></i> Back to Payments
+                <i class="fa fa-arrow-left me-2"></i> Quay lại danh sách
             </a>
         </div>
     </div>
@@ -103,12 +103,12 @@
                     <div class="row align-items-center">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <h3 class="text-primary fw-bold mb-1"><i class="fa fa-dumbbell me-2"></i>GCMS GYM CENTER</h3>
-                            <p class="text-muted small mb-0">123 Gym Center St., District 1, Ho Chi Minh City<br>Phone: (+84) 987-654-321 | Email: support@gcms.com</p>
+                            <p class="text-muted small mb-0">123 Đường Gym Center, Quận 1, TP. Hồ Chí Minh<br>SĐT: (+84) 987-654-321 | Email: support@gcms.com</p>
                         </div>
                         <div class="col-md-6 text-md-end">
-                            <h4 class="text-uppercase text-secondary fw-semibold mb-1">Receipt / Invoice</h4>
-                            <div class="text-dark fw-bold mb-1">Invoice ID: INV-${invoice.invoiceId}</div>
-                            <div class="text-muted small">Date Generated: ${invoice.createdDate.dayOfMonth}/${invoice.createdDate.monthValue}/${invoice.createdDate.year}</div>
+                            <h4 class="text-uppercase text-secondary fw-semibold mb-1">Hóa đơn / Biên lai</h4>
+                            <div class="text-dark fw-bold mb-1">Mã hóa đơn: INV-${invoice.invoiceId}</div>
+                            <div class="text-muted small">Ngày tạo: ${invoice.createdDate.dayOfMonth}/${invoice.createdDate.monthValue}/${invoice.createdDate.year}</div>
                         </div>
                     </div>
                 </div>
@@ -120,11 +120,11 @@
                             <div class="d-flex align-items-center">
                                 <i class="fa fa-check-circle fs-3 me-3 text-success"></i>
                                 <div>
-                                    <h6 class="alert-heading fw-bold mb-0 text-success">PAYMENT COMPLETE</h6>
-                                    <span class="small text-muted">This invoice has been settled in cash. Associated gym package is now <strong>Active</strong>.</span>
+                                    <h6 class="alert-heading fw-bold mb-0 text-success">THANH TOÁN THÀNH CÔNG</h6>
+                                    <span class="small text-muted">Hóa đơn này đã được thanh toán bằng tiền mặt. Gói tập liên kết hiện đã được kích hoạt (<strong>Hoạt động</strong>).</span>
                                 </div>
                             </div>
-                            <span class="badge bg-success rounded-pill px-3 py-1 no-print"><i class="fa fa-check"></i> Settled</span>
+                            <span class="badge bg-success rounded-pill px-3 py-1 no-print"><i class="fa fa-check"></i> Đã thanh toán</span>
                         </div>
                     </c:when>
                     <c:when test="${invoice.status == 'Pending'}">
@@ -132,19 +132,19 @@
                             <div class="d-flex align-items-center">
                                 <i class="fa fa-clock fs-3 me-3 text-warning"></i>
                                 <div>
-                                    <h6 class="alert-heading fw-bold mb-0 text-warning">PAYMENT PENDING</h6>
-                                    <span class="small text-muted">Confirm receipt of cash payment from the member to activate subscription.</span>
+                                    <h6 class="alert-heading fw-bold mb-0 text-warning">ĐANG CHỜ THANH TOÁN</h6>
+                                    <span class="small text-muted">Xác nhận đã nhận thanh toán bằng tiền mặt từ hội viên để kích hoạt gói tập.</span>
                                 </div>
                             </div>
-                            <span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fa fa-hourglass-half"></i> Pending</span>
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fa fa-hourglass-half"></i> Đang chờ</span>
                         </div>
                     </c:when>
                     <c:otherwise>
                         <div class="alert alert-danger border-0 rounded p-3 mb-4 d-flex align-items-center">
                             <i class="fa fa-times-circle fs-3 me-3 text-danger"></i>
                             <div>
-                                <h6 class="alert-heading fw-bold mb-0 text-danger">INVOICE CANCELLED</h6>
-                                <span class="small text-muted">This transaction is cancelled and cannot be paid.</span>
+                                <h6 class="alert-heading fw-bold mb-0 text-danger">HÓA ĐƠN ĐÃ HỦY</h6>
+                                <span class="small text-muted">Giao dịch này đã bị hủy và không thể thực hiện thanh toán.</span>
                             </div>
                         </div>
                     </c:otherwise>
@@ -153,31 +153,31 @@
                 <!-- Billing & Party Info -->
                 <div class="row g-4 mb-4 pb-4 border-bottom">
                     <div class="col-md-6">
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-2">Billed To (Gym Member)</h6>
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-2">Người thanh toán (Hội viên)</h6>
                         <div class="fw-bold text-dark fs-6">${invoice.member.userDetails.fullName}</div>
-                        <div class="small text-muted"><i class="fa fa-id-card me-1"></i> Member ID: MEM-${invoice.member.memberId}</div>
-                        <div class="small text-muted"><i class="fa fa-phone me-1"></i> Phone: ${invoice.member.userDetails.phoneNumber}</div>
+                        <div class="small text-muted"><i class="fa fa-id-card me-1"></i> Mã hội viên: MEM-${invoice.member.memberId}</div>
+                        <div class="small text-muted"><i class="fa fa-phone me-1"></i> SĐT: ${invoice.member.userDetails.phoneNumber}</div>
                         <div class="small text-muted"><i class="fa fa-envelope me-1"></i> Email: ${invoice.member.userDetails.email}</div>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-2">Processed / Registered By</h6>
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-2">Người thực hiện / Đăng ký</h6>
                         <div class="fw-bold text-dark fs-6">${invoice.processByUser.fullName}</div>
-                        <div class="small text-muted">Role: Staff / Front Desk</div>
+                        <div class="small text-muted">Vai trò: Lễ tân / Nhân viên</div>
                         <c:if test="${not empty invoice.paymentDate}">
-                            <div class="small text-dark fw-bold mt-1">Payment settled on: ${invoice.paymentDate.dayOfMonth}/${invoice.paymentDate.monthValue}/${invoice.paymentDate.year}</div>
+                            <div class="small text-dark fw-bold mt-1">Ngày thanh toán: ${invoice.paymentDate.dayOfMonth}/${invoice.paymentDate.monthValue}/${invoice.paymentDate.year}</div>
                         </c:if>
                     </div>
                 </div>
 
                 <!-- Package / Itemized Table -->
-                <h6 class="text-uppercase text-secondary fw-bold small mb-3">Itemized Details</h6>
+                <h6 class="text-uppercase text-secondary fw-bold small mb-3">Chi tiết các khoản</h6>
                 <div class="table-responsive mb-4">
                     <table class="table table-bordered align-middle">
                         <thead>
                             <tr class="bg-light">
-                                <th scope="col">Description / Gym Subscription Plan</th>
-                                <th scope="col" class="text-center" style="width: 150px;">Duration</th>
-                                <th scope="col" class="text-end" style="width: 180px;">Amount Due</th>
+                                <th scope="col">Mô tả / Gói đăng ký Gym</th>
+                                <th scope="col" class="text-center" style="width: 150px;">Thời hạn</th>
+                                <th scope="col" class="text-end" style="width: 180px;">Thành tiền</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -186,18 +186,18 @@
                                     <div class="fw-bold text-dark">${invoice.memberPackage.gymPackage.packageName}</div>
                                     <div class="small text-muted italic">${invoice.memberPackage.gymPackage.description}</div>
                                     <div class="small text-primary mt-1 fw-medium">
-                                        <i class="fa fa-calendar-check me-1"></i> Active Validity: 
-                                        ${invoice.memberPackage.startDate.dayOfMonth}/${invoice.memberPackage.startDate.monthValue}/${invoice.memberPackage.startDate.year} to 
+                                        <i class="fa fa-calendar-check me-1"></i> Thời gian hiệu lực: 
+                                        ${invoice.memberPackage.startDate.dayOfMonth}/${invoice.memberPackage.startDate.monthValue}/${invoice.memberPackage.startDate.year} đến 
                                         ${invoice.memberPackage.endDate.dayOfMonth}/${invoice.memberPackage.endDate.monthValue}/${invoice.memberPackage.endDate.year}
                                     </div>
                                 </td>
-                                <td class="text-center fw-semibold text-dark">${invoice.memberPackage.gymPackage.durationMonths} Months</td>
+                                <td class="text-center fw-semibold text-dark">${invoice.memberPackage.gymPackage.durationMonths} Tháng</td>
                                 <td class="text-end fw-bold text-primary fs-6">
                                     <fmt:formatNumber value="${invoice.amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                 </td>
                             </tr>
                             <tr class="bg-light-gradient">
-                                <td colspan="2" class="text-end fw-bold text-dark">Total settlement:</td>
+                                <td colspan="2" class="text-end fw-bold text-dark">Tổng cộng thanh toán:</td>
                                 <td class="text-end fw-extrabold text-primary fs-5">
                                     <fmt:formatNumber value="${invoice.amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                 </td>
@@ -210,20 +210,20 @@
                 <div class="row g-3 mb-4">
                     <div class="col-sm-6">
                         <div class="p-3 bg-light rounded">
-                            <span class="small text-muted d-block">Payment Method</span>
-                            <span class="fw-bold text-dark"><i class="fa fa-money-bill-wave text-success me-1"></i> ${invoice.paymentMethod} (Direct Cash)</span>
+                            <span class="small text-muted d-block">Phương thức thanh toán</span>
+                            <span class="fw-bold text-dark"><i class="fa fa-money-bill-wave text-success me-1"></i> ${invoice.paymentMethod} (Tiền mặt trực tiếp)</span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="p-3 bg-light rounded">
-                            <span class="small text-muted d-block">Membership Status</span>
+                            <span class="small text-muted d-block">Trạng thái thẻ thành viên</span>
                             <span class="fw-bold text-dark">
                                 <c:choose>
                                     <c:when test="${invoice.status == 'Paid'}">
-                                        <i class="fa fa-check-circle text-success me-1"></i> Active Enrollment
+                                        <i class="fa fa-check-circle text-success me-1"></i> Kích hoạt hoạt động
                                     </c:when>
                                     <c:otherwise>
-                                        <i class="fa fa-hourglass text-warning me-1"></i> Pending Activation
+                                        <i class="fa fa-hourglass text-warning me-1"></i> Chờ kích hoạt
                                     </c:otherwise>
                                 </c:choose>
                             </span>
@@ -233,21 +233,21 @@
 
                 <!-- Footer Terms -->
                 <div class="receipt-footer pt-3 text-center text-muted small">
-                    <p class="mb-1">Thank you for joining GCMS Gym Center. Stay strong, stay healthy!</p>
-                    <p class="mb-0 text-secondary">This receipt is officially generated. No signature required.</p>
+                    <p class="mb-1">Cảm ơn bạn đã tham gia GCMS Gym Center. Sống khỏe, sống đẹp!</p>
+                    <p class="mb-0 text-secondary">Biên lai này được tạo tự động từ hệ thống. Không cần chữ ký.</p>
                 </div>
             </div>
 
             <!-- Page Action Buttons -->
             <div class="d-flex justify-content-between align-items-center mb-5 no-print">
                 <a href="${pageContext.request.contextPath}/staff/record-payment" class="btn btn-lg btn-outline-secondary px-4">
-                    <i class="fa fa-chevron-left me-1"></i> Back to List
+                    <i class="fa fa-chevron-left me-1"></i> Quay lại danh sách
                 </a>
                 
                 <div class="d-flex gap-3">
                     <c:if test="${invoice.status == 'Paid'}">
                         <button type="button" class="btn btn-lg btn-secondary px-4" onclick="window.print()">
-                            <i class="fa fa-print me-1"></i> Print Receipt
+                            <i class="fa fa-print me-1"></i> In biên lai
                         </button>
                     </c:if>
                     
@@ -256,7 +256,7 @@
                             <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
                             <input type="hidden" name="action" value="pay" />
                             <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
-                                <i class="fa fa-check-double me-1"></i> Confirm Cash Payment
+                                <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
                             </button>
                         </form>
                     </c:if>

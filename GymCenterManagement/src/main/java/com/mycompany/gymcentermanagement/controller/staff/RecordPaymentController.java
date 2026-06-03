@@ -45,7 +45,7 @@ public class RecordPaymentController extends HttpServlet {
                     request.getRequestDispatcher("/WEB-INF/views/staff/payment-record-detail.jsp").forward(request, response);
                     return;
                 } else {
-                    request.setAttribute("errorMessage", "Invoice not found.");
+                    request.setAttribute("errorMessage", "Không tìm thấy hóa đơn.");
                 }
             }
             
@@ -55,7 +55,7 @@ public class RecordPaymentController extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/staff/payment-list.jsp").forward(request, response);
             
         } catch (SQLException | NumberFormatException ex) {
-            request.setAttribute("errorMessage", "Error: " + ex.getMessage());
+            request.setAttribute("errorMessage", "Lỗi: " + ex.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/staff/dashboard.jsp").forward(request, response);
         }
     }
@@ -72,7 +72,7 @@ public class RecordPaymentController extends HttpServlet {
         String action = request.getParameter("action");
 
         if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty() || !"pay".equals(action)) {
-            request.setAttribute("errorMessage", "Invalid action or invoice details.");
+            request.setAttribute("errorMessage", "Thao tác hoặc thông tin hóa đơn không hợp lệ.");
             response.sendRedirect(request.getContextPath() + "/staff/record-payment");
             return;
         }
@@ -83,15 +83,15 @@ public class RecordPaymentController extends HttpServlet {
             
             if (success) {
                 // Redirect back to detail view which now shows "Paid" status and print receipt button
-                response.sendRedirect(request.getContextPath() + "/staff/record-payment?invoiceId=" + invoiceId + "&successMsg=Payment+recorded+successfully");
+                response.sendRedirect(request.getContextPath() + "/staff/record-payment?invoiceId=" + invoiceId + "&successMsg=Ghi+nhận+thanh+toán+thành+công");
             } else {
-                request.setAttribute("errorMessage", "Failed to record payment.");
+                request.setAttribute("errorMessage", "Ghi nhận thanh toán thất bại.");
                 Invoice inv = invoiceService.getInvoiceById(invoiceId);
                 request.setAttribute("invoice", inv);
                 request.getRequestDispatcher("/WEB-INF/views/staff/payment-record-detail.jsp").forward(request, response);
             }
         } catch (SQLException | NumberFormatException ex) {
-            request.setAttribute("errorMessage", "Error: " + ex.getMessage());
+            request.setAttribute("errorMessage", "Lỗi: " + ex.getMessage());
             try {
                 int invoiceId = Integer.parseInt(invoiceIdStr);
                 Invoice inv = invoiceService.getInvoiceById(invoiceId);

@@ -47,7 +47,7 @@ public class RegisterPackageController extends HttpServlet {
             request.setAttribute("packages", packages);
             request.getRequestDispatcher("/WEB-INF/views/staff/package-register.jsp").forward(request, response);
         } catch (SQLException ex) {
-            request.setAttribute("errorMessage", "Error loading registration data: " + ex.getMessage());
+            request.setAttribute("errorMessage", "Lỗi khi tải dữ liệu đăng ký: " + ex.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/staff/dashboard.jsp").forward(request, response);
         }
     }
@@ -66,7 +66,7 @@ public class RegisterPackageController extends HttpServlet {
         if (memberIdStr == null || memberIdStr.trim().isEmpty() ||
             packageIdStr == null || packageIdStr.trim().isEmpty()) {
             
-            request.setAttribute("errorMessage", "Please select both a member and a gym package.");
+            request.setAttribute("errorMessage", "Vui lòng chọn cả hội viên và gói tập.");
             doGet(request, response);
             return;
         }
@@ -81,11 +81,11 @@ public class RegisterPackageController extends HttpServlet {
                 // Redirect immediately to record payment screen with invoiceId!
                 response.sendRedirect(request.getContextPath() + "/staff/record-payment?invoiceId=" + pendingInvoice.getInvoiceId());
             } else {
-                request.setAttribute("errorMessage", "Failed to register package.");
+                request.setAttribute("errorMessage", "Đăng ký gói tập thất bại.");
                 doGet(request, response);
             }
         } catch (SQLException | NumberFormatException ex) {
-            request.setAttribute("errorMessage", "Error: " + ex.getMessage());
+            request.setAttribute("errorMessage", "Lỗi: " + ex.getMessage());
             doGet(request, response);
         }
     }
