@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : InvoiceServiceImpl.java
+ * @description   : Lop trien khai cac dich vu thanh toan hoa don, giao dich tien mat va lay lich su thanh toan
+ * @author        : Nguyễn Hoàng Thắng
+ * @created       : 2026-06-01
+ * @last_modified : 2026-06-03 boi Nguyen Hoang Thang
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.service.impl;
 
 import com.mycompany.gymcentermanagement.dao.InvoiceDAO;

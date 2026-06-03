@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : MemberPackageService.java
+ * @description   : Interface dinh nghia cac dich vu dang ky goi tap va lay danh sach khach hang
+ * @author        : Nguyễn Hoàng Thắng
+ * @created       : 2026-06-01
+ * @last_modified : 2026-06-03 boi Nguyen Hoang Thang
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.service;
 
 import com.mycompany.gymcentermanagement.model.entity.Member;
