@@ -1,23 +1,49 @@
-# Build output
-/target/
-/build/
-/dist/
+# =========================================================================
+# Gym Center Management - Git Ignore Patterns
+# =========================================================================
 
-# Java compiled files
-*.class
-*.jar
+# Exclude static templates and documentations as requested
+DashMin/
+GymCenterManagement/documentations/
+.agents/
+design-system/
+demo UIUX/
+
+# Maven build outputs
+**/target/
 *.war
 *.ear
+*.jar
 
-# NetBeans private config
-/nbproject/private/
+# NetBeans IDE files
+**/nbproject/private/
+**/nb-configuration.xml
+nbactions.xml
 
-# Logs
-*.log
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
 
-# OS files
-.DS_Store
+# Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+*.launch
+
+# Visual Studio Code
+.vscode/
+
+# Operating System files
 Thumbs.db
+Desktop.ini
+.DS_Store
 
-# Environment config
-.env
+# Temporary & Log files
+*.log
+*.tmp
+*.bak
+*.swp
