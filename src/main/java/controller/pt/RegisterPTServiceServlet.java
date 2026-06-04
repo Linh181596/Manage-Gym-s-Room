@@ -19,6 +19,26 @@ import model.PTServicePrice;
  *
  * @author phuga
  */
+
+/*
+* Các hàm trong class này:
+     *
+     * - doGet(): mở form đăng ký gói PT service theo priceId member đã chọn.
+     * - doPost(): xử lý khi member xác nhận đăng ký gói PT.
+     *
+     * Luồng xử lý:
+     * - lấy priceId từ request.
+     * - tìm thông tin gói PT service.
+     * - kiểm tra ngày bắt đầu mong muốn.
+     * - tính ngày bắt đầu, ngày kết thúc và tổng tiền.
+     * - thêm đăng ký vào bảng PTRegistrations.
+     *
+     * Ghi chú:
+     * - Khi member đăng ký, trạng thái ban đầu là Pending.
+     * - Trạng thái thanh toán ban đầu là Unpaid.
+     * - Staff/Admin sẽ xử lý thanh toán và sắp xếp lịch tập sau.
+     * - MemberID hiện đang tạm hard-code để test, sau này sẽ lấy từ session đăng nhập.
+ */
 @WebServlet(name = "RegisterPTServiceServlet", urlPatterns = {"/member/pt/register"})
 public class RegisterPTServiceServlet extends HttpServlet {
 
@@ -107,7 +127,7 @@ public class RegisterPTServiceServlet extends HttpServlet {
         }
 
         LocalDate startDate = preferredStartDate;
-        LocalDate endDate = startDate.plusDays(durationMonths * 30L);
+        LocalDate endDate = startDate.plusMonths(durationMonths).minusDays(1); //start date: 3/6 -> minusDays(1) -> 2/7(not minusDays(1) -> 3/7)
 
         PTRegistration registration = new PTRegistration();
 

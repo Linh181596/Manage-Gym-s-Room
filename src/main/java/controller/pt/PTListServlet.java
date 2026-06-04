@@ -19,6 +19,19 @@ import model.PersonalTrainer;
  *
  * @author phuga
  */
+
+/*
+     * Các hàm trong class này:
+     *
+     * - doGet(): hiển thị danh sách các Personal Trainer đang hoạt động.
+     *
+     * Luồng xử lý:
+     * - tạo danh sách chuyên môn để hiển thị checkbox lọc.
+     * - lấy các chuyên môn member/guest đã chọn.
+     * - nếu không chọn chuyên môn thì hiển thị tất cả PT đang active.
+     * - nếu có chọn chuyên môn thì lọc PT theo chuyên môn đó.
+     * - gửi danh sách PT sang trang pt-list.jsp để hiển thị.
+ */
 @WebServlet(name = "PTListServlet", urlPatterns = {"/pt/list"})
 public class PTListServlet extends HttpServlet {
 
