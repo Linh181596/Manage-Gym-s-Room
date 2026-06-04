@@ -1,5 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*" %>
+
+<%--
+  =========================================================================
+  Document    : members.jsp
+  Created on  : 2026-06-04
+  Author      : Nguyễn Thành Linh (linhnt)
+  Description : Giao diện danh sách hội viên dành cho nhân viên lễ tân/quản lý.
+  =========================================================================
+--%>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

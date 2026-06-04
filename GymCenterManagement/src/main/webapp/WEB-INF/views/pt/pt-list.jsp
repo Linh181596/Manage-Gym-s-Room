@@ -3,6 +3,15 @@
 <%@ page import="com.mycompany.gymcentermanagement.model.entity.PersonalTrainer" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+<%--
+  =========================================================================
+  Document    : pt-list.jsp
+  Created on  : 2026-06-04
+  Author      : Phạm Ngọc Duy (phund)
+  Description : Giao diện danh sách các Huấn luyện viên cá nhân (PT) cho hội viên.
+  =========================================================================
+--%>
+
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

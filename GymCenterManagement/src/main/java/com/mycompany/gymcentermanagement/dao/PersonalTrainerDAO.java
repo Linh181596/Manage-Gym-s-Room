@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : PersonalTrainerDAO.java
+ * @description   : Lớp truy cập dữ liệu để quản lý hồ sơ Huấn luyện viên cá nhân (PT).
+ * @author        : Phạm Ngọc Duy (phund)
+ * @created       : 2026-06-02
+ * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.dao;
 
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;

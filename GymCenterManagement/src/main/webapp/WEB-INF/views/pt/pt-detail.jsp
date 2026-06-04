@@ -6,6 +6,15 @@
 <%@ page import="com.mycompany.gymcentermanagement.model.entity.PTServicePrice" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+<%--
+  =========================================================================
+  Document    : pt-detail.jsp
+  Created on  : 2026-06-04
+  Author      : Phạm Ngọc Duy (phund)
+  Description : Giao diện chi tiết thông tin và bảng giá dịch vụ của Huấn luyện viên.
+  =========================================================================
+--%>
+
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : PTDetailController.java
+ * @description   : Controller xử lý yêu cầu xem chi tiết thông tin và bảng giá dịch vụ của PT.
+ * @author        : Phạm Ngọc Duy (phund)
+ * @created       : 2026-06-02
+ * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.member;
 
 import com.mycompany.gymcentermanagement.dao.PTRegistrationDAO;

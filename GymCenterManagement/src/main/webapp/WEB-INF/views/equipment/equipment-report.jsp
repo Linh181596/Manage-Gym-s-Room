@@ -2,6 +2,15 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
+<%--
+  =========================================================================
+  Document    : equipment-report.jsp
+  Created on  : 2026-06-04
+  Author      : Đào Minh Hoàng (hoangdm)
+  Description : Giao diện hiển thị báo cáo thống kê tình trạng thiết bị phòng tập.
+  =========================================================================
+--%>
+
 <jsp:include page="../common/dashboard_header.jsp" />
 
 <div class="container-fluid pt-4 px-4">

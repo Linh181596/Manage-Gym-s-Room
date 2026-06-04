@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : ManageEquipmentController.java
+ * @description   : Controller điều phối các hoạt động CRUD thiết bị phòng gym.
+ * @author        : Đào Minh Hoàng (hoangdm)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.staff;
 
 import jakarta.servlet.ServletException;

@@ -1,5 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*" %>
+
+<%--
+  =========================================================================
+  Document    : portal.jsp
+  Created on  : 2026-06-04
+  Author      : Nguyễn Thành Linh (linhnt)
+  Description : Giao diện cổng thông tin (Portal) của hội viên.
+  =========================================================================
+--%>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

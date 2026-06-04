@@ -4,6 +4,15 @@
 <%@ page import="com.mycompany.gymcentermanagement.model.entity.PTServicePrice" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+<%--
+  =========================================================================
+  Document    : register-pt-service.jsp
+  Created on  : 2026-06-04
+  Author      : Phạm Ngọc Duy (phund)
+  Description : Giao diện xác nhận đăng ký gói dịch vụ PT của hội viên.
+  =========================================================================
+--%>
+
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

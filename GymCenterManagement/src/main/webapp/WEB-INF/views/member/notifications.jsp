@@ -1,5 +1,14 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*" %>
+
+<%--
+  =========================================================================
+  Document    : notifications.jsp
+  Created on  : 2026-06-04
+  Author      : Nguyễn Thành Linh (linhnt)
+  Description : Giao diện xem danh sách thông báo gửi tới hội viên.
+  =========================================================================
+--%>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

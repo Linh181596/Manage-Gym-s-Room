@@ -2,6 +2,15 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
+<%--
+  =========================================================================
+  Document    : equipment-list.jsp
+  Created on  : 2026-06-04
+  Author      : Đào Minh Hoàng (hoangdm)
+  Description : Giao diện danh sách các thiết bị/dụng cụ phòng tập.
+  =========================================================================
+--%>
+
 <jsp:include page="../common/dashboard_header.jsp" />
 
 <div class="container-fluid pt-4 px-4">

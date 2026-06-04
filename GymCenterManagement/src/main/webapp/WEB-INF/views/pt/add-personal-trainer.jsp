@@ -1,6 +1,15 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+<%--
+  =========================================================================
+  Document    : add-personal-trainer.jsp
+  Created on  : 2026-06-04
+  Author      : Phạm Ngọc Duy (phund)
+  Description : Giao diện form nhập liệu thông tin để thêm tài khoản HLV mới.
+  =========================================================================
+--%>
+
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

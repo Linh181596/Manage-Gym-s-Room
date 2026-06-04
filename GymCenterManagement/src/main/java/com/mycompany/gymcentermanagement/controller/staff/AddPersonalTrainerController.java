@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : AddPersonalTrainerController.java
+ * @description   : Controller xử lý thêm mới hồ sơ và tài khoản của HLV cá nhân.
+ * @author        : Phạm Ngọc Duy (phund)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.staff;
 
 import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;

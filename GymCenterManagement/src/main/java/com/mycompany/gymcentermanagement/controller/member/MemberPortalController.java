@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : MemberPortalController.java
+ * @description   : Controller xử lý trang tổng quan của hội viên sau khi đăng nhập.
+ * @author        : Nguyễn Thành Linh (linhnt)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-04 bởi Nguyễn Thành Linh
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.member;
 
 import com.mycompany.gymcentermanagement.dao.GymDAO;

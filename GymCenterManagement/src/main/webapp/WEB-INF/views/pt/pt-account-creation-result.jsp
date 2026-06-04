@@ -1,6 +1,15 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+<%--
+  =========================================================================
+  Document    : pt-account-creation-result.jsp
+  Created on  : 2026-06-04
+  Author      : Phạm Ngọc Duy (phund)
+  Description : Giao diện hiển thị kết quả tạo tài khoản HLV kèm mật khẩu tạm thời.
+  =========================================================================
+--%>
+
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 

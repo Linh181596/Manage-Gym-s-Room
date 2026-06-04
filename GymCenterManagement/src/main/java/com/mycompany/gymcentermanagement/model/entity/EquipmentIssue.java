@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : EquipmentIssue.java
+ * @description   : Thực thể đại diện cho thông tin sự cố hỏng hóc/báo lỗi của thiết bị phòng gym.
+ * @author        : Đào Minh Hoàng (hoangdm)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.model.entity;
 
 import java.time.LocalDateTime;

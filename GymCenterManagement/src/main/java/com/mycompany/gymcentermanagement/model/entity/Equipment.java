@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : Equipment.java
+ * @description   : Thực thể đại diện cho thông tin thiết bị/dụng cụ phòng gym trong cơ sở dữ liệu.
+ * @author        : Đào Minh Hoàng (hoangdm)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.model.entity;
 
 import java.time.LocalDate;

@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : EquipmentReportController.java
+ * @description   : Controller điều phối xử lý và hiển thị báo cáo thống kê tình trạng thiết bị.
+ * @author        : Đào Minh Hoàng (hoangdm)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.admin;
 
 import jakarta.servlet.ServletException;
