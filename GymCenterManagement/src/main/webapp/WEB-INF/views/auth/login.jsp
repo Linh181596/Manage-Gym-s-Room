@@ -5,10 +5,10 @@
 
 <head>
     <meta charset="utf-8">
-    <title>GCMS - Sign In</title>
+    <title>GCMS - Đăng nhập</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="GCMS Login" name="keywords">
-    <meta content="Sign in to Gym Center Management System" name="description">
+    <meta content="Đăng nhập vào Hệ thống quản lý phòng tập Gym" name="description">
 
     <!-- Favicon -->
     <link href="${pageContext.request.contextPath}/img/favicon.ico" rel="icon">
@@ -38,7 +38,7 @@
         <!-- Spinner Start -->
         <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
+                <span class="sr-only">Đang tải...</span>
             </div>
         </div>
         <!-- Spinner End -->
@@ -53,7 +53,7 @@
                             <a href="${pageContext.request.contextPath}/" class="">
                                 <h3 class="text-primary"><i class="fa fa-dumbbell me-2"></i>GCMS</h3>
                             </a>
-                            <h3>Sign In</h3>
+                            <h3>Đăng nhập</h3>
                         </div>
                         
                         <c:if test="${not empty requestScope.errorMessage}">
@@ -65,28 +65,28 @@
                         <form action="${pageContext.request.contextPath}/login" method="POST">
                             <div class="form-floating mb-3">
                                 <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="${param.email}">
-                                <label for="email">Email address</label>
+                                <label for="email">Địa chỉ Email</label>
                             </div>
                             <div class="form-floating mb-4">
                                 <input type="password" class="form-control" id="password" name="password" required placeholder="Password">
-                                <label for="password">Password</label>
+                                <label for="password">Mật khẩu</label>
                             </div>
                             <div class="d-flex align-items-center justify-content-between mb-4">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="rememberMe">
-                                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                                    <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
                                 </div>
-                                <a href="#">Forgot Password</a>
+                                <a href="#">Quên mật khẩu?</a>
                             </div>
-                            <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign In</button>
+                            <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Đăng nhập</button>
                         </form>
                         
                         <div class="border-top pt-3 mt-3">
-                            <p class="mb-1 text-muted" style="font-size: 0.85rem;">Demo Accounts:</p>
+                            <p class="mb-1 text-muted" style="font-size: 0.85rem;">Tài khoản dùng thử (Demo):</p>
                             <ul class="text-muted ps-3 mb-0" style="font-size: 0.8rem;">
-                                <li>Admin: <code>admin@gym.com</code> / <code>admin123</code></li>
-                                <li>Staff: <code>staff@gym.com</code> / <code>staff123</code></li>
-                                <li>Member: <code>member@gym.com</code> / <code>member123</code></li>
+                                <li>Quản trị (Admin): <code>admin@gym.com</code> / <code>admin123</code></li>
+                                <li>Nhân viên (Staff): <code>staff@gym.com</code> / <code>staff123</code></li>
+                                <li>Hội viên (Member): <code>member@gym.com</code> / <code>member123</code></li>
                             </ul>
                         </div>
                     </div>

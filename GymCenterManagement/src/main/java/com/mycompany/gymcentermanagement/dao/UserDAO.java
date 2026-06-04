@@ -25,7 +25,7 @@ public interface UserDAO {
      * @return User object or null if not found.
      * @throws SQLException if a database error occurs.
      */
-    User findById(String userId) throws SQLException;
+    User findById(int userId) throws SQLException;
 
     /**
      * Inserts a new user record.
@@ -52,7 +52,7 @@ public interface UserDAO {
      * @return true if successful, false otherwise.
      * @throws SQLException if a database error occurs.
      */
-    boolean delete(String userId) throws SQLException;
+    boolean delete(int userId) throws SQLException;
 
     /**
      * Retrieves all active, non-deleted users.

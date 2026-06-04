@@ -46,7 +46,7 @@ public class LoginController extends HttpServlet {
         
         // Validation
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            request.setAttribute("errorMessage", "Email and Password are required.");
+            request.setAttribute("errorMessage", "Email và Mật khẩu không được để trống.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
             return;
         }
@@ -54,11 +54,11 @@ public class LoginController extends HttpServlet {
         // Authenticate user (supporting temporary demo bypass)
         User authenticatedUser = null;
         if ("admin@gym.com".equalsIgnoreCase(email.trim()) && "admin123".equals(password)) {
-            authenticatedUser = new User("U001", "admin@gym.com", "", "Demo Admin", "0987654321", User.Role.Admin, User.AccountStatus.Active);
+            authenticatedUser = new User(1, "admin@gym.com", "", "Demo Admin", "0987654321", User.Role.Admin, User.AccountStatus.Active);
         } else if ("staff@gym.com".equalsIgnoreCase(email.trim()) && "staff123".equals(password)) {
-            authenticatedUser = new User("U002", "staff@gym.com", "", "Demo Staff", "0987654321", User.Role.Staff, User.AccountStatus.Active);
+            authenticatedUser = new User(2, "staff@gym.com", "", "Demo Staff", "0987654321", User.Role.Staff, User.AccountStatus.Active);
         } else if ("member@gym.com".equalsIgnoreCase(email.trim()) && "member123".equals(password)) {
-            authenticatedUser = new User("U003", "member@gym.com", "", "Demo Member", "0987654321", User.Role.Member, User.AccountStatus.Active);
+            authenticatedUser = new User(3, "member@gym.com", "", "Demo Member", "0987654321", User.Role.Member, User.AccountStatus.Active);
         } else {
             authenticatedUser = userService.login(email.trim(), password);
         }
@@ -72,7 +72,7 @@ public class LoginController extends HttpServlet {
             redirectToDashboard(authenticatedUser, request, response);
         } else {
             // Failure: Return error feedback
-            request.setAttribute("errorMessage", "Invalid email/password, or account is not active.");
+            request.setAttribute("errorMessage", "Email hoặc mật khẩu không hợp lệ, hoặc tài khoản chưa kích hoạt.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
         }
     }

@@ -8,40 +8,40 @@
                     <i class="fa fa-bars"></i>
                 </a>
                 <form class="d-none d-md-flex ms-4">
-                    <input class="form-control border-0" type="search" placeholder="Search">
+                    <input class="form-control border-0" type="search" placeholder="Tìm kiếm...">
                 </form>
                 <div class="navbar-nav align-items-center ms-auto">
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="fa fa-envelope me-lg-2"></i>
-                            <span class="d-none d-lg-inline-flex">Message</span>
+                            <span class="d-none d-lg-inline-flex">Tin nhắn</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="#" class="dropdown-item">
                                 <div class="d-flex align-items-center">
                                     <img class="rounded-circle" src="${pageContext.request.contextPath}/img/user.jpg" alt="" style="width: 40px; height: 40px;">
                                     <div class="ms-2">
-                                        <h6 class="fw-normal mb-0">John sent you a message</h6>
-                                        <small>15 minutes ago</small>
+                                        <h6 class="fw-normal mb-0">John đã gửi một tin nhắn</h6>
+                                        <small>15 phút trước</small>
                                     </div>
                                 </div>
                             </a>
                             <hr class="dropdown-divider">
-                            <a href="#" class="dropdown-item text-center">See all messages</a>
+                            <a href="#" class="dropdown-item text-center">Xem tất cả tin nhắn</a>
                         </div>
                     </div>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="fa fa-bell me-lg-2"></i>
-                            <span class="d-none d-lg-inline-flex">Notification</span>
+                            <span class="d-none d-lg-inline-flex">Thông báo</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                             <a href="#" class="dropdown-item">
-                                <h6 class="fw-normal mb-0">Profile updated</h6>
-                                <small>15 minutes ago</small>
+                                <h6 class="fw-normal mb-0">Cập nhật hồ sơ thành công</h6>
+                                <small>15 phút trước</small>
                             </a>
                             <hr class="dropdown-divider">
-                            <a href="#" class="dropdown-item text-center">See all notifications</a>
+                            <a href="#" class="dropdown-item text-center">Xem tất cả thông báo</a>
                         </div>
                     </div>
                     <div class="nav-item dropdown">
@@ -50,9 +50,9 @@
                             <span class="d-none d-lg-inline-flex">${sessionScope.currentUser.fullName}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                            <a href="#" class="dropdown-item">My Profile</a>
-                            <a href="#" class="dropdown-item">Settings</a>
-                            <a href="${pageContext.request.contextPath}/logout" class="dropdown-item">Log Out</a>
+                            <a href="#" class="dropdown-item">Hồ sơ cá nhân</a>
+                            <a href="#" class="dropdown-item">Cài đặt</a>
+                            <a href="${pageContext.request.contextPath}/logout" class="dropdown-item">Đăng xuất</a>
                         </div>
                     </div>
                 </div>
