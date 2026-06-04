@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : MemberPackageServiceImpl.java
+ * @description   : Lop trien khai cac dich vu nghiep vu cho MemberPackage (dang ky package moi & luu transaction)
+ * @author        : Nguyễn Hoàng Thắng
+ * @created       : 2026-06-01
+ * @last_modified : 2026-06-03 boi Nguyen Hoang Thang
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.service.impl;
 
 import com.mycompany.gymcentermanagement.dao.GymPackageDAO;

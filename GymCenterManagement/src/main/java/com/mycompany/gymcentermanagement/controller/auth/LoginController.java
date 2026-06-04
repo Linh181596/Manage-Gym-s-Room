@@ -46,7 +46,7 @@ public class LoginController extends HttpServlet {
         
         // Validation
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            request.setAttribute("errorMessage", "Email and Password are required.");
+            request.setAttribute("errorMessage", "Email và Mật khẩu không được để trống.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
             return;
         }
@@ -72,7 +72,7 @@ public class LoginController extends HttpServlet {
             redirectToDashboard(authenticatedUser, request, response);
         } else {
             // Failure: Return error feedback
-            request.setAttribute("errorMessage", "Invalid email/password, or account is not active.");
+            request.setAttribute("errorMessage", "Email hoặc mật khẩu không hợp lệ, hoặc tài khoản chưa kích hoạt.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
         }
     }

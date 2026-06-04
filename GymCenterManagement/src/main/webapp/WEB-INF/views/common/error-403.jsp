@@ -4,9 +4,9 @@
 
 <div class="error-container">
     <div class="error-code">403</div>
-    <div class="error-title">Access Denied</div>
-    <p class="error-message">You do not have the required permissions to view this resource. Please verify your account role or try signing in again.</p>
-    <a href="${pageContext.request.contextPath}/login" class="back-btn">Go to Login</a>
+    <div class="error-title">Truy cập bị từ chối</div>
+    <p class="error-message">Bạn không có quyền truy cập vào tài nguyên này. Vui lòng xác thực vai trò tài khoản hoặc thử đăng nhập lại.</p>
+    <a href="${pageContext.request.contextPath}/login" class="back-btn">Quay lại trang Đăng nhập</a>
 </div>
 
 <style>

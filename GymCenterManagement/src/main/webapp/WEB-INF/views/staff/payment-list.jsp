@@ -32,8 +32,8 @@
     <!-- Page Header -->
     <div class="mb-4">
         <div>
-            <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-cash-register me-2 text-primary"></i>Record Payments</h4>
-            <small class="text-muted">Process cash invoices, print receipts, and activate member registrations</small>
+            <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-cash-register me-2 text-primary"></i>Thanh toán hóa đơn</h4>
+            <small class="text-muted">Xử lý hóa đơn tiền mặt, in biên lai và kích hoạt gói tập cho thành viên</small>
         </div>
     </div>
 
@@ -57,7 +57,7 @@
             <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-0">
                 <i class="fa fa-dollar-sign fa-3x text-success"></i>
                 <div class="ms-3 text-end">
-                    <p class="mb-2 text-muted fw-semibold">Total Revenue (Cash)</p>
+                    <p class="mb-2 text-muted fw-semibold">Tổng doanh thu (Tiền mặt)</p>
                     <h5 class="mb-0 text-dark fw-bold">
                         <fmt:formatNumber value="${totalRevenue}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                     </h5>
@@ -68,8 +68,8 @@
             <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-0">
                 <i class="fa fa-clock fa-3x text-warning"></i>
                 <div class="ms-3 text-end">
-                    <p class="mb-2 text-muted fw-semibold">Pending Payments</p>
-                    <h5 class="mb-0 text-dark fw-bold">${pendingCount} Invoices</h5>
+                    <p class="mb-2 text-muted fw-semibold">Thanh toán đang chờ</p>
+                    <h5 class="mb-0 text-dark fw-bold">${pendingCount} Hóa đơn</h5>
                 </div>
             </div>
         </div>
@@ -77,8 +77,8 @@
             <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm border-0">
                 <i class="fa fa-check-double fa-3x text-primary"></i>
                 <div class="ms-3 text-end">
-                    <p class="mb-2 text-muted fw-semibold">Paid Invoices</p>
-                    <h5 class="mb-0 text-dark fw-bold">${paidCount} Completed</h5>
+                    <p class="mb-2 text-muted fw-semibold">Hóa đơn đã thanh toán</p>
+                    <h5 class="mb-0 text-dark fw-bold">${paidCount} Hoàn thành</h5>
                 </div>
             </div>
         </div>
@@ -88,23 +88,23 @@
     <div class="bg-light rounded p-4 mb-4 shadow-sm">
         <div class="row align-items-end g-3">
             <div class="col-md-6 col-lg-7">
-                <label for="searchInput" class="form-label fw-bold text-secondary">Search Invoices</label>
+                <label for="searchInput" class="form-label fw-bold text-secondary">Tìm kiếm hóa đơn</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa fa-search"></i></span>
-                    <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search by member name, email or package name...">
+                    <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Tìm theo tên hội viên, email hoặc tên gói tập...">
                 </div>
             </div>
             <div class="col-md-4 col-lg-3">
-                <label for="statusFilter" class="form-label fw-bold text-secondary">Filter by Payment Status</label>
+                <label for="statusFilter" class="form-label fw-bold text-secondary">Lọc theo trạng thái</label>
                 <select id="statusFilter" class="form-select">
-                    <option value="">All Invoices</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Cancelled">Cancelled</option>
+                    <option value="">Tất cả hóa đơn</option>
+                    <option value="Pending">Đang chờ</option>
+                    <option value="Paid">Đã thanh toán</option>
+                    <option value="Cancelled">Đã hủy</option>
                 </select>
             </div>
             <div class="col-md-2 col-lg-2">
-                <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100"><i class="fa fa-undo me-1"></i> Reset</button>
+                <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100"><i class="fa fa-undo me-1"></i> Đặt lại</button>
             </div>
         </div>
     </div>
@@ -115,12 +115,12 @@
             <table class="table text-start align-middle table-bordered table-hover mb-0" id="invoiceTable">
                 <thead>
                     <tr class="text-dark">
-                        <th scope="col" style="width: 80px;">ID</th>
-                        <th scope="col">Gym Member</th>
-                        <th scope="col">Details / Description</th>
-                        <th scope="col" class="text-end" style="width: 150px;">Amount (VND)</th>
-                        <th scope="col" style="width: 120px;" class="text-center">Status</th>
-                        <th scope="col" class="text-center" style="width: 180px;">Action</th>
+                        <th scope="col" style="width: 80px;">Mã</th>
+                        <th scope="col">Hội viên Gym</th>
+                        <th scope="col">Chi tiết / Mô tả</th>
+                        <th scope="col" class="text-end" style="width: 150px;">Số tiền (VND)</th>
+                        <th scope="col" style="width: 120px;" class="text-center">Trạng thái</th>
+                        <th scope="col" class="text-center" style="width: 180px;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,7 +129,7 @@
                             <tr>
                                 <td colspan="6" class="text-center py-4 text-muted">
                                     <i class="fa fa-receipt fa-3x mb-3 text-secondary d-block"></i>
-                                    No invoices recorded. Enroll members to generate pending invoices.
+                                    Không tìm thấy hóa đơn nào. Đăng ký gói tập cho hội viên để tạo hóa đơn.
                                 </td>
                             </tr>
                         </c:when>
@@ -144,7 +144,7 @@
                                         <small class="text-muted"><i class="fa fa-envelope me-1"></i>${inv.member.userDetails.email}</small>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-dark border me-2"><i class="fa fa-box me-1"></i>Package</span>
+                                        <span class="badge bg-light text-dark border me-2"><i class="fa fa-box me-1"></i>Gói tập</span>
                                         <span class="text-dark fw-medium">${inv.memberPackage.gymPackage.packageName}</span>
                                     </td>
                                     <td class="text-end fw-bold text-primary">
@@ -153,13 +153,13 @@
                                     <td class="text-center">
                                         <c:choose>
                                             <c:when test="${inv.status == 'Paid'}">
-                                                <span class="badge bg-success rounded-pill px-3 py-1"><i class="fa fa-check-circle me-1"></i>Paid</span>
+                                                <span class="badge bg-success rounded-pill px-3 py-1"><i class="fa fa-check-circle me-1"></i>Đã thanh toán</span>
                                             </c:when>
                                             <c:when test="${inv.status == 'Pending'}">
-                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fa fa-clock me-1"></i>Pending</span>
+                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fa fa-clock me-1"></i>Đang chờ</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="badge bg-danger rounded-pill px-3 py-1"><i class="fa fa-times-circle me-1"></i>Cancelled</span>
+                                                <span class="badge bg-danger rounded-pill px-3 py-1"><i class="fa fa-times-circle me-1"></i>Đã hủy</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
@@ -167,12 +167,12 @@
                                         <c:choose>
                                             <c:when test="${inv.status == 'Pending'}">
                                                 <a href="${pageContext.request.contextPath}/staff/record-payment?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-primary px-3 shadow-sm-primary">
-                                                    <i class="fa fa-cash-register me-1"></i> Pay Cash
+                                                    <i class="fa fa-cash-register me-1"></i> Thu tiền
                                                 </a>
                                             </c:when>
                                             <c:otherwise>
                                                 <a href="${pageContext.request.contextPath}/staff/record-payment?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-outline-secondary px-3">
-                                                    <i class="fa fa-eye me-1"></i> Details
+                                                    <i class="fa fa-eye me-1"></i> Chi tiết
                                                 </a>
                                             </c:otherwise>
                                         </c:choose>
