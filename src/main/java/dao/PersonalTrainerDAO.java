@@ -6,94 +6,196 @@ package dao;
 
 import dal.DBContext;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import model.PTServicePrice;
 import model.PersonalTrainer;
 
 /**
  *
  * @author phuga
  */
+
+/* Method in class
+  * - mapPersonalTrainer(): chuyển dữ liệu lấy từ database thành object PersonalTrainer.
+     * - setDateOrNull(): dùng để set ngày vào PreparedStatement, tránh lỗi khi ngày bị null.
+     *
+     * - findActiveTrainers(): lấy danh sách các PT đang hoạt động để hiển thị cho guest/member xem.
+     * - findActiveTrainersBySpecializations(): lọc danh sách PT theo chuyên môn được chọn.
+     * - findById(): lấy thông tin chi tiết của một PT theo PTID.
+     *
+     * - insertPersonalTrainer(): thêm hồ sơ PT sau khi tạo tài khoản PT thành công.
+     * - findAllForManagement(): lấy danh sách PT cho màn quản lý của Staff/Admin.
+     * - updatePersonalTrainer(): cập nhật thông tin hồ sơ PT.
+     * - updateTrainerStatus(): đổi trạng thái PT, ví dụ Active hoặc Inactive.
+     * - softDeletePersonalTrainer(): xóa mềm PT, không xóa hẳn dữ liệu khỏi database.
+     *
+     * Ghi chú:
+     * - DisplayName là tên hiển thị, không bắt buộc nhập.
+     * - Nếu DisplayName trống thì hệ thống sẽ hiển thị FullName.
+ */
 public class PersonalTrainerDAO extends DBContext {
 
+    /**
+     * Maps a ResultSet row to a PersonalTrainer object.
+     */
+    private PersonalTrainer mapPersonalTrainer(ResultSet rs) throws SQLException {
+        PersonalTrainer trainer = new PersonalTrainer();
+
+        trainer.setPtId(rs.getInt("PTID"));
+        trainer.setUserId(rs.getInt("UserID"));
+        trainer.setFullName(rs.getString("FullName"));
+        trainer.setDisplayName(rs.getString("DisplayName"));
+        trainer.setSpecialization(rs.getString("Specialization"));
+
+        Date careerStartDate = rs.getDate("CareerStartDate");
+        if (careerStartDate != null) {
+            trainer.setCareerStartDate(careerStartDate.toLocalDate());
+        }
+
+        trainer.setCertificateFileName(rs.getString("CertificateFileName"));
+        trainer.setCertificateFilePath(rs.getString("CertificateFilePath"));
+        trainer.setDescription(rs.getString("Description"));
+        trainer.setAvatarPath(rs.getString("AvatarPath"));
+        trainer.setStatus(rs.getString("Status"));
+
+        trainer.setCreatedBy(rs.getString("CreatedBy"));
+
+        Timestamp createdDate = rs.getTimestamp("CreatedDate");
+        if (createdDate != null) {
+            trainer.setCreatedDate(createdDate.toLocalDateTime());
+        }
+
+        trainer.setUpdatedBy(rs.getString("UpdatedBy"));
+
+        Timestamp updatedDate = rs.getTimestamp("UpdatedDate");
+        if (updatedDate != null) {
+            trainer.setUpdatedDate(updatedDate.toLocalDateTime());
+        }
+
+        trainer.setDeleted(rs.getBoolean("IsDeleted"));
+
+        // Joined fields from Users table
+        trainer.setEmail(rs.getString("Email"));
+        trainer.setPhone(rs.getString("Phone"));
+        trainer.setAccountStatus(rs.getString("AccountStatus"));
+        trainer.setMustChangePassword(rs.getBoolean("MustChangePassword"));
+
+        return trainer;
+    }
+
+    /**
+     * Gets all active Personal Trainers for public trainer list.
+     *
+     * @return list of active Personal Trainers
+     */
     public List<PersonalTrainer> findActiveTrainers() {
         String sql = """
-        SELECT
-            pt.PTID,
-            pt.UserID,
-            pt.ApplicationID,
-            pt.Specialization,
-            pt.ExperienceYears,
-            pt.Description,
-            pt.Status,
-            u.DisplayName,
-            u.Email,
-            u.Phone
-        FROM PersonalTrainers pt
-        JOIN Users u ON pt.UserID = u.UserID
-        WHERE pt.Status = 'Active'
-          AND pt.IsDeleted = 0
-          AND u.IsDeleted = 0
-        ORDER BY pt.PTID
-    """;
+            SELECT 
+                pt.PTID,
+                pt.UserID,
+                pt.FullName,
+                pt.DisplayName,
+                pt.Specialization,
+                pt.CareerStartDate,
+                pt.CertificateFileName,
+                pt.CertificateFilePath,
+                pt.Description,
+                pt.AvatarPath,
+                pt.Status,
+                pt.CreatedBy,
+                pt.CreatedDate,
+                pt.UpdatedBy,
+                pt.UpdatedDate,
+                pt.IsDeleted,
+                u.Email,
+                u.Phone,
+                u.Status AS AccountStatus,
+                u.MustChangePassword
+            FROM PersonalTrainers pt
+            INNER JOIN Users u ON pt.UserID = u.UserID
+            WHERE pt.Status = 'Active'
+              AND u.Status = 'Active'
+              AND pt.IsDeleted = 0
+              AND u.IsDeleted = 0
+            ORDER BY pt.FullName
+        """;
 
         List<PersonalTrainer> trainers = new ArrayList<>();
 
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                PersonalTrainer trainer = mapTrainer(rs);
-                trainer.setServicePrices(findServicePricesByPTId(trainer.getPtId()));
-                trainers.add(trainer);
+                trainers.add(mapPersonalTrainer(rs));
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi lấy danh sách PT", e);
+            e.printStackTrace();
         }
 
         return trainers;
     }
 
+    /**
+     * Gets active Personal Trainers by multiple specialization values.
+     *
+     * @param specializations selected specialization list
+     * @return list of active Personal Trainers matching selected
+     * specializations
+     */
     public List<PersonalTrainer> findActiveTrainersBySpecializations(List<String> specializations) {
         if (specializations == null || specializations.isEmpty()) {
             return findActiveTrainers();
         }
 
-        StringBuilder placeholders = new StringBuilder();
+        List<PersonalTrainer> trainers = new ArrayList<>();
 
+        StringBuilder placeholders = new StringBuilder();
         for (int i = 0; i < specializations.size(); i++) {
-            if (i > 0) {
+            placeholders.append("?");
+            if (i < specializations.size() - 1) {
                 placeholders.append(", ");
             }
-            placeholders.append("?");
         }
 
         String sql = """
-        SELECT
+        SELECT 
             pt.PTID,
             pt.UserID,
-            pt.ApplicationID,
+            pt.FullName,
+            pt.DisplayName,
             pt.Specialization,
-            pt.ExperienceYears,
+            pt.CareerStartDate,
+            pt.CertificateFileName,
+            pt.CertificateFilePath,
             pt.Description,
+            pt.AvatarPath,
             pt.Status,
-            u.DisplayName,
+            pt.CreatedBy,
+            pt.CreatedDate,
+            pt.UpdatedBy,
+            pt.UpdatedDate,
+            pt.IsDeleted,
             u.Email,
-            u.Phone
+            u.Phone,
+            u.Status AS AccountStatus,
+            u.MustChangePassword
         FROM PersonalTrainers pt
-        JOIN Users u ON pt.UserID = u.UserID
+        INNER JOIN Users u ON pt.UserID = u.UserID
         WHERE pt.Status = 'Active'
+          AND u.Status = 'Active'
           AND pt.IsDeleted = 0
           AND u.IsDeleted = 0
-          AND pt.Specialization IN (%s)
-        ORDER BY pt.PTID
-    """.formatted(placeholders.toString());
-
-        List<PersonalTrainer> trainers = new ArrayList<>();
+          AND pt.Specialization IN (
+        """ + placeholders + """
+          )
+        ORDER BY pt.FullName
+    """;
 
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -103,14 +205,12 @@ public class PersonalTrainerDAO extends DBContext {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    PersonalTrainer trainer = mapTrainer(rs);
-                    trainer.setServicePrices(findServicePricesByPTId(trainer.getPtId()));
-                    trainers.add(trainer);
+                    trainers.add(mapPersonalTrainer(rs));
                 }
             }
 
-        } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi lọc danh sách PT theo chuyên môn", e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Lỗi khi lấy danh sách PT active", e);
         }
 
         return trainers;
@@ -118,24 +218,33 @@ public class PersonalTrainerDAO extends DBContext {
 
     public PersonalTrainer findById(int ptId) {
         String sql = """
-        SELECT
-            pt.PTID,
-            pt.UserID,
-            pt.ApplicationID,
-            pt.Specialization,
-            pt.ExperienceYears,
-            pt.Description,
-            pt.Status,
-            u.DisplayName,
-            u.Email,
-            u.Phone
-        FROM PersonalTrainers pt
-        JOIN Users u ON pt.UserID = u.UserID
-        WHERE pt.PTID = ?
-          AND pt.Status = 'Active'
-          AND pt.IsDeleted = 0
-          AND u.IsDeleted = 0
-    """;
+            SELECT 
+                pt.PTID,
+                pt.UserID,
+                pt.FullName,
+                pt.DisplayName,
+                pt.Specialization,
+                pt.CareerStartDate,
+                pt.CertificateFileName,
+                pt.CertificateFilePath,
+                pt.Description,
+                pt.AvatarPath,
+                pt.Status,
+                pt.CreatedBy,
+                pt.CreatedDate,
+                pt.UpdatedBy,
+                pt.UpdatedDate,
+                pt.IsDeleted,
+                u.Email,
+                u.Phone,
+                u.Status AS AccountStatus,
+                u.MustChangePassword
+            FROM PersonalTrainers pt
+            INNER JOIN Users u ON pt.UserID = u.UserID
+            WHERE pt.PTID = ?
+              AND pt.IsDeleted = 0
+              AND u.IsDeleted = 0
+        """;
 
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -143,9 +252,7 @@ public class PersonalTrainerDAO extends DBContext {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    PersonalTrainer trainer = mapTrainer(rs);
-                    trainer.setServicePrices(findServicePricesByPTId(ptId));
-                    return trainer;
+                    return mapPersonalTrainer(rs);
                 }
             }
 
@@ -156,91 +263,322 @@ public class PersonalTrainerDAO extends DBContext {
         return null;
     }
 
-    private List<PTServicePrice> findServicePricesByPTId(int ptId) {
+    /**
+     * Gets all Personal Trainers for Staff/Admin management screen.
+     *
+     * @return list of all Personal Trainers
+     */
+    public List<PersonalTrainer> findAllForManagement() {
+        List<PersonalTrainer> trainers = new ArrayList<>();
+
         String sql = """
-        SELECT
-            sp.PTServicePriceID,
-            sp.PTID,
-            sp.PTPackageTypeID,
-            sp.Price,
-            sp.Status AS PriceStatus,
-            pkg.PackageName,
-            pkg.Description AS PackageDescription,
-            pkg.DurationMonths,
-            pkg.NumberOfSessions
-        FROM PTServicePrices sp
-        JOIN PTPackageTypes pkg 
-            ON sp.PTPackageTypeID = pkg.PTPackageTypeID
-        WHERE sp.PTID = ?
-          AND sp.Status = 'Active'
-          AND sp.IsDeleted = 0
-          AND pkg.Status = 'Active'
-          AND pkg.IsDeleted = 0
-        ORDER BY pkg.DurationMonths
-    """;
+            SELECT 
+                pt.PTID,
+                pt.UserID,
+                pt.FullName,
+                pt.DisplayName,
+                pt.Specialization,
+                pt.CareerStartDate,
+                pt.CertificateFileName,
+                pt.CertificateFilePath,
+                pt.Description,
+                pt.AvatarPath,
+                pt.Status,
+                pt.CreatedBy,
+                pt.CreatedDate,
+                pt.UpdatedBy,
+                pt.UpdatedDate,
+                pt.IsDeleted,
+                u.Email,
+                u.Phone,
+                u.Status AS AccountStatus,
+                u.MustChangePassword
+            FROM PersonalTrainers pt
+            INNER JOIN Users u ON pt.UserID = u.UserID
+            WHERE pt.IsDeleted = 0
+              AND u.IsDeleted = 0
+            ORDER BY pt.CreatedDate DESC
+        """;
 
-        List<PTServicePrice> prices = new ArrayList<>();
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, ptId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    prices.add(mapServicePrice(rs));
-                }
+            while (rs.next()) {
+                trainers.add(mapPersonalTrainer(rs));
             }
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return prices;
+        return trainers;
     }
 
-    private PersonalTrainer mapTrainer(ResultSet rs) throws SQLException {
-        PersonalTrainer trainer = new PersonalTrainer();
+    /**
+     * Searches active Personal Trainers by keyword and specialization.
+     *
+     * @param keyword name or keyword
+     * @param specialization specialization filter
+     * @return matching active trainer list
+     */
+    public List<PersonalTrainer> searchActiveTrainers(String keyword, String specialization) {
+        List<PersonalTrainer> trainers = new ArrayList<>();
 
-        trainer.setPtId(rs.getInt("PTID"));
-        trainer.setUserId(rs.getInt("UserID"));
+        String sql = """
+            SELECT 
+                pt.PTID,
+                pt.UserID,
+                pt.FullName,
+                pt.DisplayName,
+                pt.Specialization,
+                pt.CareerStartDate,
+                pt.CertificateFileName,
+                pt.CertificateFilePath,
+                pt.Description,
+                pt.AvatarPath,
+                pt.Status,
+                pt.CreatedBy,
+                pt.CreatedDate,
+                pt.UpdatedBy,
+                pt.UpdatedDate,
+                pt.IsDeleted,
+                u.Email,
+                u.Phone,
+                u.Status AS AccountStatus,
+                u.MustChangePassword
+            FROM PersonalTrainers pt
+            INNER JOIN Users u ON pt.UserID = u.UserID
+            WHERE pt.Status = 'Active'
+              AND u.Status = 'Active'
+              AND pt.IsDeleted = 0
+              AND u.IsDeleted = 0
+              AND (
+                    ? IS NULL
+                    OR pt.FullName LIKE ?
+                    OR pt.DisplayName LIKE ?
+                    OR pt.Specialization LIKE ?
+                    OR pt.Description LIKE ?
+                  )
+              AND (
+                    ? IS NULL
+                    OR pt.Specialization = ?
+                  )
+            ORDER BY pt.FullName
+        """;
 
-        int applicationId = rs.getInt("ApplicationID");
-        trainer.setApplicationId(rs.wasNull() ? null : applicationId);
+        String searchValue = null;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            searchValue = "%" + keyword.trim() + "%";
+        }
 
-        trainer.setDisplayName(rs.getString("DisplayName"));
-        trainer.setEmail(rs.getString("Email"));
-        trainer.setPhone(rs.getString("Phone"));
+        String specializationValue = null;
+        if (specialization != null && !specialization.trim().isEmpty()) {
+            specializationValue = specialization.trim();
+        }
 
-        trainer.setSpecialization(rs.getString("Specialization"));
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, searchValue);
+            ps.setString(2, searchValue);
+            ps.setString(3, searchValue);
+            ps.setString(4, searchValue);
+            ps.setString(5, searchValue);
+            ps.setString(6, specializationValue);
+            ps.setString(7, specializationValue);
 
-        int experienceYears = rs.getInt("ExperienceYears");
-        trainer.setExperienceYears(rs.wasNull() ? null : experienceYears);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trainers.add(mapPersonalTrainer(rs));
+                }
+            }
 
-        trainer.setDescription(rs.getString("Description"));
-        trainer.setStatus(rs.getString("Status"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-        return trainer;
+        return trainers;
     }
 
-    private PTServicePrice mapServicePrice(ResultSet rs) throws SQLException {
-        PTServicePrice price = new PTServicePrice();
+    /**
+     * Inserts an official Personal Trainer profile after the user account has
+     * already been created.
+     *
+     * @param trainer trainer profile data
+     * @return true if insert succeeds, otherwise false
+     */
+    public boolean insertPersonalTrainer(PersonalTrainer trainer) {
+        String sql = """
+            INSERT INTO PersonalTrainers (
+                UserID,
+                FullName,
+                DisplayName,
+                Specialization,
+                CareerStartDate,
+                CertificateFileName,
+                CertificateFilePath,
+                Description,
+                AvatarPath,
+                Status,
+                CreatedBy,
+                CreatedDate,
+                IsDeleted
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), 0)
+        """;
 
-        price.setPtServicePriceId(rs.getInt("PTServicePriceID"));
-        price.setPtId(rs.getInt("PTID"));
-        price.setPtPackageTypeId(rs.getInt("PTPackageTypeID"));
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, trainer.getUserId());
+            ps.setString(2, trainer.getFullName());
+            ps.setString(3, trainer.getDisplayName());
+            ps.setString(4, trainer.getSpecialization());
 
-        price.setPackageName(rs.getString("PackageName"));
-        price.setPackageDescription(rs.getString("PackageDescription"));
+            if (trainer.getCareerStartDate() != null) {
+                ps.setDate(5, Date.valueOf(trainer.getCareerStartDate()));
+            } else {
+                if (trainer.getCareerStartDate() != null) {
+                    ps.setDate(5, Date.valueOf(trainer.getCareerStartDate()));
+                } else {
+                    ps.setNull(5, Types.DATE);
+                }
+            }
 
-        int durationMonths = rs.getInt("DurationMonths");
-        price.setDurationMonths(rs.wasNull() ? null : durationMonths);
+            ps.setString(6, trainer.getCertificateFileName());
+            ps.setString(7, trainer.getCertificateFilePath());
+            ps.setString(8, trainer.getDescription());
+            ps.setString(9, trainer.getAvatarPath());
+            String status = trainer.getStatus();
+            if (status == null || status.trim().isEmpty()) {
+                status = "Active";
+            }
+            ps.setString(10, status);
+            ps.setString(11, trainer.getCreatedBy());
 
-        int numberOfSessions = rs.getInt("NumberOfSessions");
-        price.setNumberOfSessions(rs.wasNull() ? null : numberOfSessions);
+            return ps.executeUpdate() > 0;
 
-        price.setPrice(rs.getBigDecimal("Price"));
-        price.setStatus(rs.getString("PriceStatus"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-        return price;
+        return false;
+    }
+
+    /**
+     * Updates verified and public trainer information by Staff/Admin.
+     *
+     * @param trainer updated trainer information
+     * @return true if update succeeds, otherwise false
+     */
+    public boolean updatePersonalTrainer(PersonalTrainer trainer) {
+        String sql = """
+            UPDATE PersonalTrainers
+            SET FullName = ?,
+                DisplayName = ?,
+                Specialization = ?,
+                CareerStartDate = ?,
+                CertificateFileName = ?,
+                CertificateFilePath = ?,
+                Description = ?,
+                AvatarPath = ?,
+                Status = ?,
+                UpdatedBy = ?,
+                UpdatedDate = GETDATE()
+            WHERE PTID = ?
+              AND IsDeleted = 0
+        """;
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, trainer.getFullName());
+            ps.setString(2, trainer.getDisplayName());
+            ps.setString(3, trainer.getSpecialization());
+
+            if (trainer.getCareerStartDate() != null) {
+                ps.setDate(4, Date.valueOf(trainer.getCareerStartDate()));
+            } else {
+                ps.setNull(4, Types.DATE);
+            }
+
+            ps.setString(5, trainer.getCertificateFileName());
+            ps.setString(6, trainer.getCertificateFilePath());
+            ps.setString(7, trainer.getDescription());
+            ps.setString(8, trainer.getAvatarPath());
+
+            String status = trainer.getStatus();
+            if (status == null || status.trim().isEmpty()) {
+                status = "Active";
+            }
+            ps.setString(9, status);
+
+            ps.setString(10, trainer.getUpdatedBy());
+            ps.setInt(11, trainer.getPtId());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    /**
+     * Updates only trainer working status.
+     *
+     * @param ptId Personal Trainer ID
+     * @param status Active or Inactive
+     * @param updatedBy user who performs the update
+     * @return true if update succeeds, otherwise false
+     */
+    public boolean updateTrainerStatus(int ptId, String status, String updatedBy) {
+        String sql = """
+            UPDATE PersonalTrainers
+            SET Status = ?,
+                UpdatedBy = ?,
+                UpdatedDate = GETDATE()
+            WHERE PTID = ?
+              AND IsDeleted = 0
+        """;
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status);
+            ps.setString(2, updatedBy);
+            ps.setInt(3, ptId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    /**
+     * Soft deletes a Personal Trainer profile.
+     *
+     * @param ptId Personal Trainer ID
+     * @param updatedBy user who performs the delete action
+     * @return true if delete succeeds, otherwise false
+     */
+    public boolean softDeletePersonalTrainer(int ptId, String updatedBy) {
+        String sql = """
+            UPDATE PersonalTrainers
+            SET IsDeleted = 1,
+                UpdatedBy = ?,
+                UpdatedDate = GETDATE()
+            WHERE PTID = ?
+        """;
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, updatedBy);
+            ps.setInt(2, ptId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }
