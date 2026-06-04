@@ -9,10 +9,12 @@
 <%@ page import="model.PTServicePrice" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
+<%@ page import="java.util.List" %>
 
 <%
     String error = (String) request.getAttribute("error");
     PersonalTrainer trainer = (PersonalTrainer) request.getAttribute("trainer");
+    List<PTServicePrice> servicePrices = (List<PTServicePrice>) request.getAttribute("servicePrices");
     NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
 %>
 
@@ -30,11 +32,11 @@
         <a href="${pageContext.request.contextPath}/pt/list">Quay lại danh sách PT</a>
         <% } else if (trainer != null) { %>
 
-        <h3><%= trainer.getDisplayName() %></h3>
+        <h3><%= trainer.getPublicName() %></h3>
 
         <p>
             <strong>Email:</strong>
-            <%= trainer.getEmail() %>
+            <%= trainer.getEmail()!=null ? trainer.getEmail() : "Chưa cập nhật" %>
         </p>
 
         <p>
@@ -44,12 +46,12 @@
 
         <p>
             <strong>Chuyên môn:</strong>
-            <%= trainer.getSpecialization() %>
+            <%= trainer.getSpecialization() != null ? trainer.getSpecialization() : "Chưa cập nhật" %>
         </p>
 
         <p>
             <strong>Số năm kinh nghiệm:</strong>
-            <% if (trainer.getExperienceYears() != null) { %>
+            <% if (trainer.getCareerStartDate() != null) { %>
             <%= trainer.getExperienceYears() %> năm
             <% } else { %>
             Chưa cập nhật
@@ -65,7 +67,7 @@
 
         <h3>Gói dịch vụ PT</h3>
 
-        <% if (trainer.getServicePrices() == null || trainer.getServicePrices().isEmpty()) { %>
+        <% if (servicePrices == null || servicePrices.isEmpty()) { %>
         <p>PT này hiện chưa có gói dịch vụ nào.</p>
         <% } else { %>
         <table border="1" cellpadding="8" cellspacing="0">
@@ -80,7 +82,7 @@
             </thead>
 
             <tbody>
-                <% for (PTServicePrice price : trainer.getServicePrices()) { %>
+                <% for (PTServicePrice price : servicePrices) { %>
                 <tr>
                     <td><%= price.getPackageName() %></td>
 
@@ -101,7 +103,11 @@
                     </td>
 
                     <td>
+                        <% if (price.getPrice() != null) { %>
                         <%= currencyFormat.format(price.getPrice()) %> VNĐ
+                        <% } else { %>
+                        Chưa cập nhật
+                        <% } %>
                     </td>
 
                     <td>

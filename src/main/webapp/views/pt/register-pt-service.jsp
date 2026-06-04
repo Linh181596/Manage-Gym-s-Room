@@ -8,6 +8,7 @@
 <%@ page import="model.PTServicePrice" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.util.Locale" %>
+<%@ page import="java.time.LocalDate" %>
 
 <%
     String error = (String) request.getAttribute("error");
@@ -34,7 +35,11 @@
         <% } else { %>
 
         <h3>Thông tin gói PT</h3>
-
+        <p>
+            <strong>Tên PT:</strong>
+            <%= servicePrice.getTrainerName() %>
+        </p>
+        
         <p>
             <strong>Tên gói:</strong>
             <%= servicePrice.getPackageName() %>
@@ -43,9 +48,6 @@
         <p>
             <strong>Thời hạn:</strong>
             <%= servicePrice.getDurationMonths() %> tháng
-            <% if (servicePrice.getDurationMonths() != null) { %>
-            (~<%= servicePrice.getDurationMonths() * 30 %> ngày)
-            <% } %>
         </p>
 
         <p>
@@ -63,7 +65,7 @@
 
             <div>
                 <label>Ngày bắt đầu mong muốn *</label><br>
-                <input type="date" name="preferredStartDate" required>
+                <input type="date" name="preferredStartDate" min="<%= LocalDate.now() %>"required>
             </div>
 
             <br>
