@@ -61,9 +61,18 @@
                             <select class="form-select" name="equipmentId" required>
                                 <option value="">Chọn thiết bị</option>
                                 <c:forEach var="eq" items="${equipments}">
-                                    <option value="${eq.equipmentId}" ${eq.equipmentId == issue.equipmentId ? 'selected' : ''}>
-                                        [#${eq.equipmentCode}] ${eq.equipmentName}
-                                    </option>
+                                    <c:choose>
+                                        <c:when test="${eq.equipmentId == issue.equipmentId}">
+                                            <option value="${eq.equipmentId}" selected>
+                                                [#${eq.equipmentCode}] ${eq.equipmentName}
+                                            </option>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <option value="${eq.equipmentId}">
+                                                [#${eq.equipmentCode}] ${eq.equipmentName}
+                                            </option>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </c:forEach>
                             </select>
                         </c:otherwise>
