@@ -16,6 +16,7 @@ public class PTServicePrice {
     private int ptId;
     private int ptPackageTypeId;
 
+    private String trainerName;
     private String packageName;
     private String packageDescription;
     private Integer durationMonths;
@@ -25,6 +26,51 @@ public class PTServicePrice {
     private String status;
 
     public PTServicePrice() {
+    }
+
+    /**
+     * Constructor used when creating or updating a PT service price.
+     *
+     * @param ptId ID of the Personal Trainer
+     * @param ptPackageTypeId ID of the PT package type
+     * @param price configured service price
+     * @param status current price status, such as Active or Inactive
+     */
+    public PTServicePrice(int ptId, int ptPackageTypeId, BigDecimal price, String status) {
+        this.ptId = ptId;
+        this.ptPackageTypeId = ptPackageTypeId;
+        this.price = price;
+        this.status = status;
+    }
+
+    /**
+     * Full constructor used when loading PT service price data from database.
+     *
+     * @param ptServicePriceId unique ID of the PT service price record
+     * @param ptId ID of the Personal Trainer
+     * @param ptPackageTypeId ID of the PT package type
+     * @param trainerName display name of the Personal Trainer
+     * @param packageName name of the PT package type
+     * @param packageDescription description of the PT package type
+     * @param durationMonths package duration in months
+     * @param numberOfSessions number of sessions included in the package
+     * @param price configured service price
+     * @param status current price status
+     */
+    public PTServicePrice(int ptServicePriceId, int ptId, int ptPackageTypeId,
+            String trainerName, String packageName, String packageDescription,
+            Integer durationMonths, Integer numberOfSessions,
+            BigDecimal price, String status) {
+        this.ptServicePriceId = ptServicePriceId;
+        this.ptId = ptId;
+        this.ptPackageTypeId = ptPackageTypeId;
+        this.trainerName = trainerName;
+        this.packageName = packageName;
+        this.packageDescription = packageDescription;
+        this.durationMonths = durationMonths;
+        this.numberOfSessions = numberOfSessions;
+        this.price = price;
+        this.status = status;
     }
 
     public int getPtServicePriceId() {
@@ -49,6 +95,14 @@ public class PTServicePrice {
 
     public void setPtPackageTypeId(int ptPackageTypeId) {
         this.ptPackageTypeId = ptPackageTypeId;
+    }
+
+    public String getTrainerName() {
+        return trainerName;
+    }
+
+    public void setTrainerName(String trainerName) {
+        this.trainerName = trainerName;
     }
 
     public String getPackageName() {
@@ -97,5 +151,9 @@ public class PTServicePrice {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean isActive() {
+        return "Active".equalsIgnoreCase(status);
     }
 }
