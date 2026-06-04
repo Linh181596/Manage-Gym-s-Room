@@ -40,12 +40,16 @@ public class AuthenticationFilter extends HttpFilter {
         
         if (relativePath.startsWith("/admin/") && role == User.Role.Admin) {
             authorized = true;
-        } else if (relativePath.startsWith("/staff/") && role == User.Role.Staff) {
+        } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {
             authorized = true;
         } else if (relativePath.startsWith("/member/") && role == User.Role.Member) {
             authorized = true;
-        } else if (relativePath.startsWith("/pt/") && role == User.Role.PT) {
-            authorized = true;
+        } else if (relativePath.startsWith("/pt/")) {
+            if (relativePath.startsWith("/pt/list") || relativePath.startsWith("/pt/detail")) {
+                authorized = true;
+            } else if (role == User.Role.PT) {
+                authorized = true;
+            }
         }
         
         if (authorized) {
