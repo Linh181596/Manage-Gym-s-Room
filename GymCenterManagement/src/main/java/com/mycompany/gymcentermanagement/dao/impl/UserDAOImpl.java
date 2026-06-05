@@ -177,12 +177,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 
                 if (roleId > 0) {
                     // 3. Insert UserRole
-                    String sqlUserRole = "INSERT INTO UserRoles (UserID, RoleID, CreatedBy, CreatedDate, IsDeleted) VALUES (?, ?, ?, ?, 0)";
+                    String sqlUserRole = "INSERT INTO UserRoles (UserID, RoleID) VALUES (?, ?)";
                     stmtUserRole = conn.prepareStatement(sqlUserRole);
                     stmtUserRole.setInt(1, user.getUserId());
                     stmtUserRole.setInt(2, roleId);
-                    stmtUserRole.setString(3, user.getCreatedBy());
-                    stmtUserRole.setTimestamp(4, user.getCreatedDate() != null ? Timestamp.valueOf(user.getCreatedDate()) : new Timestamp(System.currentTimeMillis()));
                     
                     int rowsRole = stmtUserRole.executeUpdate();
                     success = (rowsRole > 0);
@@ -254,12 +252,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 
                 if (roleId > 0) {
                     // 3. Update UserRole
-                    String sqlUserRole = "UPDATE UserRoles SET RoleID = ?, UpdatedBy = ?, UpdatedDate = ? WHERE UserID = ?";
+                    String sqlUserRole = "UPDATE UserRoles SET RoleID = ? WHERE UserID = ?";
                     stmtUserRole = conn.prepareStatement(sqlUserRole);
                     stmtUserRole.setInt(1, roleId);
-                    stmtUserRole.setString(2, user.getUpdatedBy());
-                    stmtUserRole.setTimestamp(3, user.getUpdatedDate() != null ? Timestamp.valueOf(user.getUpdatedDate()) : new Timestamp(System.currentTimeMillis()));
-                    stmtUserRole.setInt(4, user.getUserId());
+                    stmtUserRole.setInt(2, user.getUserId());
                     stmtUserRole.executeUpdate();
                 }
                 success = true;
@@ -305,7 +301,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             int rowsUser = stmtUser.executeUpdate();
             
             if (rowsUser > 0) {
-                String sqlUserRole = "UPDATE UserRoles SET IsDeleted = 1 WHERE UserID = ?";
+                String sqlUserRole = "DELETE FROM UserRoles WHERE UserID = ?";
                 stmtUserRole = conn.prepareStatement(sqlUserRole);
                 stmtUserRole.setInt(1, userId);
                 stmtUserRole.executeUpdate();

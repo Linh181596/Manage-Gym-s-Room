@@ -58,7 +58,7 @@ public class LoginController extends HttpServlet {
         } else if ("staff@gym.com".equalsIgnoreCase(email.trim()) && "staff123".equals(password)) {
             authenticatedUser = new User(2, "staff@gym.com", "", "Demo Staff", "0987654321", User.Role.Staff, User.AccountStatus.Active);
         } else if ("member@gym.com".equalsIgnoreCase(email.trim()) && "member123".equals(password)) {
-            authenticatedUser = new User(3, "member@gym.com", "", "Demo Member", "0987654321", User.Role.Member, User.AccountStatus.Active);
+            authenticatedUser = new User(4, "member@gym.com", "", "Demo Member", "0987654321", User.Role.Member, User.AccountStatus.Active);
         } else {
             authenticatedUser = userService.login(email.trim(), password);
         }

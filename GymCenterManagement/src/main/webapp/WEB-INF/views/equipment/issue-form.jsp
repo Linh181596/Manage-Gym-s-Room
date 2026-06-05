@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
+
 <%--
   =========================================================================
   Document    : issue-form.jsp
@@ -69,16 +70,16 @@
                         <c:otherwise>
                             <select class="form-select" name="equipmentId" required>
                                 <option value="">Chọn thiết bị</option>
-                                <c:forEach var="eq" items="${equipments}">
+                                <c:forEach var="equip" items="${equipments}">
                                     <c:choose>
-                                        <c:when test="${eq.equipmentId == issue.equipmentId}">
-                                            <option value="${eq.equipmentId}" selected>
-                                                [#${eq.equipmentCode}] ${eq.equipmentName}
+                                        <c:when test="${equip.equipmentId == issue.equipmentId}">
+                                            <option value="${equip.equipmentId}" selected>
+                                                [#${equip.equipmentCode}] ${equip.equipmentName}
                                             </option>
                                         </c:when>
                                         <c:otherwise>
-                                            <option value="${eq.equipmentId}">
-                                                [#${eq.equipmentCode}] ${eq.equipmentName}
+                                            <option value="${equip.equipmentId}">
+                                                [#${equip.equipmentCode}] ${equip.equipmentName}
                                             </option>
                                         </c:otherwise>
                                     </c:choose>
