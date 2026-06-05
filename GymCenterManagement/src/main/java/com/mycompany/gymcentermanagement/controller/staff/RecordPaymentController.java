@@ -83,7 +83,8 @@ public class RecordPaymentController extends HttpServlet {
             
             if (success) {
                 // Redirect back to detail view which now shows "Paid" status and print receipt button
-                response.sendRedirect(request.getContextPath() + "/staff/record-payment?invoiceId=" + invoiceId + "&successMsg=Ghi+nhận+thanh+toán+thành+công");
+                String successMsg = java.net.URLEncoder.encode("Ghi nhận thanh toán thành công", java.nio.charset.StandardCharsets.UTF_8);
+                response.sendRedirect(request.getContextPath() + "/staff/record-payment?invoiceId=" + invoiceId + "&successMsg=" + successMsg);
             } else {
                 request.setAttribute("errorMessage", "Ghi nhận thanh toán thất bại.");
                 Invoice inv = invoiceService.getInvoiceById(invoiceId);
