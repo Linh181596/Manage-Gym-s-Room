@@ -20,6 +20,8 @@ public class Member {
     private int userId;
     private String gender;
     private LocalDate dateOfBirth;
+    private String address;
+    private String membershipStatus;
     
     // Mapped User fields (obtained via JOIN)
     private User userDetails;
@@ -34,11 +36,13 @@ public class Member {
     public Member() {
     }
 
-    public Member(int memberId, int userId, String gender, LocalDate dateOfBirth) {
+    public Member(int memberId, int userId, String gender, LocalDate dateOfBirth, String address, String membershipStatus) {
         this.memberId = memberId;
         this.userId = userId;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
+        this.address = address;
+        this.membershipStatus = membershipStatus;
     }
 
     public int getMemberId() {
@@ -121,6 +125,22 @@ public class Member {
         isDeleted = deleted;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getMembershipStatus() {
+        return membershipStatus;
+    }
+
+    public void setMembershipStatus(String membershipStatus) {
+        this.membershipStatus = membershipStatus;
+    }
+
     @Override
     public String toString() {
         return "Member{" +
@@ -128,6 +148,8 @@ public class Member {
                 ", userId=" + userId +
                 ", gender='" + gender + '\'' +
                 ", dateOfBirth=" + dateOfBirth +
+                ", address='" + address + '\'' +
+                ", membershipStatus='" + membershipStatus + '\'' +
                 '}';
     }
 }

@@ -1,6 +1,8 @@
 package com.mycompany.gymcentermanagement.dao;
 
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.model.entity.Member;
+import com.mycompany.gymcentermanagement.model.entity.UserToken;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -61,4 +63,20 @@ public interface UserDAO {
      * @throws SQLException if a database error occurs.
      */
     List<User> findAllActive() throws SQLException;
+
+    // --- New Auth & Verification Methods ---
+    
+    boolean checkEmailExists(String email) throws SQLException;
+    
+    boolean registerMember(User user, Member member, UserToken token) throws SQLException;
+    
+    String verifyAccountAndGetEmail(String tokenValue) throws SQLException;
+    
+    boolean saveRememberMeToken(UserToken token) throws SQLException;
+    
+    User getUserByRememberMeToken(String tokenValue) throws SQLException;
+    
+    boolean deleteRememberMeToken(String tokenValue) throws SQLException;
+    
+    boolean updatePassword(int userId, String newPasswordHash, boolean mustChangePassword) throws SQLException;
 }

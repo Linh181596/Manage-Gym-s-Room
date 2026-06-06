@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -10,89 +10,98 @@
     <meta content="" name="keywords">
     <meta content="" name="description">
 
-    <link href="img/favicon.ico" rel="icon">
+    <!-- Favicon -->
+    <link href="${pageContext.request.contextPath}/img/favicon.ico" rel="icon">
 
+    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-    <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+    <!-- Libraries Stylesheet -->
+    <link href="${pageContext.request.contextPath}/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
 
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="${pageContext.request.contextPath}/css/bootstrap.min.css" rel="stylesheet">
 
-    <link href="css/style.css" rel="stylesheet">
+    <!-- Template Stylesheet -->
+    <link href="${pageContext.request.contextPath}/css/style.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="container-fluid position-relative bg-white d-flex p-0">
+        <!-- Spinner Start -->
         <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
             <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
                 <span class="sr-only">Đang tải...</span>
             </div>
         </div>
+        <!-- Spinner End -->
+
         <div class="container-fluid">
             <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh;">
                 <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-                    <div class="bg-light rounded p-4 p-sm-5 my-4 mx-3" style="box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;">
+                    <div class="bg-light rounded p-4 p-sm-5 my-4 mx-3 shadow">
                         <div class="d-flex align-items-center justify-content-between mb-4">
-                            <a href="index.jsp" class="text-decoration-none">
-                                <h3 class="text-primary m-0"><i class="fa fa-hashtag me-2"></i>GCMS</h3>
+                            <a href="${pageContext.request.contextPath}/" class="text-decoration-none">
+                                <h3 class="text-primary m-0"><i class="fa fa-dumbbell me-2"></i>GCMS</h3>
                             </a>
                             <h3 class="m-0">Đăng Ký</h3>
                         </div>
 
-                        <c:if test="${not empty message}">
+                        <c:if test="${not empty requestScope.message}">
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fa fa-check-circle me-2"></i>${message}
+                                <i class="fa fa-check-circle me-2"></i>${requestScope.message}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </c:if>
 
-                        <c:if test="${not empty error}">
+                        <c:if test="${not empty requestScope.error}">
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fa fa-exclamation-circle me-2"></i>${error}
+                                <i class="fa fa-exclamation-circle me-2"></i>${requestScope.error}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </c:if>
 
-                        <form id="registerForm" action="register" method="POST">
+                        <form id="registerForm" action="${pageContext.request.contextPath}/register" method="POST">
                             
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="floatingFullName" name="displayName" value="${oldDisplayName}" placeholder="Nguyễn Văn A" maxlength="100" required>
+                                <input type="text" class="form-control" id="floatingFullName" name="displayName" value="${requestScope.oldDisplayName}" placeholder="Nguyễn Văn A" maxlength="100" required>
                                 <label for="floatingFullName">Họ và tên <span class="text-danger">*</span></label>
                             </div>
 
                             <div class="form-floating mb-3">
-                                <input type="email" class="form-control" id="floatingEmail" name="email" value="${oldEmail}" placeholder="name@example.com" maxlength="100" required>
+                                <input type="email" class="form-control" id="floatingEmail" name="email" value="${requestScope.oldEmail}" placeholder="name@example.com" maxlength="100" required>
                                 <label for="floatingEmail">Địa chỉ Email <span class="text-danger">*</span></label>
                             </div>
 
                             <div class="form-floating mb-3">
-                                <input type="tel" class="form-control" id="floatingPhone" name="phone" value="${oldPhone}" placeholder="0912345678" pattern="[0-9]{10,15}" title="Vui lòng nhập từ 10 đến 15 chữ số" required>
+                                <input type="tel" class="form-control" id="floatingPhone" name="phone" value="${requestScope.oldPhone}" placeholder="0912345678" pattern="[0-9]{10}" title="Vui lòng nhập đúng 10 số điện thoại" required>
                                 <label for="floatingPhone">Số điện thoại <span class="text-danger">*</span></label>
                             </div>
 
                             <div class="form-floating mb-3">
                                 <select class="form-select" id="floatingGender" name="gender" aria-label="Giới tính">
-                                    <option value="" ${empty oldGender ? 'selected' : ''}>Chọn giới tính (Không bắt buộc)</option>
-                                    <option value="Nam" ${oldGender == 'Nam' ? 'selected' : ''}>Nam</option>
-                                    <option value="Nữ" ${oldGender == 'Nữ' ? 'selected' : ''}>Nữ</option>
-                                    <option value="Khác" ${oldGender == 'Khác' ? 'selected' : ''}>Khác</option>
+                                    <option value="" ${empty requestScope.oldGender ? 'selected' : ''}>Chọn giới tính (Không bắt buộc)</option>
+                                    <option value="Nam" ${requestScope.oldGender == 'Nam' ? 'selected' : ''}>Nam</option>
+                                    <option value="Nữ" ${requestScope.oldGender == 'Nữ' ? 'selected' : ''}>Nữ</option>
+                                    <option value="Khác" ${requestScope.oldGender == 'Khác' ? 'selected' : ''}>Khác</option>
                                 </select>
                                 <label for="floatingGender">Giới tính</label>
                             </div>
 
                             <div class="form-floating mb-3">
-                                <input type="date" class="form-control" id="floatingDoB" name="dateOfBirth" value="${oldDob}" placeholder="Ngày sinh">
+                                <input type="date" class="form-control" id="floatingDoB" name="dateOfBirth" value="${requestScope.oldDob}" placeholder="Ngày sinh">
                                 <label for="floatingDoB">Ngày sinh</label>
                             </div>
 
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="floatingAddress" name="address" value="${oldAddress}" placeholder="Địa chỉ cụ thể">
+                                <input type="text" class="form-control" id="floatingAddress" name="address" value="${requestScope.oldAddress}" placeholder="Địa chỉ cụ thể">
                                 <label for="floatingAddress">Địa chỉ (Không bắt buộc)</label>
                             </div>
 
@@ -117,37 +126,39 @@
                                     <button type="submit" class="btn btn-primary py-3 w-100 fw-bold">Đăng ký</button>
                                 </div>
                                 <div class="col-6">
-                                    <a href="login.jsp" class="btn btn-outline-secondary py-3 w-100 fw-bold">Hủy</a>
+                                    <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-secondary py-3 w-100 fw-bold">Hủy</a>
                                 </div>
                             </div>
                         </form>
                         
-                        <p class="text-center mb-0">Đã có tài khoản? <a href="login.jsp">Đăng nhập</a></p>
+                        <p class="text-center mb-0">Đã có tài khoản? <a href="${pageContext.request.contextPath}/login">Đăng nhập</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/chart/chart.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="lib/tempusdominus/js/moment.min.js"></script>
-    <script src="lib/tempusdominus/js/moment-timezone.min.js"></script>
-    <script src="lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="${pageContext.request.contextPath}/lib/chart/chart.min.js"></script>
+    <script src="${pageContext.request.contextPath}/lib/easing/easing.min.js"></script>
+    <script src="${pageContext.request.contextPath}/lib/waypoints/waypoints.min.js"></script>
+    <script src="${pageContext.request.contextPath}/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="${pageContext.request.contextPath}/lib/tempusdominus/js/moment.min.js"></script>
+    <script src="${pageContext.request.contextPath}/lib/tempusdominus/js/moment-timezone.min.js"></script>
+    <script src="${pageContext.request.contextPath}/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
-    <script src="js/main.js"></script>
+    <!-- Template Javascript -->
+    <script src="${pageContext.request.contextPath}/js/main.js"></script>
 
     <script>
         $(document).ready(function() {
-            // Chặn không cho chọn ngày sinh ở tương lai
+            // Block choosing future dates for Date of Birth
             const today = new Date().toISOString().split("T")[0];
             $('#floatingDoB').attr('max', today);
 
-            // Xử lý bật/tắt ẩn hiện mật khẩu cốt lõi
+            // Toggle password visibility
             $('#togglePassword').click(function() {
                 const input = $('#floatingPassword');
                 const icon = $(this).find('i');
@@ -160,7 +171,7 @@
                 }
             });
 
-            // Xử lý bật/tắt ẩn hiện mật khẩu xác nhận
+            // Toggle confirm password visibility
             $('#toggleConfirmPassword').click(function() {
                 const input = $('#floatingConfirmPassword');
                 const icon = $(this).find('i');
@@ -173,13 +184,13 @@
                 }
             });
 
-            // Kiểm tra khớp mật khẩu nhanh bằng Javascript ở phía Client trước khi gửi tới Servlet
+            // Client-side validation
             $('#registerForm').on('submit', function(e) {
                 const password = $('#floatingPassword').val();
                 const confirmPassword = $('#floatingConfirmPassword').val();
 
                 if (password !== confirmPassword) {
-                    e.preventDefault(); // Chặn hành động gửi form nếu mật khẩu lệch nhau
+                    e.preventDefault();
                     alert("Mật khẩu và Xác nhận mật khẩu không trùng khớp. Vui lòng kiểm tra lại!");
                     $('#floatingConfirmPassword').focus();
                 }

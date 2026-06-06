@@ -1,44 +1,34 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.gcms.util;
+package com.mycompany.gymcentermanagement.utils;
 
 import java.util.Properties;
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
-/*
- * Project: Gym Center Management System (GCMS)
- * Course: SWP391 - Software Development Project
- * File: EmailUtil.java
- * Description: Lớp hỗ trợ gửi email tự động thông qua giao thức SMTP (JavaMail API).
- * Chuyên trách tạo dựng phom thư và gửi liên kết chứa mã Token bảo mật kích hoạt
- * tài khoản cho Hội viên mới đăng ký hệ thống (UC-02).
- * Author: duongnd - he187234
- * Created Date: 05/06/2026
- * Version: 1.0
- *
- * History:
- * Date          Author          Version        Description
- * -------------------------------------------------------------------------
- * 05/06/2026    duongnd         1.0            Cấu hình giao thức SMTP và viết hàm gửi email kích hoạt.
+/**
+ * Utility class to send emails via SMTP using Jakarta Mail API.
  */
-public class EmailUtil {
+public class EmailUtils {
     private static final String SMTP_USER = "ee978934f03c4f"; 
     private static final String SMTP_PASSWORD = "0da162ae9533cb";
 
+    /**
+     * Sends a verification email containing the activation link/code to the user.
+     * 
+     * @param toEmail The recipient's email address.
+     * @param token   The verification token value.
+     * @return true if sent successfully, false otherwise.
+     */
     public static boolean sendVerificationEmail(String toEmail, String token) {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.host", "sandbox.smtp.mailtrap.io");
-        props.put("mail.smtp.port", "2525"); // hoặc 587
+        props.put("mail.smtp.port", "2525");
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
@@ -53,13 +43,13 @@ public class EmailUtil {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Vui long xac thuc tai khoan GCMS cua ban");
 
-            // Đổi URL localhost nếu port server của bạn khác 8080
-            String verifyLink = "http://localhost:8080/gcms/verify?token=" + token;
+            // Build the verification link. Adjust base path dynamically if possible, or use standard relative mapping.
+            String verifyLink = "http://localhost:8080/GymCenterManagement/verify?token=" + token;
             String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
                     + "<h2 style='color: #007bff;'>Chào mừng bạn đến với Gym Center Management System</h2>"
                     + "<p>Vui lòng click vào nút bên dưới để kích hoạt tài khoản của bạn:</p>"
                     + "<a href='" + verifyLink + "' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;'>Kích hoạt tài khoản</a>"
-                    + "<p style='margin-top: 20px; font-size: 12px; color: #777;'>*Link này sẽ hết hạn trong vòng 15 phút.</p>"
+                    + "<p style='margin-top: 20px; font-size: 12px; color: #777;'>*Link này sẽ hết hạn trong vòng 24 giờ.</p>"
                     + "</div>";
 
             message.setContent(htmlContent, "text/html; charset=utf-8");

@@ -22,6 +22,7 @@ public class User {
     private String phoneNumber;
     private Role role;
     private AccountStatus accountStatus;
+    private boolean mustChangePassword;
     
     // Audit Metadata
     private String createdBy;
@@ -140,6 +141,14 @@ public class User {
         isDeleted = deleted;
     }
 
+    public boolean isMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -148,6 +157,7 @@ public class User {
                 ", fullName='" + fullName + '\'' +
                 ", role=" + role +
                 ", accountStatus=" + accountStatus +
+                ", mustChangePassword=" + mustChangePassword +
                 '}';
     }
 }
