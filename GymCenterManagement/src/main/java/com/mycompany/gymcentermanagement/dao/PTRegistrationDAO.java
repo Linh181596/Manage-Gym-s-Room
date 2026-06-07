@@ -140,31 +140,35 @@ public class PTRegistrationDAO {
         List<PTServicePrice> prices = new ArrayList<>();
 
         String sql = """
-        SELECT
-            sp.PTServicePriceID,
-            sp.PTID,
-            sp.PTPackageTypeID,
-            sp.Price,
-            sp.Status AS PriceStatus,
-            COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
-            pkg.PackageName,
-            pkg.Description AS PackageDescription,
-            pkg.DurationMonths,
-            pkg.NumberOfSessions
-        FROM PTServicePrices sp
-        INNER JOIN PTPackageTypes pkg
-            ON sp.PTPackageTypeID = pkg.PTPackageTypeID
-        INNER JOIN PersonalTrainers pt
-            ON sp.PTID = pt.PTID
-        WHERE sp.PTID = ?
-          AND sp.Status = 'Active'
-          AND sp.IsDeleted = 0
-          AND pkg.Status = 'Active'
-          AND pkg.IsDeleted = 0
-          AND pt.Status = 'Active'
-          AND pt.IsDeleted = 0
-        ORDER BY pkg.DurationMonths
-    """;
+                    SELECT
+                        sp.PTServicePriceID,
+                        sp.PTID,
+                        sp.PTPackageTypeID,
+                        sp.Price,
+                        sp.Status AS PriceStatus,
+                        COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
+                        pkg.PackageName,
+                        pkg.Description AS PackageDescription,
+                        pkg.DurationMonths,
+                        pkg.NumberOfSessions
+                    FROM PTServicePrices sp
+                    INNER JOIN PTPackageTypes pkg
+                        ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    INNER JOIN PersonalTrainers pt
+                        ON sp.PTID = pt.PTID
+                    INNER JOIN Users u
+                        ON pt.UserID = u.UserID
+                    WHERE sp.PTID = ?
+                      AND sp.Status = 'Active'
+                      AND sp.IsDeleted = 0
+                      AND pkg.Status = 'Active'
+                      AND pkg.IsDeleted = 0
+                      AND pt.Status = 'Active'
+                      AND pt.IsDeleted = 0
+                    AND u.Status = 'Active'
+                    AND u.IsDeleted = 0
+                    ORDER BY pkg.DurationMonths
+                """;
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 

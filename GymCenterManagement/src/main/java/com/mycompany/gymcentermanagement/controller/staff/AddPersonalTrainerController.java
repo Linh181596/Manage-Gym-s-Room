@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : AddPersonalTrainerController.java
  * @description   : Controller xử lý thêm mới hồ sơ và tài khoản của HLV cá nhân.
- * @author        : Phạm Ngọc Duy (phund)
+ * @author        : Nguyễn Đình Phú (phund)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * @last_modified : 2026-06-04 bởi Nguyễn Đình Phú
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;
@@ -162,6 +162,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         newUser.setPhoneNumber(phone);
         newUser.setRole(User.Role.PT);
         newUser.setAccountStatus(User.AccountStatus.Active);
+        newUser.setMustChangePassword(true);
         newUser.setCreatedBy(createdBy);
 
         try {
@@ -197,7 +198,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         }
 
         request.setAttribute("fullName", fullName);
-        request.setAttribute("displayName", displayName);
+        request.setAttribute("displayName", publicDisplayName);
         request.setAttribute("email", email);
         request.setAttribute("phone", phone);
         request.setAttribute("temporaryPassword", temporaryPassword);

@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : PTDetailController.java
  * @description   : Controller xử lý yêu cầu xem chi tiết thông tin và bảng giá dịch vụ của PT.
- * @author        : Phạm Ngọc Duy (phund)
+ * @author        : Nguyễn Đình Phú (phund)
  * @created       : 2026-06-02
- * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * @last_modified : 2026-06-04 bởi Nguyễn Đình Phú
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.member;
@@ -50,7 +50,9 @@ public class PTDetailController extends HttpServlet {
 
         PersonalTrainer trainer = trainerDAO.findById(ptId);
 
-        if (trainer == null || !trainer.isActive()) {
+        if (trainer == null
+                || !trainer.isActive()
+                || !"Active".equalsIgnoreCase(trainer.getAccountStatus())) {
             request.setAttribute("error", "Không tìm thấy thông tin PT hoặc PT hiện không hoạt động.");
             request.getRequestDispatcher("/WEB-INF/views/pt/pt-detail.jsp").forward(request, response);
             return;

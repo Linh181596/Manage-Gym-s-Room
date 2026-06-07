@@ -7,7 +7,7 @@
   =========================================================================
   Document    : pt-list.jsp
   Created on  : 2026-06-04
-  Author      : Phạm Ngọc Duy (phund)
+  Author      : Nguyễn Đình Phú (phund)
   Description : Giao diện danh sách các Huấn luyện viên cá nhân (PT) cho hội viên.
   =========================================================================
 --%>
@@ -53,6 +53,16 @@
     <!-- Filter Card -->
     <div class="bg-light rounded p-4 mb-4 shadow-sm">
         <form method="get" action="${pageContext.request.contextPath}/pt/list">
+            <%-- Search by keyword for name, bio/description, email --%>
+            <div class="mb-3">
+                <label for="keyword" class="form-label">Tìm kiếm PT</label>
+                <input type="text"
+                       id="keyword"
+                       name="keyword"
+                       value="${keyword != null ? keyword : ''}"
+                       placeholder="Tìm theo tên, email, chuyên môn..."
+                       class="form-control">
+            </div>
             <div class="row align-items-end g-3">
                 <div class="col-12">
                     <label class="form-label fw-bold text-secondary mb-2"><i class="fa fa-filter me-1"></i> Lọc theo chuyên môn</label>
