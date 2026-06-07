@@ -25,6 +25,30 @@ public class AuthenticationFilter extends HttpFilter {
         User user = (session != null) ? (User) session.getAttribute("currentUser") : null;
         
         if (user == null) {
+            // Check remember me cookie
+            jakarta.servlet.http.Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (jakarta.servlet.http.Cookie cookie : cookies) {
+                    if ("remember_me_token".equals(cookie.getName())) {
+                        String tokenValue = cookie.getValue();
+                        try {
+                            com.mycompany.gymcentermanagement.dao.UserDAO userDAO = new com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl();
+                            User autoUser = userDAO.getUserByRememberMeToken(tokenValue);
+                            if (autoUser != null && autoUser.getAccountStatus() == User.AccountStatus.Active) {
+                                HttpSession newSession = request.getSession(true);
+                                newSession.setAttribute("currentUser", autoUser);
+                                user = autoUser;
+                                break;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (user == null) {
             // Not authenticated, redirect to login page
             response.sendRedirect(request.getContextPath() + "/login");
             return;
@@ -40,12 +64,16 @@ public class AuthenticationFilter extends HttpFilter {
         
         if (relativePath.startsWith("/admin/") && role == User.Role.Admin) {
             authorized = true;
-        } else if (relativePath.startsWith("/staff/") && role == User.Role.Staff) {
+        } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {
             authorized = true;
         } else if (relativePath.startsWith("/member/") && role == User.Role.Member) {
             authorized = true;
-        } else if (relativePath.startsWith("/pt/") && role == User.Role.PT) {
-            authorized = true;
+        } else if (relativePath.startsWith("/pt/")) {
+            if (relativePath.startsWith("/pt/list") || relativePath.startsWith("/pt/detail")) {
+                authorized = true;
+            } else if (role == User.Role.PT) {
+                authorized = true;
+            }
         }
         
         if (authorized) {

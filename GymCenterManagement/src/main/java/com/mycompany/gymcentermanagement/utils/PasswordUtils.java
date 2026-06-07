@@ -9,6 +9,27 @@ import java.security.NoSuchAlgorithmException;
  */
 public class PasswordUtils {
 
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
+
+    /**
+     * Generates a temporary password for a newly created account.
+     * 
+     * @param length password length
+     * @return generated temporary password
+     */
+    public static String generateTemporaryPassword(int length) {
+        if (length < 8) {
+            length = 8;
+        }
+        StringBuilder password = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int index = RANDOM.nextInt(CHARACTERS.length());
+            password.append(CHARACTERS.charAt(index));
+        }
+        return password.toString();
+    }
+
     /**
      * Hashes a plain-text password using SHA-256.
      * 

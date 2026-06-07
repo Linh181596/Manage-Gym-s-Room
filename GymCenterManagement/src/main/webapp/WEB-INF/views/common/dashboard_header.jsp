@@ -80,12 +80,18 @@
                             <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/admin/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-users me-2"></i>Quản lý người dùng</a>
                             <a href="${pageContext.request.contextPath}/admin/packages" class="nav-item nav-link ${fn:contains(reqUri, '/admin/packages') ? 'active' : ''}"><i class="fa fa-box me-2"></i>Gói tập Gym</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-dumbbell me-2"></i>Thiết bị phòng tập</a>
+                            <a href="${pageContext.request.contextPath}/staff/equipment" class="nav-item nav-link ${(fn:contains(reqUri, '/staff/equipment') && !fn:contains(reqUri, '/staff/equipment-issues')) ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Thiết bị phòng tập</a>
+                            <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/staff/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Đội ngũ HLV (PT)</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-alt me-2"></i>Lớp học & Lịch trình</a>
+                            <a href="${pageContext.request.contextPath}/admin/equipment-reports" class="nav-item nav-link ${fn:contains(reqUri, '/admin/equipment-reports') ? 'active' : ''}"><i class="fa fa-chart-bar me-2"></i>Báo cáo thiết bị</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-chart-line me-2"></i>Báo cáo thống kê</a>
                         </c:when>
                         <c:when test="${role == 'Staff'}">
                             <a href="${pageContext.request.contextPath}/staff/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/staff/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
+                            <a href="${pageContext.request.contextPath}/staff/members" class="nav-item nav-link ${fn:contains(reqUri, '/staff/members') ? 'active' : ''}"><i class="fa fa-users me-2"></i>Quản lý hội viên</a>
+                            <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/staff/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Quản lý HLV (PT)</a>
+                            <a href="${pageContext.request.contextPath}/staff/equipment" class="nav-item nav-link ${(fn:contains(reqUri, '/staff/equipment') && !fn:contains(reqUri, '/staff/equipment-issues')) ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Quản lý thiết bị</a>
+                            <a href="${pageContext.request.contextPath}/staff/equipment-issues" class="nav-item nav-link ${fn:contains(reqUri, '/staff/equipment-issues') ? 'active' : ''}"><i class="fa fa-exclamation-triangle me-2"></i>Sự cố thiết bị</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-clipboard-check me-2"></i>Điểm danh ra vào</a>
                             <a href="${pageContext.request.contextPath}/staff/register-package" class="nav-item nav-link ${fn:contains(reqUri, '/staff/register-package') ? 'active' : ''}"><i class="fa fa-user-plus me-2"></i>Đăng ký gói tập</a>
                             <a href="${pageContext.request.contextPath}/staff/record-payment" class="nav-item nav-link ${fn:contains(reqUri, '/staff/record-payment') ? 'active' : ''}"><i class="fa fa-cash-register me-2"></i>Thanh toán hóa đơn</a>
@@ -99,8 +105,10 @@
                         </c:when>
                         <c:when test="${role == 'Member'}">
                             <a href="${pageContext.request.contextPath}/member/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/member/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
+                            <a href="${pageContext.request.contextPath}/member/portal" class="nav-item nav-link ${fn:contains(reqUri, '/member/portal') ? 'active' : ''}"><i class="fa fa-user me-2"></i>Hồ sơ cá nhân</a>
+                            <a href="${pageContext.request.contextPath}/member/notifications" class="nav-item nav-link ${fn:contains(reqUri, '/member/notifications') ? 'active' : ''}"><i class="fa fa-bell me-2"></i>Hộp thư thông báo</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-plus me-2"></i>Đặt lớp tập</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-user-tie me-2"></i>Thuê HLV (PT)</a>
+                            <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/member/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Thuê HLV (PT)</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-id-card me-2"></i>Thẻ hội viên</a>
                         </c:when>
                     </c:choose>

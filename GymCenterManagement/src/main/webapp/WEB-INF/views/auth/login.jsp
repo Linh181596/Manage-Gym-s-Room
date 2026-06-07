@@ -62,9 +62,15 @@
                             </div>
                         </c:if>
 
+                        <c:if test="${not empty requestScope.successMessage}">
+                            <div class="alert alert-success" role="alert">
+                                ${requestScope.successMessage}
+                            </div>
+                        </c:if>
+
                         <form action="${pageContext.request.contextPath}/login" method="POST">
                             <div class="form-floating mb-3">
-                                <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="${param.email}">
+                                <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="${not empty requestScope.prepopulatedEmail ? requestScope.prepopulatedEmail : param.email}">
                                 <label for="email">Địa chỉ Email</label>
                             </div>
                             <div class="form-floating mb-4">
@@ -73,7 +79,7 @@
                             </div>
                             <div class="d-flex align-items-center justify-content-between mb-4">
                                 <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                                    <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe" value="true">
                                     <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
                                 </div>
                                 <a href="#">Quên mật khẩu?</a>
