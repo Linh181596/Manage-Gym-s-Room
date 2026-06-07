@@ -1,13 +1,13 @@
 USE [master]
 GO
-/****** Object:  Database [GymCenterManagement]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Database [GymCenterManagement]    Script Date: 5/31/2026 10:18:12 PM ******/
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'GymCenterManagement')
+BEGIN
+    ALTER DATABASE [GymCenterManagement] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE [GymCenterManagement];
+END
+GO
 CREATE DATABASE [GymCenterManagement]
- CONTAINMENT = NONE
- ON  PRIMARY 
-( NAME = N'GymCenterManagement', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\GymCenterManagement.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON 
-( NAME = N'GymCenterManagement_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\GymCenterManagement_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
 GO
 ALTER DATABASE [GymCenterManagement] SET COMPATIBILITY_LEVEL = 160
 GO
@@ -82,7 +82,7 @@ ALTER DATABASE [GymCenterManagement] SET QUERY_STORE (OPERATION_MODE = READ_WRIT
 GO
 USE [GymCenterManagement]
 GO
-/****** Object:  Table [dbo].[EquipmentIssues]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[EquipmentIssues]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -106,7 +106,7 @@ CREATE TABLE [dbo].[EquipmentIssues](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Equipments]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[Equipments]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -131,7 +131,7 @@ CREATE TABLE [dbo].[Equipments](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[GymPackages]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[GymPackages]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -154,7 +154,7 @@ CREATE TABLE [dbo].[GymPackages](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Invoices]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[Invoices]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -180,7 +180,7 @@ CREATE TABLE [dbo].[Invoices](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[MemberPackages]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[MemberPackages]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -203,7 +203,7 @@ CREATE TABLE [dbo].[MemberPackages](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Members]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[Members]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -226,7 +226,7 @@ CREATE TABLE [dbo].[Members](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Notifications]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[Notifications]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -248,7 +248,7 @@ CREATE TABLE [dbo].[Notifications](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PersonalTrainers]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[PersonalTrainers]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -276,7 +276,7 @@ CREATE TABLE [dbo].[PersonalTrainers](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PTPackageTypes]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[PTPackageTypes]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -299,7 +299,7 @@ CREATE TABLE [dbo].[PTPackageTypes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PTRegistrations]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[PTRegistrations]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -328,7 +328,7 @@ CREATE TABLE [dbo].[PTRegistrations](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PTSchedules]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[PTSchedules]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -356,7 +356,7 @@ CREATE TABLE [dbo].[PTSchedules](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PTServicePrices]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[PTServicePrices]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -378,7 +378,7 @@ CREATE TABLE [dbo].[PTServicePrices](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -398,7 +398,7 @@ CREATE TABLE [dbo].[Roles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Staffs]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[Staffs]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -419,24 +419,7 @@ CREATE TABLE [dbo].[Staffs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[User_Tokens]    Script Date: 6/4/2026 9:53:57 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[User_Tokens](
-	[TokenID] [int] IDENTITY(1,1) NOT NULL,
-	[UserID] [int] NOT NULL,
-	[Token] [varchar](255) NOT NULL,
-	[ExpiryDate] [datetime] NOT NULL,
-	[CreatedDate] [datetime] NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[TokenID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[UserRoles]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[UserRoles]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -451,7 +434,7 @@ CREATE TABLE [dbo].[UserRoles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 5/31/2026 10:18:13 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -475,16 +458,32 @@ CREATE TABLE [dbo].[Users](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+CREATE TABLE [dbo].[User_Tokens](
+	[TokenID] [int] IDENTITY(1,1) NOT NULL,
+	[UserID] [int] NOT NULL,
+	[TokenValue] [varchar](255) NOT NULL,
+	[TokenType] [varchar](50) NOT NULL,
+	[CreatedAt] [datetime2](7) NOT NULL DEFAULT SYSDATETIME(),
+	[ExpiresAt] [datetime2](7) NOT NULL,
+	[IsUsed] [bit] NOT NULL DEFAULT 0,
+ CONSTRAINT [PK_User_Tokens] PRIMARY KEY CLUSTERED 
+(
+	[TokenID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [FK_UserTokens_Users] FOREIGN KEY ([UserID]) REFERENCES [dbo].[Users] ([UserID]) ON DELETE CASCADE,
+ CONSTRAINT [CK_UserTokens_Type] CHECK ([TokenType] IN ('VERIFICATION', 'RESET_PASSWORD', 'REMEMBER_ME'))
+) ON [PRIMARY]
+GO
 SET IDENTITY_INSERT [dbo].[Equipments] ON 
 
-INSERT [dbo].[Equipments] ([EquipmentID], [EquipmentCode], [EquipmentName], [PurchaseDate], [WarrantyDate], [Location], [ImageURL], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'eq-treadmill-01', N'Treadmill Matrix T50', CAST(N'2025-01-10' AS Date), CAST(N'2027-01-10' AS Date), N'Cardio Zone', N'/img/treadmill.jpg', N'Available', N'System', CAST(N'2026-05-31T18:27:47.4909757' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Equipments] ([EquipmentID], [EquipmentCode], [EquipmentName], [PurchaseDate], [WarrantyDate], [Location], [ImageURL], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'eq-benchpress-01', N'Bench Press Bench', CAST(N'2025-01-15' AS Date), CAST(N'2028-01-15' AS Date), N'Free Weights Zone', N'/img/benchpress.jpg', N'Available', N'System', CAST(N'2026-05-31T18:27:47.4909757' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Equipments] ([EquipmentID], [EquipmentCode], [EquipmentName], [PurchaseDate], [WarrantyDate], [Location], [ImageURL], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'eq-treadmill-01', N'Máy chạy bộ Matrix T50', CAST(N'2025-01-10' AS Date), CAST(N'2027-01-10' AS Date), N'Khu Cardio', N'/img/treadmill.jpg', N'Available', N'System', CAST(N'2026-05-31T18:27:47.4909757' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Equipments] ([EquipmentID], [EquipmentCode], [EquipmentName], [PurchaseDate], [WarrantyDate], [Location], [ImageURL], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'eq-benchpress-01', N'Ghế tập ngực Bench Press', CAST(N'2025-01-15' AS Date), CAST(N'2028-01-15' AS Date), N'Khu tập tạ tự do', N'/img/benchpress.jpg', N'Available', N'System', CAST(N'2026-05-31T18:27:47.4909757' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[Equipments] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GymPackages] ON 
 
-INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Gym Basic 1 Month', 1, CAST(300000.00 AS Decimal(12, 2)), N'Standard 1 month gym access.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'Gym Premium 3 Months', 3, CAST(800000.00 AS Decimal(12, 2)), N'Standard 3 months gym access.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Gói Gym Cơ bản 1 Tháng', 1, CAST(300000.00 AS Decimal(12, 2)), N'Gói tập gym tiêu chuẩn trong 1 tháng.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'Gói Gym Cao cấp 3 Tháng', 3, CAST(800000.00 AS Decimal(12, 2)), N'Gói tập gym tiêu chuẩn trong 3 tháng.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[GymPackages] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Invoices] ON 
@@ -500,38 +499,33 @@ SET IDENTITY_INSERT [dbo].[MemberPackages] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Members] ON 
 
-INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 4, N'Male', CAST(N'2000-01-01' AS Date), N'Ha Noi', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4538048' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 4, N'Male', CAST(N'2000-01-01' AS Date), N'Hà Nội', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4538048' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[Members] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Notifications] ON 
 
-INSERT [dbo].[Notifications] ([NotificationID], [Title], [Content], [CreatedBy], [TargetRole], [CreatedByRole], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Welcome to GCMS!', N'The Gym Center Management System is online. Feel free to explore.', 1, N'All', N'Admin', CAST(N'2026-05-31T18:27:47.4935847' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Notifications] ([NotificationID], [Title], [Content], [CreatedBy], [TargetRole], [CreatedByRole], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Chào mừng đến với GCMS!', N'Hệ thống quản lý phòng tập Gym Center đã đi vào hoạt động. Trải nghiệm ngay nhé.', 1, N'All', N'Admin', CAST(N'2026-05-31T18:27:47.4935847' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[Notifications] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PersonalTrainers] ON 
 
-INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (1, 3, N'Tăng cơ', N'Professional fitness trainer with 5 years experience.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4644128' AS DateTime2), NULL, NULL, 0, CAST(N'2021-06-03' AS Date), NULL, NULL, N'Personal Trainer', N'Personal Trainer', NULL)
+INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (1, 3, N'Thể hình (Bodybuilding), Giảm cân', N'Huấn luyện viên thể hình chuyên nghiệp với 5 năm kinh nghiệm.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4644128' AS DateTime2), NULL, NULL, 0, CAST(N'2021-06-03' AS Date), NULL, NULL, N'Personal Trainer', N'Personal Trainer', NULL)
 INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (2, 5, N'Quản lý cân nặng', N'Chuyên hỗ trợ hội viên giảm cân, kiểm soát mỡ và xây dựng thói quen tập luyện bền vững.', N'Active', N'System', CAST(N'2026-06-02T03:59:40.8270224' AS DateTime2), NULL, NULL, 0, CAST(N'2022-06-03' AS Date), NULL, NULL, N'Trần Minh Quân', N'Trần Minh Quân', NULL)
 INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (3, 6, N'Tăng cơ', N'Có kinh nghiệm huấn luyện tăng cơ, cải thiện sức mạnh và xây dựng form tập an toàn.', N'Active', N'System', CAST(N'2026-06-02T03:59:40.8290745' AS DateTime2), NULL, NULL, 0, CAST(N'2021-06-03' AS Date), NULL, NULL, N'Nguyễn Hoàng Nam', N'Nguyễn Hoàng Nam', NULL)
 INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (4, 7, N'Cardio', N'Hỗ trợ cải thiện sức bền, tim mạch và xây dựng lịch tập cardio phù hợp thể trạng.', N'Active', N'System', CAST(N'2026-06-02T03:59:40.8290745' AS DateTime2), NULL, NULL, 0, CAST(N'2023-06-03' AS Date), NULL, NULL, N'Lê Anh Khoa', N'Lê Anh Khoa', NULL)
 INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (5, 8, N'Yoga', N'Chuyên hướng dẫn yoga, cải thiện độ linh hoạt, giảm căng thẳng và phục hồi cơ thể.', N'Active', N'System', CAST(N'2026-06-02T03:59:40.8300775' AS DateTime2), NULL, NULL, 0, CAST(N'2020-06-03' AS Date), NULL, NULL, N'Phạm Gia Huy', N'Phạm Gia Huy', NULL)
 INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (6, 9, N'Boxing', N'Huấn luyện boxing cơ bản đến nâng cao, cải thiện phản xạ, thể lực và kỹ thuật đấm.', N'Active', N'System', CAST(N'2026-06-02T03:59:40.8300775' AS DateTime2), NULL, NULL, 0, CAST(N'2022-06-03' AS Date), NULL, NULL, N'Vũ Đức Long', N'Vũ Đức Long', NULL)
-INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (7, 10, N'Boxing', NULL, N'Active', N'Staff', CAST(N'2026-06-04T20:13:49.7433333' AS DateTime2), NULL, NULL, 0, CAST(N'2021-02-15' AS Date), NULL, NULL, N'Nguyễn Thành Nam', N'Coach Nam Boxing', NULL)
-INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (8, 11, N'Yoga', N'Với đam mê và trách nhiệm, tôi cam kết sẽ mang đến trải nghiệm tốt nhất cho khách hàng.', N'Active', N'Staff', CAST(N'2026-06-04T20:55:01.5300000' AS DateTime2), NULL, NULL, 0, CAST(N'2023-01-10' AS Date), N'Nguyen_Thi_Linh_Yoga_cer.png', N'uploads/pt-certificate/1780581301472_Nguyen_Thi_Linh_Yoga_cer.png', N'Nguyễn Thị Linh', NULL, NULL)
-INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (9, 12, N'Cardio', N'Với đam mê và trách nhiệm, tôi cam kết sẽ mang đến trải nghiệm tốt nhất cho khách hàng. Với những bài tập cardio nhịp đập, tôi sẽ giúp bạn có được sức bền tốt nhất.', N'Active', N'Staff', CAST(N'2026-06-04T21:19:02.1333333' AS DateTime2), NULL, NULL, 0, CAST(N'2024-05-29' AS Date), NULL, NULL, N'Ngô Gia Minh', NULL, N'uploads/pt-avatar/1780582742094_Ngo_Gia_Minh.png')
-INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (10, 13, N'Phục hồi thể lực', NULL, N'Active', N'Staff', CAST(N'2026-06-04T21:25:05.8033333' AS DateTime2), NULL, NULL, 0, CAST(N'2019-08-26' AS Date), N'Tran_Quoc_Viet.png', N'uploads/pt-certificate/1780583105767_Tran_Quoc_Viet.png', N'Trần Quốc Việt', N'Việt PHTL', NULL)
-INSERT [dbo].[PersonalTrainers] ([PTID], [UserID], [Specialization], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [CareerStartDate], [CertificateFileName], [CertificateFilePath], [FullName], [DisplayName], [AvatarPath]) VALUES (11, 14, N'Tăng cơ', NULL, N'Active', N'Staff', CAST(N'2026-06-04T21:49:32.6333333' AS DateTime2), NULL, NULL, 0, CAST(N'2025-04-01' AS Date), N'Vu_Trong_Duong.png', N'uploads/pt-certificate/1780584572591_Vu_Trong_Duong.png', N'Vũ Trọng Dương', N'Coach Dương Cơ Bắp', N'uploads/pt-avatar/1780584572597_Vu_Trong_Duong.png')
 SET IDENTITY_INSERT [dbo].[PersonalTrainers] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PTPackageTypes] ON 
 
-INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'PT Basic 1 Month', N'Standard 1 month training with PT.', 1, 12, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'PT Premium 3 Months', N'Premium 3 months training with PT.', 3, 36, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Gói PT Cơ bản 1 Tháng', N'Huấn luyện tiêu chuẩn trong 1 tháng với PT.', 1, 12, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'Gói PT Cao cấp 3 Tháng', N'Huấn luyện cao cấp trong 3 tháng với PT.', 3, 36, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[PTPackageTypes] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PTRegistrations] ON 
 
-INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt]) VALUES (1, 1, 1, CAST(N'2026-06-01' AS Date), CAST(N'2026-06-01' AS Date), CAST(N'2026-06-30' AS Date), N'Pending', N'First registration', N'System', CAST(N'2026-05-31T18:27:47.4802560' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Unpaid', NULL, NULL)
+INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt]) VALUES (1, 1, 1, CAST(N'2026-06-01' AS Date), CAST(N'2026-06-01' AS Date), CAST(N'2026-06-30' AS Date), N'Pending', N'Đăng ký lần đầu', N'System', CAST(N'2026-05-31T18:27:47.4802560' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Unpaid', NULL, NULL)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt]) VALUES (3, 1, 1, CAST(N'2026-06-01' AS Date), CAST(N'2026-06-01' AS Date), CAST(N'2026-07-01' AS Date), N'Pending', N'Tôi muốn nhanh chóng giảm cân
 Tôi muốn thử trước 1 tháng', N'System', CAST(N'2026-06-01T15:51:29.7900382' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Unpaid', NULL, NULL)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt]) VALUES (4, 1, 3, CAST(N'2026-06-02' AS Date), CAST(N'2026-06-02' AS Date), CAST(N'2026-07-02' AS Date), N'Pending', N'Tôi muốn giảm cân, hãy xếp lịch tập sớm cho tôi', N'System', CAST(N'2026-06-02T04:38:48.7290377' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Unpaid', NULL, NULL)
@@ -571,11 +565,11 @@ INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (1, 1)
 INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (2, 2)
 INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (3, 3)
 INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (4, 4)
-INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (10, 3)
-INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (11, 3)
-INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (12, 3)
-INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (13, 3)
-INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (14, 3)
+INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (5, 3)
+INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (6, 3)
+INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (7, 3)
+INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (8, 3)
+INSERT [dbo].[UserRoles] ([UserID], [RoleID]) VALUES (9, 3)
 GO
 SET IDENTITY_INSERT [dbo].[Users] ON 
 
@@ -588,34 +582,36 @@ INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone],
 INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (7, N'pt.khoa@gcms.com', N'12345678', N'Lê Anh Khoa', N'0901000003', N'Active', 0, N'System', CAST(N'2026-06-02T03:59:40.8290745' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (8, N'pt.huy@gcms.com', N'12345678', N'Phạm Gia Huy', N'0901000004', N'Active', 0, N'System', CAST(N'2026-06-02T03:59:40.8300775' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (9, N'pt.long@gcms.com', N'12345678', N'Vũ Đức Long', N'0901000005', N'Active', 0, N'System', CAST(N'2026-06-02T03:59:40.8300775' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (10, N'pt1-boxing@gmail.com', N'f1a225a9352ab87802fdffc13cb1b8536e9d84f03ad249441980112681737cfc', N'Coach Nam Boxing', N'0333333333', N'Active', 1, N'Staff', CAST(N'2026-06-04T20:13:49.7053544' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (11, N'linhpt-yoga@gmail.com', N'4f5efb789bc2b4fdc33d3d490972dd01d45226675f97c0bc78d3f458e4280107', N'Nguyễn Thị Linh', N'0444444444', N'Active', 1, N'Staff', CAST(N'2026-06-04T20:55:01.5016321' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (12, N'giaminh-cardio@gmail.com', N'74ae87cb6928afe3ccfa3fa9cfb64d8a6e544a91054134c5299b2154b06ae9c7', N'Ngô Gia Minh', N'0555555555', N'Active', 1, N'Staff', CAST(N'2026-06-04T21:19:02.1098820' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (13, N'viettq-phtl@gmail.com', N'32485420952e02572cfffb34f7764202a61dae19e95048e7375872d0b0a6a31a', N'Việt PHTL', N'0666666666', N'Active', 1, N'Staff', CAST(N'2026-06-04T21:25:05.7808514' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Users] ([UserID], [Email], [PasswordHash], [DisplayName], [Phone], [Status], [MustChangePassword], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (14, N'duongvt-muscle@gmail.com', N'349ea27f7b1e40f267fefa74f56f152e8830422149ba1e162da5a5579178de47', N'Coach Dương Cơ Bắp', N'0777777777', N'Active', 1, N'Staff', CAST(N'2026-06-04T21:49:32.6111925' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[Users] OFF
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ_Equipments_Code]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Index [UQ_Equipments_Code]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[Equipments] ADD  CONSTRAINT [UQ_Equipments_Code] UNIQUE NONCLUSTERED 
 (
 	[EquipmentCode] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_Members_UserID]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Index [UQ_Members_UserID]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[Members] ADD  CONSTRAINT [UQ_Members_UserID] UNIQUE NONCLUSTERED 
 (
 	[UserID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_PT_UserID]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Index [UQ_PT_UserID]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[PersonalTrainers] ADD  CONSTRAINT [UQ_PT_UserID] UNIQUE NONCLUSTERED 
 (
 	[UserID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_PTSchedules_Slot]    Script Date: 6/4/2026 9:53:57 PM ******/
+SET ANSI_PADDING ON
+GO
+ALTER TABLE [dbo].[User_Tokens] ADD UNIQUE NONCLUSTERED 
+(
+	[TokenValue] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_PTSchedules_Slot]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[PTSchedules] ADD  CONSTRAINT [UQ_PTSchedules_Slot] UNIQUE NONCLUSTERED 
 (
 	[PTID] ASC,
@@ -623,7 +619,7 @@ ALTER TABLE [dbo].[PTSchedules] ADD  CONSTRAINT [UQ_PTSchedules_Slot] UNIQUE NON
 	[StartTime] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_PTServicePrices_PT_Package]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Index [UQ_PTServicePrices_PT_Package]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[PTServicePrices] ADD  CONSTRAINT [UQ_PTServicePrices_PT_Package] UNIQUE NONCLUSTERED 
 (
 	[PTID] ASC,
@@ -632,13 +628,13 @@ ALTER TABLE [dbo].[PTServicePrices] ADD  CONSTRAINT [UQ_PTServicePrices_PT_Packa
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ_Roles_Name]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Index [UQ_Roles_Name]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[Roles] ADD  CONSTRAINT [UQ_Roles_Name] UNIQUE NONCLUSTERED 
 (
 	[RoleName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_Staffs_UserID]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Index [UQ_Staffs_UserID]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[Staffs] ADD  CONSTRAINT [UQ_Staffs_UserID] UNIQUE NONCLUSTERED 
 (
 	[UserID] ASC
@@ -646,15 +642,7 @@ ALTER TABLE [dbo].[Staffs] ADD  CONSTRAINT [UQ_Staffs_UserID] UNIQUE NONCLUSTERE
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ__User_Tok__1EB4F81719D00551]    Script Date: 6/4/2026 9:53:57 PM ******/
-ALTER TABLE [dbo].[User_Tokens] ADD UNIQUE NONCLUSTERED 
-(
-	[Token] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Object:  Index [UQ_Users_Email]    Script Date: 6/4/2026 9:53:57 PM ******/
+/****** Object:  Index [UQ_Users_Email]    Script Date: 5/31/2026 10:18:13 PM ******/
 ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [UQ_Users_Email] UNIQUE NONCLUSTERED 
 (
 	[Email] ASC
@@ -722,13 +710,11 @@ ALTER TABLE [dbo].[Staffs] ADD  DEFAULT (sysdatetime()) FOR [CreatedDate]
 GO
 ALTER TABLE [dbo].[Staffs] ADD  DEFAULT ((0)) FOR [IsDeleted]
 GO
-ALTER TABLE [dbo].[User_Tokens] ADD  DEFAULT (getdate()) FOR [CreatedDate]
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF_Users_MustChangePassword]  DEFAULT ((0)) FOR [MustChangePassword]
 GO
-ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF__Users__MustChang__3D5E1FD2]  DEFAULT ((0)) FOR [MustChangePassword]
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF_Users_CreatedDate]  DEFAULT (sysdatetime()) FOR [CreatedDate]
 GO
-ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF__Users__CreatedDa__3E52440B]  DEFAULT (sysdatetime()) FOR [CreatedDate]
-GO
-ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF__Users__IsDeleted__3F466844]  DEFAULT ((0)) FOR [IsDeleted]
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [DF_Users_IsDeleted]  DEFAULT ((0)) FOR [IsDeleted]
 GO
 ALTER TABLE [dbo].[EquipmentIssues]  WITH CHECK ADD  CONSTRAINT [FK_EquipmentIssues_Equipments] FOREIGN KEY([EquipmentID])
 REFERENCES [dbo].[Equipments] ([EquipmentID])
@@ -755,10 +741,10 @@ REFERENCES [dbo].[PTRegistrations] ([PTRegistrationID])
 GO
 ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [FK_Invoices_PTRegistrations]
 GO
-ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [FK_Invoices_Staff] FOREIGN KEY([ProcessBy])
-REFERENCES [dbo].[Staffs] ([StaffID])
+ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [FK_Invoices_Users] FOREIGN KEY([ProcessBy])
+REFERENCES [dbo].[Users] ([UserID])
 GO
-ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [FK_Invoices_Staff]
+ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [FK_Invoices_Users]
 GO
 ALTER TABLE [dbo].[MemberPackages]  WITH CHECK ADD  CONSTRAINT [FK_MemberPackages_GymPackages] FOREIGN KEY([PackageID])
 REFERENCES [dbo].[GymPackages] ([PackageID])
@@ -780,25 +766,27 @@ REFERENCES [dbo].[Users] ([UserID])
 GO
 ALTER TABLE [dbo].[Notifications] CHECK CONSTRAINT [FK_Notifications_Users]
 GO
+
 ALTER TABLE [dbo].[PersonalTrainers]  WITH CHECK ADD  CONSTRAINT [FK_PersonalTrainers_Users] FOREIGN KEY([UserID])
 REFERENCES [dbo].[Users] ([UserID])
 GO
 ALTER TABLE [dbo].[PersonalTrainers] CHECK CONSTRAINT [FK_PersonalTrainers_Users]
 GO
+
 ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [FK_PTRegistrations_Members] FOREIGN KEY([MemberID])
 REFERENCES [dbo].[Members] ([MemberID])
 GO
 ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [FK_PTRegistrations_Members]
 GO
-ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [FK_PTRegistrations_ProcessedByUser] FOREIGN KEY([ProcessedByUserID])
-REFERENCES [dbo].[Users] ([UserID])
-GO
-ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [FK_PTRegistrations_ProcessedByUser]
-GO
 ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [FK_PTRegistrations_ServicePrices] FOREIGN KEY([PTServicePriceID])
 REFERENCES [dbo].[PTServicePrices] ([PTServicePriceID])
 GO
 ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [FK_PTRegistrations_ServicePrices]
+GO
+ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [FK_PTRegistrations_ProcessedByUser] FOREIGN KEY([ProcessedByUserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [FK_PTRegistrations_ProcessedByUser]
 GO
 ALTER TABLE [dbo].[PTSchedules]  WITH CHECK ADD  CONSTRAINT [FK_PTSchedules_Creator] FOREIGN KEY([CreatedByUserID])
 REFERENCES [dbo].[Users] ([UserID])
@@ -835,12 +823,6 @@ REFERENCES [dbo].[Users] ([UserID])
 GO
 ALTER TABLE [dbo].[Staffs] CHECK CONSTRAINT [FK_Staffs_Users]
 GO
-ALTER TABLE [dbo].[User_Tokens]  WITH CHECK ADD  CONSTRAINT [FK_UserTokens_Users] FOREIGN KEY([UserID])
-REFERENCES [dbo].[Users] ([UserID])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[User_Tokens] CHECK CONSTRAINT [FK_UserTokens_Users]
-GO
 ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_Roles] FOREIGN KEY([RoleID])
 REFERENCES [dbo].[Roles] ([RoleID])
 ON DELETE CASCADE
@@ -853,6 +835,7 @@ ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_Users]
 GO
+
 ALTER TABLE [dbo].[EquipmentIssues]  WITH CHECK ADD  CONSTRAINT [CK_EquipmentIssues_Status] CHECK  (([Status]='Resolved' OR [Status]='InProgress' OR [Status]='Pending'))
 GO
 ALTER TABLE [dbo].[EquipmentIssues] CHECK CONSTRAINT [CK_EquipmentIssues_Status]
@@ -881,7 +864,7 @@ ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Status] CH
 GO
 ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Status]
 GO
-ALTER TABLE [dbo].[MemberPackages]  WITH CHECK ADD  CONSTRAINT [CK_MemberPackages_Status] CHECK  (([Status]='Expired' OR [Status]='Active'))
+ALTER TABLE [dbo].[MemberPackages]  WITH CHECK ADD  CONSTRAINT [CK_MemberPackages_Status] CHECK  (([Status]='Expired' OR [Status]='Active' OR [Status]='Pending'))
 GO
 ALTER TABLE [dbo].[MemberPackages] CHECK CONSTRAINT [CK_MemberPackages_Status]
 GO
@@ -905,13 +888,13 @@ ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageType
 GO
 ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_Status]
 GO
-ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_PaymentStatus] CHECK  (([PaymentStatus]='Cancelled' OR [PaymentStatus]='Paid' OR [PaymentStatus]='Unpaid'))
-GO
-ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_PaymentStatus]
-GO
 ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_Status] CHECK  (([Status]='Cancelled' OR [Status]='Completed' OR [Status]='Active' OR [Status]='Pending'))
 GO
 ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_Status]
+GO
+ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_PaymentStatus] CHECK  (([PaymentStatus]='Cancelled' OR [PaymentStatus]='Paid' OR [PaymentStatus]='Unpaid'))
+GO
+ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_PaymentStatus]
 GO
 ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_TotalAmount] CHECK  (([TotalAmount]>=(0)))
 GO
@@ -949,3 +932,4 @@ USE [master]
 GO
 ALTER DATABASE [GymCenterManagement] SET  READ_WRITE 
 GO
+
