@@ -24,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 /**
  * Controller for member to register for training service with a Personal Trainer.
@@ -96,7 +97,16 @@ public class RegisterPTServiceController extends HttpServlet {
             return;
         }
 
-        LocalDate preferredStartDate = LocalDate.parse(preferredStartDateRaw);
+        LocalDate preferredStartDate;
+
+        try {
+            preferredStartDate = LocalDate.parse(preferredStartDateRaw);
+        } catch (DateTimeParseException e) {
+            request.setAttribute("error", "Ngày bắt đầu không hợp lệ.");
+            request.setAttribute("servicePrice", servicePrice);
+            request.getRequestDispatcher("/WEB-INF/views/pt/register-pt-service.jsp").forward(request, response);
+            return;
+        }
 
         if (preferredStartDate.isBefore(LocalDate.now())) {
             request.setAttribute("error", "Ngày bắt đầu không được nhỏ hơn ngày hiện tại.");
@@ -145,6 +155,7 @@ public class RegisterPTServiceController extends HttpServlet {
         registration.setStartDate(startDate);
         registration.setEndDate(endDate);
         registration.setNote(note);
+        registration.setTotalAmount(servicePrice.getPrice());
         registration.setCreatedBy(currentUser.getFullName());
 
         boolean inserted = registrationDAO.insert(registration);

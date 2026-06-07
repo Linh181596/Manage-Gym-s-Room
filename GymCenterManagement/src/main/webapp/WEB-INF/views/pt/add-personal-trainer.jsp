@@ -5,7 +5,7 @@
   =========================================================================
   Document    : add-personal-trainer.jsp
   Created on  : 2026-06-04
-  Author      : Phạm Ngọc Duy (phund)
+  Author      : Nguyễn Đình Phú (phund)
   Description : Giao diện form nhập liệu thông tin để thêm tài khoản HLV mới.
   =========================================================================
 --%>
@@ -102,14 +102,14 @@
                             <!-- Avatar File -->
                             <div class="col-md-6">
                                 <label for="avatarFile" class="form-label fw-semibold text-secondary">Ảnh đại diện (Avatar)</label>
-                                <input type="file" id="avatarFile" name="avatarFile" class="form-control" accept="image/*">
+                                <input type="file" id="avatarFile" name="avatarFile" class="form-control" accept=".jpg,.jpeg,.png">
                                 <small class="text-muted d-block mt-1 small">Định dạng hỗ trợ: JPG, JPEG, PNG.</small>
                             </div>
 
                             <!-- Certificate File -->
                             <div class="col-md-6">
                                 <label for="certificateFile" class="form-label fw-semibold text-secondary">Tải lên Chứng chỉ HLV</label>
-                                <input type="file" id="certificateFile" name="certificateFile" class="form-control" accept=".pdf,image/*">
+                                <input type="file" id="certificateFile" name="certificateFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                                 <small class="text-muted d-block mt-1 small">Định dạng hỗ trợ: PDF, JPG, PNG.</small>
                             </div>
 

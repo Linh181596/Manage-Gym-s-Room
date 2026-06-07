@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
  * Entity representing the 'users' table in the database.
  */
 public class User {
-    
+
     public enum Role {
         Admin, Staff, Member, PT
     }
@@ -22,8 +22,16 @@ public class User {
     private String phoneNumber;
     private Role role;
     private AccountStatus accountStatus;
-    private boolean mustChangePassword;
-    
+    private boolean mustChangePassword; //add new attribute for change pass
+
+    public boolean isMustChangePassword() { //new getter
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(boolean mustChangePassword) { //new setter
+        this.mustChangePassword = mustChangePassword;
+    }
+
     // Audit Metadata
     private String createdBy;
     private LocalDateTime createdDate;
@@ -42,6 +50,22 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.role = role;
         this.accountStatus = accountStatus;
+    }
+
+    public User(AccountStatus accountStatus, String createdBy, int userId, LocalDateTime updatedDate, String updatedBy, Role role, String passwordHash, boolean mustChangePassword, String email, LocalDateTime createdDate, String fullName, boolean isDeleted, String phoneNumber) {
+        this.accountStatus = accountStatus;
+        this.createdBy = createdBy;
+        this.userId = userId;
+        this.updatedDate = updatedDate;
+        this.updatedBy = updatedBy;
+        this.role = role;
+        this.passwordHash = passwordHash;
+        this.mustChangePassword = mustChangePassword;
+        this.email = email;
+        this.createdDate = createdDate;
+        this.fullName = fullName;
+        this.isDeleted = isDeleted;
+        this.phoneNumber = phoneNumber;
     }
 
     // Getters and Setters
@@ -141,14 +165,6 @@ public class User {
         isDeleted = deleted;
     }
 
-    public boolean isMustChangePassword() {
-        return mustChangePassword;
-    }
-
-    public void setMustChangePassword(boolean mustChangePassword) {
-        this.mustChangePassword = mustChangePassword;
-    }
-
     @Override
     public String toString() {
         return "User{" +
@@ -157,7 +173,6 @@ public class User {
                 ", fullName='" + fullName + '\'' +
                 ", role=" + role +
                 ", accountStatus=" + accountStatus +
-                ", mustChangePassword=" + mustChangePassword +
                 '}';
     }
 }

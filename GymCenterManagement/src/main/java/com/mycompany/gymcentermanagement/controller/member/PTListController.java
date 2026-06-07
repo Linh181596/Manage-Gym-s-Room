@@ -1,10 +1,11 @@
 /**
  * =========================================================================
- * @file          : PTListController.java
- * @description   : Controller xử lý yêu cầu hiển thị danh sách các Huấn luyện viên cá nhân (PT).
- * @author        : Phạm Ngọc Duy (phund)
- * @created       : 2026-06-02
- * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ *
+ * @file : PTListController.java
+ * @description : Controller xử lý yêu cầu hiển thị danh sách các Huấn luyện viên cá nhân (PT).
+ * @author : Nguyễn Đình Phú (phund)
+ * @created : 2026-06-02
+ * @last_modified : 2026-06-04 bởi Nguyễn Đình Phú
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.member;
@@ -16,6 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,19 +55,30 @@ public class PTListController extends HttpServlet {
             }
         }
 
+        // for take keyword to filter
+        String keyword = request.getParameter("keyword");
+
+        if (keyword != null) {
+            keyword = keyword.trim();
+
+            if (keyword.isEmpty()) {
+                keyword = null;
+            }
+        }
+
         List<PersonalTrainer> trainers;
 
-        if (selectedSpecializations.isEmpty()) {
+        if (keyword == null && selectedSpecializations.isEmpty()) {
             trainers = trainerDAO.findActiveTrainers();
         } else {
-            trainers = trainerDAO.findActiveTrainersBySpecializations(selectedSpecializations);
+            trainers = trainerDAO.searchActiveTrainers(keyword, selectedSpecializations);
         }
 
         request.setAttribute("trainers", trainers);
         request.setAttribute("trainerCount", trainers.size());
         request.setAttribute("specializationOptions", specializationOptions);
         request.setAttribute("selectedSpecializations", selectedSpecializations);
-
+        request.setAttribute("keyword", keyword);
         request.getRequestDispatcher("/WEB-INF/views/pt/pt-list.jsp").forward(request, response);
     }
 }

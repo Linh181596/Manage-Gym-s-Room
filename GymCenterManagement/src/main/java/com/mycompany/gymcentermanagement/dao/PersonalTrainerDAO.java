@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : PersonalTrainerDAO.java
  * @description   : Lớp truy cập dữ liệu để quản lý hồ sơ Huấn luyện viên cá nhân (PT).
- * @author        : Phạm Ngọc Duy (phund)
+ * @author        : Nguyễn Đình Phú (phund)
  * @created       : 2026-06-02
- * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * @last_modified : 2026-06-04 bởi Nguyễn Đình Phú
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao;
@@ -356,6 +356,107 @@ public class PersonalTrainerDAO {
             ps.setString(5, searchValue);
             ps.setString(6, specializationValue);
             ps.setString(7, specializationValue);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trainers.add(mapPersonalTrainer(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return trainers;
+    }
+
+    /*
+     * Search active PT by keyword and multiple specializations.
+     */
+    public List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations) {
+        List<PersonalTrainer> trainers = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT 
+            pt.PTID,
+            pt.UserID,
+            pt.FullName,
+            pt.DisplayName,
+            pt.Specialization,
+            pt.CareerStartDate,
+            pt.CertificateFileName,
+            pt.CertificateFilePath,
+            pt.Description,
+            pt.AvatarPath,
+            pt.Status,
+            pt.CreatedBy,
+            pt.CreatedDate,
+            pt.UpdatedBy,
+            pt.UpdatedDate,
+            pt.IsDeleted,
+            u.Email,
+            u.Phone,
+            u.Status AS AccountStatus,
+            u.MustChangePassword
+        FROM PersonalTrainers pt
+        INNER JOIN Users u ON pt.UserID = u.UserID
+        WHERE pt.Status = 'Active'
+          AND u.Status = 'Active'
+          AND pt.IsDeleted = 0
+          AND u.IsDeleted = 0
+    """);
+
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasSpecializations = specializations != null && !specializations.isEmpty();
+
+        if (hasKeyword) {
+            sql.append("""
+            AND (
+                pt.FullName LIKE ?
+                OR pt.DisplayName LIKE ?
+                OR pt.Specialization LIKE ?
+                OR pt.Description LIKE ?
+                OR u.Email LIKE ?
+            )
+        """);
+        }
+
+        if (hasSpecializations) {
+            sql.append(" AND pt.Specialization IN (");
+
+            for (int i = 0; i < specializations.size(); i++) {
+                sql.append("?");
+
+                if (i < specializations.size() - 1) {
+                    sql.append(", ");
+                }
+            }
+
+            sql.append(") ");
+        }
+
+        sql.append(" ORDER BY pt.FullName ");
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (hasKeyword) {
+                String searchValue = "%" + keyword.trim() + "%";
+
+                ps.setString(index++, searchValue);
+                ps.setString(index++, searchValue);
+                ps.setString(index++, searchValue);
+                ps.setString(index++, searchValue);
+                ps.setString(index++, searchValue);
+            }
+
+            if (hasSpecializations) {
+                for (String specialization : specializations) {
+                    ps.setString(index++, specialization);
+                }
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
