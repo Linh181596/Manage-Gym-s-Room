@@ -1,6 +1,9 @@
 package com.mycompany.gymcentermanagement.utils;
 
+import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
@@ -13,8 +16,21 @@ import jakarta.mail.internet.MimeMessage;
  * Utility class to send emails via SMTP using Jakarta Mail API.
  */
 public class EmailUtils {
-    private static final String SMTP_USER = "ee978934f03c4f"; 
-    private static final String SMTP_PASSWORD = "0da162ae9533cb";
+    private static final Logger LOGGER = Logger.getLogger(EmailUtils.class.getName());
+    private static final Properties properties = new Properties();
+
+    static {
+        try (InputStream input = EmailUtils.class.getClassLoader().getResourceAsStream("mail.properties")) {
+            if (input == null) {
+                LOGGER.severe("Unable to find mail.properties in resources.");
+            } else {
+                properties.load(input);
+                LOGGER.info("Mail configuration loaded successfully from mail.properties.");
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Failed to initialize mail configuration", ex);
+        }
+    }
 
     /**
      * Sends a verification email containing the activation link/code to the user.
@@ -25,21 +41,26 @@ public class EmailUtils {
      */
     public static boolean sendVerificationEmail(String toEmail, String token) {
         Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "sandbox.smtp.mailtrap.io");
-        props.put("mail.smtp.port", "2525");
+        props.put("mail.smtp.auth", properties.getProperty("mail.smtp.auth", "true"));
+        props.put("mail.smtp.starttls.enable", properties.getProperty("mail.smtp.starttls.enable", "true"));
+        props.put("mail.smtp.host", properties.getProperty("mail.smtp.host", "sandbox.smtp.mailtrap.io"));
+        props.put("mail.smtp.port", properties.getProperty("mail.smtp.port", "2525"));
+
+        final String smtpUser = properties.getProperty("mail.smtp.username");
+        final String smtpPassword = properties.getProperty("mail.smtp.password");
 
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(SMTP_USER, SMTP_PASSWORD);
+                return new PasswordAuthentication(smtpUser, smtpPassword);
             }
         });
 
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("noreply@gymcenter.com", "GCMS System"));
+            String fromEmail = properties.getProperty("mail.from.email", "noreply@gymcenter.com");
+            String fromName = properties.getProperty("mail.from.name", "GCMS System");
+            message.setFrom(new InternetAddress(fromEmail, fromName));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Vui long xac thuc tai khoan GCMS cua ban");
 
@@ -56,7 +77,7 @@ public class EmailUtils {
             Transport.send(message);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Failed to send verification email to " + toEmail, e);
             return false;
         }
     }
