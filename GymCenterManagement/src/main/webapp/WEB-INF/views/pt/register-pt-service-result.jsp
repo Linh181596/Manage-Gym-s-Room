@@ -10,7 +10,7 @@
   =========================================================================
   Document    : register-pt-service-result.jsp
   Created on  : 2026-06-04
-  Author      : Phạm Ngọc Duy (phund)
+  Author      : Nguyễn Đình Phú (phund)
   Description : Giao diện hiển thị kết quả đăng ký gói dịch vụ PT thành công.
   =========================================================================
 --%>

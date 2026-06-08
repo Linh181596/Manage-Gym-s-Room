@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : RegisterPTServiceController.java
  * @description   : Controller điều phối luồng đăng ký gói dịch vụ PT cho hội viên.
- * @author        : Phạm Ngọc Duy (phund)
+ * @author        : Nguyễn Đình Phú (phund)
  * @created       : 2026-06-02
- * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * @last_modified : 2026-06-04 bởi Nguyễn Đình Phú
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.member;

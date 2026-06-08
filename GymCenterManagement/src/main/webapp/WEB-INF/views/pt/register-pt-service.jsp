@@ -8,7 +8,7 @@
   =========================================================================
   Document    : register-pt-service.jsp
   Created on  : 2026-06-04
-  Author      : Phạm Ngọc Duy (phund)
+  Author      : Nguyễn Đình Phú (phund)
   Description : Giao diện xác nhận đăng ký gói dịch vụ PT của hội viên.
   =========================================================================
 --%>

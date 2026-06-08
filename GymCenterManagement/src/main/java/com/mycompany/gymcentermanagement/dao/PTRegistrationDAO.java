@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : PTRegistrationDAO.java
  * @description   : Lớp truy cập dữ liệu để quản lý thông tin đăng ký dịch vụ PT.
- * @author        : Phạm Ngọc Duy (phund)
+ * @author        : Nguyễn Đình Phú (phund)
  * @created       : 2026-06-02
- * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * @last_modified : 2026-06-04 bởi Nguyễn Đình Phú
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao;

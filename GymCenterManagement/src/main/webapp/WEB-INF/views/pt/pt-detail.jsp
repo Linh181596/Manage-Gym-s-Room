@@ -10,7 +10,7 @@
   =========================================================================
   Document    : pt-detail.jsp
   Created on  : 2026-06-04
-  Author      : Phạm Ngọc Duy (phund)
+  Author      : Nguyễn Đình Phú (phund)
   Description : Giao diện chi tiết thông tin và bảng giá dịch vụ của Huấn luyện viên.
   =========================================================================
 --%>

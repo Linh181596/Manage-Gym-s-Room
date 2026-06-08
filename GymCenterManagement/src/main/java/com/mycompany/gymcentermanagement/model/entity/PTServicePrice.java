@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : PTServicePrice.java
  * @description   : Thực thể đại diện cho cấu hình giá và thời hạn của các gói dịch vụ PT.
- * @author        : Phạm Ngọc Duy (phund)
+ * @author        : Nguyễn Đình Phú (phund)
  * @created       : 2026-06-02
- * @last_modified : 2026-06-04 bởi Phạm Ngọc Duy
+ * @last_modified : 2026-06-04 bởi Nguyễn Đình Phú
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.model.entity;
