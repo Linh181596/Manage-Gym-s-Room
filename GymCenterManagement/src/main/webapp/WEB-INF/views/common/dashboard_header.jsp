@@ -80,10 +80,10 @@
                             <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/admin/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-users me-2"></i>Quản lý người dùng</a>
                             <a href="${pageContext.request.contextPath}/admin/packages" class="nav-item nav-link ${fn:contains(reqUri, '/admin/packages') ? 'active' : ''}"><i class="fa fa-box me-2"></i>Gói tập Gym</a>
-                            <a href="${pageContext.request.contextPath}/staff/equipment" class="nav-item nav-link ${(fn:contains(reqUri, '/staff/equipment') && !fn:contains(reqUri, '/staff/equipment-issues')) ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Thiết bị phòng tập</a>
+                            <a href="${pageContext.request.contextPath}/staff/equipment" class="nav-item nav-link ${(fn:contains(reqUri, '/staff/equipment') && !fn:contains(reqUri, '/staff/equipment-issues') && param.from != 'report') ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Thiết bị phòng tập</a>
                             <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/staff/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Đội ngũ HLV (PT)</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-alt me-2"></i>Lớp học & Lịch trình</a>
-                            <a href="${pageContext.request.contextPath}/admin/equipment-reports" class="nav-item nav-link ${(fn:contains(reqUri, '/admin/equipment-reports') || fn:contains(reqUri, '/staff/equipment-issues')) ? 'active' : ''}"><i class="fa fa-chart-bar me-2"></i>Báo cáo thiết bị</a>
+                            <a href="${pageContext.request.contextPath}/admin/equipment-reports" class="nav-item nav-link ${(fn:contains(reqUri, '/admin/equipment-reports') || fn:contains(reqUri, '/staff/equipment-issues') || param.from == 'report') ? 'active' : ''}"><i class="fa fa-chart-bar me-2"></i>Báo cáo thiết bị</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-chart-line me-2"></i>Báo cáo thống kê</a>
                         </c:when>
                         <c:when test="${role == 'Staff'}">

@@ -237,7 +237,7 @@
                                         </a>
                                     </c:when>
                                     <c:otherwise>
-                                        <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment-issues?action=create&equipmentId=${item.equipmentId}" title="Báo cáo sự cố mới">
+                                        <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}&from=report" title="Xem chi tiết thiết bị">
                                             <i class="fa fa-eye"></i>
                                         </a>
                                     </c:otherwise>

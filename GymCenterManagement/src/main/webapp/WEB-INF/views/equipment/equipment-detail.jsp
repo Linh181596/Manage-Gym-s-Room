@@ -25,14 +25,30 @@
                         <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/dashboard">Bảng điều khiển</a></li>
                     </c:otherwise>
                 </c:choose>
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/equipment">Quản lý thiết bị</a></li>
+                <c:choose>
+                    <c:when test="${param.from == 'report'}">
+                        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/equipment-reports">Báo cáo thiết bị</a></li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/equipment">Quản lý thiết bị</a></li>
+                    </c:otherwise>
+                </c:choose>
                 <li class="breadcrumb-item active" aria-current="page">Chi tiết thiết bị</li>
             </ol>
         </nav>
         <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment?action=list">
-                <i class="fa fa-arrow-left me-2"></i>Quay lại
-            </a>
+            <c:choose>
+                <c:when test="${param.from == 'report'}">
+                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/equipment-reports">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment?action=list">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:otherwise>
+            </c:choose>
             <a class="btn btn-warning text-dark" href="${pageContext.request.contextPath}/staff/equipment?action=edit&id=${equipment.equipmentId}">
                 <i class="fa fa-edit me-2"></i>Chỉnh sửa
             </a>
