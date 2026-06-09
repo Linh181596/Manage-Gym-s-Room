@@ -230,9 +230,18 @@
                                 </c:choose>
                             </td>
                             <td class="text-center">
-                                <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}">
-                                    <i class="fa fa-eye"></i>
-                                </a>
+                                <c:choose>
+                                    <c:when test="${item.issueCount > 0}">
+                                        <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment-issues?action=detail&id=${item.latestIssueId}" title="Xem chi tiết sự cố">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment-issues?action=create&equipmentId=${item.equipmentId}" title="Báo cáo sự cố mới">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>

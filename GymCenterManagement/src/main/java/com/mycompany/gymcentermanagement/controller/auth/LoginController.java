@@ -61,6 +61,20 @@ public class LoginController extends HttpServlet {
             }
         }
         
+        // Transfer flash attributes from session to request if they exist
+        if (session != null) {
+            String successMsg = (String) session.getAttribute("successMessage");
+            if (successMsg != null) {
+                request.setAttribute("successMessage", successMsg);
+                session.removeAttribute("successMessage");
+            }
+            String prepopulatedEmailVal = (String) session.getAttribute("prepopulatedEmail");
+            if (prepopulatedEmailVal != null) {
+                request.setAttribute("prepopulatedEmail", prepopulatedEmailVal);
+                session.removeAttribute("prepopulatedEmail");
+            }
+        }
+
         // Show login view
         request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
     }

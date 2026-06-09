@@ -31,6 +31,15 @@ public class Equipment {
     private LocalDateTime updatedDate;
     private boolean deleted;
     private int issueCount;
+    private int latestIssueId;
+
+    public int getLatestIssueId() {
+        return latestIssueId;
+    }
+
+    public void setLatestIssueId(int latestIssueId) {
+        this.latestIssueId = latestIssueId;
+    }
 
     public int getEquipmentId() {
         return equipmentId;

@@ -241,13 +241,21 @@ public class EquipmentIssueDAO {
     }
 
     // Runtime guard for older DB copies; the SQL migration file is the preferred fix.
+    private static boolean checkedIssueImageColumn = false;
+
     private void ensureIssueImageColumn() throws SQLException {
+        if (checkedIssueImageColumn) {
+            return;
+        }
         try (Connection connection = DBContext.getConnection()) {
             ensureIssueImageColumn(connection);
         }
     }
 
     private void ensureIssueImageColumn(Connection connection) throws SQLException {
+        if (checkedIssueImageColumn) {
+            return;
+        }
         String checkSql = """
                 SELECT COUNT(*) AS ColumnCount
                 FROM INFORMATION_SCHEMA.COLUMNS
@@ -256,6 +264,7 @@ public class EquipmentIssueDAO {
         try (PreparedStatement checkStatement = connection.prepareStatement(checkSql);
                 ResultSet resultSet = checkStatement.executeQuery()) {
             if (resultSet.next() && resultSet.getInt("ColumnCount") > 0) {
+                checkedIssueImageColumn = true;
                 return;
             }
         }
@@ -263,5 +272,6 @@ public class EquipmentIssueDAO {
                 "ALTER TABLE EquipmentIssues ADD IssueImageURL VARCHAR(255) NULL")) {
             alterStatement.executeUpdate();
         }
+        checkedIssueImageColumn = true;
     }
 }
