@@ -31,9 +31,10 @@ public class VerifyEmailController extends HttpServlet {
         try {
             String verifiedEmail = userDAO.verifyAccountAndGetEmail(token.trim());
             if (verifiedEmail != null) {
-                request.setAttribute("successMessage", "Kích hoạt tài khoản thành công! Vui lòng đăng nhập.");
-                request.setAttribute("prepopulatedEmail", verifiedEmail);
-                request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                jakarta.servlet.http.HttpSession session = request.getSession(true);
+                session.setAttribute("successMessage", "Kích hoạt tài khoản thành công! Vui lòng đăng nhập.");
+                session.setAttribute("prepopulatedEmail", verifiedEmail);
+                response.sendRedirect(request.getContextPath() + "/login");
             } else {
                 request.setAttribute("error", "Liên kết xác nhận không hợp lệ, đã được sử dụng hoặc đã hết hạn (quá 24 giờ)!");
                 request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);

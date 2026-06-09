@@ -58,13 +58,13 @@
                 </div>
                 <div class="col-md-3">
                     <label for="phone" class="form-label fw-semibold text-secondary">Số điện thoại</label>
-                    <input id="phone" type="text" name="phone" class="form-control" placeholder="Ví dụ: 0912345678" maxlength="10">
+                    <input id="phone" type="text" name="phone" class="form-control" placeholder="Ví dụ: 0912345678" pattern="^0[0-9]{9}$" title="Số điện thoại phải bắt đầu bằng số 0 và gồm 10 chữ số" maxlength="10">
                 </div>
                 <div class="col-md-3">
                     <label for="type" class="form-label fw-semibold text-secondary">Gói tập đăng ký ban đầu</label>
                     <select id="type" name="type" class="form-select">
-                        <option value="Gym Basic 1 Month">Gói Cơ Bản (Gym Basic - 1 Tháng)</option>
-                        <option value="Gym Premium 3 Months">Gói Cao Cấp (Gym Premium - 3 Tháng)</option>
+                        <option value="Cơ bản">Gói Cơ Bản (Gym Basic - 1 Tháng)</option>
+                        <option value="Cao cấp">Gói Cao Cấp (Gym Premium - 3 Tháng)</option>
                     </select>
                 </div>
             </div>
@@ -92,8 +92,8 @@
                         <label for="memberType" class="form-label fw-semibold text-secondary">Phân loại gói tập</label>
                         <select id="memberType" name="memberType" class="form-select">
                             <option value="" <%= memberType.isEmpty() ? "selected" : "" %>>— Tất cả các gói —</option>
-                            <option value="Basic" <%="Basic".equals(memberType)?"selected":"" %>>Gói Cơ Bản (Basic)</option>
-                            <option value="Premium" <%="Premium".equals(memberType)?"selected":"" %>>Gói Cao Cấp (Premium)</option>
+                            <option value="Cơ bản" <%="Cơ bản".equals(memberType)?"selected":"" %>>Gói Cơ Bản (Basic)</option>
+                            <option value="Cao cấp" <%="Cao cấp".equals(memberType)?"selected":"" %>>Gói Cao Cấp (Premium)</option>
                         </select>
                     </div>
                     <div class="d-grid gap-2 mt-4">

@@ -65,7 +65,8 @@ public class EmailUtils {
             message.setSubject("Vui long xac thuc tai khoan GCMS cua ban");
 
             // Build the verification link. Adjust base path dynamically if possible, or use standard relative mapping.
-            String verifyLink = "http://localhost:8080/GymCenterManagement/verify?token=" + token;
+            String baseUrl = properties.getProperty("app.base.url", "http://localhost:8080/GymCenterManagement");
+            String verifyLink = baseUrl + "/verify?token=" + token;
             String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
                     + "<h2 style='color: #007bff;'>Chào mừng bạn đến với Gym Center Management System</h2>"
                     + "<p>Vui lòng click vào nút bên dưới để kích hoạt tài khoản của bạn:</p>"

@@ -86,7 +86,22 @@ public class ManageMemberController extends HttpServlet {
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
         String type = request.getParameter("type");
-        
+        // Server-side validation
+        if (name == null || name.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+            request.setAttribute("errorMessage", "Không thể thêm hội viên mới. Họ tên và email không được để trống.");
+            showMemberList(request, response);
+            return;
+        }
+
+        if (phone != null && !phone.trim().isEmpty()) {
+            String trimmedPhone = phone.trim();
+            if (!trimmedPhone.matches("^0[0-9]{9}$")) {
+                request.setAttribute("errorMessage", "Không thể thêm hội viên mới. Số điện thoại phải bắt đầu bằng số 0 và gồm đúng 10 chữ số.");
+                showMemberList(request, response);
+                return;
+            }
+        }
+
         boolean success = gymDAO.addMember(name, email, phone, type);
         
         if (success) {

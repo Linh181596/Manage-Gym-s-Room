@@ -113,16 +113,37 @@ public class GymDAO {
                 }
             }
 
-            Integer packageId = findPackageId(conn, membershipType);
+            Integer packageId = null;
+            int durationMonths = 1;
+            String name = blankToNull(membershipType);
+            if (name != null) {
+                try (PreparedStatement psPack = conn.prepareStatement("""
+                        SELECT TOP 1 PackageID, DurationMonths
+                        FROM [dbo].[GymPackages]
+                        WHERE IsDeleted = 0 AND Status = 'Active' AND (PackageName = ? OR PackageName LIKE ?)
+                        ORDER BY PackageID
+                        """)) {
+                    psPack.setString(1, name);
+                    psPack.setString(2, "%" + name + "%");
+                    try (ResultSet rsPack = psPack.executeQuery()) {
+                        if (rsPack.next()) {
+                            packageId = rsPack.getInt("PackageID");
+                            durationMonths = rsPack.getInt("DurationMonths");
+                        }
+                    }
+                }
+            }
+
             if (packageId != null) {
                 int memberId = findMemberId(conn, userId);
                 try (PreparedStatement psPackage = conn.prepareStatement("""
                         INSERT INTO [dbo].[MemberPackages]
                         (MemberID, PackageID, StartDate, EndDate, Status, CreatedBy, IsDeleted)
-                        VALUES (?, ?, CAST(GETDATE() AS date), DATEADD(month, 1, CAST(GETDATE() AS date)), 'Active', 'System', 0)
+                        VALUES (?, ?, CAST(GETDATE() AS date), DATEADD(month, ?, CAST(GETDATE() AS date)), 'Active', 'System', 0)
                         """)) {
                     psPackage.setInt(1, memberId);
                     psPackage.setInt(2, packageId);
+                    psPackage.setInt(3, durationMonths);
                     psPackage.executeUpdate();
                 }
             }

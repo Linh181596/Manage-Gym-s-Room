@@ -54,7 +54,16 @@ public class ManageEquipmentIssueController extends HttpServlet {
 
         try {
             switch (action) {
-                case "create" -> showForm(request, response, new EquipmentIssue());
+                case "create" -> {
+                    EquipmentIssue newIssue = new EquipmentIssue();
+                    String eqIdStr = request.getParameter("equipmentId");
+                    if (eqIdStr != null && !eqIdStr.isBlank()) {
+                        try {
+                            newIssue.setEquipmentId(Integer.parseInt(eqIdStr));
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    showForm(request, response, newIssue);
+                }
                 case "edit" -> showStatusForm(request, response);
                 case "detail" -> showDetail(request, response);
                 default -> list(request, response);
@@ -82,7 +91,11 @@ public class ManageEquipmentIssueController extends HttpServlet {
             } else {
                 service.createIssue(readIssue(request, currentUser.getUserId(), currentUser.getFullName()));
             }
-            response.sendRedirect(request.getContextPath() + "/staff/equipment-issues?action=list");
+            if ("Admin".equals(currentUser.getRole())) {
+                response.sendRedirect(request.getContextPath() + "/admin/equipment-reports");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/staff/equipment-issues?action=list");
+            }
         } catch (SQLException | IllegalArgumentException | IOException | ServletException ex) {
             request.setAttribute("error", ex.getMessage());
             try {

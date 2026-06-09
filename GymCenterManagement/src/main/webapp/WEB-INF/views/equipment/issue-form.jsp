@@ -26,13 +26,29 @@
                         <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/dashboard">Bảng điều khiển</a></li>
                     </c:otherwise>
                 </c:choose>
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/equipment-issues">Sự cố thiết bị</a></li>
+                <c:choose>
+                    <c:when test="${sessionScope.currentUser.role == 'Admin'}">
+                        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/equipment-reports">Báo cáo thiết bị</a></li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/equipment-issues">Sự cố thiết bị</a></li>
+                    </c:otherwise>
+                </c:choose>
                 <li class="breadcrumb-item active" aria-current="page">${issue.issueId > 0 ? 'Cập nhật tiến độ' : 'Báo cáo sự cố mới'}</li>
             </ol>
         </nav>
-        <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=list">
-            <i class="fa fa-arrow-left me-2"></i>Quay lại
-        </a>
+        <c:choose>
+            <c:when test="${sessionScope.currentUser.role == 'Admin'}">
+                <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/equipment-reports">
+                    <i class="fa fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </c:when>
+            <c:otherwise>
+                <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=list">
+                    <i class="fa fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </c:otherwise>
+        </c:choose>
     </div>
 
     <!-- Alert Messages -->
@@ -144,7 +160,14 @@
             </div>
             
             <div class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top">
-                <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=list">Hủy bỏ</a>
+                <c:choose>
+                    <c:when test="${sessionScope.currentUser.role == 'Admin'}">
+                        <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/equipment-reports">Hủy bỏ</a>
+                    </c:when>
+                    <c:otherwise>
+                        <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=list">Hủy bỏ</a>
+                    </c:otherwise>
+                </c:choose>
                 <button type="submit" class="btn btn-danger">
                     <i class="fa fa-save me-2"></i> ${issue.issueId > 0 ? 'Cập nhật sự cố' : 'Gửi báo cáo'}
                 </button>
