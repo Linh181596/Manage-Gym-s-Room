@@ -51,7 +51,11 @@ public class LoginController extends HttpServlet {
                         if (autoUser != null && autoUser.getAccountStatus() == User.AccountStatus.Active) {
                             HttpSession newSession = request.getSession(true);
                             newSession.setAttribute("currentUser", autoUser);
-                            redirectToDashboard(autoUser, request, response);
+                            if (autoUser.isMustChangePassword()) {
+                                response.sendRedirect(request.getContextPath() + "/change-password");
+                            } else {
+                                redirectToDashboard(autoUser, request, response);
+                            }
                             return;
                         }
                     } catch (Exception e) {
@@ -128,8 +132,12 @@ public class LoginController extends HttpServlet {
                 }
             }
             
-            // Redirect based on User Role
-            redirectToDashboard(authenticatedUser, request, response);
+            // Redirect to change password if required, else to dashboard
+            if (authenticatedUser.isMustChangePassword()) {
+                response.sendRedirect(request.getContextPath() + "/change-password");
+            } else {
+                redirectToDashboard(authenticatedUser, request, response);
+            }
         } else {
             // Failure: Return error feedback
             request.setAttribute("errorMessage", "Email hoặc mật khẩu không hợp lệ, hoặc tài khoản chưa kích hoạt.");

@@ -53,6 +53,12 @@ public class AuthenticationFilter extends HttpFilter {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
+        // If user must change password, enforce redirection to /change-password
+        if (user.isMustChangePassword()) {
+            response.sendRedirect(request.getContextPath() + "/change-password");
+            return;
+        }
         
         // RBAC Check based on request path
         String requestURI = request.getRequestURI();
