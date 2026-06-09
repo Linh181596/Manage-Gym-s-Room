@@ -395,24 +395,7 @@ public class GymDAO {
         }
     }
 
-    private Integer findPackageId(Connection conn, String packageName) throws SQLException {
-        String name = blankToNull(packageName);
-        if (name == null) {
-            return null;
-        }
-        try (PreparedStatement ps = conn.prepareStatement("""
-                SELECT TOP 1 PackageID
-                FROM [dbo].[GymPackages]
-                WHERE IsDeleted = 0 AND Status = 'Active' AND (PackageName = ? OR PackageName LIKE ?)
-                ORDER BY PackageID
-                """)) {
-            ps.setString(1, name);
-            ps.setString(2, "%" + name + "%");
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getInt("PackageID") : null;
-            }
-        }
-    }
+
 
     private int findMemberId(Connection conn, int userId) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("SELECT MemberID FROM [dbo].[Members] WHERE UserID = ?")) {
