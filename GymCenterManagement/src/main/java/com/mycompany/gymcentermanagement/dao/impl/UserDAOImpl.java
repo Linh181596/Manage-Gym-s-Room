@@ -56,13 +56,21 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         // Map String to Role Enum
         String roleStr = rs.getString("RoleName");
         if (roleStr != null) {
-            user.setRole(User.Role.valueOf(roleStr));
+            try {
+                user.setRole(User.Role.valueOf(roleStr));
+            } catch (IllegalArgumentException e) {
+                user.setRole(null);
+            }
         }
 
         // Map String to AccountStatus Enum
         String statusStr = rs.getString("Status");
         if (statusStr != null) {
-            user.setAccountStatus(User.AccountStatus.valueOf(statusStr));
+            try {
+                user.setAccountStatus(User.AccountStatus.valueOf(statusStr));
+            } catch (IllegalArgumentException e) {
+                user.setAccountStatus(User.AccountStatus.Inactive);
+            }
         }
 
         user.setCreatedBy(rs.getString("CreatedBy"));
@@ -617,6 +625,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         PreparedStatement stmtFind = null;
         PreparedStatement stmtUpdateToken = null;
         PreparedStatement stmtUpdateUser = null;
+        PreparedStatement stmtUpdateMember = null;
         ResultSet rs = null;
 
         boolean isLocalTx = (this.connection == null);
@@ -658,7 +667,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                         SET IsUsed = 1
                         WHERE TokenValue = ?
                           AND TokenType = 'VERIFICATION'
-                    """;
+                     """;
 
             stmtUpdateToken = conn.prepareStatement(sqlUpdateToken);
             stmtUpdateToken.setString(1, tokenValue);
@@ -676,6 +685,18 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             stmtUpdateUser.setInt(1, userId);
             stmtUpdateUser.executeUpdate();
 
+            String sqlUpdateMember = """
+                        UPDATE Members
+                        SET MembershipStatus = 'Active',
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                          AND IsDeleted = 0
+                    """;
+
+            stmtUpdateMember = conn.prepareStatement(sqlUpdateMember);
+            stmtUpdateMember.setInt(1, userId);
+            stmtUpdateMember.executeUpdate();
+
             if (isLocalTx) {
                 conn.commit();
             }
@@ -688,6 +709,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
+            if (stmtUpdateMember != null) stmtUpdateMember.close();
             if (stmtUpdateUser != null) stmtUpdateUser.close();
             if (stmtUpdateToken != null) stmtUpdateToken.close();
             closeResource(conn, stmtFind, rs);

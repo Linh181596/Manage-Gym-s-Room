@@ -12,7 +12,7 @@ public class User {
     }
 
     public enum AccountStatus {
-        Active, Inactive, Pending, Rejected
+        Active, Inactive, Pending, Rejected, Locked
     }
 
     private int userId;

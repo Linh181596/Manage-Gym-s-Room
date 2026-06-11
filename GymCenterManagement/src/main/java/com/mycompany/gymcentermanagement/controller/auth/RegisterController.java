@@ -190,8 +190,15 @@ public class RegisterController extends HttpServlet {
             boolean isRegistered = userDAO.registerMember(user, member, token);
 
             if (isRegistered) {
+                // Tự động dựng base URL từ request hiện tại để luôn chính xác cổng và context path
+                String scheme = request.getScheme();
+                String serverName = request.getServerName();
+                int serverPort = request.getServerPort();
+                String contextPath = request.getContextPath();
+                String baseUrl = scheme + "://" + serverName + ":" + serverPort + contextPath;
+
                 // Gửi email kích hoạt tài khoản thông qua SMTP Server cấu hình từ mail.properties
-                boolean isEmailSent = EmailUtils.sendVerificationEmail(email, tokenValue);
+                boolean isEmailSent = EmailUtils.sendVerificationEmail(email, tokenValue, baseUrl);
                 if (isEmailSent) {
                     request.setAttribute("message", "Đăng ký thành công! Hệ thống đã gửi một liên kết xác minh. Vui lòng kiểm tra hộp thư đến để kích hoạt tài khoản của bạn.");
                 } else {

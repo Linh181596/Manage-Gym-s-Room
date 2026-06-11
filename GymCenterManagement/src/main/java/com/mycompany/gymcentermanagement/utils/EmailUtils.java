@@ -49,6 +49,19 @@ public class EmailUtils {
      * @return true if sent successfully, false otherwise.
      */
     public static boolean sendVerificationEmail(String toEmail, String token) {
+        String baseUrl = properties.getProperty("app.base.url", "http://localhost:8080/GymCenterManagement");
+        return sendVerificationEmail(toEmail, token, baseUrl);
+    }
+
+    /**
+     * Sends a verification email containing the activation link/code to the user with a dynamic base URL.
+     * 
+     * @param toEmail The recipient's email address.
+     * @param token   The verification token value.
+     * @param baseUrl The dynamic base URL of the application.
+     * @return true if sent successfully, false otherwise.
+     */
+    public static boolean sendVerificationEmail(String toEmail, String token, String baseUrl) {
         Properties props = new Properties();
         props.put("mail.smtp.auth", properties.getProperty("mail.smtp.auth", "true"));
         props.put("mail.smtp.starttls.enable", properties.getProperty("mail.smtp.starttls.enable", "true"));
@@ -73,8 +86,7 @@ public class EmailUtils {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Vui long xac thuc tai khoan GCMS cua ban");
 
-            // Build the verification link. Adjust base path dynamically if possible, or use standard relative mapping.
-            String baseUrl = properties.getProperty("app.base.url", "http://localhost:8080/GymCenterManagement");
+            // Build the verification link using the provided dynamic baseUrl
             String verifyLink = baseUrl + "/verify?token=" + token;
             String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
                     + "<h2 style='color: #007bff;'>Chào mừng bạn đến với Gym Center Management System</h2>"
