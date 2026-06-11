@@ -20,6 +20,7 @@ public interface GymPackageDAO {
     List<GymPackage> findAllActive() throws SQLException;
     List<GymPackage> findAll() throws SQLException;
     GymPackage findById(int packageId) throws SQLException;
+    GymPackage findByName(String packageName) throws SQLException;
     boolean insert(GymPackage pkg) throws SQLException;
     boolean update(GymPackage pkg) throws SQLException;
     boolean delete(int packageId) throws SQLException;

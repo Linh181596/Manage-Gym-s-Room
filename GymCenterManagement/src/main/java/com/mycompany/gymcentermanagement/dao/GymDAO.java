@@ -18,7 +18,7 @@ public class GymDAO {
         String sql = """
                 SELECT u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                        m.MemberID, m.MembershipStatus, m.CreatedDate,
-                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' THEN gp.PackageName END), m.MembershipStatus) AS MembershipType
+                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN gp.PackageName END), m.MembershipStatus) AS MembershipType
                 FROM [dbo].[Users] u
                 INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
                 LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
@@ -209,25 +209,43 @@ public class GymDAO {
         String sql = """
                 SELECT TOP 1 u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                        m.MemberID, m.MembershipStatus, m.CreatedDate,
-                       gp.PackageName
+                       gp.PackageName, mp.EndDate, mp.Status AS PackageStatus
                 FROM [dbo].[Users] u
                 INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
                 LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
                 LEFT JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID AND gp.IsDeleted = 0
                 WHERE u.UserID = ? AND u.IsDeleted = 0 AND m.IsDeleted = 0
-                ORDER BY mp.EndDate DESC
+                ORDER BY CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN 1 ELSE 2 END, mp.EndDate DESC
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    String packageName = rs.getString("PackageName");
+                    Date endDate = rs.getDate("EndDate");
+                    String packageStatus = rs.getString("PackageStatus");
+                    
+                    String type = "Chưa đăng ký gói";
+                    if (packageName != null && "Active".equalsIgnoreCase(packageStatus)) {
+                        if (endDate != null) {
+                            java.time.LocalDate endLd = endDate.toLocalDate();
+                            java.time.LocalDate todayLd = java.time.LocalDate.now();
+                            if (!endLd.isBefore(todayLd)) {
+                                type = packageName;
+                            }
+                        }
+                    }
+                    if ("Chưa đăng ký gói".equals(type)) {
+                        type = coalesce(null, rs.getString("MembershipStatus"));
+                    }
+
                     profile.put("userId", String.valueOf(rs.getInt("UserID")));
                     profile.put("memberId", String.valueOf(rs.getInt("MemberID")));
                     profile.put("fullName", safe(rs.getString("DisplayName")));
                     profile.put("email", safe(rs.getString("Email")));
                     profile.put("phone", safe(rs.getString("Phone")));
-                    profile.put("type", coalesce(rs.getString("PackageName"), rs.getString("MembershipStatus")));
+                    profile.put("type", type);
                     profile.put("status", safe(rs.getString("Status")));
                     profile.put("date", String.valueOf(rs.getTimestamp("CreatedDate")));
                 }

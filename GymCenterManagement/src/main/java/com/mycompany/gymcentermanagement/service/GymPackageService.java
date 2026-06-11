@@ -20,4 +20,5 @@ public interface GymPackageService {
     boolean createPackage(GymPackage pkg) throws SQLException;
     boolean updatePackage(GymPackage pkg) throws SQLException;
     boolean deletePackage(int id) throws SQLException;
+    boolean isPackageNameExists(String name, int excludeId) throws SQLException;
 }

@@ -58,7 +58,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="phone" class="form-label fw-semibold text-secondary">Số điện thoại</label>
-                    <input id="phone" type="text" name="phone" class="form-control" placeholder="Ví dụ: 0912345678" pattern="^0[0-9]{9}$" title="Số điện thoại phải bắt đầu bằng số 0 và gồm 10 chữ số" maxlength="10">
+                    <input id="phone" type="text" name="phone" class="form-control" placeholder="Ví dụ: 0912345678" pattern="^0[0-9]{9}$" title="Số điện thoại phải bắt đầu bằng số 0 và gồm 10 chữ số" maxlength="10" oninvalid="this.setCustomValidity('Số điện thoại phải bắt đầu bằng số 0 và gồm đúng 10 chữ số')" oninput="this.setCustomValidity('')">
                 </div>
                 <div class="col-md-3">
                     <label for="type" class="form-label fw-semibold text-secondary">Gói tập đăng ký ban đầu</label>
