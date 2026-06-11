@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : UserDAOImpl.java
+ * @description   : Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ liệu cho Users và Profiles.
+ * @author        : duongnd
+ * @created       : 2026-06-05
+ * @last_modified : 2026-06-11 bởi Antigravity
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.dao.impl;
 
 import com.mycompany.gymcentermanagement.dao.BaseDAO;
@@ -6,6 +15,7 @@ import com.mycompany.gymcentermanagement.model.entity.Member;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.model.entity.UserToken;
 import com.mycompany.gymcentermanagement.utils.DBContext;
+import com.mycompany.gymcentermanagement.dto.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -808,5 +818,201 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             closeResource(conn, stmt, rs);
         }
         return list;
+    }
+
+    // --- Profile Methods (UC-03) ---
+
+    @Override
+    public String getHighestPriorityRole(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String roleName = null;
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT TOP 1 r.RoleName FROM UserRoles ur " +
+                         "INNER JOIN Roles r ON ur.RoleID = r.RoleID " +
+                         "WHERE ur.UserID = ? " +
+                         "ORDER BY r.RoleLevel ASC";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                roleName = rs.getString("RoleName");
+            }
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+        return roleName;
+    }
+
+    @Override
+    public UserProfileBaseDTO getUserProfileById(int userId) throws SQLException {
+        String roleName = getHighestPriorityRole(userId);
+        if (roleName == null) return null;
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            
+            if ("Admin".equalsIgnoreCase(roleName)) {
+                String sql = "SELECT UserID, Email, DisplayName, Phone FROM Users " +
+                             "WHERE UserID = ? AND IsDeleted = 0";
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, userId);
+                rs = ps.executeQuery();
+                if (rs.next()) {
+                    UserProfileBaseDTO adminProfile = new UserProfileBaseDTO();
+                    setBaseProfileData(adminProfile, rs, roleName);
+                    return adminProfile;
+                }
+            }
+            else if ("Member".equalsIgnoreCase(roleName)) {
+                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, m.Gender, m.DateOfBirth, m.Address, m.MembershipStatus " +
+                             "FROM Users u INNER JOIN Members m ON u.UserID = m.UserID " +
+                             "WHERE u.UserID = ? AND u.IsDeleted = 0 AND m.IsDeleted = 0";
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, userId);
+                rs = ps.executeQuery();
+                if (rs.next()) {
+                    MemberProfileDTO member = new MemberProfileDTO();
+                    setBaseProfileData(member, rs, roleName);
+                    member.setGender(rs.getString("Gender"));
+                    member.setDateOfBirth(rs.getDate("DateOfBirth"));
+                    member.setAddress(rs.getString("Address"));
+                    member.setMembershipStatus(rs.getString("MembershipStatus"));
+                    return member;
+                }
+            } 
+            else if ("PT".equalsIgnoreCase(roleName)) {
+                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, pt.FullName, pt.Specialization, pt.Description, " +
+                             "pt.CareerStartDate, pt.AvatarPath, pt.CertificateFileName, pt.CertificateFilePath " +
+                             "FROM Users u INNER JOIN PersonalTrainers pt ON u.UserID = pt.UserID " +
+                             "WHERE u.UserID = ? AND u.IsDeleted = 0 AND pt.IsDeleted = 0";
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, userId);
+                rs = ps.executeQuery();
+                if (rs.next()) {
+                    PTProfileDTO pt = new PTProfileDTO();
+                    setBaseProfileData(pt, rs, roleName);
+                    pt.setFullName(rs.getString("FullName")); 
+                    pt.setSpecialization(rs.getString("Specialization"));
+                    pt.setDescription(rs.getString("Description"));
+                    pt.setAvatarPath(rs.getString("AvatarPath"));
+                    pt.setCertificateFileName(rs.getString("CertificateFileName"));
+                    pt.setCertificateFilePath(rs.getString("CertificateFilePath"));
+                    
+                    Date startDateSql = rs.getDate("CareerStartDate");
+                    if (startDateSql != null) {
+                        java.time.LocalDate startDate = startDateSql.toLocalDate();
+                        java.time.LocalDate currentDate = java.time.LocalDate.now();
+                        long years = java.time.temporal.ChronoUnit.YEARS.between(startDate, currentDate);
+                        pt.setExperienceYears((int) years);
+                    }
+                    return pt;
+                }
+            } 
+            else if ("Staff".equalsIgnoreCase(roleName)) {
+                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, s.Position " +
+                             "FROM Users u INNER JOIN Staffs s ON u.UserID = s.UserID " +
+                             "WHERE u.UserID = ? AND u.IsDeleted = 0 AND s.IsDeleted = 0";
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, userId);
+                rs = ps.executeQuery();
+                if (rs.next()) {
+                    StaffProfileDTO staff = new StaffProfileDTO();
+                    setBaseProfileData(staff, rs, roleName);
+                    staff.setPosition(rs.getString("Position"));
+                    return staff;
+                }
+            }
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+        return null;
+    }
+
+    private void setBaseProfileData(UserProfileBaseDTO dto, ResultSet rs, String roleName) throws SQLException {
+        dto.setUserId(rs.getInt("UserID"));
+        dto.setEmail(rs.getString("Email"));
+        dto.setDisplayName(rs.getString("DisplayName"));
+        dto.setPhone(rs.getString("Phone"));
+        dto.setRoleName(roleName);
+    }
+
+    @Override
+    public boolean updateUserProfile(UserProfileBaseDTO profileDto, String roleName) throws SQLException {
+        String sqlUser = "UPDATE Users SET DisplayName = ?, Phone = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
+        Connection conn = null;
+        PreparedStatement psUser = null;
+        PreparedStatement psSub = null;
+        boolean success = false;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            // 1. Cập nhật dữ liệu cốt lõi vào bảng Users chính
+            psUser = conn.prepareStatement(sqlUser);
+            psUser.setString(1, profileDto.getDisplayName());
+            psUser.setString(2, profileDto.getPhone());
+            psUser.setInt(3, profileDto.getUserId());
+            int userRows = psUser.executeUpdate();
+
+            int subRows = 1; // Mặc định hợp lệ cho trường hợp Admin hoặc Staff (không có bảng phụ cần cập nhật qua trang profile của Dương)
+
+            // 2. Rẽ nhánh cập nhật dữ liệu đặc thù phụ thuộc theo vai trò
+            if ("Member".equalsIgnoreCase(roleName) && profileDto instanceof MemberProfileDTO) {
+                MemberProfileDTO memberDto = (MemberProfileDTO) profileDto;
+                String sqlMember = "UPDATE Members SET Gender = ?, DateOfBirth = ?, Address = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
+                psSub = conn.prepareStatement(sqlMember);
+                psSub.setString(1, memberDto.getGender());
+                psSub.setDate(2, memberDto.getDateOfBirth());
+                psSub.setString(3, memberDto.getAddress());
+                psSub.setInt(4, memberDto.getUserId());
+                subRows = psSub.executeUpdate();
+            } 
+            else if ("PT".equalsIgnoreCase(roleName) && profileDto instanceof PTProfileDTO) {
+                PTProfileDTO ptDto = (PTProfileDTO) profileDto;
+                String sqlPT = "UPDATE PersonalTrainers SET FullName = ?, Description = ?, AvatarPath = ?, " +
+                               "CertificateFileName = ?, CertificateFilePath = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
+                psSub = conn.prepareStatement(sqlPT);
+                psSub.setString(1, ptDto.getFullName());
+                psSub.setString(2, ptDto.getDescription());
+                psSub.setString(3, ptDto.getAvatarPath());
+                psSub.setString(4, ptDto.getCertificateFileName());
+                psSub.setString(5, ptDto.getCertificateFilePath());
+                psSub.setInt(6, ptDto.getUserId());
+                subRows = psSub.executeUpdate();
+            }
+
+            // 3. Xác nhận lưu dữ liệu thành công nếu cả 2 khối lệnh thực thi trơn tru
+            if (userRows > 0 && subRows > 0) {
+                success = true;
+            }
+
+            if (isLocalTx) {
+                if (success) {
+                    conn.commit();
+                } else {
+                    conn.rollback();
+                }
+            }
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (psSub != null) psSub.close();
+            closeResource(conn, psUser, null);
+        }
+        return success;
     }
 }

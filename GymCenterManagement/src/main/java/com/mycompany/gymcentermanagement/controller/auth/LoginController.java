@@ -1,3 +1,14 @@
+/**
+ * =========================================================================
+ * @file          : LoginController.java
+ * @description   : Controller xử lý luồng đăng nhập hệ thống (UC-01). 
+ *                  Hỗ trợ xác thực tài khoản, mã hóa SHA-256, kiểm tra trạng thái (Active/Inactive),
+ *                  xử lý tính năng "Remember Me" qua Token và điều hướng về các Dashboard theo Role.
+ * @author        : duongnd
+ * @created       : 2026-06-05
+ * @last_modified : 2026-06-11 bởi Antigravity
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.auth;
 
 import com.mycompany.gymcentermanagement.dao.UserDAO;
@@ -6,6 +17,7 @@ import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.model.entity.UserToken;
 import com.mycompany.gymcentermanagement.service.UserService;
 import com.mycompany.gymcentermanagement.service.impl.UserServiceImpl;
+import com.mycompany.gymcentermanagement.utils.PasswordUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -17,10 +29,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Controller to handle Authentication (Login) GET and POST requests.
- * Mapped to /login.
- */
 @WebServlet(name = "LoginController", urlPatterns = {"/login"})
 public class LoginController extends HttpServlet {
     
@@ -31,7 +39,7 @@ public class LoginController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // If already logged in, redirect straight to their respective dashboard
+        // Nếu đã đăng nhập trước đó, chuyển thẳng tới Dashboard tương ứng
         HttpSession session = request.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("currentUser") : null;
         
@@ -40,7 +48,7 @@ public class LoginController extends HttpServlet {
             return;
         }
 
-        // Check remember me cookie
+        // Tự động đăng nhập qua Cookie "Remember Me"
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -65,7 +73,7 @@ public class LoginController extends HttpServlet {
             }
         }
         
-        // Transfer flash attributes from session to request if they exist
+        // Chuyển tiếp các thông báo Toast/Flash từ Session sang Request nếu có
         if (session != null) {
             String successMsg = (String) session.getAttribute("successMessage");
             if (successMsg != null) {
@@ -79,26 +87,29 @@ public class LoginController extends HttpServlet {
             }
         }
 
-        // Show login view
+        // Hiển thị giao diện Đăng nhập ban đầu
         request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
         
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String rememberMe = request.getParameter("rememberMe");
         
-        // Validation
+        request.setAttribute("prepopulatedEmail", email);
+        
+        // 1. Kiểm tra trống các trường thông tin bắt buộc
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            request.setAttribute("errorMessage", "Email và Mật khẩu không được để trống.");
+            request.setAttribute("errorMessage", "Email và mật khẩu không được để trống!");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
             return;
         }
         
-        // Authenticate user (supporting temporary demo bypass)
+        // Luồng bỏ qua tạm thời cho tài khoản demo của hệ thống
         User authenticatedUser = null;
         if ("admin@gym.com".equalsIgnoreCase(email.trim()) && "admin123".equals(password)) {
             authenticatedUser = new User(1, "admin@gym.com", "", "Demo Admin", "0987654321", User.Role.Admin, User.AccountStatus.Active);
@@ -107,15 +118,43 @@ public class LoginController extends HttpServlet {
         } else if ("member@gym.com".equalsIgnoreCase(email.trim()) && "member123".equals(password)) {
             authenticatedUser = new User(4, "member@gym.com", "", "Demo Member", "0987654321", User.Role.Member, User.AccountStatus.Active);
         } else {
-            authenticatedUser = userService.login(email.trim(), password);
+            try {
+                // Xác thực tài khoản dựa trên truy vấn CSDL
+                User user = userDAO.findByEmail(email.trim());
+                String hashedInputPassword = PasswordUtils.hashPassword(password);
+                
+                if (user == null || !user.getPasswordHash().equals(hashedInputPassword)) {
+                    request.setAttribute("errorMessage", "Email hoặc mật khẩu không chính xác!");
+                    request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                    return;
+                }
+                
+                // Kiểm tra trạng thái kích hoạt hoặc khóa tài khoản của người dùng
+                if (user.getAccountStatus() == User.AccountStatus.Inactive) {
+                    request.setAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt! Vui lòng kiểm tra email kích hoạt.");
+                    request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                    return;
+                } else if (user.getAccountStatus() == User.AccountStatus.Rejected) {
+                    request.setAttribute("errorMessage", "Tài khoản này đã bị khóa hoặc từ chối truy cập.");
+                    request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                    return;
+                }
+                
+                authenticatedUser = user;
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("errorMessage", "Lỗi kết nối hệ thống: " + e.getMessage());
+                request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                return;
+            }
         }
         
         if (authenticatedUser != null) {
-            // Success: Create session and save user info
+            // Thành công: Tạo Session mới và lưu giữ thực thể User
             HttpSession session = request.getSession(true);
             session.setAttribute("currentUser", authenticatedUser);
 
-            // Handle Remember Me token creation
+            // Xử lý lưu Token "Remember Me"
             if (rememberMe != null && "true".equals(rememberMe)) {
                 String randomToken = UUID.randomUUID().toString();
                 LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
@@ -132,16 +171,12 @@ public class LoginController extends HttpServlet {
                 }
             }
             
-            // Redirect to change password if required, else to dashboard
+            // Điều hướng dựa vào yêu cầu thay đổi mật khẩu ban đầu
             if (authenticatedUser.isMustChangePassword()) {
                 response.sendRedirect(request.getContextPath() + "/change-password");
             } else {
                 redirectToDashboard(authenticatedUser, request, response);
             }
-        } else {
-            // Failure: Return error feedback
-            request.setAttribute("errorMessage", "Email hoặc mật khẩu không hợp lệ, hoặc tài khoản chưa kích hoạt.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
         }
     }
     
