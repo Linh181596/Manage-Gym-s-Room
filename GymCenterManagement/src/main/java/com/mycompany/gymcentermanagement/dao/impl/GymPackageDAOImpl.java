@@ -189,6 +189,28 @@ public class GymPackageDAOImpl extends BaseDAO implements GymPackageDAO {
     }
 
     @Override
+    public GymPackage findByName(String packageName) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        GymPackage pkg = null;
+        
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT * FROM GymPackages WHERE PackageName = ? AND IsDeleted = 0";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, packageName);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                pkg = mapResultSetToGymPackage(rs);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return pkg;
+    }
+
+    @Override
     public boolean delete(int packageId) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
