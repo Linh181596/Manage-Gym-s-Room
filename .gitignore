@@ -1,0 +1,49 @@
+# =========================================================================
+# Gym Center Management - Git Ignore Patterns
+# =========================================================================
+
+# Exclude static templates and documentations as requested
+DashMin/
+GymCenterManagement/documentations/
+.agents/
+design-system/
+demo UIUX/
+
+# Maven build outputs
+**/target/
+*.war
+*.ear
+*.jar
+
+# NetBeans IDE files
+**/nbproject/private/
+**/nb-configuration.xml
+nbactions.xml
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.metadata/
+.classpath
+.project
+.settings/
+*.launch
+
+# Visual Studio Code
+.vscode/
+
+# Operating System files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary & Log files
+*.log
+*.tmp
+*.bak
+*.swp
