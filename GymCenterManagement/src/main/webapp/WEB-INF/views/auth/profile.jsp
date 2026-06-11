@@ -53,6 +53,35 @@
     </nav>
 
     <div class="container py-5">
+        <div class="mb-4">
+            <c:choose>
+                <c:when test="${profile.roleName eq 'Member'}">
+                    <a href="${pageContext.request.contextPath}/member/portal" class="btn btn-outline-secondary px-3 shadow-sm">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:when>
+                <c:when test="${profile.roleName eq 'Staff'}">
+                    <a href="${pageContext.request.contextPath}/staff/dashboard" class="btn btn-outline-secondary px-3 shadow-sm">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:when>
+                <c:when test="${profile.roleName eq 'PT'}">
+                    <a href="${pageContext.request.contextPath}/pt/dashboard" class="btn btn-outline-secondary px-3 shadow-sm">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:when>
+                <c:when test="${profile.roleName eq 'Admin'}">
+                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-outline-secondary px-3 shadow-sm">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a href="javascript:window.history.back();" class="btn btn-outline-secondary px-3 shadow-sm">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:otherwise>
+            </c:choose>
+        </div>
         
         <c:if test="${not empty successMessage}">
             <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
@@ -86,7 +115,7 @@
                         <c:choose>
                             <c:when test="${profile.roleName eq 'PT'}">
                                 <p class="text-muted small mb-4">Hỗ trợ định dạng tệp: .jpg, .png (Tối đa 5MB)</p>
-                                <label for="avatarFile" class="btn btn-outline-primary btn-sm px-4">
+                                <label for="avatarFile" id="btnChangeAvatar" class="btn btn-outline-primary btn-sm px-4 d-none">
                                     <i class="fa fa-upload me-2"></i>Chọn ảnh mới
                                 </label>
                                 <input type="file" name="avatarFile" id="avatarFile" class="d-none" accept=".jpg, .jpeg, .png">
@@ -136,9 +165,9 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" name="displayName" class="form-control" id="floatingFullName" 
+                                    <input type="text" name="displayName" class="form-control editable-field" id="floatingFullName" 
                                            maxlength="100" 
-                                           value="${profile.roleName eq 'PT' ? profile.fullName : profile.displayName}" required>
+                                           value="${profile.roleName eq 'PT' ? profile.fullName : profile.displayName}" required disabled>
                                     <label for="floatingFullName">
                                         <c:choose>
                                             <c:when test="${profile.roleName eq 'PT'}">Họ và tên chính thức (BR-03) <span class="text-danger">*</span></c:when>
@@ -157,8 +186,8 @@
 
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="tel" name="phone" class="form-control" id="floatingPhone" placeholder="0912345678" 
-                                           value="${profile.phone}" pattern="[0-9]{10,15}" title="Vui lòng nhập định dạng số từ 10-15 ký tự" required>
+                                    <input type="tel" name="phone" class="form-control editable-field" id="floatingPhone" placeholder="0912345678" 
+                                           value="${profile.phone}" pattern="[0-9]{10,15}" title="Vui lòng nhập định dạng số từ 10-15 ký tự" required disabled>
                                     <label for="floatingPhone">Số điện thoại liên lạc <span class="text-danger">*</span></label>
                                 </div>
                             </div>
@@ -166,7 +195,7 @@
                             <c:if test="${profile.roleName eq 'Member'}">
                                 <div class="col-md-6">
                                     <div class="form-floating">
-                                        <select name="gender" class="form-select" id="floatingGender">
+                                        <select name="gender" class="form-select editable-field" id="floatingGender" disabled>
                                             <option value="" ${empty profile.gender ? 'selected' : ''}>Chưa thiết lập</option>
                                             <option value="Nam" ${profile.gender eq 'Nam' ? 'selected' : ''}>Nam</option>
                                             <option value="Nữ" ${profile.gender eq 'Nữ' ? 'selected' : ''}>Nữ</option>
@@ -178,14 +207,14 @@
 
                                 <div class="col-md-12">
                                     <div class="form-floating">
-                                        <input type="date" name="dateOfBirth" class="form-control" id="floatingDOB" value="${profile.dateOfBirth}">
+                                        <input type="date" name="dateOfBirth" class="form-control editable-field" id="floatingDOB" value="${profile.dateOfBirth}" disabled>
                                         <label for="floatingDOB">Ngày tháng năm sinh</label>
                                     </div>
                                 </div>
 
                                 <div class="col-12">
                                     <div class="form-floating">
-                                        <textarea name="address" class="form-control" id="floatingAddress" maxlength="255" style="height: 100px;">${profile.address}</textarea>
+                                        <textarea name="address" class="form-control editable-field" id="floatingAddress" maxlength="255" style="height: 100px;" disabled>${profile.address}</textarea>
                                         <label for="floatingAddress">Địa chỉ cư trú (Tối đa 255 ký tự)</label>
                                     </div>
                                 </div>
@@ -194,7 +223,7 @@
                             <c:if test="${profile.roleName eq 'PT'}">
                                 <div class="col-12">
                                     <div class="form-floating">
-                                        <textarea name="description" class="form-control" id="floatingBio" placeholder="Giới thiệu bản thân" style="height: 120px;">${profile.description}</textarea>
+                                        <textarea name="description" class="form-control editable-field" id="floatingBio" placeholder="Giới thiệu bản thân" style="height: 120px;" disabled>${profile.description}</textarea>
                                         <label for="floatingBio">Tiểu sử & Giới thiệu bản thân nghề nghiệp</label>
                                     </div>
                                 </div>
@@ -214,7 +243,7 @@
                                             </c:choose>
                                         </div>
                                         <div>
-                                            <input type="file" name="certificateFile" id="certificateFile" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png">
+                                            <input type="file" name="certificateFile" id="certificateFile" class="form-control form-control-sm editable-field" accept=".pdf,.jpg,.jpeg,.png" disabled>
                                         </div>
                                     </div>
                                     <div class="form-text text-muted small">Hệ thống chấp nhận các định dạng tệp: .pdf, .jpg, .png (Kích thước tệp tối đa: 5MB)</div>
@@ -222,8 +251,17 @@
                             </c:if>
 
                             <div class="col-12 text-end mt-4 border-top pt-3">
-                                <button type="submit" class="btn btn-primary py-3 px-5 fw-bold shadow-sm">
-                                    <i class="fa fa-save me-2"></i>Lưu thay đổi hồ sơ
+                                <!-- Nút chỉnh sửa ban đầu -->
+                                <button type="button" id="btnEditMode" class="btn btn-outline-primary py-3 px-5 fw-bold shadow-sm">
+                                    <i class="fa fa-edit me-2"></i>Chỉnh sửa hồ sơ
+                                </button>
+                                
+                                <!-- Cặp nút Lưu và Hủy ở chế độ Edit (mặc định ẩn) -->
+                                <button type="button" id="btnCancelEdit" class="btn btn-outline-secondary py-3 px-4 fw-bold shadow-sm me-2 d-none">
+                                    Hủy bỏ
+                                </button>
+                                <button type="submit" id="btnSaveProfile" class="btn btn-primary py-3 px-5 fw-bold shadow-sm d-none">
+                                    <i class="fa fa-save me-2"></i>Lưu thay đổi
                                 </button>
                             </div>
                         </div>
@@ -239,6 +277,50 @@
 
     <script>
         $(document).ready(function() {
+            // Lưu lại giá trị ban đầu của các trường để khôi phục khi nhấn Hủy
+            const initialValues = {};
+            
+            function captureInitialValues() {
+                $('.editable-field').each(function() {
+                    const id = $(this).attr('id');
+                    if (id) {
+                        initialValues[id] = $(this).val();
+                    }
+                });
+                initialValues['avatarSrc'] = $('#avatarPreview').attr('src');
+            }
+            
+            captureInitialValues();
+
+            // Nhấn nút Chỉnh sửa
+            $('#btnEditMode').click(function() {
+                $('.editable-field').prop('disabled', false);
+                $('#btnChangeAvatar').removeClass('d-none');
+                $(this).addClass('d-none');
+                $('#btnCancelEdit').removeClass('d-none');
+                $('#btnSaveProfile').removeClass('d-none');
+            });
+
+            // Nhấn nút Hủy
+            $('#btnCancelEdit').click(function() {
+                $('.editable-field').each(function() {
+                    const id = $(this).attr('id');
+                    if (id && initialValues[id] !== undefined) {
+                        $(this).val(initialValues[id]);
+                    }
+                });
+                
+                $('#avatarPreview').attr('src', initialValues['avatarSrc']);
+                $('#avatarFile').val('');
+                $('#certificateFile').val('');
+
+                $('.editable-field').prop('disabled', true);
+                $('#btnChangeAvatar').addClass('d-none');
+                $('#btnEditMode').removeClass('d-none');
+                $(this).addClass('d-none');
+                $('#btnSaveProfile').addClass('d-none');
+            });
+            
             // Xử lý bắt sự kiện hiển thị ảnh xem trước (Preview) lập tức khi PT chọn ảnh mới
             $('#avatarFile').change(function(e) {
                 const file = e.target.files[0];

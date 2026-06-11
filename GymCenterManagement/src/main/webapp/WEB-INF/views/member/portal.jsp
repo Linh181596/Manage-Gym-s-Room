@@ -92,6 +92,11 @@
                                 </span>
                             </div>
                         </div>
+                        <div class="col-12 mt-4 text-end">
+                            <a href="<%= contextPath %>/profile" class="btn btn-primary py-2 px-4 fw-bold shadow-sm">
+                                <i class="fa fa-user-edit me-2"></i>Chỉnh sửa thông tin cá nhân
+                            </a>
+                        </div>
                     </div>
                 <% } else { %>
                     <div class="text-center py-5 text-muted">

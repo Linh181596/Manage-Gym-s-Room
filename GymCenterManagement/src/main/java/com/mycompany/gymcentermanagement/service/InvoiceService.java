@@ -17,4 +17,5 @@ public interface InvoiceService {
     Invoice getInvoiceById(int id) throws SQLException;
     List<Invoice> getAllInvoices() throws SQLException;
     boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException;
+    boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException;
 }
