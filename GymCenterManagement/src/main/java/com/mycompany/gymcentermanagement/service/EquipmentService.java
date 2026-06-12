@@ -1,10 +1,10 @@
-/**
+﻿/**
  * =========================================================================
  * @file          : EquipmentService.java
  * @description   : Lớp xử lý logic nghiệp vụ quản lý thiết bị phòng gym và báo cáo sự cố.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.service;
@@ -333,3 +333,4 @@ public class EquipmentService {
         }
     }
 }
+

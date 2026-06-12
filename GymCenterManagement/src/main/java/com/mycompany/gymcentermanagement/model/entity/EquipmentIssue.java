@@ -1,10 +1,10 @@
-/**
+﻿/**
  * =========================================================================
  * @file          : EquipmentIssue.java
  * @description   : Thực thể đại diện cho thông tin sự cố hỏng hóc/báo lỗi của thiết bị phòng gym.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.model.entity;
@@ -192,3 +192,4 @@ public class EquipmentIssue {
         };
     }
 }
+
