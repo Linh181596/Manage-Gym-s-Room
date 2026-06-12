@@ -138,6 +138,10 @@ public class LoginController extends HttpServlet {
                     request.setAttribute("errorMessage", "Tài khoản này đã bị khóa hoặc từ chối truy cập.");
                     request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
                     return;
+                } else if (user.getAccountStatus() == User.AccountStatus.Locked) {
+                    request.setAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+                    request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                    return;
                 }
                 
                 authenticatedUser = user;
