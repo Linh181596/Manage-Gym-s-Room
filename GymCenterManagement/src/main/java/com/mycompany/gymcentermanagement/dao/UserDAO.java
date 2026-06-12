@@ -1,8 +1,8 @@
-/**
+﻿/**
  * =========================================================================
  * @file          : UserDAO.java
  * @description   : Interface quản lý tương tác dữ liệu trực tiếp với bảng Users và các bảng liên quan.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -54,3 +54,4 @@ public interface UserDAO {
     
     boolean updateUserProfile(UserProfileBaseDTO profileDto, String roleName) throws SQLException;
 }
+

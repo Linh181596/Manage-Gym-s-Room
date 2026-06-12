@@ -1,8 +1,8 @@
-<%--
+﻿<%--
  =========================================================================
  @file          : profile.jsp
  @description   : Giao diện hiển thị và cập nhật thông tin hồ sơ cá nhân (Member & PT)
- @author        : duongnd
+ @author        : Nguyễn Đại Dương
  @created       : 2026-06-05
  @last_modified : 2026-06-11 bởi Antigravity
  =========================================================================
@@ -13,7 +13,7 @@
     File: profile.jsp
     Description: Giao diện hiển thị thông tin cá nhân động (Dynamic UI) dựa trên vai trò của User hiện tại.
                  Sử dụng JSTL để render các trường thông tin riêng biệt cho Member, PT, Staff, Admin.
-    Author: [duongnd] - [he187234]
+    Author: [Nguyễn Đại Dương] - [he187234]
     Created Date: [05/06/2026]
     Version: 1.0
 --%>

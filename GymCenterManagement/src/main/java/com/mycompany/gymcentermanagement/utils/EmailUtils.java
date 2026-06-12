@@ -1,8 +1,8 @@
-/**
+﻿/**
  * =========================================================================
  * @file          : EmailUtils.java
  * @description   : Lớp tiện ích gửi email kích hoạt tài khoản sử dụng SMTP (UC-02).
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -104,3 +104,4 @@ public class EmailUtils {
         }
     }
 }
+
