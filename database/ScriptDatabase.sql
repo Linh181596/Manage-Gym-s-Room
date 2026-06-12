@@ -1176,3 +1176,63 @@ CREATE UNIQUE NONCLUSTERED INDEX [UQ_GymPackages_ActiveName] ON [dbo].[GymPackag
 WHERE ([IsDeleted]=(0)) ON [PRIMARY];
 END
 GO
+
+-- =========================================================================
+-- INDEX OPTIMIZATIONS FOR PERFORMANCE
+-- =========================================================================
+
+-- 1. Index cho bảng UserRoles
+CREATE NONCLUSTERED INDEX IX_UserRoles_RoleID 
+ON [dbo].[UserRoles] ([RoleID])
+GO
+
+-- 2. Index cho bảng Members
+CREATE NONCLUSTERED INDEX IX_Members_Status_Deleted
+ON [dbo].[Members] ([MembershipStatus], [IsDeleted])
+GO
+
+-- 3. Index cho bảng MemberPackages
+CREATE NONCLUSTERED INDEX IX_MemberPackages_Member_Package
+ON [dbo].[MemberPackages] ([MemberID], [PackageID])
+INCLUDE ([StartDate], [EndDate], [Status], [IsDeleted])
+GO
+
+-- 4. Index cho bảng PersonalTrainers
+CREATE NONCLUSTERED INDEX IX_PersonalTrainers_Status_Deleted
+ON [dbo].[PersonalTrainers] ([Status], [IsDeleted])
+GO
+
+-- 5. Index cho bảng PTServicePrices
+CREATE NONCLUSTERED INDEX IX_PTServicePrices_Status_Deleted
+ON [dbo].[PTServicePrices] ([Status], [IsDeleted])
+GO
+
+-- 6. Index cho bảng PTRegistrations
+CREATE NONCLUSTERED INDEX IX_PTRegistrations_Member_Price
+ON [dbo].[PTRegistrations] ([MemberID], [PTServicePriceID])
+INCLUDE ([Status], [PaymentStatus], [IsDeleted])
+GO
+
+-- 7. Index cho bảng PTSchedules
+CREATE NONCLUSTERED INDEX IX_PTSchedules_Member_Reg
+ON [dbo].[PTSchedules] ([MemberID], [PTRegistrationID])
+INCLUDE ([SessionStatus], [PTAttendanceResult], [IsDeleted])
+GO
+
+-- 8. Index cho bảng Invoices
+CREATE NONCLUSTERED INDEX IX_Invoices_ForeignKeys
+ON [dbo].[Invoices] ([MemberID])
+INCLUDE ([MemberPackageID], [PTRegistrationID], [Status], [IsDeleted])
+GO
+
+-- 9. Index cho bảng EquipmentIssues
+CREATE NONCLUSTERED INDEX IX_EquipmentIssues_Equipment_Status
+ON [dbo].[EquipmentIssues] ([EquipmentID])
+INCLUDE ([Status], [IsDeleted])
+GO
+
+-- 10. Index cho bảng Users
+CREATE NONCLUSTERED INDEX IX_Users_Status_Deleted
+ON [dbo].[Users] ([Status], [IsDeleted])
+INCLUDE ([Email], [DisplayName])
+GO

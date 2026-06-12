@@ -65,10 +65,10 @@
                                 <span class="fw-bold text-dark fs-6"><%= profile.get("type") %></span>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="p-3 bg-white rounded border h-100">
                                 <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Địa chỉ Email</small>
-                                <span class="fw-semibold text-dark small"><%= profile.get("email") %></span>
+                                <span class="fw-semibold text-dark fs-6 text-break"><%= profile.get("email") %></span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -79,17 +79,17 @@
                         </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-white rounded border h-100">
-                                <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Ngày gia nhập</small>
-                                <span class="fw-semibold text-dark fs-6"><%= profile.get("date").split("\\.")[0] %></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-3 bg-white rounded border h-100">
                                 <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Trạng thái tài khoản</small>
                                 <% boolean isActive = "Active".equalsIgnoreCase(profile.get("status")); %>
                                 <span class="badge <%= isActive ? "bg-success" : "bg-danger" %> mt-1 fw-bold fs-7">
                                     <i class="<%= isActive ? "fa fa-check-circle" : "fa fa-minus-circle" %> me-1"></i><%= isActive ? "Đang kích hoạt" : "Đang tạm khóa" %>
                                 </span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 bg-white rounded border h-100">
+                                <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Ngày gia nhập</small>
+                                <span class="fw-semibold text-dark fs-6"><%= profile.get("date").split("\\.")[0] %></span>
                             </div>
                         </div>
                         <div class="col-12 mt-4 text-end">
