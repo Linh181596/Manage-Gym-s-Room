@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : EquipmentReportController.java
  * @description   : Controller điều phối xử lý và hiển thị báo cáo thống kê tình trạng thiết bị.

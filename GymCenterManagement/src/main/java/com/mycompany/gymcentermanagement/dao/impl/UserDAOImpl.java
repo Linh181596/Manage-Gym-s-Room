@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : UserDAOImpl.java
  * @description   : Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ liệu cho Users và Profiles.

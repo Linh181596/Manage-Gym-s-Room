@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : ManageEquipmentController.java
  * @description   : Controller điều phối các hoạt động CRUD thiết bị phòng gym.

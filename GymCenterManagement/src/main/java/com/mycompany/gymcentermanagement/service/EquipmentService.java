@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : EquipmentService.java
  * @description   : Lớp xử lý logic nghiệp vụ quản lý thiết bị phòng gym và báo cáo sự cố.

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : LogoutController.java
  * @description   : Controller xử lý luồng Đăng xuất khỏi hệ thống (thuộc phân hệ UC-01).

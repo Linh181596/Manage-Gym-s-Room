@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : RegisterController.java
  * @description   : Controller xử lý luồng đăng ký tài khoản cho Guest thành Member (UC-02).

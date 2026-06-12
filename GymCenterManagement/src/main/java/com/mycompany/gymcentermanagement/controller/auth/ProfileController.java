@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : ProfileController.java
  * @description   : Controller xử lý xem và cập nhật hồ sơ cá nhân theo từng vai trò (UC-03).

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : VerifyEmailController.java
  * @description   : Controller tiếp nhận link kích hoạt từ email của người dùng, kiểm tra tính hợp lệ và thời hạn

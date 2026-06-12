@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : UserProfileBaseDTO.java
  * @description   : Data Transfer Object (DTO) for user profile details.

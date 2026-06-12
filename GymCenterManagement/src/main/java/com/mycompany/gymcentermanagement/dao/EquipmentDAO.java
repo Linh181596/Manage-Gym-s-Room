@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : EquipmentDAO.java
  * @description   : Lớp truy cập dữ liệu để quản lý thông tin thiết bị và dụng cụ phòng gym.
