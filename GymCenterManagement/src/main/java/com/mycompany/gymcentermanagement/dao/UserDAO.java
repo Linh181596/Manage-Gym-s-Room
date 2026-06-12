@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : UserDAO.java
  * @description   : Interface quản lý tương tác dữ liệu trực tiếp với bảng Users và các bảng liên quan.

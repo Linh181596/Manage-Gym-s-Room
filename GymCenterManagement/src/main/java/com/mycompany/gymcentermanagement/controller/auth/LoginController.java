@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : LoginController.java
  * @description   : Controller xử lý luồng đăng nhập hệ thống (UC-01). 

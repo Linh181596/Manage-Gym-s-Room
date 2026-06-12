@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : ManageEquipmentIssueController.java
  * @description   : Controller điều phối xử lý báo cáo sự cố hỏng hóc thiết bị.

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : EquipmentIssueDAO.java
  * @description   : Lớp truy cập dữ liệu để quản lý các báo cáo sự cố của thiết bị.

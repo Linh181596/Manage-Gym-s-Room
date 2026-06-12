@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : EquipmentIssue.java
  * @description   : Thực thể đại diện cho thông tin sự cố hỏng hóc/báo lỗi của thiết bị phòng gym.

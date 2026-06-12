@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : EmailUtils.java
  * @description   : Lớp tiện ích gửi email kích hoạt tài khoản sử dụng SMTP (UC-02).

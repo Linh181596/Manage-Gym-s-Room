@@ -1,4 +1,4 @@
-﻿/**
+/**
  * =========================================================================
  * @file          : Equipment.java
  * @description   : Thực thể đại diện cho thông tin thiết bị/dụng cụ phòng gym trong cơ sở dữ liệu.
