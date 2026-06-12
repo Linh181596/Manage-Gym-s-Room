@@ -5,7 +5,7 @@
   =========================================================================
   Document    : members.jsp
   Created on  : 2026-06-04
-  Author      : Nguyễn Thành Linh (linhnt)
+  Author      : Nguyễn Trí Linh (linhnt)
   Description : Giao diện danh sách hội viên dành cho nhân viên lễ tân/quản lý.
   =========================================================================
 --%>
