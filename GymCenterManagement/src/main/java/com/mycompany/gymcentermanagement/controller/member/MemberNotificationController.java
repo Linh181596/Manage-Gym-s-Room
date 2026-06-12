@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : MemberNotificationController.java
  * @description   : Controller xử lý hiển thị danh sách và chi tiết thông báo gửi tới hội viên.
- * @author        : Nguyễn Thành Linh (linhnt)
+ * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Nguyễn Thành Linh
+ * @last_modified : 2026-06-04 bởi Nguyễn Trí Linh
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.member;

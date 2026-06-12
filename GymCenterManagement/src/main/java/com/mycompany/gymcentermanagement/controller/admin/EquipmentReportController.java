@@ -1,10 +1,10 @@
-/**
+﻿/**
  * =========================================================================
  * @file          : EquipmentReportController.java
  * @description   : Controller điều phối xử lý và hiển thị báo cáo thống kê tình trạng thiết bị.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.admin;
@@ -89,3 +89,4 @@ public class EquipmentReportController extends HttpServlet {
         request.setAttribute("queryBase", queryBase);
     }
 }
+

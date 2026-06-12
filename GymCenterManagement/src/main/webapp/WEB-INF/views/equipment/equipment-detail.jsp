@@ -1,11 +1,11 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <%--
   =========================================================================
   Document    : equipment-detail.jsp
   Created on  : 2026-06-04
-  Author      : Đào Minh Hoàng (hoangdm)
+  Author      : Đỗ Minh Hoàng (hoangdm)
   Description : Giao diện hiển thị chi tiết thông tin thiết bị phòng tập.
   =========================================================================
 --%>
@@ -159,3 +159,4 @@
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp" />
+

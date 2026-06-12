@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : ManageMemberController.java
  * @description   : Controller điều phối các hoạt động quản lý danh sách và trạng thái hội viên.
- * @author        : Nguyễn Thành Linh (linhnt)
+ * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Nguyễn Thành Linh
+ * @last_modified : 2026-06-04 bởi Nguyễn Trí Linh
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;

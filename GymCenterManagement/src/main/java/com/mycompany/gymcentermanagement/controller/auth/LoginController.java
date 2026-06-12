@@ -1,10 +1,10 @@
-/**
+﻿/**
  * =========================================================================
  * @file          : LoginController.java
  * @description   : Controller xử lý luồng đăng nhập hệ thống (UC-01). 
  *                  Hỗ trợ xác thực tài khoản, mã hóa SHA-256, kiểm tra trạng thái (Active/Inactive),
  *                  xử lý tính năng "Remember Me" qua Token và điều hướng về các Dashboard theo Role.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -206,3 +206,4 @@ public class LoginController extends HttpServlet {
         }
     }
 }
+

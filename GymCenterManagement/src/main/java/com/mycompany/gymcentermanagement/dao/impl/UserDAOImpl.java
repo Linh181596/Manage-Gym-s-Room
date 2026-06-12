@@ -1,8 +1,8 @@
-/**
+﻿/**
  * =========================================================================
  * @file          : UserDAOImpl.java
  * @description   : Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ liệu cho Users và Profiles.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -1038,3 +1038,4 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return success;
     }
 }
+
