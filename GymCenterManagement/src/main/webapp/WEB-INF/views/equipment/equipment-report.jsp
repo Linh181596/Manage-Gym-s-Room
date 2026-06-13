@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 <div class="progress" style="height: 6px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: ${report.activeRatePercent}%" aria-valuenow="${report.activeRatePercent}" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar bg-success" role="progressbar" data-width="${report.activeRatePercent}" aria-valuenow="${report.activeRatePercent}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
         </div>
@@ -95,7 +95,7 @@
                         <span class="fw-bold">${report.pendingIssues} sự cố</span>
                     </div>
                     <div class="progress" style="height: 12px;">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: ${report.totalIssues == 0 ? 0 : (report.pendingIssues * 100 / report.totalIssues)}%"></div>
+                        <div class="progress-bar bg-warning" role="progressbar" data-width="${report.totalIssues == 0 ? 0 : (report.pendingIssues * 100 / report.totalIssues)}"></div>
                     </div>
                 </div>
                 
@@ -105,7 +105,7 @@
                         <span class="fw-bold">${report.inProgressIssues} sự cố</span>
                     </div>
                     <div class="progress" style="height: 12px;">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: ${report.totalIssues == 0 ? 0 : (report.inProgressIssues * 100 / report.totalIssues)}%"></div>
+                        <div class="progress-bar bg-info" role="progressbar" data-width="${report.totalIssues == 0 ? 0 : (report.inProgressIssues * 100 / report.totalIssues)}"></div>
                     </div>
                 </div>
 
@@ -115,7 +115,7 @@
                         <span class="fw-bold">${report.resolvedIssues} sự cố</span>
                     </div>
                     <div class="progress" style="height: 12px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: ${report.totalIssues == 0 ? 0 : (report.resolvedIssues * 100 / report.totalIssues)}%"></div>
+                        <div class="progress-bar bg-success" role="progressbar" data-width="${report.totalIssues == 0 ? 0 : (report.resolvedIssues * 100 / report.totalIssues)}"></div>
                     </div>
                 </div>
             </div>
@@ -133,7 +133,7 @@
                         <span class="fw-bold">${report.available} thiết bị</span>
                     </div>
                     <div class="progress" style="height: 12px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: ${report.totalEquipment == 0 ? 0 : (report.available * 100 / report.totalEquipment)}%"></div>
+                        <div class="progress-bar bg-success" role="progressbar" data-width="${report.totalEquipment == 0 ? 0 : (report.available * 100 / report.totalEquipment)}"></div>
                     </div>
                 </div>
                 
@@ -143,7 +143,7 @@
                         <span class="fw-bold">${report.maintenance} thiết bị</span>
                     </div>
                     <div class="progress" style="height: 12px;">
-                        <div class="progress-bar bg-warning text-dark" role="progressbar" style="width: ${report.totalEquipment == 0 ? 0 : (report.maintenance * 100 / report.totalEquipment)}%"></div>
+                        <div class="progress-bar bg-warning text-dark" role="progressbar" data-width="${report.totalEquipment == 0 ? 0 : (report.maintenance * 100 / report.totalEquipment)}"></div>
                     </div>
                 </div>
 
@@ -153,7 +153,7 @@
                         <span class="fw-bold">${report.broken} thiết bị</span>
                     </div>
                     <div class="progress" style="height: 12px;">
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: ${report.totalEquipment == 0 ? 0 : (report.broken * 100 / report.totalEquipment)}%"></div>
+                        <div class="progress-bar bg-danger" role="progressbar" data-width="${report.totalEquipment == 0 ? 0 : (report.broken * 100 / report.totalEquipment)}"></div>
                     </div>
                 </div>
             </div>
@@ -230,18 +230,9 @@
                                 </c:choose>
                             </td>
                             <td class="text-center">
-                                <c:choose>
-                                    <c:when test="${item.issueCount > 0}">
-                                        <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment-issues?action=detail&id=${item.latestIssueId}" title="Xem chi tiết sự cố">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}&from=report" title="Xem chi tiết thiết bị">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
-                                    </c:otherwise>
-                                </c:choose>
+                                <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}&from=report" title="Xem chi tiết thiết bị">
+                                    <i class="fa fa-eye"></i>
+                                </a>
                             </td>
                         </tr>
                     </c:forEach>
@@ -288,6 +279,13 @@
         </c:if>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+        var width = bar.getAttribute('data-width');
+        bar.style.width = width + '%';
+    });
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp" />
 

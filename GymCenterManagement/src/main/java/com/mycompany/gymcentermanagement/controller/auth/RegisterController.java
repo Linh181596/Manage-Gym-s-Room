@@ -165,6 +165,12 @@ public class RegisterController extends HttpServlet {
                 return;
             }
 
+            if (userDAO.checkPhoneExists(phone)) {
+                request.setAttribute("error", "Số điện thoại này đã được sử dụng trên hệ thống phòng tập!");
+                request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+                return;
+            }
+
             // --- ĐÓNG GÓI DỮ LIỆU ĐỂ LƯU VÀO CƠ SỞ DỮ LIỆU (Bước 5, 6 & 7) ---
             User user = new User();
             user.setEmail(email);

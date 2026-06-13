@@ -72,6 +72,30 @@ public class GymDAO {
             conn = DBContext.getConnection();
             conn.setAutoCommit(false);
 
+            // Defensive check for duplicate email
+            String sqlCheckEmail = "SELECT COUNT(*) FROM [dbo].[Users] WHERE Email = ? AND IsDeleted = 0";
+            try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckEmail)) {
+                psCheck.setString(1, email);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        return false;
+                    }
+                }
+            }
+
+            // Defensive check for duplicate phone
+            if (phone != null && !phone.trim().isEmpty()) {
+                String sqlCheckPhone = "SELECT COUNT(*) FROM [dbo].[Users] WHERE Phone = ? AND IsDeleted = 0";
+                try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckPhone)) {
+                    psCheck.setString(1, phone.trim());
+                    try (ResultSet rs = psCheck.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) > 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
             String sqlUser = """
                     INSERT INTO [dbo].[Users]
                     (Email, PasswordHash, DisplayName, Phone, Status, MustChangePassword, CreatedBy, IsDeleted)
