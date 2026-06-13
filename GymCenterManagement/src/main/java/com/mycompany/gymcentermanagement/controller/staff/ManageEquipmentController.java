@@ -144,12 +144,14 @@ public class ManageEquipmentController extends HttpServlet {
     }
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        Equipment equipment = service.getEquipment(parseInt(request.getParameter("id"), 0));
+        int id = parseInt(request.getParameter("id"), 0);
+        Equipment equipment = service.getEquipment(id);
         if (equipment == null) {
             response.sendRedirect(request.getContextPath() + "/staff/equipment?action=list");
             return;
         }
         request.setAttribute("equipment", equipment);
+        request.setAttribute("issues", service.getIssuesByEquipment(id));
         request.getRequestDispatcher(VIEW_DIR + "equipment-detail.jsp").forward(request, response);
     }
 

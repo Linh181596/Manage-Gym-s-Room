@@ -173,6 +173,29 @@ public class EquipmentIssueDAO {
         return counts;
     }
 
+    public List<EquipmentIssue> findByEquipmentId(int equipmentId) throws SQLException {
+        ensureIssueImageColumn();
+        String sql = """
+                SELECT i.*, e.EquipmentCode, e.EquipmentName, COALESCE(NULLIF(i.CreatedBy, ''), u.DisplayName) AS ReporterName
+                FROM EquipmentIssues i
+                INNER JOIN Equipments e ON e.EquipmentID = i.EquipmentID
+                INNER JOIN Users u ON u.UserID = i.ReportedBy
+                WHERE i.EquipmentID = ? AND i.IsDeleted = 0 AND e.IsDeleted = 0
+                ORDER BY i.ReportedAt DESC, i.IssueID DESC
+                """;
+        try (Connection connection = DBContext.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, equipmentId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<EquipmentIssue> items = new ArrayList<>();
+                while (resultSet.next()) {
+                    items.add(mapIssue(resultSet));
+                }
+                return items;
+            }
+        }
+    }
+
     public List<EquipmentIssue> findRecent(int limit) throws SQLException {
         ensureIssueImageColumn();
         String sql = """
