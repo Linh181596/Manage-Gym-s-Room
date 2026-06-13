@@ -111,9 +111,13 @@ public class AddPersonalTrainerController extends HttpServlet {
                 forwardBackWithError(request, response, "Email này đã được sử dụng bởi tài khoản khác.");
                 return;
             }
+            if (userDAO.checkPhoneExists(phone)) {
+                forwardBackWithError(request, response, "Số điện thoại này đã được sử dụng bởi tài khoản khác.");
+                return;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            forwardBackWithError(request, response, "Lỗi kiểm tra trùng lặp email.");
+            forwardBackWithError(request, response, "Lỗi kiểm tra trùng lặp email hoặc số điện thoại.");
             return;
         }
 

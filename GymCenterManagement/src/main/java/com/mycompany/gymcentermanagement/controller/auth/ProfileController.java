@@ -145,6 +145,16 @@ public class ProfileController extends HttpServlet {
                 return;
             }
 
+            // Kiểm tra trùng lặp số điện thoại nếu thay đổi số mới
+            if (phone != null && !phone.equals(currentProfile.getPhone())) {
+                if (userDAO.checkPhoneExists(phone)) {
+                    request.setAttribute("errorMessage", "Cập nhật thất bại: Số điện thoại này đã được sử dụng bởi một tài khoản khác.");
+                    request.setAttribute("profile", currentProfile);
+                    request.getRequestDispatcher("/WEB-INF/views/auth/profile.jsp").forward(request, response);
+                    return;
+                }
+            }
+
             // 🌟 LẬP TRÌNH PHÒNG THỦ: CHỦ ĐỘNG KIỂM TRA ĐỘ DÀI GIỚI HẠN DỮ LIỆU CHUNG
             if (phone.length() > 10) {
                 request.setAttribute("errorMessage", "Cập nhật thất bại: Số điện thoại không được nhập quá 10 chữ số!");

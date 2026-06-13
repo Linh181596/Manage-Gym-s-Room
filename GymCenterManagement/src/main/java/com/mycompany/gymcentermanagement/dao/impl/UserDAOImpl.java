@@ -404,6 +404,36 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    public boolean checkPhoneExists(String phone) throws SQLException {
+        if (phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+
+            String sql = """
+                        SELECT 1
+                        FROM Users
+                        WHERE Phone = ?
+                          AND IsDeleted = 0
+                    """;
+
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, phone.trim());
+
+            rs = stmt.executeQuery();
+            return rs.next();
+
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    @Override
     public boolean registerMember(User user, Member member, UserToken token) throws SQLException {
         Connection conn = null;
         PreparedStatement stmtUser = null;

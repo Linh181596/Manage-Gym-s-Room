@@ -33,6 +33,8 @@ public interface UserDAO {
     // --- New Auth & Verification Methods ---
     
     boolean checkEmailExists(String email) throws SQLException;
+
+    boolean checkPhoneExists(String phone) throws SQLException;
     
     boolean registerMember(User user, Member member, UserToken token) throws SQLException;
     
