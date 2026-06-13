@@ -36,8 +36,6 @@ public interface UserDAO {
 
     boolean checkPhoneExists(String phone) throws SQLException;
     
-    boolean checkPhoneExists(String phone) throws SQLException;
-    
     boolean registerMember(User user, Member member, UserToken token) throws SQLException;
     
     String verifyAccountAndGetEmail(String tokenValue) throws SQLException;
