@@ -82,6 +82,10 @@ public class EquipmentService {
         return issueDAO.findById(id);
     }
 
+    public List<EquipmentIssue> getIssuesByEquipment(int equipmentId) throws SQLException {
+        return issueDAO.findByEquipmentId(equipmentId);
+    }
+
     public int createIssue(EquipmentIssue issue) throws SQLException {
         validateIssueForCreate(issue);
         issue.setStatus(ISSUE_PENDING);
