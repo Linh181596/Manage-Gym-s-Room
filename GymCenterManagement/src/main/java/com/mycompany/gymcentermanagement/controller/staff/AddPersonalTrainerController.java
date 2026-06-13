@@ -78,8 +78,8 @@ public class AddPersonalTrainerController extends HttpServlet {
             return;
         }
 
-        if (phone == null || !phone.matches("\\d{10}")) {
-            forwardBackWithError(request, response, "Số điện thoại phải có đúng 10 chữ số.");
+        if (phone == null || !phone.matches("^0\\d{9}$")) {
+            forwardBackWithError(request, response, "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
             return;
         }
 
@@ -111,9 +111,14 @@ public class AddPersonalTrainerController extends HttpServlet {
                 forwardBackWithError(request, response, "Email này đã được sử dụng bởi tài khoản khác.");
                 return;
             }
+            
+            if(userDAO.checkPhoneExists(phone)){
+                forwardBackWithError(request, response, "Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
+                return;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            forwardBackWithError(request, response, "Lỗi kiểm tra trùng lặp email.");
+            forwardBackWithError(request, response, "Lỗi hệ thống khi kiểm tra dữ liệu: " + e.getMessage());
             return;
         }
 
@@ -154,7 +159,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         // Get logged-in user from session for audit trails
         User currentUser = (User) request.getSession().getAttribute("currentUser");
         String createdBy = (currentUser != null) ? currentUser.getFullName() : "Staff";
-
+        
         User newUser = new User();
         newUser.setEmail(email);
         newUser.setPasswordHash(passwordHash);
