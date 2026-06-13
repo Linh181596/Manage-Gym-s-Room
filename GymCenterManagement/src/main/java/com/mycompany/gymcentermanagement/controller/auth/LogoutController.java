@@ -5,7 +5,7 @@
  *                  Chịu trách nhiệm hủy bỏ hoàn toàn phiên làm việc hiện tại của người dùng (session.invalidate()),
  *                  tiến hành xóa bỏ các Cookie "Remember Me" lưu trữ trên trình duyệt Client, đồng thời
  *                  xóa Token đăng nhập tương ứng trong cơ sở dữ liệu nhằm bảo mật tài khoản.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -65,3 +65,4 @@ public class LogoutController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/login?toast=logout_success");
     }
 }
+

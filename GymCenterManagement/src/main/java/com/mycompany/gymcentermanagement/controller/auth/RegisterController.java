@@ -3,7 +3,7 @@
  * @file          : RegisterController.java
  * @description   : Controller xử lý luồng đăng ký tài khoản cho Guest thành Member (UC-02).
  *                  Thực hiện thêm mới Users, Members, phân quyền mặc định và gửi email kích hoạt.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -216,3 +216,4 @@ public class RegisterController extends HttpServlet {
         }
     }
 }
+

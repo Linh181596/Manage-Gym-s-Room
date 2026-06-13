@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : EquipmentIssueDAO.java
  * @description   : Lớp truy cập dữ liệu để quản lý các báo cáo sự cố của thiết bị.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao;
@@ -275,3 +275,4 @@ public class EquipmentIssueDAO {
         checkedIssueImageColumn = true;
     }
 }
+

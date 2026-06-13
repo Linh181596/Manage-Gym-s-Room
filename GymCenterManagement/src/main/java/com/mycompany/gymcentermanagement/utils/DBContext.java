@@ -1,54 +1,74 @@
 package com.mycompany.gymcentermanagement.utils;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Utility class to manage connection sessions to the SQL Server database.
+ * Utility class to manage database connection sessions using HikariCP connection pool.
  * Loads database configuration from db.properties file.
  */
 public class DBContext {
     private static final Logger LOGGER = Logger.getLogger(DBContext.class.getName());
-    private static final Properties properties = new Properties();
+    private static final HikariDataSource dataSource;
 
     static {
+        Properties properties = new Properties();
         try (InputStream input = DBContext.class.getClassLoader().getResourceAsStream("db.properties")) {
             if (input == null) {
                 LOGGER.severe("Unable to find db.properties in resources.");
+                throw new RuntimeException("db.properties configuration file is missing.");
             } else {
                 properties.load(input);
-                // Load database driver class
-                String driverClass = properties.getProperty("db.driver");
-                Class.forName(driverClass);
-                LOGGER.info("Database driver loaded successfully: " + driverClass);
+                
+                HikariConfig config = new HikariConfig();
+                config.setDriverClassName(properties.getProperty("db.driver"));
+                config.setJdbcUrl(properties.getProperty("db.url"));
+                config.setUsername(properties.getProperty("db.username"));
+                config.setPassword(properties.getProperty("db.password"));
+                
+                // HikariCP performance tuning settings
+                config.setMaximumPoolSize(10); // Standard pool size for small to medium apps
+                config.setMinimumIdle(2);
+                config.setIdleTimeout(300000); // 5 minutes
+                config.setConnectionTimeout(20000); // 20 seconds
+                config.setMaxLifetime(1800000); // 30 minutes
+                
+                dataSource = new HikariDataSource(config);
+                LOGGER.info("HikariCP Connection Pool initialized successfully.");
             }
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize database configuration", ex);
+            LOGGER.log(Level.SEVERE, "Failed to initialize database configuration or HikariCP", ex);
+            throw new ExceptionInInitializerError(ex);
         }
     }
 
     /**
-     * Obtains a new database connection.
-     * Remember to close connections after use to prevent memory leaks,
-     * preferably using try-with-resources.
+     * Obtains a connection from the HikariCP pool.
+     * Remember to close connections after use to return them to the pool.
      * 
-     * @return Connection object
+     * @return Connection object from the pool
      * @throws SQLException if a database access error occurs
      */
     public static Connection getConnection() throws SQLException {
-        String url = properties.getProperty("db.url");
-        String user = properties.getProperty("db.username");
-        String pass = properties.getProperty("db.password");
-        
-        if (url == null || user == null) {
-            throw new SQLException("Database URL or credentials not configured correctly in db.properties.");
+        if (dataSource == null) {
+            throw new SQLException("HikariCP datasource is not initialized.");
         }
-        
-        return DriverManager.getConnection(url, user, pass);
+        return dataSource.getConnection();
+    }
+
+    /**
+     * Closes the HikariCP DataSource.
+     */
+    public static void shutdown() {
+        if (dataSource != null) {
+            dataSource.close();
+            LOGGER.info("HikariCP Connection Pool shut down successfully.");
+        }
     }
 }

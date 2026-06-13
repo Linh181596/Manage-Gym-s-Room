@@ -4,7 +4,7 @@
  * @description   : Controller xử lý luồng đăng nhập hệ thống (UC-01). 
  *                  Hỗ trợ xác thực tài khoản, mã hóa SHA-256, kiểm tra trạng thái (Active/Inactive),
  *                  xử lý tính năng "Remember Me" qua Token và điều hướng về các Dashboard theo Role.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -138,6 +138,10 @@ public class LoginController extends HttpServlet {
                     request.setAttribute("errorMessage", "Tài khoản này đã bị khóa hoặc từ chối truy cập.");
                     request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
                     return;
+                } else if (user.getAccountStatus() == User.AccountStatus.Locked) {
+                    request.setAttribute("errorMessage", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.");
+                    request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+                    return;
                 }
                 
                 authenticatedUser = user;
@@ -202,3 +206,4 @@ public class LoginController extends HttpServlet {
         }
     }
 }
+

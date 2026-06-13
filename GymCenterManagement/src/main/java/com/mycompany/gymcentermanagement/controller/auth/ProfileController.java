@@ -4,7 +4,7 @@
  * @description   : Controller xử lý xem và cập nhật hồ sơ cá nhân theo từng vai trò (UC-03).
  *                  Áp dụng mô hình PRG (Post-Redirect-Get), phòng thủ lỗi Ngày sinh trong tương lai,
  *                  chặn sửa đổi các trường Read-only (Email, Status, Role) tại tầng Backend.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -315,3 +315,4 @@ public class ProfileController extends HttpServlet {
         return "unknown_file";
     }
 }
+

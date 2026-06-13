@@ -5,7 +5,7 @@
   =========================================================================
   Document    : issue-detail.jsp
   Created on  : 2026-06-04
-  Author      : Đào Minh Hoàng (hoangdm)
+  Author      : Đỗ Minh Hoàng (hoangdm)
   Description : Giao diện hiển thị chi tiết thông tin báo cáo sự cố thiết bị.
   =========================================================================
 --%>
@@ -153,3 +153,4 @@
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp" />
+

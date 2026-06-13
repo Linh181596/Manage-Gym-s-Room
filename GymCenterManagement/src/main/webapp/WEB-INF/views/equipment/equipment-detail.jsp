@@ -5,7 +5,7 @@
   =========================================================================
   Document    : equipment-detail.jsp
   Created on  : 2026-06-04
-  Author      : Đào Minh Hoàng (hoangdm)
+  Author      : Đỗ Minh Hoàng (hoangdm)
   Description : Giao diện hiển thị chi tiết thông tin thiết bị phòng tập.
   =========================================================================
 --%>
@@ -159,3 +159,4 @@
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp" />
+
