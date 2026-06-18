@@ -53,7 +53,8 @@
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
-                        <img class="rounded-circle" src="${pageContext.request.contextPath}/img/user.jpg" alt="" style="width: 40px; height: 40px;">
+                        <img class="rounded-circle" src="${pageContext.request.contextPath}/${not empty sessionScope.currentUser.avatarPath ? sessionScope.currentUser.avatarPath : 'img/user.jpg'}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        <!-- If had upload img then -> sessionScope.currentUser.avatarPath \\ If not -> default img: /img/user.jpg(default) -->
                         <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
                     </div>
                     <div class="ms-3">

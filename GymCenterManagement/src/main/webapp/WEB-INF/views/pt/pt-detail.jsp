@@ -47,7 +47,8 @@
                     <div class="bg-primary-gradient rounded-top position-absolute start-0 top-0 w-100" style="height: 6px;"></div>
                     <div class="mt-3">
                         <% if (trainer.getAvatarPath() != null && !trainer.getAvatarPath().trim().isEmpty()) { %>
-                            <img src="${pageContext.request.contextPath}/<%= trainer.getAvatarPath() %>" 
+                            <% String avatarPath = trainer.getAvatarPath(); if (!avatarPath.startsWith("/")) avatarPath = "/" + avatarPath; %>
+                            <img src="${pageContext.request.contextPath}<%= avatarPath %>" 
                                  alt="Ảnh đại diện HLV" 
                                  class="rounded-circle border border-4 border-white shadow img-thumbnail mb-3" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
@@ -89,7 +90,17 @@
                             <small class="text-muted text-truncate d-block mb-2" style="max-width: 250px;">
                                 <%= trainer.getCertificateFileName() %>
                             </small>
-                            <a href="${pageContext.request.contextPath}/<%= trainer.getCertificateFilePath() %>" 
+                            <% 
+                                String certPath = trainer.getCertificateFilePath(); 
+                                if (certPath != null) {
+                                    // Sửa lỗi lệch đường dẫn nếu dữ liệu cũ chỉ có 'uploads/...'
+                                    if (!certPath.contains("assets/") && certPath.startsWith("uploads/")) {
+                                        certPath = "assets/uploads/pt-certificate/" + certPath.substring(8);
+                                    }
+                                    if (!certPath.startsWith("/")) certPath = "/" + certPath; 
+                                }
+                            %>
+                            <a href="${pageContext.request.contextPath}<%= certPath %>"
                                target="_blank" 
                                class="btn btn-sm btn-primary w-100 shadow-sm py-1.5">
                                 <i class="fa fa-eye me-1"></i> Xem File chứng chỉ

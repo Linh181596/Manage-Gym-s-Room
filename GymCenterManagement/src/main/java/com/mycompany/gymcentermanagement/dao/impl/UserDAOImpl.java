@@ -56,6 +56,16 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         user.setFullName(rs.getString("DisplayName"));
         user.setPhoneNumber(rs.getString("Phone"));
 
+        // Map AvatarPath (if present in ResultSet)
+        try {
+            String avatarPath = rs.getString("AvatarPath");
+            if (avatarPath != null) {
+                user.setAvatarPath(avatarPath);
+            }
+        } catch (SQLException e) {
+            // Column might not exist in some queries, ignore
+        }
+
         // Map String to Role Enum
         String roleStr = rs.getString("RoleName");
         if (roleStr != null) {
@@ -102,9 +112,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT u.*, r.RoleName FROM Users u "
+            String sql = "SELECT u.*, r.RoleName, pt.AvatarPath FROM Users u "
                     + "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID "
                     + "LEFT JOIN Roles r ON ur.RoleID = r.RoleID "
+                    + "LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID "
                     + "WHERE u.Email = ? AND u.IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, email);
@@ -128,9 +139,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT u.*, r.RoleName FROM Users u "
+            String sql = "SELECT u.*, r.RoleName, pt.AvatarPath FROM Users u "
                     + "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID "
                     + "LEFT JOIN Roles r ON ur.RoleID = r.RoleID "
+                    + "LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID "
                     + "WHERE u.UserID = ? AND u.IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, userId);
@@ -837,11 +849,12 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             conn = getActiveConnection();
 
             String sql = """
-                        SELECT u.*, r.RoleName
+                        SELECT u.*, r.RoleName, pt.AvatarPath
                         FROM User_Tokens t
                         INNER JOIN Users u ON t.UserID = u.UserID
                         LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
                         LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID
                         WHERE t.TokenValue = ?
                           AND t.TokenType = 'REMEMBER_ME'
                           AND t.IsUsed = 0

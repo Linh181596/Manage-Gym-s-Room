@@ -11,6 +11,7 @@ package com.mycompany.gymcentermanagement.controller.staff;
 
 import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
 import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.model.entity.User;
@@ -47,7 +48,7 @@ public class AddPersonalTrainerController extends HttpServlet {
     private static final String AVATAR_UPLOAD_DIR = "assets/uploads/pt-avatar";
 
     private final UserDAO userDAO = new UserDAOImpl();
-    private final PersonalTrainerDAO personalTrainerDAO = new PersonalTrainerDAO();
+    private final PersonalTrainerDAO personalTrainerDAO = new PersonalTrainerDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
