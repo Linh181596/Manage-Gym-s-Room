@@ -13,11 +13,14 @@ package com.mycompany.gymcentermanagement.dao.impl;
 
 import com.mycompany.gymcentermanagement.dao.BaseDAO;
 import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dto.MemberProfileDTO;
+import com.mycompany.gymcentermanagement.dto.PTProfileDTO;
+import com.mycompany.gymcentermanagement.dto.StaffProfileDTO;
+import com.mycompany.gymcentermanagement.dto.UserProfileBaseDTO;
 import com.mycompany.gymcentermanagement.model.entity.Member;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.model.entity.UserToken;
 import com.mycompany.gymcentermanagement.utils.DBContext;
-import com.mycompany.gymcentermanagement.dto.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -741,11 +744,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             String email = rs.getString("Email");
 
             String sqlUpdateToken = """
-                        UPDATE User_Tokens
-                        SET IsUsed = 1
-                        WHERE TokenValue = ?
-                          AND TokenType = 'VERIFICATION'
-                     """;
+                       UPDATE User_Tokens
+                       SET IsUsed = 1
+                       WHERE TokenValue = ?
+                         AND TokenType = 'VERIFICATION'
+                    """;
 
             stmtUpdateToken = conn.prepareStatement(sqlUpdateToken);
             stmtUpdateToken.setString(1, tokenValue);
@@ -1120,5 +1123,26 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             closeResource(conn, psUser, null);
         }
         return success;
+    }
+
+    /* Update phone method to update PT's info */
+    @Override
+    public boolean updateBasicUserInfo(User user) {
+        String sql = """
+                UPDATE Users 
+                SET Phone = ? 
+                WHERE UserID = ? 
+                  AND IsDeleted = 0
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stm = conn.prepareStatement(sql)) {
+            stm.setString(1, user.getPhoneNumber());
+            stm.setInt(2, user.getUserId());
+
+            return stm.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

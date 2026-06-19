@@ -32,4 +32,9 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
     public PersonalTrainer getPTByUserId(int userId) {
         return personalTrainerDAO.findPTByUserId(userId);
     }
+
+    @Override
+    public boolean updatePersonalTrainer(PersonalTrainer pt) {
+        return personalTrainerDAO.updatePersonalTrainer(pt);
+    }
 }
