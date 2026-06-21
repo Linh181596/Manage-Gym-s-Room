@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 import java.time.format.DateTimeParseException;
 
 /**
@@ -53,6 +54,16 @@ public class AddPersonalTrainerController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        List<String> specOptions = List.of(
+                "Quản lý cân nặng",
+                "Tăng cơ",
+                "Cardio",
+                "Yoga",
+                "Boxing",
+                "Dinh dưỡng",
+                "Phục hồi thể lực"
+        );
+        request.setAttribute("specOptions", specOptions);
         request.getRequestDispatcher(ADD_PT_VIEW).forward(request, response);
     }
 
@@ -65,7 +76,18 @@ public class AddPersonalTrainerController extends HttpServlet {
         String displayName = trimToNull(request.getParameter("displayName"));
         String email = trimToNull(request.getParameter("email"));
         String phone = trimToNull(request.getParameter("phone"));
-        String specialization = trimToNull(request.getParameter("specialization"));
+        
+        String[] specializations = request.getParameterValues("specializations");
+        String specialization = null;
+        if (specializations != null && specializations.length > 0) {
+            specialization = String.join(", ", specializations);
+            request.setAttribute("selectedSpecs", List.of(specializations));
+        } else {
+            request.setAttribute("selectedSpecs", List.of());
+            forwardBackWithError(request, response, "Vui lòng chọn ít nhất một chuyên môn của PT.");
+            return;
+        }
+
         String careerStartDateRaw = trimToNull(request.getParameter("careerStartDate"));
         String description = trimToNull(request.getParameter("description"));
 
@@ -81,11 +103,6 @@ public class AddPersonalTrainerController extends HttpServlet {
 
         if (phone == null || !phone.matches("^0\\d{9}$")) {
             forwardBackWithError(request, response, "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
-            return;
-        }
-
-        if (specialization == null) {
-            forwardBackWithError(request, response, "Vui lòng chọn hoặc nhập chuyên môn của PT.");
             return;
         }
 
@@ -216,6 +233,16 @@ public class AddPersonalTrainerController extends HttpServlet {
     private void forwardBackWithError(HttpServletRequest request, HttpServletResponse response,
             String errorMessage)
             throws ServletException, IOException {
+        List<String> specOptions = List.of(
+                "Quản lý cân nặng",
+                "Tăng cơ",
+                "Cardio",
+                "Yoga",
+                "Boxing",
+                "Dinh dưỡng",
+                "Phục hồi thể lực"
+        );
+        request.setAttribute("specOptions", specOptions);
         request.setAttribute("error", errorMessage);
         request.getRequestDispatcher(ADD_PT_VIEW).forward(request, response);
     }

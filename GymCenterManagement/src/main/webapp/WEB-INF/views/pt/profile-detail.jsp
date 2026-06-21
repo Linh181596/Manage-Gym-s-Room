@@ -33,7 +33,7 @@
             <div class="col-md-4 text-center border-end">
                 <img src="${pageContext.request.contextPath}/${not empty pt.avatarPath ? pt.avatarPath : 'img/user.jpg'}"
                      class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                <h3>${pt.displayName}</h3>
+                <h3>${pt.publicName}</h3>
                 <p class="text-muted">${pt.specialization}</p>
             </div>
             <div class="col-md-8 px-4">

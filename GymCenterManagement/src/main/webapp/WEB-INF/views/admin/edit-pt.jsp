@@ -39,7 +39,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Tên hiển thị (DisplayName)</label>
-                    <input type="text" class="form-control" name="displayName" value="${pt.displayName}" required>
+                    <input type="text" class="form-control" name="displayName" value="${pt.displayName}">
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -49,12 +49,26 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Ngày bắt đầu sự nghiệp</label>
-                    <input type="date" class="form-control" name="careerStartDate" value="${pt.careerStartDate}">
+                    <input type="date" class="form-control" name="careerStartDate" value="${pt.careerStartDate}" max="<%= java.time.LocalDate.now() %>">
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Chuyên môn (Specialization)</label>
-                    <input type="text" class="form-control" name="specialization" value="${pt.specialization}">
+                    <label class="form-label fw-bold d-block">Chuyên môn (Specialization) <span class="text-danger">*</span></label>
+                    <div class="border rounded p-2 bg-white d-flex flex-wrap gap-3">
+                        <c:forEach var="spec" items="${specOptions}">
+                            <c:set var="isChecked" value="false" />
+                            <c:forEach var="sel" items="${selectedSpecs}">
+                                <c:if test="${sel eq spec}">
+                                    <c:set var="isChecked" value="true" />
+                                </c:if>
+                            </c:forEach>
+                            <div class="form-check form-check-inline m-0">
+                                <input class="form-check-input" type="checkbox" name="specializations" value="${spec}" id="spec_${spec.hashCode()}"
+                                       ${isChecked ? 'checked' : ''}>
+                                <label class="form-check-label text-dark" for="spec_${spec.hashCode()}">${spec}</label>
+                            </div>
+                        </c:forEach>
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Trạng thái hoạt động</label>

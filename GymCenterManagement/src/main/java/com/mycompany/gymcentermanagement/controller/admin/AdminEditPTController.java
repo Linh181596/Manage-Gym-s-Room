@@ -36,6 +36,9 @@ public class AdminEditPTController extends HttpServlet {
             throws ServletException, IOException {
 
         String idRaw = request.getParameter("id"); // Lấy ID trên URL
+        if (idRaw == null || idRaw.trim().isEmpty()) {
+            idRaw = request.getParameter("ptId");
+        }
 
         try {
             if (idRaw == null || idRaw.trim().isEmpty()) {
@@ -44,13 +47,37 @@ public class AdminEditPTController extends HttpServlet {
             }
 
             int ptId = Integer.parseInt(idRaw);
-            // Xuống Service lấy dữ liệu PT
-            //Ở bên class PersonalTrainerService có method là getPersonalTrainerById, hàm này được gọi trong PersonalTrainerServiceImol là dao.getById(int ptId) nên gọi trên đây là getPersonalTrainerById
-            PersonalTrainer pt = personalTrainerService.getPersonalTrainerById(ptId);
+            
+            // Check if pt is already set by doPost error forwarding
+            PersonalTrainer pt = (PersonalTrainer) request.getAttribute("pt");
+            if (pt == null) {
+                pt = personalTrainerService.getPersonalTrainerById(ptId);
+            }
 
             if (pt == null) {
                 response.sendRedirect(request.getContextPath() + "/pt/list?error=notfound");
                 return;
+            }
+
+            java.util.List<String> specOptions = java.util.List.of(
+                "Quản lý cân nặng",
+                "Tăng cơ",
+                "Cardio",
+                "Yoga",
+                "Boxing",
+                "Dinh dưỡng",
+                "Phục hồi thể lực"
+            );
+            request.setAttribute("specOptions", specOptions);
+
+            // Populate selectedSpecs list from PT specialization string
+            if (request.getAttribute("selectedSpecs") == null && pt.getSpecialization() != null) {
+                String[] parts = pt.getSpecialization().split(",");
+                java.util.List<String> selectedSpecs = new java.util.ArrayList<>();
+                for (String part : parts) {
+                    selectedSpecs.add(part.trim());
+                }
+                request.setAttribute("selectedSpecs", selectedSpecs);
             }
 
             // Đẩy object sang form
@@ -81,7 +108,17 @@ public class AdminEditPTController extends HttpServlet {
 
             String fullName = req.getParameter("fullName");
             String phone = req.getParameter("phone");
-            String specialization = req.getParameter("specialization");
+            
+            String[] specializations = req.getParameterValues("specializations");
+            String specialization = null;
+            if (specializations != null && specializations.length > 0) {
+                specialization = String.join(", ", specializations);
+                req.setAttribute("selectedSpecs", java.util.List.of(specializations));
+            } else {
+                req.setAttribute("selectedSpecs", java.util.List.of());
+                throw new IllegalArgumentException("Vui lòng chọn ít nhất một chuyên môn của PT.");
+            }
+
             String careerStartDate = req.getParameter("careerStartDate");
             String description = req.getParameter("description");
             String status = req.getParameter("status"); // Active / Inactive
@@ -121,9 +158,14 @@ public class AdminEditPTController extends HttpServlet {
             //Update other i4 in PT i4
             PersonalTrainer pt = new PersonalTrainer();
             pt.setPtId(ptId);
+            pt.setUserId(userId);
             pt.setFullName(fullName);
             // Giữ nguyên displayName cũ hoặc cho sửa tùy logic nhóm bạn
-            pt.setDisplayName(req.getParameter("displayName"));
+            String displayName = req.getParameter("displayName");
+            if (displayName != null && displayName.trim().isEmpty()) {
+                displayName = null;
+            }
+            pt.setDisplayName(displayName);
             pt.setSpecialization(specialization);
             pt.setDescription(description);
             pt.setStatus(status);
@@ -133,7 +175,11 @@ public class AdminEditPTController extends HttpServlet {
             pt.setUpdatedBy(currentUser.getEmail()); // Lưu vết người sửa
 
             if (careerStartDate != null && !careerStartDate.isEmpty()) {
-                pt.setCareerStartDate(LocalDate.parse(careerStartDate));
+                LocalDate careerDate = LocalDate.parse(careerStartDate);
+                if (careerDate.isAfter(LocalDate.now())) {
+                    throw new IllegalArgumentException("Ngày bắt đầu sự nghiệp không được lớn hơn ngày hiện tại.");
+                }
+                pt.setCareerStartDate(careerDate);
             }
 
             boolean isSuccess = personalTrainerService.updatePersonalTrainer(pt);
@@ -148,6 +194,32 @@ public class AdminEditPTController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             req.setAttribute("error", "Đã xảy ra lỗi: " + e.getMessage());
+            
+            // Reconstruct trainer data to show back to form
+            try {
+                int ptId = Integer.parseInt(req.getParameter("ptId"));
+                int userId = Integer.parseInt(req.getParameter("userId"));
+                PersonalTrainer pt = new PersonalTrainer();
+                pt.setPtId(ptId);
+                pt.setUserId(userId);
+                pt.setFullName(req.getParameter("fullName"));
+                pt.setPhone(req.getParameter("phone"));
+                pt.setDisplayName(req.getParameter("displayName"));
+                pt.setDescription(req.getParameter("description"));
+                pt.setStatus(req.getParameter("status"));
+                pt.setAvatarPath(req.getParameter("oldAvatarPath"));
+                pt.setCertificateFilePath(req.getParameter("oldCertPath"));
+                pt.setCertificateFileName(req.getParameter("oldCertName"));
+                
+                String careerStartDate = req.getParameter("careerStartDate");
+                if (careerStartDate != null && !careerStartDate.isEmpty()) {
+                    pt.setCareerStartDate(LocalDate.parse(careerStartDate));
+                }
+                req.setAttribute("pt", pt);
+            } catch (Exception ex) {
+                // Ignore reconstruction errors
+            }
+            
             // Trả lại về trang form nếu lỗi
             doGet(req, resp);
         }

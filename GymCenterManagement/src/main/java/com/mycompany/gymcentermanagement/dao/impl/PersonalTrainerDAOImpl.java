@@ -119,11 +119,11 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
 
         List<PersonalTrainer> trainers = new ArrayList<>();
 
-        StringBuilder placeholders = new StringBuilder();
+        StringBuilder conditions = new StringBuilder();
         for (int i = 0; i < specializations.size(); i++) {
-            placeholders.append("?");
+            conditions.append("pt.Specialization LIKE ?");
             if (i < specializations.size() - 1) {
-                placeholders.append(", ");
+                conditions.append(" OR ");
             }
         }
 
@@ -155,8 +155,8 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                   AND u.Status = 'Active'
                   AND pt.IsDeleted = 0
                   AND u.IsDeleted = 0
-                  AND pt.Specialization IN (
-                """ + placeholders + """
+                  AND (
+                """ + conditions + """
                       )
                     ORDER BY pt.FullName
                 """;
@@ -164,7 +164,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (int i = 0; i < specializations.size(); i++) {
-                ps.setString(i + 1, specializations.get(i));
+                ps.setString(i + 1, "%" + specializations.get(i) + "%");
             }
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -370,7 +370,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                           )
                       AND (
                             ? IS NULL
-                            OR pt.Specialization = ?
+                            OR pt.Specialization LIKE ?
                           )
                     ORDER BY pt.FullName
                 """;
@@ -382,7 +382,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
 
         String specializationValue = null;
         if (specialization != null && !specialization.trim().isEmpty()) {
-            specializationValue = specialization.trim();
+            specializationValue = "%" + specialization.trim() + "%";
         }
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -391,8 +391,14 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
             ps.setString(3, searchValue);
             ps.setString(4, searchValue);
             ps.setString(5, searchValue);
-            ps.setString(6, specializationValue);
-            ps.setString(7, specializationValue);
+
+            if (specialization == null || specialization.trim().isEmpty()) {
+                ps.setString(6, null);
+                ps.setString(7, null);
+            } else {
+                ps.setString(6, specialization.trim());
+                ps.setString(7, specializationValue);
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -460,13 +466,13 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
         }
 
         if (hasSpecializations) {
-            sql.append(" AND pt.Specialization IN (");
+            sql.append(" AND (");
 
             for (int i = 0; i < specializations.size(); i++) {
-                sql.append("?");
+                sql.append("pt.Specialization LIKE ?");
 
                 if (i < specializations.size() - 1) {
-                    sql.append(", ");
+                    sql.append(" OR ");
                 }
             }
 
@@ -492,7 +498,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
 
             if (hasSpecializations) {
                 for (String specialization : specializations) {
-                    ps.setString(index++, specialization);
+                    ps.setString(index++, "%" + specialization + "%");
                 }
             }
 

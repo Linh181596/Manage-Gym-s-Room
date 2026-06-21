@@ -68,7 +68,7 @@
             <div class="mb-4">
                 <label class="form-label fw-bold">Tên hiển thị trên hệ thống (DisplayName):</label>
                 <input type="text" class="form-control" name="displayName" value="${pt.displayName}"
-                       placeholder="VD: Coach Phú Nguyễn" required>
+                       placeholder="VD: Coach Nam">
                 <div class="form-text text-muted">Tên này dùng để học viên tìm kiếm và đăng ký lịch tập với bạn.</div>
             </div>
 

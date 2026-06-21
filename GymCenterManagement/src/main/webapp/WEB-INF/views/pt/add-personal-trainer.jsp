@@ -79,23 +79,28 @@
                         <div class="row g-3 mb-4">
                             <!-- Specialization -->
                             <div class="col-md-6">
-                                <label for="specialization" class="form-label fw-semibold text-secondary">Chuyên môn chính <span class="text-danger">*</span></label>
-                                <select id="specialization" name="specialization" class="form-select" required>
-                                    <option value="" disabled selected>-- Chọn chuyên môn chính --</option>
-                                    <option value="Quản lý cân nặng">Quản lý cân nặng (Weight Management)</option>
-                                    <option value="Tăng cơ">Tăng cơ (Body Building)</option>
-                                    <option value="Cardio">Cardio & Sức bền</option>
-                                    <option value="Yoga">Yoga & Linh hoạt</option>
-                                    <option value="Boxing">Boxing & Kickboxing</option>
-                                    <option value="Dinh dưỡng">Dinh dưỡng thể thao</option>
-                                    <option value="Phục hồi thể lực">Phục hồi thể lực</option>
-                                </select>
+                                <label class="form-label fw-semibold text-secondary d-block">Chuyên môn chính <span class="text-danger">*</span></label>
+                                <div class="border rounded p-2 bg-white d-flex flex-wrap gap-3">
+                                    <c:forEach var="spec" items="${specOptions}">
+                                        <c:set var="isChecked" value="false" />
+                                        <c:forEach var="sel" items="${selectedSpecs}">
+                                            <c:if test="${sel eq spec}">
+                                                <c:set var="isChecked" value="true" />
+                                            </c:if>
+                                        </c:forEach>
+                                        <div class="form-check form-check-inline m-0">
+                                            <input class="form-check-input" type="checkbox" name="specializations" value="${spec}" id="spec_${spec.hashCode()}"
+                                                   ${isChecked ? 'checked' : ''}>
+                                            <label class="form-check-label text-dark" for="spec_${spec.hashCode()}">${spec}</label>
+                                        </div>
+                                    </c:forEach>
+                                </div>
                             </div>
 
                             <!-- Career Start Date -->
                             <div class="col-md-6">
                                 <label for="careerStartDate" class="form-label fw-semibold text-secondary">Ngày bắt đầu sự nghiệp <span class="text-danger">*</span></label>
-                                <input type="date" id="careerStartDate" name="careerStartDate" class="form-control" required value="${param.careerStartDate}">
+                                <input type="date" id="careerStartDate" name="careerStartDate" class="form-control" required value="${param.careerStartDate}" max="<%= java.time.LocalDate.now() %>">
                                 <small class="text-muted d-block mt-1 small">Sử dụng để tính số năm kinh nghiệm tự động.</small>
                             </div>
 
