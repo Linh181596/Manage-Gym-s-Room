@@ -2,6 +2,8 @@ package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
 import com.mycompany.gymcentermanagement.service.UserService;
 import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
@@ -29,6 +31,7 @@ import java.time.LocalDate;
 public class AdminEditPTController extends HttpServlet {
     private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
     private final UserService userService = new UserServiceImpl();
+    private final UserDAO userDAO = new UserDAOImpl();
 
     //Load old i4 PT info for PT view
     @Override
@@ -87,13 +90,8 @@ public class AdminEditPTController extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/pt/list?error=invalid_id");
         } catch (Exception e) {
-            // BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ IN LỖI RA TAB CONSOLE / TOMCAT LOG
             e.printStackTrace();
-
-            // Đồng thời in thẳng chữ lỗi lên màn hình thay vì để trắng trang
-            response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().println("<h3>Hệ thống Backend xảy ra lỗi: " + e.getMessage() + "</h3>");
-            response.getWriter().println("<p>Vui lòng kiểm tra tab Console hoặc Output của Tomcat trong IntelliJ để xem chi tiết!</p>");
+            throw new ServletException("Lỗi hệ thống khi tải thông tin HLV", e);
         }
     }
 
@@ -108,6 +106,24 @@ public class AdminEditPTController extends HttpServlet {
 
             String fullName = req.getParameter("fullName");
             String phone = req.getParameter("phone");
+
+            // Validate ptId and userId relationship to prevent Parameter Tampering
+            PersonalTrainer ptFromDb = personalTrainerService.getPersonalTrainerById(ptId);
+            if (ptFromDb == null || ptFromDb.getUserId() != userId) {
+                throw new IllegalArgumentException("Thông tin ID Huấn luyện viên không khớp.");
+            }
+
+            // Validate phone format
+            if (phone == null || !phone.matches("^0\\d{9}$")) {
+                throw new IllegalArgumentException("Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
+            }
+
+            // Check duplicate phone if changed
+            if (!phone.equals(ptFromDb.getPhone())) {
+                if (userDAO.checkPhoneExists(phone)) {
+                    throw new IllegalArgumentException("Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
+                }
+            }
             
             String[] specializations = req.getParameterValues("specializations");
             String specialization = null;
