@@ -1,9 +1,11 @@
 /**
  * =========================================================================
- * @file          : UserDAOImpl.java
- * @description   : Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ liệu cho Users và Profiles.
- * @author        : Nguyễn Đại Dương
- * @created       : 2026-06-05
+ *
+ * @file : UserDAOImpl.java
+ * @description : Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ
+ * liệu cho Users và Profiles.
+ * @author : Nguyễn Đại Dương
+ * @created : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
  */
@@ -11,19 +13,22 @@ package com.mycompany.gymcentermanagement.dao.impl;
 
 import com.mycompany.gymcentermanagement.dao.BaseDAO;
 import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dto.MemberProfileDTO;
+import com.mycompany.gymcentermanagement.dto.PTProfileDTO;
+import com.mycompany.gymcentermanagement.dto.StaffProfileDTO;
+import com.mycompany.gymcentermanagement.dto.UserProfileBaseDTO;
 import com.mycompany.gymcentermanagement.model.entity.Member;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.model.entity.UserToken;
 import com.mycompany.gymcentermanagement.utils.DBContext;
-import com.mycompany.gymcentermanagement.dto.*;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JDBC Implementation of the UserDAO interface.
- * Extends BaseDAO to handle connection caching and resource clean up.
+ * JDBC Implementation of the UserDAO interface. Extends BaseDAO to handle
+ * connection caching and resource clean up.
  */
 public class UserDAOImpl extends BaseDAO implements UserDAO {
 
@@ -32,7 +37,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     /**
-     * Instantiates the DAO with a shared Connection (for active transaction support).
+     * Instantiates the DAO with a shared Connection (for active transaction
+     * support).
      *
      * @param connection The shared database Connection.
      */
@@ -52,6 +58,16 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         user.setPasswordHash(rs.getString("PasswordHash"));
         user.setFullName(rs.getString("DisplayName"));
         user.setPhoneNumber(rs.getString("Phone"));
+
+        // Map AvatarPath (if present in ResultSet)
+        try {
+            String avatarPath = rs.getString("AvatarPath");
+            if (avatarPath != null) {
+                user.setAvatarPath(avatarPath);
+            }
+        } catch (SQLException e) {
+            // Column might not exist in some queries, ignore
+        }
 
         // Map String to Role Enum
         String roleStr = rs.getString("RoleName");
@@ -99,10 +115,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT u.*, r.RoleName FROM Users u " +
-                    "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID " +
-                    "LEFT JOIN Roles r ON ur.RoleID = r.RoleID " +
-                    "WHERE u.Email = ? AND u.IsDeleted = 0";
+            String sql = "SELECT u.*, r.RoleName, pt.AvatarPath FROM Users u "
+                    + "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID "
+                    + "LEFT JOIN Roles r ON ur.RoleID = r.RoleID "
+                    + "LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID "
+                    + "WHERE u.Email = ? AND u.IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, email);
             rs = stmt.executeQuery();
@@ -125,10 +142,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT u.*, r.RoleName FROM Users u " +
-                    "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID " +
-                    "LEFT JOIN Roles r ON ur.RoleID = r.RoleID " +
-                    "WHERE u.UserID = ? AND u.IsDeleted = 0";
+            String sql = "SELECT u.*, r.RoleName, pt.AvatarPath FROM Users u "
+                    + "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID "
+                    + "LEFT JOIN Roles r ON ur.RoleID = r.RoleID "
+                    + "LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID "
+                    + "WHERE u.UserID = ? AND u.IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, userId);
             rs = stmt.executeQuery();
@@ -220,10 +238,18 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (generatedKeys != null) generatedKeys.close();
-            if (roleRs != null) roleRs.close();
-            if (stmtRole != null) stmtRole.close();
-            if (stmtUserRole != null) stmtUserRole.close();
+            if (generatedKeys != null) {
+                generatedKeys.close();
+            }
+            if (roleRs != null) {
+                roleRs.close();
+            }
+            if (stmtRole != null) {
+                stmtRole.close();
+            }
+            if (stmtUserRole != null) {
+                stmtUserRole.close();
+            }
             closeResource(conn, stmtUser, null);
         }
         return success;
@@ -247,8 +273,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
 
             // 1. Update User
-            String sqlUser = "UPDATE Users SET Email = ?, PasswordHash = ?, DisplayName = ?, Phone = ?, Status = ?, UpdatedBy = ?, UpdatedDate = ? " +
-                    "WHERE UserID = ? AND IsDeleted = 0";
+            String sqlUser = "UPDATE Users SET Email = ?, PasswordHash = ?, DisplayName = ?, Phone = ?, Status = ?, UpdatedBy = ?, UpdatedDate = ? "
+                    + "WHERE UserID = ? AND IsDeleted = 0";
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setString(1, user.getEmail());
             stmtUser.setString(2, user.getPasswordHash());
@@ -294,9 +320,15 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (roleRs != null) roleRs.close();
-            if (stmtRole != null) stmtRole.close();
-            if (stmtUserRole != null) stmtUserRole.close();
+            if (roleRs != null) {
+                roleRs.close();
+            }
+            if (stmtRole != null) {
+                stmtRole.close();
+            }
+            if (stmtUserRole != null) {
+                stmtUserRole.close();
+            }
             closeResource(conn, stmtUser, null);
         }
         return success;
@@ -341,7 +373,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (stmtUserRole != null) stmtUserRole.close();
+            if (stmtUserRole != null) {
+                stmtUserRole.close();
+            }
             closeResource(conn, stmtUser, null);
         }
         return success;
@@ -405,9 +439,6 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
     @Override
     public boolean checkPhoneExists(String phone) throws SQLException {
-        if (phone == null || phone.trim().isEmpty()) {
-            return false;
-        }
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -415,21 +446,29 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         try {
             conn = getActiveConnection();
 
-            String sql = """
-                        SELECT 1
-                        FROM Users
-                        WHERE Phone = ?
-                          AND IsDeleted = 0
-                    """;
-
+            String sql = "SELECT 1 FROM Users WHERE Phone = ? AND IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
-            stmt.setString(1, phone.trim());
-
+            stmt.setString(1, phone);
             rs = stmt.executeQuery();
-            return rs.next();
 
+            return rs.next(); // Trả về true nếu số điện thoại đã tồn tại
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e; // Bắt buộc ném lỗi ra ngoài để Controller có thể hiển thị thông báo thay vì nuốt lỗi
         } finally {
-            closeResource(conn, stmt, rs);
+            if (rs != null) try {
+                rs.close();
+            } catch (SQLException e) {
+            }
+            if (stmt != null) try {
+                stmt.close();
+            } catch (SQLException e) {
+            }
+            if (conn != null) try {
+                conn.close();
+            } catch (SQLException e) {
+            }
         }
     }
 
@@ -637,12 +676,24 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (generatedKeys != null) generatedKeys.close();
-            if (roleRs != null) roleRs.close();
-            if (stmtToken != null) stmtToken.close();
-            if (stmtMember != null) stmtMember.close();
-            if (stmtUserRole != null) stmtUserRole.close();
-            if (stmtRole != null) stmtRole.close();
+            if (generatedKeys != null) {
+                generatedKeys.close();
+            }
+            if (roleRs != null) {
+                roleRs.close();
+            }
+            if (stmtToken != null) {
+                stmtToken.close();
+            }
+            if (stmtMember != null) {
+                stmtMember.close();
+            }
+            if (stmtUserRole != null) {
+                stmtUserRole.close();
+            }
+            if (stmtRole != null) {
+                stmtRole.close();
+            }
             closeResource(conn, stmtUser, null);
         }
 
@@ -693,11 +744,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             String email = rs.getString("Email");
 
             String sqlUpdateToken = """
-                        UPDATE User_Tokens
-                        SET IsUsed = 1
-                        WHERE TokenValue = ?
-                          AND TokenType = 'VERIFICATION'
-                     """;
+                       UPDATE User_Tokens
+                       SET IsUsed = 1
+                       WHERE TokenValue = ?
+                         AND TokenType = 'VERIFICATION'
+                    """;
 
             stmtUpdateToken = conn.prepareStatement(sqlUpdateToken);
             stmtUpdateToken.setString(1, tokenValue);
@@ -739,9 +790,15 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (stmtUpdateMember != null) stmtUpdateMember.close();
-            if (stmtUpdateUser != null) stmtUpdateUser.close();
-            if (stmtUpdateToken != null) stmtUpdateToken.close();
+            if (stmtUpdateMember != null) {
+                stmtUpdateMember.close();
+            }
+            if (stmtUpdateUser != null) {
+                stmtUpdateUser.close();
+            }
+            if (stmtUpdateToken != null) {
+                stmtUpdateToken.close();
+            }
             closeResource(conn, stmtFind, rs);
         }
     }
@@ -795,11 +852,12 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             conn = getActiveConnection();
 
             String sql = """
-                        SELECT u.*, r.RoleName
+                        SELECT u.*, r.RoleName, pt.AvatarPath
                         FROM User_Tokens t
                         INNER JOIN Users u ON t.UserID = u.UserID
                         LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
                         LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID
                         WHERE t.TokenValue = ?
                           AND t.TokenType = 'REMEMBER_ME'
                           AND t.IsUsed = 0
@@ -856,10 +914,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT u.*, r.RoleName FROM Users u " +
-                    "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID " +
-                    "LEFT JOIN Roles r ON ur.RoleID = r.RoleID " +
-                    "WHERE u.IsDeleted = 0";
+            String sql = "SELECT u.*, r.RoleName FROM Users u "
+                    + "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID "
+                    + "LEFT JOIN Roles r ON ur.RoleID = r.RoleID "
+                    + "WHERE u.IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
 
@@ -873,7 +931,6 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     // --- Profile Methods (UC-03) ---
-
     @Override
     public String getHighestPriorityRole(int userId) throws SQLException {
         Connection conn = null;
@@ -882,10 +939,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         String roleName = null;
         try {
             conn = getActiveConnection();
-            String sql = "SELECT TOP 1 r.RoleName FROM UserRoles ur " +
-                         "INNER JOIN Roles r ON ur.RoleID = r.RoleID " +
-                         "WHERE ur.UserID = ? " +
-                         "ORDER BY r.RoleLevel ASC";
+            String sql = "SELECT TOP 1 r.RoleName FROM UserRoles ur "
+                    + "INNER JOIN Roles r ON ur.RoleID = r.RoleID "
+                    + "WHERE ur.UserID = ? "
+                    + "ORDER BY r.RoleLevel ASC";
             ps = conn.prepareStatement(sql);
             ps.setInt(1, userId);
             rs = ps.executeQuery();
@@ -901,7 +958,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     @Override
     public UserProfileBaseDTO getUserProfileById(int userId) throws SQLException {
         String roleName = getHighestPriorityRole(userId);
-        if (roleName == null) return null;
+        if (roleName == null) {
+            return null;
+        }
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -909,10 +968,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
-            
+
             if ("Admin".equalsIgnoreCase(roleName)) {
-                String sql = "SELECT UserID, Email, DisplayName, Phone FROM Users " +
-                             "WHERE UserID = ? AND IsDeleted = 0";
+                String sql = "SELECT UserID, Email, DisplayName, Phone FROM Users "
+                        + "WHERE UserID = ? AND IsDeleted = 0";
                 ps = conn.prepareStatement(sql);
                 ps.setInt(1, userId);
                 rs = ps.executeQuery();
@@ -921,11 +980,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                     setBaseProfileData(adminProfile, rs, roleName);
                     return adminProfile;
                 }
-            }
-            else if ("Member".equalsIgnoreCase(roleName)) {
-                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, m.Gender, m.DateOfBirth, m.Address, m.MembershipStatus " +
-                             "FROM Users u INNER JOIN Members m ON u.UserID = m.UserID " +
-                             "WHERE u.UserID = ? AND u.IsDeleted = 0 AND m.IsDeleted = 0";
+            } else if ("Member".equalsIgnoreCase(roleName)) {
+                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, m.Gender, m.DateOfBirth, m.Address, m.MembershipStatus "
+                        + "FROM Users u INNER JOIN Members m ON u.UserID = m.UserID "
+                        + "WHERE u.UserID = ? AND u.IsDeleted = 0 AND m.IsDeleted = 0";
                 ps = conn.prepareStatement(sql);
                 ps.setInt(1, userId);
                 rs = ps.executeQuery();
@@ -938,25 +996,24 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                     member.setMembershipStatus(rs.getString("MembershipStatus"));
                     return member;
                 }
-            } 
-            else if ("PT".equalsIgnoreCase(roleName)) {
-                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, pt.FullName, pt.Specialization, pt.Description, " +
-                             "pt.CareerStartDate, pt.AvatarPath, pt.CertificateFileName, pt.CertificateFilePath " +
-                             "FROM Users u INNER JOIN PersonalTrainers pt ON u.UserID = pt.UserID " +
-                             "WHERE u.UserID = ? AND u.IsDeleted = 0 AND pt.IsDeleted = 0";
+            } else if ("PT".equalsIgnoreCase(roleName)) {
+                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, pt.FullName, pt.Specialization, pt.Description, "
+                        + "pt.CareerStartDate, pt.AvatarPath, pt.CertificateFileName, pt.CertificateFilePath "
+                        + "FROM Users u INNER JOIN PersonalTrainers pt ON u.UserID = pt.UserID "
+                        + "WHERE u.UserID = ? AND u.IsDeleted = 0 AND pt.IsDeleted = 0";
                 ps = conn.prepareStatement(sql);
                 ps.setInt(1, userId);
                 rs = ps.executeQuery();
                 if (rs.next()) {
                     PTProfileDTO pt = new PTProfileDTO();
                     setBaseProfileData(pt, rs, roleName);
-                    pt.setFullName(rs.getString("FullName")); 
+                    pt.setFullName(rs.getString("FullName"));
                     pt.setSpecialization(rs.getString("Specialization"));
                     pt.setDescription(rs.getString("Description"));
                     pt.setAvatarPath(rs.getString("AvatarPath"));
                     pt.setCertificateFileName(rs.getString("CertificateFileName"));
                     pt.setCertificateFilePath(rs.getString("CertificateFilePath"));
-                    
+
                     Date startDateSql = rs.getDate("CareerStartDate");
                     if (startDateSql != null) {
                         java.time.LocalDate startDate = startDateSql.toLocalDate();
@@ -966,11 +1023,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                     }
                     return pt;
                 }
-            } 
-            else if ("Staff".equalsIgnoreCase(roleName)) {
-                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, s.Position " +
-                             "FROM Users u INNER JOIN Staffs s ON u.UserID = s.UserID " +
-                             "WHERE u.UserID = ? AND u.IsDeleted = 0 AND s.IsDeleted = 0";
+            } else if ("Staff".equalsIgnoreCase(roleName)) {
+                String sql = "SELECT u.UserID, u.Email, u.DisplayName, u.Phone, s.Position "
+                        + "FROM Users u INNER JOIN Staffs s ON u.UserID = s.UserID "
+                        + "WHERE u.UserID = ? AND u.IsDeleted = 0 AND s.IsDeleted = 0";
                 ps = conn.prepareStatement(sql);
                 ps.setInt(1, userId);
                 rs = ps.executeQuery();
@@ -1029,11 +1085,10 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 psSub.setString(3, memberDto.getAddress());
                 psSub.setInt(4, memberDto.getUserId());
                 subRows = psSub.executeUpdate();
-            } 
-            else if ("PT".equalsIgnoreCase(roleName) && profileDto instanceof PTProfileDTO) {
+            } else if ("PT".equalsIgnoreCase(roleName) && profileDto instanceof PTProfileDTO) {
                 PTProfileDTO ptDto = (PTProfileDTO) profileDto;
-                String sqlPT = "UPDATE PersonalTrainers SET FullName = ?, Description = ?, AvatarPath = ?, " +
-                               "CertificateFileName = ?, CertificateFilePath = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
+                String sqlPT = "UPDATE PersonalTrainers SET FullName = ?, Description = ?, AvatarPath = ?, "
+                        + "CertificateFileName = ?, CertificateFilePath = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
                 psSub = conn.prepareStatement(sqlPT);
                 psSub.setString(1, ptDto.getFullName());
                 psSub.setString(2, ptDto.getDescription());
@@ -1062,10 +1117,32 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (psSub != null) psSub.close();
+            if (psSub != null) {
+                psSub.close();
+            }
             closeResource(conn, psUser, null);
         }
         return success;
     }
-}
 
+    /* Update phone method to update PT's info */
+    @Override
+    public boolean updateBasicUserInfo(User user) {
+        String sql = """
+                UPDATE Users 
+                SET Phone = ? 
+                WHERE UserID = ? 
+                  AND IsDeleted = 0
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement stm = conn.prepareStatement(sql)) {
+            stm.setString(1, user.getPhoneNumber());
+            stm.setInt(2, user.getUserId());
+
+            return stm.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+}

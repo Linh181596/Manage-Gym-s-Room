@@ -11,6 +11,7 @@ package com.mycompany.gymcentermanagement.controller.staff;
 
 import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
 import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.model.entity.User;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 import java.time.format.DateTimeParseException;
 
 /**
@@ -47,11 +49,21 @@ public class AddPersonalTrainerController extends HttpServlet {
     private static final String AVATAR_UPLOAD_DIR = "assets/uploads/pt-avatar";
 
     private final UserDAO userDAO = new UserDAOImpl();
-    private final PersonalTrainerDAO personalTrainerDAO = new PersonalTrainerDAO();
+    private final PersonalTrainerDAO personalTrainerDAO = new PersonalTrainerDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        List<String> specOptions = List.of(
+                "Quản lý cân nặng",
+                "Tăng cơ",
+                "Cardio",
+                "Yoga",
+                "Boxing",
+                "Dinh dưỡng",
+                "Phục hồi thể lực"
+        );
+        request.setAttribute("specOptions", specOptions);
         request.getRequestDispatcher(ADD_PT_VIEW).forward(request, response);
     }
 
@@ -64,7 +76,18 @@ public class AddPersonalTrainerController extends HttpServlet {
         String displayName = trimToNull(request.getParameter("displayName"));
         String email = trimToNull(request.getParameter("email"));
         String phone = trimToNull(request.getParameter("phone"));
-        String specialization = trimToNull(request.getParameter("specialization"));
+        
+        String[] specializations = request.getParameterValues("specializations");
+        String specialization = null;
+        if (specializations != null && specializations.length > 0) {
+            specialization = String.join(", ", specializations);
+            request.setAttribute("selectedSpecs", List.of(specializations));
+        } else {
+            request.setAttribute("selectedSpecs", List.of());
+            forwardBackWithError(request, response, "Vui lòng chọn ít nhất một chuyên môn của PT.");
+            return;
+        }
+
         String careerStartDateRaw = trimToNull(request.getParameter("careerStartDate"));
         String description = trimToNull(request.getParameter("description"));
 
@@ -78,13 +101,8 @@ public class AddPersonalTrainerController extends HttpServlet {
             return;
         }
 
-        if (phone == null || !phone.matches("\\d{10}")) {
-            forwardBackWithError(request, response, "Số điện thoại phải có đúng 10 chữ số.");
-            return;
-        }
-
-        if (specialization == null) {
-            forwardBackWithError(request, response, "Vui lòng chọn hoặc nhập chuyên môn của PT.");
+        if (phone == null || !phone.matches("^0\\d{9}$")) {
+            forwardBackWithError(request, response, "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
             return;
         }
 
@@ -111,13 +129,14 @@ public class AddPersonalTrainerController extends HttpServlet {
                 forwardBackWithError(request, response, "Email này đã được sử dụng bởi tài khoản khác.");
                 return;
             }
-            if (userDAO.checkPhoneExists(phone)) {
-                forwardBackWithError(request, response, "Số điện thoại này đã được sử dụng bởi tài khoản khác.");
+            
+            if(userDAO.checkPhoneExists(phone)){
+                forwardBackWithError(request, response, "Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
                 return;
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            forwardBackWithError(request, response, "Lỗi kiểm tra trùng lặp email hoặc số điện thoại.");
+            forwardBackWithError(request, response, "Lỗi hệ thống khi kiểm tra dữ liệu: " + e.getMessage());
             return;
         }
 
@@ -158,7 +177,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         // Get logged-in user from session for audit trails
         User currentUser = (User) request.getSession().getAttribute("currentUser");
         String createdBy = (currentUser != null) ? currentUser.getFullName() : "Staff";
-
+        
         User newUser = new User();
         newUser.setEmail(email);
         newUser.setPasswordHash(passwordHash);
@@ -214,6 +233,16 @@ public class AddPersonalTrainerController extends HttpServlet {
     private void forwardBackWithError(HttpServletRequest request, HttpServletResponse response,
             String errorMessage)
             throws ServletException, IOException {
+        List<String> specOptions = List.of(
+                "Quản lý cân nặng",
+                "Tăng cơ",
+                "Cardio",
+                "Yoga",
+                "Boxing",
+                "Dinh dưỡng",
+                "Phục hồi thể lực"
+        );
+        request.setAttribute("specOptions", specOptions);
         request.setAttribute("error", errorMessage);
         request.getRequestDispatcher(ADD_PT_VIEW).forward(request, response);
     }

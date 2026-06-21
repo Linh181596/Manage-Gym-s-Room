@@ -91,4 +91,9 @@ public class UserServiceImpl implements UserService {
         }
         return false;
     }
+
+    @Override
+    public boolean updateBasicUserInfo(User user) {
+        return userDAO.updateBasicUserInfo(user);
+    }
 }

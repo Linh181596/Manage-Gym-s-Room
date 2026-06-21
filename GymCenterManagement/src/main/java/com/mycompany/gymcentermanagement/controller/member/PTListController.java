@@ -11,6 +11,7 @@
 package com.mycompany.gymcentermanagement.controller.member;
 
 import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
+import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -28,7 +29,7 @@ import java.util.List;
 @WebServlet(name = "PTListController", urlPatterns = {"/pt/list"})
 public class PTListController extends HttpServlet {
 
-    private final PersonalTrainerDAO trainerDAO = new PersonalTrainerDAO();
+    private final PersonalTrainerDAO trainerDAO = new PersonalTrainerDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)

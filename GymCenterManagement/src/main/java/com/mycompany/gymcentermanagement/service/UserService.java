@@ -40,4 +40,6 @@ public interface UserService {
      * @return true if update is successful.
      */
     boolean updateProfile(User user);
+
+    boolean updateBasicUserInfo(User user);
 }
