@@ -12,4 +12,7 @@ public interface PersonalTrainerService {
     boolean updateProfile(PersonalTrainer pt) throws SQLException;
     PersonalTrainer getPTByUserId(int userId);
     boolean updatePersonalTrainer(PersonalTrainer pt);
+    boolean createPersonalTrainer(PersonalTrainer pt);
+    List<PersonalTrainer> getActiveTrainers();
+    List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations);
 }

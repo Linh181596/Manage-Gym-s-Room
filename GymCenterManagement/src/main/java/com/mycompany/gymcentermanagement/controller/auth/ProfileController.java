@@ -219,9 +219,17 @@ public class ProfileController extends HttpServlet {
             else if ("PT".equalsIgnoreCase(roleName) && currentProfile instanceof PTProfileDTO) {
                 PTProfileDTO ptDto = (PTProfileDTO) currentProfile;
                 
+                String description = request.getParameter("description");
+                if (description != null && countWords(description) > 500) {
+                    request.setAttribute("errorMessage", "Tiểu sử (Bio) không được vượt quá 500 từ!");
+                    request.setAttribute("profile", currentProfile);
+                    request.getRequestDispatcher("/WEB-INF/views/auth/profile.jsp").forward(request, response);
+                    return;
+                }
+                
                 // Áp dụng quy tắc BR-03: Họ tên trang trọng của PT
                 ptDto.setFullName(displayName); 
-                ptDto.setDescription(request.getParameter("description"));
+                ptDto.setDescription(description);
 
                 String applicationPath = request.getServletContext().getRealPath("");
                 String uploadFilePath = applicationPath + File.separator + UPLOAD_DIR;
@@ -323,6 +331,13 @@ public class ProfileController extends HttpServlet {
             }
         }
         return "unknown_file";
+    }
+
+    private int countWords(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        return text.trim().split("\\s+").length;
     }
 }
 

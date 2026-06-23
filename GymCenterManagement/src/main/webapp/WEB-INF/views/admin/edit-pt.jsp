@@ -34,7 +34,7 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Họ và tên thật (FullName)</label>
+                    <label class="form-label fw-bold">Họ và tên thật (FullName) <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="fullName" value="${pt.fullName}" required>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -43,9 +43,9 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Số điện thoại</label>
-                    <input type="text" class="form-control" name="phone" value="${pt.phone}" pattern="[0-9]{10}"
-                           title="Vui lòng nhập 10 chữ số">
+                    <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="phone" value="${pt.phone}" required pattern="0[0-9]{9}"
+                           title="Vui lòng nhập 10 chữ số bắt đầu bằng số 0">
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Ngày bắt đầu sự nghiệp</label>
@@ -91,10 +91,13 @@
                     <label class="form-label fw-bold">Ảnh đại diện mới (Bỏ trống nếu giữ nguyên)</label>
                     <input type="file" class="form-control mb-2" name="avatarFile"
                            accept="image/png, image/jpeg, image/jpg">
-                    <small class="text-muted">Ảnh hiện tại:
+                    <small class="text-muted">Ảnh hiện tại / Ảnh mới tải lên:
                         <a href="${pageContext.request.contextPath}/${not empty pt.avatarPath ? pt.avatarPath : 'img/user.jpg'}"
                            target="_blank">Xem ảnh</a>
                     </small>
+                    <div class="text-success small mt-1">
+                        <i class="fa fa-info-circle me-1"></i>Đã ghi nhận tệp ảnh hiện tại (Xem ở liên kết trên). Bạn không cần chọn lại tệp trừ khi muốn thay đổi sang ảnh khác.
+                    </div>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -110,12 +113,17 @@
                         </c:if>
                     </c:if>
 
-                    <small class="text-muted">File hiện tại:
+                    <small class="text-muted">File hiện tại / File mới tải lên:
                         <a href="${pageContext.request.contextPath}${finalCertPath.startsWith('/') ? '' : '/'}${finalCertPath}"
                            target="_blank">
                             ${pt.certificateFileName}
                         </a>
                     </small>
+                    <c:if test="${not empty pt.certificateFileName}">
+                        <div class="text-success small mt-1">
+                            <i class="fa fa-info-circle me-1"></i>Đã ghi nhận tệp chứng chỉ hiện tại (Xem ở liên kết trên). Bạn không cần chọn lại tệp trừ khi muốn thay đổi sang chứng chỉ khác.
+                        </div>
+                    </c:if>
                 </div>
             </div>
 
@@ -126,5 +134,21 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const descTextarea = document.querySelector('textarea[name="description"]');
+        if (descTextarea) {
+            const bioText = descTextarea.value.trim();
+            const words = bioText ? bioText.split(/\s+/) : [];
+            if (words.length > 500) {
+                alert("Mô tả giới thiệu bản thân không được vượt quá 500 từ. Hiện tại bạn đang nhập: " + words.length + " từ.");
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+</script>
+
 <jsp:include page="../common/dashboard_footer.jsp"/>
 

@@ -101,34 +101,13 @@ public class AdminEditPTController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         User currentUser = (User) req.getSession().getAttribute("currentUser");
 
+        String avatarPath = req.getParameter("oldAvatarPath");
+        String certPath = req.getParameter("oldCertPath");
+        String certName = req.getParameter("oldCertName");
+        String[] specializations = req.getParameterValues("specializations");
+
         try {
-            //get param from form
-            int ptId = Integer.parseInt(req.getParameter("ptId"));
-            int userId = Integer.parseInt(req.getParameter("userId"));
-
-            String fullName = req.getParameter("fullName");
-            String phone = req.getParameter("phone");
-            
-            String[] specializations = req.getParameterValues("specializations");
-            String specialization = null;
-            if (specializations != null && specializations.length > 0) {
-                specialization = String.join(", ", specializations);
-                req.setAttribute("selectedSpecs", java.util.List.of(specializations));
-            } else {
-                req.setAttribute("selectedSpecs", java.util.List.of());
-                throw new IllegalArgumentException("Vui lòng chọn ít nhất một chuyên môn của PT.");
-            }
-
-            String careerStartDate = req.getParameter("careerStartDate");
-            String description = req.getParameter("description");
-            String status = req.getParameter("status"); // Active / Inactive
-
-            //File upload
-            String avatarPath = req.getParameter("oldAvatarPath");
-            String certPath = req.getParameter("oldCertPath");
-            String certName = req.getParameter("oldCertName");
-
-            //Save file if admin upload
+            // 1. Save file if admin uploaded new files (do this first to preserve them on validation error)
             UploadedFile uploadedAvatar = saveUploadedFile(
                     req,
                     "avatarFile",
@@ -149,6 +128,56 @@ public class AdminEditPTController extends HttpServlet {
                 certPath = uploadedCert.filePath;
                 certName = uploadedCert.originalFileName;
             }
+
+            // 2. Perform validations
+            int ptId = Integer.parseInt(req.getParameter("ptId"));
+            int userId = Integer.parseInt(req.getParameter("userId"));
+
+            String fullName = req.getParameter("fullName");
+            if (fullName != null) {
+                fullName = fullName.trim();
+            }
+            if (fullName == null || fullName.isEmpty()) {
+                throw new IllegalArgumentException("Họ và tên không được để trống.");
+            }
+
+            String phone = req.getParameter("phone");
+            if (phone != null) {
+                phone = phone.trim();
+            }
+            if (phone == null || phone.isEmpty()) {
+                throw new IllegalArgumentException("Số điện thoại không được để trống.");
+            }
+            if (!phone.matches("^0\\d{9}$")) {
+                throw new IllegalArgumentException("Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
+            }
+
+            User existingUser = userService.getProfile(userId);
+            if (existingUser != null) {
+                if (!phone.equals(existingUser.getPhoneNumber())) {
+                    if (userService.checkPhoneExists(phone)) {
+                        throw new IllegalArgumentException("Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
+                    }
+                }
+            }
+            
+            String specialization = null;
+            if (specializations != null && specializations.length > 0) {
+                specialization = String.join(", ", specializations);
+                req.setAttribute("selectedSpecs", java.util.List.of(specializations));
+            } else {
+                req.setAttribute("selectedSpecs", java.util.List.of());
+                throw new IllegalArgumentException("Vui lòng chọn ít nhất một chuyên môn của PT.");
+            }
+
+            String careerStartDate = req.getParameter("careerStartDate");
+            String description = req.getParameter("description");
+
+            if (description != null && countWords(description) > 500) {
+                throw new IllegalArgumentException("Mô tả giới thiệu bản thân không được vượt quá 500 từ.");
+            }
+
+            String status = req.getParameter("status"); // Active / Inactive
 
             User userToUpdate = new User();
             userToUpdate.setUserId(userId);
@@ -207,9 +236,16 @@ public class AdminEditPTController extends HttpServlet {
                 pt.setDisplayName(req.getParameter("displayName"));
                 pt.setDescription(req.getParameter("description"));
                 pt.setStatus(req.getParameter("status"));
-                pt.setAvatarPath(req.getParameter("oldAvatarPath"));
-                pt.setCertificateFilePath(req.getParameter("oldCertPath"));
-                pt.setCertificateFileName(req.getParameter("oldCertName"));
+                pt.setAvatarPath(avatarPath);
+                pt.setCertificateFilePath(certPath);
+                pt.setCertificateFileName(certName);
+                
+                if (specializations != null && specializations.length > 0) {
+                    pt.setSpecialization(String.join(", ", specializations));
+                    req.setAttribute("selectedSpecs", java.util.List.of(specializations));
+                } else {
+                    req.setAttribute("selectedSpecs", java.util.List.of());
+                }
                 
                 String careerStartDate = req.getParameter("careerStartDate");
                 if (careerStartDate != null && !careerStartDate.isEmpty()) {
@@ -232,6 +268,12 @@ public class AdminEditPTController extends HttpServlet {
 
         if (part == null || part.getSize() == 0) {
             return new UploadedFile(null, null);
+        }
+
+        long maxFileSize = 5 * 1024 * 1024; // 5MB
+        if (part.getSize() > maxFileSize) {
+            String fieldLabel = "avatarFile".equals(partName) ? "Ảnh đại diện" : "Chứng chỉ";
+            throw new IllegalArgumentException(fieldLabel + " vượt quá kích thước giới hạn cho phép (tối đa 5MB).");
         }
 
         String originalFileName = Paths.get(part.getSubmittedFileName())
@@ -279,6 +321,13 @@ public class AdminEditPTController extends HttpServlet {
             }
         }
         return false;
+    }
+
+    private int countWords(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        return text.trim().split("\\s+").length;
     }
 
     private static class UploadedFile {

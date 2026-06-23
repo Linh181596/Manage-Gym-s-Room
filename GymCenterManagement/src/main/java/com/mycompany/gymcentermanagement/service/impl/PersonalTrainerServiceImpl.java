@@ -5,6 +5,7 @@ import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
 import java.sql.SQLException;
+import java.util.List;
 
 public class PersonalTrainerServiceImpl implements PersonalTrainerService {
     private final PersonalTrainerDAO personalTrainerDAO = new PersonalTrainerDAOImpl();
@@ -36,5 +37,20 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
     @Override
     public boolean updatePersonalTrainer(PersonalTrainer pt) {
         return personalTrainerDAO.updatePersonalTrainer(pt);
+    }
+
+    @Override
+    public boolean createPersonalTrainer(PersonalTrainer pt) {
+        return personalTrainerDAO.insertPersonalTrainer(pt);
+    }
+
+    @Override
+    public List<PersonalTrainer> getActiveTrainers() {
+        return personalTrainerDAO.findActiveTrainers();
+    }
+
+    @Override
+    public List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations) {
+        return personalTrainerDAO.searchActiveTrainers(keyword, specializations);
     }
 }
