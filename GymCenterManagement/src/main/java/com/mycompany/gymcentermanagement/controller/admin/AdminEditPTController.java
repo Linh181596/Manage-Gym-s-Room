@@ -95,7 +95,7 @@ public class AdminEditPTController extends HttpServlet {
         }
     }
 
-        @Override
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         User currentUser = (User) req.getSession().getAttribute("currentUser");
 
@@ -330,75 +330,6 @@ public class AdminEditPTController extends HttpServlet {
     }
 
     // Hàm đếm số lượng từ phục vụ validate độ dài phần mô tả giới thiệu
-    private int countWords(String text) {
-        if (text == null || text.trim().isEmpty()) {
-            return 0;
-        }
-        return text.trim().split("\\s+").length;
-    }
-
-    private UploadedFile saveUploadedFile(HttpServletRequest request, String partName,
-                                          String uploadDirectory, String[] allowedExtensions)
-            throws IOException, ServletException {
-        Part part = request.getPart(partName);
-
-        if (part == null || part.getSize() == 0) {
-            return new UploadedFile(null, null);
-        }
-
-        long maxFileSize = 5 * 1024 * 1024; // 5MB
-        if (part.getSize() > maxFileSize) {
-            String fieldLabel = "avatarFile".equals(partName) ? "Ảnh đại diện" : "Chứng chỉ";
-            throw new IllegalArgumentException(fieldLabel + " vượt quá kích thước giới hạn cho phép (tối đa 5MB).");
-        }
-
-        String originalFileName = Paths.get(part.getSubmittedFileName())
-                .getFileName()
-                .toString();
-
-        if (originalFileName == null || originalFileName.trim().isEmpty()) {
-            return new UploadedFile(null, null);
-        }
-
-        String extension = getFileExtension(originalFileName);
-
-        if (!isAllowedExtension(extension, allowedExtensions)) {
-            throw new IllegalArgumentException("File không hợp lệ. Chỉ hỗ trợ: "
-                    + String.join(", ", allowedExtensions).toUpperCase() + ".");
-        }
-
-        String uniqueFileName = System.currentTimeMillis() + "_" + originalFileName;
-        String realUploadPath = getServletContext().getRealPath("/") + uploadDirectory;
-
-        File uploadFolder = new File(realUploadPath);
-        if (!uploadFolder.exists()) {
-            uploadFolder.mkdirs();
-        }
-
-        String realFilePath = realUploadPath + File.separator + uniqueFileName;
-        part.write(realFilePath);
-
-        String relativeFilePath = uploadDirectory + "/" + uniqueFileName;
-        return new UploadedFile(originalFileName, relativeFilePath);
-    }
-
-    private String getFileExtension(String fileName) {
-        int lastDotIndex = fileName.lastIndexOf('.');
-        if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
-            return "";
-        }
-        return fileName.substring(lastDotIndex + 1).toLowerCase();
-    }
-
-    private boolean isAllowedExtension(String extension, String[] allowedExtensions) {
-        for (String allowedExtension : allowedExtensions) {
-            if (allowedExtension.equalsIgnoreCase(extension)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private int countWords(String text) {
         if (text == null || text.trim().isEmpty()) {
             return 0;
