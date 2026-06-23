@@ -33,6 +33,17 @@ public class PTProfileController extends HttpServlet {
     private void forwardBackWithError(HttpServletRequest request, HttpServletResponse response, String errorMessage)
             throws ServletException, IOException {
         request.setAttribute("error", errorMessage);
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        if (currentUser != null) {
+            PersonalTrainer pt = personalTrainerService.getPTByUserId(currentUser.getUserId());
+            if (pt != null) {
+                String displayName = request.getParameter("displayName");
+                String description = request.getParameter("description");
+                if (displayName != null) pt.setDisplayName(displayName);
+                if (description != null) pt.setDescription(description);
+            }
+            request.setAttribute("pt", pt);
+        }
         request.getRequestDispatcher(EDIT_PT_VIEW).forward(request, response);
     }
 
@@ -163,6 +174,12 @@ public class PTProfileController extends HttpServlet {
                 return;
             }
             int ptId = Integer.parseInt(ptRawId);
+
+            PersonalTrainer ptFromDb = personalTrainerService.getPTByUserId(currentUser.getUserId());
+            if (ptFromDb == null || ptFromDb.getPtId() != ptId) {
+                forwardBackWithError(req, resp, "Cảnh báo bảo mật: Bạn không có quyền chỉnh sửa hồ sơ này!");
+                return;
+            }
 
             //File upload(Save new avatar(if))
             String avatarPath = null;

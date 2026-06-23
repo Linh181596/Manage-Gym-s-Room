@@ -2,6 +2,8 @@ package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
 import com.mycompany.gymcentermanagement.service.UserService;
 import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
@@ -29,6 +31,7 @@ import java.time.LocalDate;
 public class AdminEditPTController extends HttpServlet {
     private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
     private final UserService userService = new UserServiceImpl();
+    private final UserDAO userDAO = new UserDAOImpl();
 
     //Load old i4 PT info for PT view
     @Override
@@ -87,49 +90,23 @@ public class AdminEditPTController extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/pt/list?error=invalid_id");
         } catch (Exception e) {
-            // BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ IN LỖI RA TAB CONSOLE / TOMCAT LOG
             e.printStackTrace();
-
-            // Đồng thời in thẳng chữ lỗi lên màn hình thay vì để trắng trang
-            response.setContentType("text/html;charset=UTF-8");
-            response.getWriter().println("<h3>Hệ thống Backend xảy ra lỗi: " + e.getMessage() + "</h3>");
-            response.getWriter().println("<p>Vui lòng kiểm tra tab Console hoặc Output của Tomcat trong IntelliJ để xem chi tiết!</p>");
+            throw new ServletException("Lỗi hệ thống khi tải thông tin HLV", e);
         }
     }
 
-    @Override
+        @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         User currentUser = (User) req.getSession().getAttribute("currentUser");
 
+        // Khai báo ngoài try-catch để giữ lại file path mới khi validate sau đó bị lỗi
         String avatarPath = req.getParameter("oldAvatarPath");
         String certPath = req.getParameter("oldCertPath");
         String certName = req.getParameter("oldCertName");
         String[] specializations = req.getParameterValues("specializations");
 
         try {
-            // 1. Save file if admin uploaded new files (do this first to preserve them on validation error)
-            UploadedFile uploadedAvatar = saveUploadedFile(
-                    req,
-                    "avatarFile",
-                    "assets/uploads/pt-avatar",
-                    new String[]{"jpg", "jpeg", "png"}
-            );
-            if (uploadedAvatar.filePath != null) {
-                avatarPath = uploadedAvatar.filePath;
-            }
-
-            UploadedFile uploadedCert = saveUploadedFile(
-                    req,
-                    "certificateFile",
-                    "assets/uploads/pt-certificate",
-                    new String[]{"pdf", "jpg", "jpeg", "png"}
-            );
-            if (uploadedCert.filePath != null) {
-                certPath = uploadedCert.filePath;
-                certName = uploadedCert.originalFileName;
-            }
-
-            // 2. Perform validations
+            // 1. Lấy thông tin cơ bản
             int ptId = Integer.parseInt(req.getParameter("ptId"));
             int userId = Integer.parseInt(req.getParameter("userId"));
 
@@ -152,15 +129,20 @@ public class AdminEditPTController extends HttpServlet {
                 throw new IllegalArgumentException("Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
             }
 
-            User existingUser = userService.getProfile(userId);
-            if (existingUser != null) {
-                if (!phone.equals(existingUser.getPhoneNumber())) {
-                    if (userService.checkPhoneExists(phone)) {
-                        throw new IllegalArgumentException("Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
-                    }
+            // Phòng chống Parameter Tampering (IDOR Protection) từ nhánh develop
+            PersonalTrainer ptFromDb = personalTrainerService.getPersonalTrainerById(ptId);
+            if (ptFromDb == null || ptFromDb.getUserId() != userId) {
+                throw new IllegalArgumentException("Thông tin ID Huấn luyện viên không khớp.");
+            }
+
+            // Kiểm tra trùng số điện thoại nếu thay đổi số điện thoại từ nhánh develop
+            if (!phone.equals(ptFromDb.getPhone())) {
+                if (userDAO.checkPhoneExists(phone)) {
+                    throw new IllegalArgumentException("Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
                 }
             }
-            
+
+            // 2. Validate chuyên môn
             String specialization = null;
             if (specializations != null && specializations.length > 0) {
                 specialization = String.join(", ", specializations);
@@ -170,26 +152,50 @@ public class AdminEditPTController extends HttpServlet {
                 throw new IllegalArgumentException("Vui lòng chọn ít nhất một chuyên môn của PT.");
             }
 
+            // 3. Tiến hành upload file (lưu file trước để bảo toàn file tải lên khi gặp lỗi validate ở các bước sau)
+            UploadedFile uploadedAvatar = saveUploadedFile(
+                    req,
+                    "avatarFile",
+                    "assets/uploads/pt-avatar",
+                    new String[]{"jpg", "jpeg", "png"}
+            );
+            if (uploadedAvatar.filePath != null) {
+                avatarPath = uploadedAvatar.filePath;
+            }
+
+            UploadedFile uploadedCert = saveUploadedFile(
+                    req,
+                    "certificateFile",
+                    "assets/uploads/pt-certificate",
+                    new String[]{"pdf", "jpg", "jpeg", "png"}
+            );
+            if (uploadedCert.filePath != null) {
+                certPath = uploadedCert.filePath;
+                certName = uploadedCert.originalFileName;
+            }
+
+            // 4. Các thông tin khác
             String careerStartDate = req.getParameter("careerStartDate");
             String description = req.getParameter("description");
 
+            // Kiểm tra giới hạn số lượng từ trong phần mô tả của PT (nhánh phund/...)
             if (description != null && countWords(description) > 500) {
                 throw new IllegalArgumentException("Mô tả giới thiệu bản thân không được vượt quá 500 từ.");
             }
 
             String status = req.getParameter("status"); // Active / Inactive
 
+            // 5. Cập nhật thông tin User & PT vào DB
             User userToUpdate = new User();
             userToUpdate.setUserId(userId);
             userToUpdate.setPhoneNumber(phone);
             userService.updateBasicUserInfo(userToUpdate);
 
-            //Update other i4 in PT i4
             PersonalTrainer pt = new PersonalTrainer();
             pt.setPtId(ptId);
             pt.setUserId(userId);
             pt.setFullName(fullName);
-            // Giữ nguyên displayName cũ hoặc cho sửa tùy logic nhóm bạn
+            
             String displayName = req.getParameter("displayName");
             if (displayName != null && displayName.trim().isEmpty()) {
                 displayName = null;
@@ -201,7 +207,7 @@ public class AdminEditPTController extends HttpServlet {
             pt.setAvatarPath(avatarPath);
             pt.setCertificateFilePath(certPath);
             pt.setCertificateFileName(certName);
-            pt.setUpdatedBy(currentUser.getEmail()); // Lưu vết người sửa
+            pt.setUpdatedBy(currentUser.getEmail()); // Lưu vết người cập nhật
 
             if (careerStartDate != null && !careerStartDate.isEmpty()) {
                 LocalDate careerDate = LocalDate.parse(careerStartDate);
@@ -214,7 +220,6 @@ public class AdminEditPTController extends HttpServlet {
             boolean isSuccess = personalTrainerService.updatePersonalTrainer(pt);
 
             if (isSuccess) {
-                // Thành công: Trở về trang danh sách PT và báo thành công
                 req.getSession().setAttribute("toastMsg", "Cập nhật hồ sơ PT thành công!");
                 resp.sendRedirect(req.getContextPath() + "/pt/list");
             } else {
@@ -224,7 +229,7 @@ public class AdminEditPTController extends HttpServlet {
             e.printStackTrace();
             req.setAttribute("error", "Đã xảy ra lỗi: " + e.getMessage());
             
-            // Reconstruct trainer data to show back to form
+            // Tái cấu trúc thông tin PT để trả lại giao diện khi có lỗi xảy ra
             try {
                 int ptId = Integer.parseInt(req.getParameter("ptId"));
                 int userId = Integer.parseInt(req.getParameter("userId"));
@@ -253,12 +258,83 @@ public class AdminEditPTController extends HttpServlet {
                 }
                 req.setAttribute("pt", pt);
             } catch (Exception ex) {
-                // Ignore reconstruction errors
+                // Bỏ qua lỗi tái cấu trúc
             }
             
-            // Trả lại về trang form nếu lỗi
+            // Trả lại về form doGet
             doGet(req, resp);
         }
+    }
+
+    private UploadedFile saveUploadedFile(HttpServletRequest request, String partName,
+                                          String uploadDirectory, String[] allowedExtensions)
+            throws IOException, ServletException {
+        Part part = request.getPart(partName);
+
+        if (part == null || part.getSize() == 0) {
+            return new UploadedFile(null, null);
+        }
+
+        // Bổ sung kiểm tra kích thước tối đa của file (5MB) từ nhánh phund/...
+        long maxFileSize = 5 * 1024 * 1024; // 5MB
+        if (part.getSize() > maxFileSize) {
+            String fieldLabel = "avatarFile".equals(partName) ? "Ảnh đại diện" : "Chứng chỉ";
+            throw new IllegalArgumentException(fieldLabel + " vượt quá kích thước giới hạn cho phép (tối đa 5MB).");
+        }
+
+        String originalFileName = Paths.get(part.getSubmittedFileName())
+                .getFileName()
+                .toString();
+
+        if (originalFileName == null || originalFileName.trim().isEmpty()) {
+            return new UploadedFile(null, null);
+        }
+
+        String extension = getFileExtension(originalFileName);
+
+        if (!isAllowedExtension(extension, allowedExtensions)) {
+            throw new IllegalArgumentException("File không hợp lệ. Chỉ hỗ trợ: "
+                    + String.join(", ", allowedExtensions).toUpperCase() + ".");
+        }
+
+        String uniqueFileName = System.currentTimeMillis() + "_" + originalFileName;
+        String realUploadPath = getServletContext().getRealPath("/") + uploadDirectory;
+
+        File uploadFolder = new File(realUploadPath);
+        if (!uploadFolder.exists()) {
+            uploadFolder.mkdirs();
+        }
+
+        String realFilePath = realUploadPath + File.separator + uniqueFileName;
+        part.write(realFilePath);
+
+        String relativeFilePath = uploadDirectory + "/" + uniqueFileName;
+        return new UploadedFile(originalFileName, relativeFilePath);
+    }
+
+    private String getFileExtension(String fileName) {
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(lastDotIndex + 1).toLowerCase();
+    }
+
+    private boolean isAllowedExtension(String extension, String[] allowedExtensions) {
+        for (String allowedExtension : allowedExtensions) {
+            if (allowedExtension.equalsIgnoreCase(extension)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Hàm đếm số lượng từ phục vụ validate độ dài phần mô tả giới thiệu
+    private int countWords(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        return text.trim().split("\\s+").length;
     }
 
     private UploadedFile saveUploadedFile(HttpServletRequest request, String partName,
