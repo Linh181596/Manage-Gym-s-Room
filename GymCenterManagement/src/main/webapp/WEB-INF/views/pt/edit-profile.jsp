@@ -29,12 +29,12 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label fw-bold text-muted">Họ và tên chính thức:</label>
+                    <label class="form-label fw-bold text-muted">Họ và tên:</label>
                     <input type="text" class="form-control" value="${pt.fullName}" readonly
                            style="background-color: #e9ecef; cursor: not-allowed;">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold text-muted">Số điện thoại liên hệ:</label>
+                    <label class="form-label fw-bold text-muted">Số điện thoại:</label>
                     <input type="text" class="form-control" value="${pt.phone}" readonly
                            style="background-color: #e9ecef; cursor: not-allowed;">
                 </div>
@@ -95,5 +95,20 @@
         </form>
     </div>
 </div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const descTextarea = document.querySelector('textarea[name="description"]');
+        if (descTextarea) {
+            const bioText = descTextarea.value.trim();
+            const words = bioText ? bioText.split(/\s+/) : [];
+            if (words.length > 500) {
+                alert("Tiểu sử (Bio) không được vượt quá 500 từ. Hiện tại bạn đang nhập: " + words.length + " từ.");
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp"/>

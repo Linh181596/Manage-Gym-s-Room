@@ -42,4 +42,12 @@ public interface UserService {
     boolean updateProfile(User user);
 
     boolean updateBasicUserInfo(User user);
+
+    boolean checkEmailExists(String email);
+
+    boolean checkPhoneExists(String phone);
+
+    boolean createUser(User user);
+
+    User getUserByEmail(String email);
 }

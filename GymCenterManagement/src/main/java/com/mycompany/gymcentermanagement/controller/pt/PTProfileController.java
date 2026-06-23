@@ -16,9 +16,9 @@ import java.sql.SQLException;
 
 @WebServlet(name = "PTProfileController", urlPatterns = {"/pt/edit-profile"})
 @MultipartConfig(
-        fileSizeThreshold = 1024 * 1024,
-        maxFileSize = 5 * 1024 * 1024,
-        maxRequestSize = 20 * 1024 * 1024
+        fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
+        maxFileSize = 1024 * 1024 * 10,       // 10MB
+        maxRequestSize = 1024 * 1024 * 50     // 50MB
 )
 public class PTProfileController extends HttpServlet {
     private static final String EDIT_PT_VIEW = "/WEB-INF/views/pt/edit-profile.jsp";
@@ -60,6 +60,12 @@ public class PTProfileController extends HttpServlet {
         // NẾU PT KHÔNG UPLOAD ẢNH MỚI -> Trả về null
         if (part == null || part.getSize() == 0) {
             return new UploadedFile(null, null);
+        }
+
+        long maxFileSize = 5 * 1024 * 1024; // 5MB
+        if (part.getSize() > maxFileSize) {
+            String fieldLabel = "avatarFile".equals(partName) ? "Ảnh đại diện" : "Chứng chỉ";
+            throw new IllegalArgumentException(fieldLabel + " vượt quá kích thước giới hạn cho phép (tối đa 5MB).");
         }
 
         String originalFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
@@ -158,6 +164,11 @@ public class PTProfileController extends HttpServlet {
             String displayName = trimToNull(req.getParameter("displayName"));
             String description = trimToNull(req.getParameter("description"));
 
+            if (description != null && countWords(description) > 500) {
+                forwardBackWithError(req, resp, "Tiểu sử (Bio) không được vượt quá 500 từ.");
+                return;
+            }
+
             if (ptRawId == null) {
                 forwardBackWithError(req, resp, "Lỗi hệ thống: Không tìm thấy ID của PT.");
                 return;
@@ -211,5 +222,12 @@ public class PTProfileController extends HttpServlet {
             e.printStackTrace();
             forwardBackWithError(req, resp, "Lỗi hệ thống: " + e.getMessage());
         }
+    }
+
+    private int countWords(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        return text.trim().split("\\s+").length;
     }
 }
