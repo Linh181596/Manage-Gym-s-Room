@@ -1,19 +1,7 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: phuga
-  Date: 6/18/2026
-  Time: 8:53 PM
-  To change this template use File | Settings | File Templates.
---%>
 <%@page contentType="text/html" pageEncoding="UTF-8" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Hồ sơ cá nhân</title>
-</head>
-<body>
+
 <jsp:include page="../common/dashboard_header.jsp"/>
 <jsp:include page="../common/dashboard_navbar.jsp"/>
 
@@ -68,5 +56,3 @@
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp"/>
-</body>
-</html>

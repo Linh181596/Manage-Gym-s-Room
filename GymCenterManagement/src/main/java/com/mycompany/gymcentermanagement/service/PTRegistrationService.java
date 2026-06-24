@@ -1,5 +1,6 @@
 package com.mycompany.gymcentermanagement.service;
 
+import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 
@@ -15,8 +16,6 @@ public interface PTRegistrationService {
 
     boolean registerPTService(PTRegistration registration);
 
-    PTRegistration getRegistrationById(int ptRegistrationId);
-
     List<PTRegistration> getRegistrationsByMemberId(int memberId);
 
     List<PTRegistration> getAllRegistrationsForManagement();
@@ -24,4 +23,9 @@ public interface PTRegistrationService {
     boolean processRegistration(int ptRegistrationId, String status,
                                 String paymentStatus, int processedByUserId,
                                 String updatedBy);
+
+    List<PTRegistrationDTO> getPendingRegistrations();
+    PTRegistrationDTO getRegistrationById(int regId);
+    boolean updateRegistrationAndPaymentStatus(int regId, String status, String paymentStatus);
+    boolean cancelRegistration(int regId, String cancelReason, int processedByUserId, String updatedBy);
 }
