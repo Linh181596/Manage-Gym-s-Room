@@ -2,6 +2,7 @@ package com.mycompany.gymcentermanagement.service.impl;
 
 import com.mycompany.gymcentermanagement.dao.PTRegistrationDAO;
 import com.mycompany.gymcentermanagement.dao.impl.PTRegistrationDAOImpl;
+import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
@@ -30,11 +31,6 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
     }
 
     @Override
-    public PTRegistration getRegistrationById(int ptRegistrationId) {
-        return registrationDAO.findById(ptRegistrationId);
-    }
-
-    @Override
     public List<PTRegistration> getRegistrationsByMemberId(int memberId) {
         return registrationDAO.findByMemberId(memberId);
     }
@@ -49,5 +45,25 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
                                        String paymentStatus, int processedByUserId,
                                        String updatedBy) {
         return registrationDAO.processRegistration(ptRegistrationId, status, paymentStatus, processedByUserId, updatedBy);
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getPendingRegistrations() {
+        return registrationDAO.getPendingRegistrations();
+    }
+
+    @Override
+    public PTRegistrationDTO getRegistrationById(int regId) {
+        return registrationDAO.getRegistrationById(regId);
+    }
+
+    @Override
+    public boolean updateRegistrationAndPaymentStatus(int regId, String status, String paymentStatus) {
+        return registrationDAO.updateRegistrationAndPaymentStatus(regId, status, paymentStatus);
+    }
+
+    @Override
+    public boolean cancelRegistration(int regId, String cancelReason, int processedByUserId, String updatedBy) {
+        return registrationDAO.cancelRegistration(regId, cancelReason, processedByUserId, updatedBy);
     }
 }
