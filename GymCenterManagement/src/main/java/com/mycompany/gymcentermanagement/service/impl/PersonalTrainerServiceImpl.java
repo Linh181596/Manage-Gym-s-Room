@@ -35,6 +35,11 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
     }
 
     @Override
+    public boolean updatePTStatus(int ptId, String status) {
+        return personalTrainerDAO.updateTrainerStatus(ptId, status, "System");
+    }
+
+    @Override
     public boolean updatePersonalTrainer(PersonalTrainer pt) {
         return personalTrainerDAO.updatePersonalTrainer(pt);
     }
@@ -52,5 +57,10 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
     @Override
     public List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations) {
         return personalTrainerDAO.searchActiveTrainers(keyword, specializations);
+    }
+
+    @Override
+    public List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status) {
+        return personalTrainerDAO.searchTrainersForManagement(keyword, specializations, status);
     }
 }
