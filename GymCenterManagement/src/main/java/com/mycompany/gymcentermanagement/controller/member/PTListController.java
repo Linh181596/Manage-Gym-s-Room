@@ -10,8 +10,9 @@
  */
 package com.mycompany.gymcentermanagement.controller.member;
 
-import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
+import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
+import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -28,7 +29,7 @@ import java.util.List;
 @WebServlet(name = "PTListController", urlPatterns = {"/pt/list"})
 public class PTListController extends HttpServlet {
 
-    private final PersonalTrainerDAO trainerDAO = new PersonalTrainerDAO();
+    private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -69,9 +70,9 @@ public class PTListController extends HttpServlet {
         List<PersonalTrainer> trainers;
 
         if (keyword == null && selectedSpecializations.isEmpty()) {
-            trainers = trainerDAO.findActiveTrainers();
+            trainers = personalTrainerService.getActiveTrainers();
         } else {
-            trainers = trainerDAO.searchActiveTrainers(keyword, selectedSpecializations);
+            trainers = personalTrainerService.searchActiveTrainers(keyword, selectedSpecializations);
         }
 
         request.setAttribute("trainers", trainers);

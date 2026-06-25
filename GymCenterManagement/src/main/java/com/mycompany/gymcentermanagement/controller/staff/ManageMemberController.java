@@ -2,14 +2,16 @@
  * =========================================================================
  * @file          : ManageMemberController.java
  * @description   : Controller điều phối các hoạt động quản lý danh sách và trạng thái hội viên.
- * @author        : Nguyễn Thành Linh (linhnt)
+ * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Nguyễn Thành Linh
+ * @last_modified : 2026-06-04 bởi Nguyễn Trí Linh
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;
 
 import com.mycompany.gymcentermanagement.dao.GymDAO;
+import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -100,6 +102,25 @@ public class ManageMemberController extends HttpServlet {
                 showMemberList(request, response);
                 return;
             }
+        }
+
+        // Check duplicate email and phone
+        try {
+            UserDAO userDAO = new UserDAOImpl();
+            if (userDAO.checkEmailExists(email)) {
+                request.setAttribute("errorMessage", "Không thể thêm hội viên mới. Địa chỉ email này đã tồn tại trong hệ thống.");
+                showMemberList(request, response);
+                return;
+            }
+            if (phone != null && !phone.trim().isEmpty()) {
+                if (userDAO.checkPhoneExists(phone)) {
+                    request.setAttribute("errorMessage", "Không thể thêm hội viên mới. Số điện thoại này đã tồn tại trong hệ thống.");
+                    showMemberList(request, response);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         boolean success = gymDAO.addMember(name, email, phone, type);

@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : UserServiceImpl.java
  * @description   : Lớp triển khai nghiệp vụ người dùng và các quy tắc quản lý tài khoản theo UC-05 cho Admin.
- * @author        : Codex
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================
@@ -440,5 +440,51 @@ public class UserServiceImpl implements UserService {
     private String normalizeActor(String actor) {
         String normalizedActor = normalizeBlank(actor);
         return normalizedActor != null ? normalizedActor : "Admin";
+    }
+
+    @Override
+    public boolean updateBasicUserInfo(User user) {
+        return userDAO.updateBasicUserInfo(user);
+    }
+
+    @Override
+    public boolean checkEmailExists(String email) {
+        try {
+            return userDAO.checkEmailExists(email);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error checking email existence: " + email, ex);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkPhoneExists(String phone) {
+        try {
+            return userDAO.checkPhoneExists(phone);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error checking phone existence: " + phone, ex);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean createUser(User user) {
+        try {
+            user.setCreatedDate(java.time.LocalDateTime.now());
+            return userDAO.insert(user);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error creating user: " + user.getEmail(), ex);
+        }
+        return false;
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        try {
+            return userDAO.findByEmail(email);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error retrieving user by email: " + email, ex);
+        }
+        return null;
     }
 }

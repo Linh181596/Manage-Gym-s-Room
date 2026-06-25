@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : ManageEquipmentIssueController.java
  * @description   : Controller điều phối xử lý báo cáo sự cố hỏng hóc thiết bị.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;
@@ -315,3 +315,4 @@ public class ManageEquipmentIssueController extends HttpServlet {
         return java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8);
     }
 }
+

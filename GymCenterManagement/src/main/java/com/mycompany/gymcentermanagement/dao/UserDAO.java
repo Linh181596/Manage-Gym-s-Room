@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : UserDAO.java
  * @description   : Interface định nghĩa các thao tác dữ liệu cho người dùng, xác thực, token và hồ sơ tài khoản.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-25
  * =========================================================================
@@ -51,6 +51,8 @@ public interface UserDAO {
     // --- New Auth & Verification Methods ---
     
     boolean checkEmailExists(String email) throws SQLException;
+
+    boolean checkPhoneExists(String phone) throws SQLException;
     
     boolean registerMember(User user, Member member, UserToken token) throws SQLException;
     
@@ -75,4 +77,7 @@ public interface UserDAO {
     UserProfileBaseDTO getUserProfileById(int userId) throws SQLException;
     
     boolean updateUserProfile(UserProfileBaseDTO profileDto, String roleName) throws SQLException;
+
+    boolean updateBasicUserInfo(User user);
 }
+

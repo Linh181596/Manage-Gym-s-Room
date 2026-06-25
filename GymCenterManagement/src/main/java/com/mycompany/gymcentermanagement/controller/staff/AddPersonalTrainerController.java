@@ -9,11 +9,12 @@
  */
 package com.mycompany.gymcentermanagement.controller.staff;
 
-import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
-import com.mycompany.gymcentermanagement.dao.UserDAO;
-import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
+import com.mycompany.gymcentermanagement.service.UserService;
+import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
+import com.mycompany.gymcentermanagement.service.impl.UserServiceImpl;
 import com.mycompany.gymcentermanagement.utils.PasswordUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -25,8 +26,8 @@ import jakarta.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 import java.time.format.DateTimeParseException;
 
 /**
@@ -34,9 +35,9 @@ import java.time.format.DateTimeParseException;
  */
 @WebServlet(name = "AddPersonalTrainerController", urlPatterns = {"/staff/pt/add"})
 @MultipartConfig(
-        fileSizeThreshold = 1024 * 1024,
-        maxFileSize = 5 * 1024 * 1024,
-        maxRequestSize = 20 * 1024 * 1024
+        fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
+        maxFileSize = 1024 * 1024 * 10,       // 10MB
+        maxRequestSize = 1024 * 1024 * 50     // 50MB
 )
 public class AddPersonalTrainerController extends HttpServlet {
 
@@ -46,12 +47,22 @@ public class AddPersonalTrainerController extends HttpServlet {
     private static final String CERTIFICATE_UPLOAD_DIR = "assets/uploads/pt-certificate";
     private static final String AVATAR_UPLOAD_DIR = "assets/uploads/pt-avatar";
 
-    private final UserDAO userDAO = new UserDAOImpl();
-    private final PersonalTrainerDAO personalTrainerDAO = new PersonalTrainerDAO();
+    private final UserService userService = new UserServiceImpl();
+    private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        List<String> specOptions = List.of(
+                "Quản lý cân nặng",
+                "Tăng cơ",
+                "Cardio",
+                "Yoga",
+                "Boxing",
+                "Dinh dưỡng",
+                "Phục hồi thể lực"
+        );
+        request.setAttribute("specOptions", specOptions);
         request.getRequestDispatcher(ADD_PT_VIEW).forward(request, response);
     }
 
@@ -64,9 +75,25 @@ public class AddPersonalTrainerController extends HttpServlet {
         String displayName = trimToNull(request.getParameter("displayName"));
         String email = trimToNull(request.getParameter("email"));
         String phone = trimToNull(request.getParameter("phone"));
-        String specialization = trimToNull(request.getParameter("specialization"));
+        
+        String[] specializations = request.getParameterValues("specializations");
+        String specialization = null;
+        if (specializations != null && specializations.length > 0) {
+            specialization = String.join(", ", specializations);
+            request.setAttribute("selectedSpecs", List.of(specializations));
+        } else {
+            request.setAttribute("selectedSpecs", List.of());
+            forwardBackWithError(request, response, "Vui lòng chọn ít nhất một chuyên môn của PT.");
+            return;
+        }
+
         String careerStartDateRaw = trimToNull(request.getParameter("careerStartDate"));
         String description = trimToNull(request.getParameter("description"));
+
+        if (description != null && countWords(description) > 500) {
+            forwardBackWithError(request, response, "Mô tả giới thiệu bản thân không được vượt quá 500 từ.");
+            return;
+        }
 
         if (fullName == null) {
             forwardBackWithError(request, response, "Vui lòng nhập họ tên đầy đủ của PT.");
@@ -78,13 +105,8 @@ public class AddPersonalTrainerController extends HttpServlet {
             return;
         }
 
-        if (phone == null || !phone.matches("\\d{10}")) {
-            forwardBackWithError(request, response, "Số điện thoại phải có đúng 10 chữ số.");
-            return;
-        }
-
-        if (specialization == null) {
-            forwardBackWithError(request, response, "Vui lòng chọn hoặc nhập chuyên môn của PT.");
+        if (phone == null || !phone.matches("^0\\d{9}$")) {
+            forwardBackWithError(request, response, "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
             return;
         }
 
@@ -107,13 +129,18 @@ public class AddPersonalTrainerController extends HttpServlet {
         }
 
         try {
-            if (userDAO.findByEmail(email) != null) {
+            if (userService.getUserByEmail(email) != null) {
                 forwardBackWithError(request, response, "Email này đã được sử dụng bởi tài khoản khác.");
                 return;
             }
-        } catch (SQLException e) {
+            
+            if (userService.checkPhoneExists(phone)) {
+                forwardBackWithError(request, response, "Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
+                return;
+            }
+        } catch (Exception e) {
             e.printStackTrace();
-            forwardBackWithError(request, response, "Lỗi kiểm tra trùng lặp email.");
+            forwardBackWithError(request, response, "Lỗi hệ thống khi kiểm tra dữ liệu: " + e.getMessage());
             return;
         }
 
@@ -154,7 +181,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         // Get logged-in user from session for audit trails
         User currentUser = (User) request.getSession().getAttribute("currentUser");
         String createdBy = (currentUser != null) ? currentUser.getFullName() : "Staff";
-
+        
         User newUser = new User();
         newUser.setEmail(email);
         newUser.setPasswordHash(passwordHash);
@@ -166,12 +193,12 @@ public class AddPersonalTrainerController extends HttpServlet {
         newUser.setCreatedBy(createdBy);
 
         try {
-            boolean success = userDAO.insert(newUser);
+            boolean success = userService.createUser(newUser);
             if (!success || newUser.getUserId() <= 0) {
                 forwardBackWithError(request, response, "Không thể tạo tài khoản người dùng PT. Vui lòng thử lại.");
                 return;
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             forwardBackWithError(request, response, "Lỗi cơ sở dữ liệu khi tạo tài khoản: " + e.getMessage());
             return;
@@ -190,7 +217,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         trainer.setStatus("Active");
         trainer.setCreatedBy(createdBy);
 
-        boolean trainerInserted = personalTrainerDAO.insertPersonalTrainer(trainer);
+        boolean trainerInserted = personalTrainerService.createPersonalTrainer(trainer);
 
         if (!trainerInserted) {
             forwardBackWithError(request, response, "Tạo tài khoản thành công nhưng tạo hồ sơ PT thất bại.");
@@ -210,6 +237,16 @@ public class AddPersonalTrainerController extends HttpServlet {
     private void forwardBackWithError(HttpServletRequest request, HttpServletResponse response,
             String errorMessage)
             throws ServletException, IOException {
+        List<String> specOptions = List.of(
+                "Quản lý cân nặng",
+                "Tăng cơ",
+                "Cardio",
+                "Yoga",
+                "Boxing",
+                "Dinh dưỡng",
+                "Phục hồi thể lực"
+        );
+        request.setAttribute("specOptions", specOptions);
         request.setAttribute("error", errorMessage);
         request.getRequestDispatcher(ADD_PT_VIEW).forward(request, response);
     }
@@ -233,6 +270,12 @@ public class AddPersonalTrainerController extends HttpServlet {
 
         if (part == null || part.getSize() == 0) {
             return new UploadedFile(null, null);
+        }
+
+        long maxFileSize = 5 * 1024 * 1024; // 5MB
+        if (part.getSize() > maxFileSize) {
+            String fieldLabel = "avatarFile".equals(partName) ? "Ảnh đại diện" : "Chứng chỉ";
+            throw new IllegalArgumentException(fieldLabel + " vượt quá kích thước giới hạn cho phép (tối đa 5MB).");
         }
 
         String originalFileName = Paths.get(part.getSubmittedFileName())
@@ -280,6 +323,13 @@ public class AddPersonalTrainerController extends HttpServlet {
             }
         }
         return false;
+    }
+
+    private int countWords(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        return text.trim().split("\\s+").length;
     }
 
     private static class UploadedFile {

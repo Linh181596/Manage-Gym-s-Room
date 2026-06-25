@@ -9,10 +9,12 @@
  */
 package com.mycompany.gymcentermanagement.controller.member;
 
-import com.mycompany.gymcentermanagement.dao.PTRegistrationDAO;
-import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
+import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
+import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
+import com.mycompany.gymcentermanagement.service.PTRegistrationService;
+import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -27,8 +29,8 @@ import java.util.List;
 @WebServlet(name = "PTDetailController", urlPatterns = {"/pt/detail"})
 public class PTDetailController extends HttpServlet {
 
-    private final PersonalTrainerDAO trainerDAO = new PersonalTrainerDAO();
-    private final PTRegistrationDAO registrationDAO = new PTRegistrationDAO();
+    private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
+    private final PTRegistrationService registrationService = new PTRegistrationServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -48,7 +50,7 @@ public class PTDetailController extends HttpServlet {
             return;
         }
 
-        PersonalTrainer trainer = trainerDAO.findById(ptId);
+        PersonalTrainer trainer = personalTrainerService.getPersonalTrainerById(ptId);
 
         if (trainer == null
                 || !trainer.isActive()
@@ -58,7 +60,7 @@ public class PTDetailController extends HttpServlet {
             return;
         }
 
-        List<PTServicePrice> servicePrices = registrationDAO.findActiveServicePricesByTrainerId(ptId);
+        List<PTServicePrice> servicePrices = registrationService.getActiveServicePricesByTrainerId(ptId);
 
         request.setAttribute("trainer", trainer);
         request.setAttribute("servicePrices", servicePrices);

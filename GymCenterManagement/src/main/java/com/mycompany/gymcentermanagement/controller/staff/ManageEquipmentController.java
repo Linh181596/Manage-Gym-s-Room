@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : ManageEquipmentController.java
  * @description   : Controller điều phối các hoạt động CRUD thiết bị phòng gym.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;
@@ -144,12 +144,14 @@ public class ManageEquipmentController extends HttpServlet {
     }
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
-        Equipment equipment = service.getEquipment(parseInt(request.getParameter("id"), 0));
+        int id = parseInt(request.getParameter("id"), 0);
+        Equipment equipment = service.getEquipment(id);
         if (equipment == null) {
             response.sendRedirect(request.getContextPath() + "/staff/equipment?action=list");
             return;
         }
         request.setAttribute("equipment", equipment);
+        request.setAttribute("issues", service.getIssuesByEquipment(id));
         request.getRequestDispatcher(VIEW_DIR + "equipment-detail.jsp").forward(request, response);
     }
 
@@ -338,3 +340,4 @@ public class ManageEquipmentController extends HttpServlet {
         return java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8);
     }
 }
+

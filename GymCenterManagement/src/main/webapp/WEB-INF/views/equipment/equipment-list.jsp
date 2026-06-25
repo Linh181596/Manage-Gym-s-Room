@@ -6,7 +6,7 @@
   =========================================================================
   Document    : equipment-list.jsp
   Created on  : 2026-06-04
-  Author      : Đào Minh Hoàng (hoangdm)
+  Author      : Đỗ Minh Hoàng (hoangdm)
   Description : Giao diện danh sách các thiết bị/dụng cụ phòng tập.
   =========================================================================
 --%>
@@ -252,3 +252,4 @@
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp" />
+

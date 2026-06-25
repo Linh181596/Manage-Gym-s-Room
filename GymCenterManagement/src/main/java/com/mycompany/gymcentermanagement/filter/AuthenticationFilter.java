@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : AuthenticationFilter.java
  * @description   : Filter kiểm tra đăng nhập, phân quyền theo vai trò và chặn truy cập khi tài khoản bắt buộc đổi mật khẩu.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-11
  * @last_modified : 2026-06-25
  * =========================================================================
@@ -79,8 +79,12 @@ public class AuthenticationFilter extends HttpFilter {
         
         if (relativePath.equals("/profile")) {
             authorized = true;
-        } else if (relativePath.startsWith("/admin/") && role == User.Role.Admin) {
-            authorized = true;
+        } else if (relativePath.startsWith("/admin/")) {
+            if (role == User.Role.Admin) {
+                authorized = true;
+            } else if (relativePath.startsWith("/admin/pt/edit") && role == User.Role.Staff) {
+                authorized = true;
+            }
         } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {
             authorized = true;
         } else if (relativePath.startsWith("/member/")) {
