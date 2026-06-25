@@ -94,7 +94,7 @@ public class EquipmentService {
             connection.setAutoCommit(false);
             try {
                 int id = issueDAO.create(connection, issue);
-                equipmentDAO.updateStatus(connection, issue.getEquipmentId(), equipmentStatusForIssue(issue.getStatus()), issue.getCreatedBy());
+                equipmentDAO.recalculateStatus(connection, issue.getEquipmentId(), issue.getCreatedBy());
                 connection.commit();
                 return id;
             } catch (SQLException ex) {
@@ -120,7 +120,7 @@ public class EquipmentService {
                     return false;
                 }
                 boolean updated = issueDAO.updateStatus(connection, issueId, status, updatedBy);
-                equipmentDAO.updateStatus(connection, issue.getEquipmentId(), equipmentStatusForIssue(status), updatedBy);
+                equipmentDAO.recalculateStatus(connection, issue.getEquipmentId(), updatedBy);
                 connection.commit();
                 return updated;
             } catch (SQLException ex) {
@@ -141,7 +141,7 @@ public class EquipmentService {
             try {
                 boolean updated = issueDAO.update(connection, issue);
                 if (updated) {
-                    equipmentDAO.updateStatus(connection, issue.getEquipmentId(), equipmentStatusForIssue(issue.getStatus()), updatedBy);
+                    equipmentDAO.recalculateStatus(connection, issue.getEquipmentId(), updatedBy);
                 }
                 connection.commit();
                 return updated;
@@ -247,16 +247,6 @@ public class EquipmentService {
 
     private boolean isValidIssueStatus(String status) {
         return ISSUE_PENDING.equals(status) || ISSUE_IN_PROGRESS.equals(status) || ISSUE_RESOLVED.equals(status);
-    }
-
-    private String equipmentStatusForIssue(String issueStatus) {
-        if (ISSUE_RESOLVED.equals(issueStatus)) {
-            return STATUS_AVAILABLE;
-        }
-        if (ISSUE_IN_PROGRESS.equals(issueStatus)) {
-            return STATUS_MAINTENANCE;
-        }
-        return STATUS_BROKEN;
     }
 
     private String normalizeBlank(String value) {

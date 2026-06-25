@@ -70,9 +70,14 @@ public class EquipmentDAO {
 
     public Equipment findById(int id) throws SQLException {
         ensureEquipmentTypeColumn();
+        try (Connection connection = DBContext.getConnection()) {
+            return findById(connection, id);
+        }
+    }
+
+    public Equipment findById(Connection connection, int id) throws SQLException {
         String sql = "SELECT * FROM Equipments WHERE EquipmentID = ? AND IsDeleted = 0";
-        try (Connection connection = DBContext.getConnection();
-                PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
@@ -81,6 +86,39 @@ public class EquipmentDAO {
                 return null;
             }
         }
+    }
+
+    public String recalculateStatus(Connection connection, int equipmentId, String updatedBy) throws SQLException {
+        String statusSql = """
+                SELECT CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM EquipmentIssues
+                        WHERE EquipmentID = ? AND Status = 'Pending' AND IsDeleted = 0
+                    ) THEN 'Broken'
+                    WHEN EXISTS (
+                        SELECT 1 FROM EquipmentIssues
+                        WHERE EquipmentID = ? AND Status = 'InProgress' AND IsDeleted = 0
+                    ) OR EXISTS (
+                        SELECT 1 FROM MaintenanceSchedules
+                        WHERE EquipmentID = ? AND Status = 'InProgress' AND IsDeleted = 0
+                    ) THEN 'Maintenance'
+                    ELSE 'Available'
+                END AS CalculatedStatus
+                """;
+        String status;
+        try (PreparedStatement statement = connection.prepareStatement(statusSql)) {
+            statement.setInt(1, equipmentId);
+            statement.setInt(2, equipmentId);
+            statement.setInt(3, equipmentId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new SQLException("Unable to calculate equipment status.");
+                }
+                status = resultSet.getString("CalculatedStatus");
+            }
+        }
+        updateStatus(connection, equipmentId, status, updatedBy);
+        return status;
     }
 
     public int create(Equipment equipment) throws SQLException {
