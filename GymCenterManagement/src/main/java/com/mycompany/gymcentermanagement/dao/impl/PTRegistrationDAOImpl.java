@@ -1,6 +1,7 @@
 package com.mycompany.gymcentermanagement.dao.impl;
 
 import com.mycompany.gymcentermanagement.dao.PTRegistrationDAO;
+import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 import com.mycompany.gymcentermanagement.utils.DBContext;
@@ -174,30 +175,30 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
     @Override
     public PTServicePrice findServicePriceById(int ptServicePriceId) {
         String sql = """
-            SELECT
-                sp.PTServicePriceID,
-                sp.PTID,
-                sp.PTPackageTypeID,
-                sp.Price,
-                sp.Status AS PriceStatus,
-                COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
-                pkg.PackageName,
-                pkg.Description AS PackageDescription,
-                pkg.DurationMonths,
-                pkg.NumberOfSessions
-            FROM PTServicePrices sp
-            INNER JOIN PTPackageTypes pkg
-                ON sp.PTPackageTypeID = pkg.PTPackageTypeID
-            INNER JOIN PersonalTrainers pt
-                ON sp.PTID = pt.PTID
-            WHERE sp.PTServicePriceID = ?
-              AND sp.Status = 'Active'
-              AND sp.IsDeleted = 0
-              AND pkg.Status = 'Active'
-              AND pkg.IsDeleted = 0
-              AND pt.Status = 'Active'
-              AND pt.IsDeleted = 0
-        """;
+                    SELECT
+                        sp.PTServicePriceID,
+                        sp.PTID,
+                        sp.PTPackageTypeID,
+                        sp.Price,
+                        sp.Status AS PriceStatus,
+                        COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
+                        pkg.PackageName,
+                        pkg.Description AS PackageDescription,
+                        pkg.DurationMonths,
+                        pkg.NumberOfSessions
+                    FROM PTServicePrices sp
+                    INNER JOIN PTPackageTypes pkg
+                        ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    INNER JOIN PersonalTrainers pt
+                        ON sp.PTID = pt.PTID
+                    WHERE sp.PTServicePriceID = ?
+                      AND sp.Status = 'Active'
+                      AND sp.IsDeleted = 0
+                      AND pkg.Status = 'Active'
+                      AND pkg.IsDeleted = 0
+                      AND pt.Status = 'Active'
+                      AND pt.IsDeleted = 0
+                """;
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -220,38 +221,38 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
     public boolean insert(PTRegistration registration) {
 
         String sql = """
-            INSERT INTO PTRegistrations (
-                MemberID,
-                PTServicePriceID,
-                PreferredStartDate,
-                StartDate,
-                EndDate,
-                TotalAmount,
-                Status,
-                PaymentStatus,
-                Note,
-                ProcessedByUserID,
-                ProcessedAt,
-                CreatedBy,
-                CreatedDate,
-                UpdatedBy,
-                UpdatedDate,
-                IsDeleted
-            )
-            VALUES (
-                ?, ?, ?, ?, ?, ?,
-                'Pending',
-                'Unpaid',
-                ?,
-                NULL,
-                NULL,
-                ?,
-                SYSDATETIME(),
-                NULL,
-                NULL,
-                0
-            )
-        """;
+                    INSERT INTO PTRegistrations (
+                        MemberID,
+                        PTServicePriceID,
+                        PreferredStartDate,
+                        StartDate,
+                        EndDate,
+                        TotalAmount,
+                        Status,
+                        PaymentStatus,
+                        Note,
+                        ProcessedByUserID,
+                        ProcessedAt,
+                        CreatedBy,
+                        CreatedDate,
+                        UpdatedBy,
+                        UpdatedDate,
+                        IsDeleted
+                    )
+                    VALUES (
+                        ?, ?, ?, ?, ?, ?,
+                        'Pending',
+                        'Unpaid',
+                        ?,
+                        NULL,
+                        NULL,
+                        ?,
+                        SYSDATETIME(),
+                        NULL,
+                        NULL,
+                        0
+                    )
+                """;
 
         BigDecimal totalAmount = registration.getTotalAmount();
         if (totalAmount == null) {
@@ -295,42 +296,42 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
     @Override
     public PTRegistration findById(int ptRegistrationId) {
         String sql = """
-            SELECT
-                r.PTRegistrationID,
-                r.MemberID,
-                r.PTServicePriceID,
-                sp.PTID,
-                r.PreferredStartDate,
-                r.StartDate,
-                r.EndDate,
-                r.TotalAmount,
-                r.Status,
-                r.PaymentStatus,
-                r.Note,
-                r.ProcessedByUserID,
-                r.ProcessedAt,
-                r.CreatedBy,
-                r.CreatedDate,
-                r.UpdatedBy,
-                r.UpdatedDate,
-                r.IsDeleted,
-                memberUser.DisplayName AS MemberName,
-                COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
-                pkg.PackageName
-            FROM PTRegistrations r
-            INNER JOIN Members m
-                ON r.MemberID = m.MemberID
-            INNER JOIN Users memberUser
-                ON m.UserID = memberUser.UserID
-            INNER JOIN PTServicePrices sp
-                ON r.PTServicePriceID = sp.PTServicePriceID
-            INNER JOIN PersonalTrainers pt
-                ON sp.PTID = pt.PTID
-            INNER JOIN PTPackageTypes pkg
-                ON sp.PTPackageTypeID = pkg.PTPackageTypeID
-            WHERE r.PTRegistrationID = ?
-              AND r.IsDeleted = 0
-        """;
+                    SELECT
+                        r.PTRegistrationID,
+                        r.MemberID,
+                        r.PTServicePriceID,
+                        sp.PTID,
+                        r.PreferredStartDate,
+                        r.StartDate,
+                        r.EndDate,
+                        r.TotalAmount,
+                        r.Status,
+                        r.PaymentStatus,
+                        r.Note,
+                        r.ProcessedByUserID,
+                        r.ProcessedAt,
+                        r.CreatedBy,
+                        r.CreatedDate,
+                        r.UpdatedBy,
+                        r.UpdatedDate,
+                        r.IsDeleted,
+                        memberUser.DisplayName AS MemberName,
+                        COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
+                        pkg.PackageName
+                    FROM PTRegistrations r
+                    INNER JOIN Members m
+                        ON r.MemberID = m.MemberID
+                    INNER JOIN Users memberUser
+                        ON m.UserID = memberUser.UserID
+                    INNER JOIN PTServicePrices sp
+                        ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PersonalTrainers pt
+                        ON sp.PTID = pt.PTID
+                    INNER JOIN PTPackageTypes pkg
+                        ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE r.PTRegistrationID = ?
+                      AND r.IsDeleted = 0
+                """;
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -357,43 +358,43 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
         List<PTRegistration> registrations = new ArrayList<>();
 
         String sql = """
-            SELECT
-                r.PTRegistrationID,
-                r.MemberID,
-                r.PTServicePriceID,
-                sp.PTID,
-                r.PreferredStartDate,
-                r.StartDate,
-                r.EndDate,
-                r.TotalAmount,
-                r.Status,
-                r.PaymentStatus,
-                r.Note,
-                r.ProcessedByUserID,
-                r.ProcessedAt,
-                r.CreatedBy,
-                r.CreatedDate,
-                r.UpdatedBy,
-                r.UpdatedDate,
-                r.IsDeleted,
-                memberUser.DisplayName AS MemberName,
-                COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
-                pkg.PackageName
-            FROM PTRegistrations r
-            INNER JOIN Members m
-                ON r.MemberID = m.MemberID
-            INNER JOIN Users memberUser
-                ON m.UserID = memberUser.UserID
-            INNER JOIN PTServicePrices sp
-                ON r.PTServicePriceID = sp.PTServicePriceID
-            INNER JOIN PersonalTrainers pt
-                ON sp.PTID = pt.PTID
-            INNER JOIN PTPackageTypes pkg
-                ON sp.PTPackageTypeID = pkg.PTPackageTypeID
-            WHERE r.MemberID = ?
-              AND r.IsDeleted = 0
-            ORDER BY r.CreatedDate DESC
-        """;
+                    SELECT
+                        r.PTRegistrationID,
+                        r.MemberID,
+                        r.PTServicePriceID,
+                        sp.PTID,
+                        r.PreferredStartDate,
+                        r.StartDate,
+                        r.EndDate,
+                        r.TotalAmount,
+                        r.Status,
+                        r.PaymentStatus,
+                        r.Note,
+                        r.ProcessedByUserID,
+                        r.ProcessedAt,
+                        r.CreatedBy,
+                        r.CreatedDate,
+                        r.UpdatedBy,
+                        r.UpdatedDate,
+                        r.IsDeleted,
+                        memberUser.DisplayName AS MemberName,
+                        COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
+                        pkg.PackageName
+                    FROM PTRegistrations r
+                    INNER JOIN Members m
+                        ON r.MemberID = m.MemberID
+                    INNER JOIN Users memberUser
+                        ON m.UserID = memberUser.UserID
+                    INNER JOIN PTServicePrices sp
+                        ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PersonalTrainers pt
+                        ON sp.PTID = pt.PTID
+                    INNER JOIN PTPackageTypes pkg
+                        ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE r.MemberID = ?
+                      AND r.IsDeleted = 0
+                    ORDER BY r.CreatedDate DESC
+                """;
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -420,42 +421,42 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
         List<PTRegistration> registrations = new ArrayList<>();
 
         String sql = """
-            SELECT
-                r.PTRegistrationID,
-                r.MemberID,
-                r.PTServicePriceID,
-                sp.PTID,
-                r.PreferredStartDate,
-                r.StartDate,
-                r.EndDate,
-                r.TotalAmount,
-                r.Status,
-                r.PaymentStatus,
-                r.Note,
-                r.ProcessedByUserID,
-                r.ProcessedAt,
-                r.CreatedBy,
-                r.CreatedDate,
-                r.UpdatedBy,
-                r.UpdatedDate,
-                r.IsDeleted,
-                memberUser.DisplayName AS MemberName,
-                COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
-                pkg.PackageName
-            FROM PTRegistrations r
-            INNER JOIN Members m
-                ON r.MemberID = m.MemberID
-            INNER JOIN Users memberUser
-                ON m.UserID = memberUser.UserID
-            INNER JOIN PTServicePrices sp
-                ON r.PTServicePriceID = sp.PTServicePriceID
-            INNER JOIN PersonalTrainers pt
-                ON sp.PTID = pt.PTID
-            INNER JOIN PTPackageTypes pkg
-                ON sp.PTPackageTypeID = pkg.PTPackageTypeID
-            WHERE r.IsDeleted = 0
-            ORDER BY r.CreatedDate DESC
-        """;
+                    SELECT
+                        r.PTRegistrationID,
+                        r.MemberID,
+                        r.PTServicePriceID,
+                        sp.PTID,
+                        r.PreferredStartDate,
+                        r.StartDate,
+                        r.EndDate,
+                        r.TotalAmount,
+                        r.Status,
+                        r.PaymentStatus,
+                        r.Note,
+                        r.ProcessedByUserID,
+                        r.ProcessedAt,
+                        r.CreatedBy,
+                        r.CreatedDate,
+                        r.UpdatedBy,
+                        r.UpdatedDate,
+                        r.IsDeleted,
+                        memberUser.DisplayName AS MemberName,
+                        COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
+                        pkg.PackageName
+                    FROM PTRegistrations r
+                    INNER JOIN Members m
+                        ON r.MemberID = m.MemberID
+                    INNER JOIN Users memberUser
+                        ON m.UserID = memberUser.UserID
+                    INNER JOIN PTServicePrices sp
+                        ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PersonalTrainers pt
+                        ON sp.PTID = pt.PTID
+                    INNER JOIN PTPackageTypes pkg
+                        ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE r.IsDeleted = 0
+                    ORDER BY r.CreatedDate DESC
+                """;
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
@@ -478,16 +479,16 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                                        String paymentStatus, int processedByUserId,
                                        String updatedBy) {
         String sql = """
-            UPDATE PTRegistrations
-            SET Status = ?,
-                PaymentStatus = ?,
-                ProcessedByUserID = ?,
-                ProcessedAt = SYSDATETIME(),
-                UpdatedBy = ?,
-                UpdatedDate = SYSDATETIME()
-            WHERE PTRegistrationID = ?
-              AND IsDeleted = 0
-        """;
+                    UPDATE PTRegistrations
+                    SET Status = ?,
+                        PaymentStatus = ?,
+                        ProcessedByUserID = ?,
+                        ProcessedAt = SYSDATETIME(),
+                        UpdatedBy = ?,
+                        UpdatedDate = SYSDATETIME()
+                    WHERE PTRegistrationID = ?
+                      AND IsDeleted = 0
+                """;
 
         try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -504,5 +505,163 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
         }
 
         return false;
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getPendingRegistrations() {
+        List<PTRegistrationDTO> list = new ArrayList<>();
+        // Query JOIN các bảng: PTRegistrations, Members, Users, PTServicePrices, PersonalTrainers, PTPackageTypes
+        String sql = """
+                    SELECT r.PTRegistrationID, 
+                           u.DisplayName AS MemberName, 
+                           u.Phone AS MemberPhone,
+                           COALESCE(pt.DisplayName, pt.FullName) AS PTDisplayName, 
+                           pkg.PackageName, 
+                           pkg.NumberOfSessions, 
+                           r.PreferredStartDate, 
+                           r.TotalAmount
+                    FROM PTRegistrations r
+                    INNER JOIN Members m ON r.MemberID = m.MemberID
+                    INNER JOIN Users u ON m.UserID = u.UserID
+                    INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PersonalTrainers pt ON sp.PTID = pt.PTID
+                    INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE r.Status = 'Pending' AND r.IsDeleted = 0
+                    ORDER BY r.CreatedDate ASC
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                PTRegistrationDTO dto = new PTRegistrationDTO();
+                dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                dto.setMemberName(rs.getString("MemberName"));
+                dto.setMemberPhone(rs.getString("MemberPhone"));
+                dto.setPtDisplayName(rs.getString("PTDisplayName"));
+                dto.setPackageName(rs.getString("PackageName"));
+                dto.setNumberOfSessions(rs.getInt("NumberOfSessions"));
+
+                if (rs.getDate("PreferredStartDate") != null) {
+                    dto.setPreferredStartDate(rs.getDate("PreferredStartDate").toLocalDate());
+                }
+
+                dto.setTotalAmount(rs.getDouble("TotalAmount"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public PTRegistrationDTO getRegistrationById(int regId) {
+        String sql = """
+                    SELECT r.PTRegistrationID, 
+                           pt.PTID,
+                           r.MemberID,
+                           u.DisplayName AS MemberName, 
+                           u.Phone AS MemberPhone,
+                           COALESCE(pt.DisplayName, pt.FullName) AS PTDisplayName, 
+                           pkg.PackageName, 
+                           pkg.NumberOfSessions, 
+                           r.PreferredStartDate, 
+                           r.TotalAmount,
+                           r.Note,
+                           pt.Status AS PTStatus,
+                           r.Status
+                    FROM PTRegistrations r
+                    INNER JOIN Members m ON r.MemberID = m.MemberID
+                    INNER JOIN Users u ON m.UserID = u.UserID
+                    INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PersonalTrainers pt ON sp.PTID = pt.PTID
+                    INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE r.PTRegistrationID = ? AND r.IsDeleted = 0
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, regId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    PTRegistrationDTO dto = new PTRegistrationDTO();
+                    dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+
+                    dto.setPtId(rs.getInt("PTID"));
+                    dto.setMemberId(rs.getInt("MemberID"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setMemberPhone(rs.getString("MemberPhone"));
+                    dto.setPtDisplayName(rs.getString("PTDisplayName"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    dto.setNumberOfSessions(rs.getInt("NumberOfSessions"));
+                    if (rs.getDate("PreferredStartDate") != null) {
+                        dto.setPreferredStartDate(rs.getDate("PreferredStartDate").toLocalDate());
+                    }
+                    dto.setTotalAmount(rs.getDouble("TotalAmount"));
+                    dto.setNote(rs.getString("Note"));
+                    dto.setPtStatus(rs.getString("PTStatus"));
+                    dto.setStatus(rs.getString("Status"));
+                    return dto;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean updateRegistrationAndPaymentStatus(int regId, String status, String paymentStatus) {
+        String sql = "UPDATE PTRegistrations SET Status = ?, PaymentStatus = ? WHERE PTRegistrationID = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, status);
+            ps.setString(2, paymentStatus);
+            ps.setInt(3, regId);
+
+            int rowsAffected = ps.executeUpdate();
+            System.out.println("DEBUG - Đã update " + rowsAffected + " đơn đăng ký (regId=" + regId + ")");
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi Update trạng thái đơn: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean cancelRegistration(int regId, String cancelReason, int processedByUserId, String updatedBy) {
+        String sql = """
+                    UPDATE PTRegistrations
+                    SET Status = 'Cancelled',
+                        PaymentStatus = 'Cancelled',
+                        Note = CASE 
+                            WHEN Note IS NULL OR Note = '' THEN ?
+                            ELSE CONCAT(Note, ' | Lý do hủy: ', ?)
+                        END,
+                        ProcessedByUserID = ?,
+                        ProcessedAt = SYSDATETIME(),
+                        UpdatedBy = ?,
+                        UpdatedDate = SYSDATETIME()
+                    WHERE PTRegistrationID = ?
+                      AND IsDeleted = 0
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "Lý do hủy: " + cancelReason);
+            ps.setString(2, cancelReason);
+            ps.setInt(3, processedByUserId);
+            ps.setString(4, updatedBy);
+            ps.setInt(5, regId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
