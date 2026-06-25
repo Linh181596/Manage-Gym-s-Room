@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : UserServiceImpl.java
  * @description   : Lớp triển khai nghiệp vụ người dùng và các quy tắc quản lý tài khoản theo UC-05 cho Admin.
- * @author        : Codex
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

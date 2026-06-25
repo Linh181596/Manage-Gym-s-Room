@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : AuthenticationFilter.java
  * @description   : Filter kiểm tra đăng nhập, phân quyền theo vai trò và chặn truy cập khi tài khoản bắt buộc đổi mật khẩu.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-11
  * @last_modified : 2026-06-25
  * =========================================================================

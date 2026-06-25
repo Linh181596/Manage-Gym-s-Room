@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : UserService.java
  * @description   : Interface định nghĩa các nghiệp vụ người dùng, xác thực, hồ sơ cá nhân và quản lý tài khoản cho Admin.
- * @author        : Codex
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================
