@@ -135,4 +135,107 @@ public class MemberPackageServiceImpl implements MemberPackageService {
         
         return pendingInvoice;
     }
+
+    @Override
+    public MemberPackage getActivePackageByMemberId(int memberId) throws SQLException {
+        MemberPackageDAO mpDAO = new MemberPackageDAOImpl();
+        return mpDAO.findActiveByMemberId(memberId);
+    }
+
+    @Override
+    public Invoice renewMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException {
+        return registerMemberPackage(memberId, packageId, staffUserId);
+    }
+
+    @Override
+    public Invoice transferMemberPackage(int senderMemberId, int receiverMemberId, double transferFee, int staffUserId, String note) throws SQLException {
+        Connection conn = null;
+        Invoice pendingInvoice = null;
+        
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+            
+            MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
+            InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
+            
+            // 1. Lấy gói tập Active của người gửi
+            MemberPackage senderPackage = mpDAO.findActiveByMemberId(senderMemberId);
+            if (senderPackage == null) {
+                throw new SQLException("Không tìm thấy gói tập nào đang hoạt động của người chuyển nhượng.");
+            }
+            if (senderPackage.getMemberId() != senderMemberId) {
+                throw new SQLException("Xác thực thông tin gói tập người gửi không khớp (IDOR Protection).");
+            }
+            
+            // 2. Tính số ngày tập còn lại của người gửi
+            LocalDate today = LocalDate.now();
+            long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(today, senderPackage.getEndDate());
+            if (remainingDays < 1) {
+                throw new SQLException("Gói tập không đủ điều kiện chuyển nhượng (Thời hạn sử dụng còn lại phải tối thiểu 1 ngày).");
+            }
+            
+            // 3. Tính ngày bắt đầu cho người nhận (nối tiếp nếu người nhận đã có gói đang hoạt động)
+            MemberPackage receiverActive = mpDAO.findActiveByMemberId(receiverMemberId);
+            LocalDate receiverStartDate = today;
+            if (receiverActive != null) {
+                if (receiverActive.getEndDate().isAfter(today) || receiverActive.getEndDate().isEqual(today)) {
+                    receiverStartDate = receiverActive.getEndDate().plusDays(1);
+                }
+            }
+            LocalDate receiverEndDate = receiverStartDate.plusDays(remainingDays);
+            
+            // 4. Tạo gói tập mới ở trạng thái 'Pending' cho người nhận
+            MemberPackage receiverPackage = new MemberPackage();
+            receiverPackage.setMemberId(receiverMemberId);
+            receiverPackage.setPackageId(senderPackage.getPackageId());
+            receiverPackage.setStartDate(receiverStartDate);
+            receiverPackage.setEndDate(receiverEndDate);
+            receiverPackage.setStatus("Pending");
+            receiverPackage.setCreatedBy("Transfer from Member ID: " + senderMemberId + ". Staff ID: " + staffUserId);
+            receiverPackage.setCreatedDate(LocalDateTime.now());
+            
+            boolean insertPackageSuccess = mpDAO.insert(receiverPackage);
+            if (!insertPackageSuccess) {
+                throw new SQLException("Không thể tạo bản ghi gói tập mới cho người nhận.");
+            }
+            
+            // 5. Tạo hóa đơn phí dịch vụ chuyển nhượng ở trạng thái 'Pending'
+            pendingInvoice = new Invoice();
+            pendingInvoice.setMemberId(receiverMemberId);
+            pendingInvoice.setProcessBy(staffUserId);
+            pendingInvoice.setMemberPackageId(receiverPackage.getMemberPackageId());
+            pendingInvoice.setAmount(java.math.BigDecimal.valueOf(transferFee));
+            pendingInvoice.setPaymentMethod("Cash");
+            pendingInvoice.setStatus("Pending");
+            pendingInvoice.setCreatedBy("Transfer;SenderPackageID:" + senderPackage.getMemberPackageId() + ";StaffId:" + staffUserId + ";Note:" + note);
+            pendingInvoice.setCreatedDate(LocalDateTime.now());
+            
+            boolean insertInvoiceSuccess = invDAO.insert(pendingInvoice);
+            if (!insertInvoiceSuccess) {
+                throw new SQLException("Không thể khởi tạo hóa đơn phí dịch vụ chuyển nhượng.");
+            }
+            
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    // Ignore
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException ex) {
+                    // Ignore
+                }
+            }
+        }
+        
+        return pendingInvoice;
+    }
 }
