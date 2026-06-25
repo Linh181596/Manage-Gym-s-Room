@@ -14,6 +14,7 @@ import java.sql.SQLException;
 
 public interface MemberPackageDAO {
     MemberPackage findById(int memberPackageId) throws SQLException;
+    MemberPackage findActiveByMemberId(int memberId) throws SQLException;
     boolean insert(MemberPackage mp) throws SQLException;
     boolean update(MemberPackage mp) throws SQLException;
     boolean delete(int memberPackageId) throws SQLException;

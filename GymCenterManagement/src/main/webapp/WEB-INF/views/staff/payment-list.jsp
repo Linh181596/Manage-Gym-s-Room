@@ -28,12 +28,21 @@
     </c:choose>
 </c:forEach>
 
+<c:set var="isAdmin" value="${sessionScope.currentUser.role == 'Admin'}" />
 <div class="container-fluid pt-4 px-4">
     <!-- Page Header -->
     <div class="mb-4">
         <div>
-            <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-cash-register me-2 text-primary"></i>Thanh toán hóa đơn</h4>
-            <small class="text-muted">Xử lý hóa đơn tiền mặt, in biên lai và kích hoạt gói tập cho thành viên</small>
+            <c:choose>
+                <c:when test="${isAdmin}">
+                    <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-history me-2 text-primary"></i>Lịch sử thanh toán</h4>
+                    <small class="text-muted">Xem và tra cứu lịch sử thanh toán hóa đơn của phòng tập</small>
+                </c:when>
+                <c:otherwise>
+                    <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-cash-register me-2 text-primary"></i>Thanh toán hóa đơn</h4>
+                    <small class="text-muted">Xử lý hóa đơn tiền mặt, in biên lai và kích hoạt gói tập cho thành viên</small>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 
@@ -87,21 +96,29 @@
     <!-- Search & Filter Card -->
     <div class="bg-light rounded p-4 mb-4 shadow-sm">
         <div class="row align-items-end g-3">
-            <div class="col-md-6 col-lg-7">
+            <div class="col-md-4 col-lg-4">
                 <label for="searchInput" class="form-label fw-bold text-secondary">Tìm kiếm hóa đơn</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa fa-search"></i></span>
-                    <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Tìm theo tên hội viên, email hoặc tên gói tập...">
+                    <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Tìm theo tên, email, gói...">
                 </div>
             </div>
-            <div class="col-md-4 col-lg-3">
-                <label for="statusFilter" class="form-label fw-bold text-secondary">Lọc theo trạng thái</label>
+            <div class="col-md-2 col-lg-2">
+                <label for="statusFilter" class="form-label fw-bold text-secondary">Trạng thái</label>
                 <select id="statusFilter" class="form-select">
-                    <option value="">Tất cả hóa đơn</option>
+                    <option value="">Tất cả</option>
                     <option value="Pending">Đang chờ</option>
                     <option value="Paid">Đã thanh toán</option>
                     <option value="Cancelled">Đã hủy</option>
                 </select>
+            </div>
+            <div class="col-md-2 col-lg-2">
+                <label for="startDateFilter" class="form-label fw-bold text-secondary">Từ ngày</label>
+                <input type="date" id="startDateFilter" class="form-control">
+            </div>
+            <div class="col-md-2 col-lg-2">
+                <label for="endDateFilter" class="form-label fw-bold text-secondary">Đến ngày</label>
+                <input type="date" id="endDateFilter" class="form-control">
             </div>
             <div class="col-md-2 col-lg-2">
                 <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100"><i class="fa fa-undo me-1"></i> Đặt lại</button>
@@ -119,6 +136,7 @@
                         <th scope="col">Hội viên Gym</th>
                         <th scope="col">Chi tiết / Mô tả</th>
                         <th scope="col" class="text-end" style="width: 150px;">Số tiền (VND)</th>
+                        <th scope="col" class="text-center" style="width: 150px;">Ngày giao dịch</th>
                         <th scope="col" style="width: 120px;" class="text-center">Trạng thái</th>
                         <th scope="col" class="text-center" style="width: 180px;">Hành động</th>
                     </tr>
@@ -127,17 +145,24 @@
                     <c:choose>
                         <c:when test="${empty invoices}">
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
+                                <td colspan="7" class="text-center py-4 text-muted">
                                     <i class="fa fa-receipt fa-3x mb-3 text-secondary d-block"></i>
-                                    Không tìm thấy hóa đơn nào. Đăng ký gói tập cho hội viên để tạo hóa đơn.
+                                    Không tìm thấy hóa đơn nào.
                                 </td>
                             </tr>
                         </c:when>
                         <c:otherwise>
+                            <c:set var="viewUrl" value="${pageContext.request.contextPath}${isAdmin ? '/admin/payment-history' : '/staff/record-payment'}" />
                             <c:forEach var="inv" items="${invoices}">
+                                <c:set var="txnDate" value="${inv.status == 'Paid' ? inv.paymentDate : inv.createdDate}" />
+                                <c:set var="dataDate" value="" />
+                                <c:if test="${not empty txnDate}">
+                                    <c:set var="dataDate" value="${txnDate.year}-${txnDate.monthValue < 10 ? '0' : ''}${txnDate.monthValue}-${txnDate.dayOfMonth < 10 ? '0' : ''}${txnDate.dayOfMonth}" />
+                                </c:if>
                                 <tr class="invoice-row" 
                                     data-search="${inv.member.userDetails.fullName.toLowerCase()} ${inv.member.userDetails.email.toLowerCase()} ${inv.memberPackage.gymPackage.packageName.toLowerCase()}" 
-                                    data-status="${inv.status}">
+                                    data-status="${inv.status}"
+                                    data-date="${dataDate}">
                                     <td class="fw-bold text-secondary">INV-${inv.invoiceId}</td>
                                     <td>
                                         <div class="fw-bold text-dark">${inv.member.userDetails.fullName}</div>
@@ -149,6 +174,11 @@
                                     </td>
                                     <td class="text-end fw-bold text-primary">
                                         <fmt:formatNumber value="${inv.amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                    </td>
+                                    <td class="text-center text-dark">
+                                        <c:if test="${not empty txnDate}">
+                                            ${txnDate.dayOfMonth < 10 ? '0' : ''}${txnDate.dayOfMonth}/${txnDate.monthValue < 10 ? '0' : ''}${txnDate.monthValue}/${txnDate.year}
+                                        </c:if>
                                     </td>
                                     <td class="text-center">
                                         <c:choose>
@@ -165,13 +195,13 @@
                                     </td>
                                     <td class="text-center">
                                         <c:choose>
-                                            <c:when test="${inv.status == 'Pending'}">
-                                                <a href="${pageContext.request.contextPath}/staff/record-payment?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-primary px-3 shadow-sm-primary">
+                                            <c:when test="${inv.status == 'Pending' && !isAdmin}">
+                                                <a href="${viewUrl}?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-primary px-3 shadow-sm-primary">
                                                     <i class="fa fa-cash-register me-1"></i> Thu tiền
                                                 </a>
                                             </c:when>
                                             <c:otherwise>
-                                                <a href="${pageContext.request.contextPath}/staff/record-payment?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-outline-secondary px-3">
+                                                <a href="${viewUrl}?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-outline-secondary px-3">
                                                     <i class="fa fa-eye me-1"></i> Chi tiết
                                                 </a>
                                             </c:otherwise>
@@ -192,18 +222,37 @@
     document.addEventListener("DOMContentLoaded", function() {
         const searchInput = document.getElementById("searchInput");
         const statusFilter = document.getElementById("statusFilter");
+        const startDateFilter = document.getElementById("startDateFilter");
+        const endDateFilter = document.getElementById("endDateFilter");
         const resetFilters = document.getElementById("resetFilters");
         const rows = document.querySelectorAll(".invoice-row");
 
         function filterInvoices() {
             const searchVal = searchInput.value.toLowerCase().trim();
             const statusVal = statusFilter.value;
+            const startVal = startDateFilter.value;
+            const endVal = endDateFilter.value;
 
             rows.forEach(row => {
                 const searchMatch = row.getAttribute("data-search").includes(searchVal);
                 const statusMatch = statusVal === "" || row.getAttribute("data-status") === statusVal;
+                
+                const rowDate = row.getAttribute("data-date");
+                let dateMatch = true;
+                if (rowDate) {
+                    if (startVal && rowDate < startVal) {
+                        dateMatch = false;
+                    }
+                    if (endVal && rowDate > endVal) {
+                        dateMatch = false;
+                    }
+                } else {
+                    if (startVal || endVal) {
+                        dateMatch = false;
+                    }
+                }
 
-                if (searchMatch && statusMatch) {
+                if (searchMatch && statusMatch && dateMatch) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
@@ -213,10 +262,14 @@
 
         searchInput.addEventListener("input", filterInvoices);
         statusFilter.addEventListener("change", filterInvoices);
+        startDateFilter.addEventListener("change", filterInvoices);
+        endDateFilter.addEventListener("change", filterInvoices);
 
         resetFilters.addEventListener("click", function() {
             searchInput.value = "";
             statusFilter.value = "";
+            startDateFilter.value = "";
+            endDateFilter.value = "";
             rows.forEach(row => row.style.display = "");
         });
     });

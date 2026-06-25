@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "RecordPaymentController", urlPatterns = {"/staff/record-payment"})
+@WebServlet(name = "RecordPaymentController", urlPatterns = {"/staff/record-payment", "/admin/payment-history"})
 public class RecordPaymentController extends HttpServlet {
 
     private final InvoiceService invoiceService = new InvoiceServiceImpl();
@@ -70,10 +70,11 @@ public class RecordPaymentController extends HttpServlet {
 
         String invoiceIdStr = request.getParameter("invoiceId");
         String action = request.getParameter("action");
+        String servletPath = request.getServletPath();
 
         if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty() || (!"pay".equals(action) && !"cancel".equals(action))) {
             request.setAttribute("errorMessage", "Thao tác hoặc thông tin hóa đơn không hợp lệ.");
-            response.sendRedirect(request.getContextPath() + "/staff/record-payment");
+            response.sendRedirect(request.getContextPath() + servletPath);
             return;
         }
 
@@ -92,7 +93,7 @@ public class RecordPaymentController extends HttpServlet {
             
             if (success) {
                 String successMsg = java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
-                response.sendRedirect(request.getContextPath() + "/staff/record-payment?invoiceId=" + invoiceId + "&successMsg=" + successMsg);
+                response.sendRedirect(request.getContextPath() + servletPath + "?invoiceId=" + invoiceId + "&successMsg=" + successMsg);
             } else {
                 request.setAttribute("errorMessage", "Thao tác thất bại.");
                 Invoice inv = invoiceService.getInvoiceById(invoiceId);
