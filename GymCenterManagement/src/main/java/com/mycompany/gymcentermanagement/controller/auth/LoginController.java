@@ -134,7 +134,7 @@ public class LoginController extends HttpServlet {
                     request.setAttribute("errorMessage", "Tài khoản của bạn chưa được kích hoạt! Vui lòng kiểm tra email kích hoạt.");
                     request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
                     return;
-                } else if (user.getAccountStatus() == User.AccountStatus.Rejected) {
+                } else if (user.getAccountStatus() == User.AccountStatus.Locked) {
                     request.setAttribute("errorMessage", "Tài khoản này đã bị khóa hoặc từ chối truy cập.");
                     request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
                     return;
