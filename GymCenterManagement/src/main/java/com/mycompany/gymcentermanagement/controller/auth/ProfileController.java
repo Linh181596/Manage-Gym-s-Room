@@ -4,7 +4,7 @@
  * @description   : Controller xử lý xem và cập nhật hồ sơ cá nhân theo từng vai trò (UC-03).
  *                  Áp dụng mô hình PRG (Post-Redirect-Get), phòng thủ lỗi Ngày sinh trong tương lai,
  *                  chặn sửa đổi các trường Read-only (Email, Status, Role) tại tầng Backend.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -145,6 +145,16 @@ public class ProfileController extends HttpServlet {
                 return;
             }
 
+            // Kiểm tra trùng lặp số điện thoại nếu thay đổi số mới
+            if (phone != null && !phone.equals(currentProfile.getPhone())) {
+                if (userDAO.checkPhoneExists(phone)) {
+                    request.setAttribute("errorMessage", "Cập nhật thất bại: Số điện thoại này đã được sử dụng bởi một tài khoản khác.");
+                    request.setAttribute("profile", currentProfile);
+                    request.getRequestDispatcher("/WEB-INF/views/auth/profile.jsp").forward(request, response);
+                    return;
+                }
+            }
+
             // 🌟 LẬP TRÌNH PHÒNG THỦ: CHỦ ĐỘNG KIỂM TRA ĐỘ DÀI GIỚI HẠN DỮ LIỆU CHUNG
             if (phone.length() > 10) {
                 request.setAttribute("errorMessage", "Cập nhật thất bại: Số điện thoại không được nhập quá 10 chữ số!");
@@ -209,9 +219,17 @@ public class ProfileController extends HttpServlet {
             else if ("PT".equalsIgnoreCase(roleName) && currentProfile instanceof PTProfileDTO) {
                 PTProfileDTO ptDto = (PTProfileDTO) currentProfile;
                 
+                String description = request.getParameter("description");
+                if (description != null && countWords(description) > 500) {
+                    request.setAttribute("errorMessage", "Tiểu sử (Bio) không được vượt quá 500 từ!");
+                    request.setAttribute("profile", currentProfile);
+                    request.getRequestDispatcher("/WEB-INF/views/auth/profile.jsp").forward(request, response);
+                    return;
+                }
+                
                 // Áp dụng quy tắc BR-03: Họ tên trang trọng của PT
                 ptDto.setFullName(displayName); 
-                ptDto.setDescription(request.getParameter("description"));
+                ptDto.setDescription(description);
 
                 String applicationPath = request.getServletContext().getRealPath("");
                 String uploadFilePath = applicationPath + File.separator + UPLOAD_DIR;
@@ -314,4 +332,12 @@ public class ProfileController extends HttpServlet {
         }
         return "unknown_file";
     }
+
+    private int countWords(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        return text.trim().split("\\s+").length;
+    }
 }
+

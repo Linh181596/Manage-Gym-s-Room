@@ -71,4 +71,14 @@ public interface UserService {
     AccountOperationResult deactivateAccount(int targetUserId, int currentAdminId, String updatedBy);
 
     AccountOperationResult resetManagedPassword(int targetUserId, String updatedBy);
+
+    boolean updateBasicUserInfo(User user);
+
+    boolean checkEmailExists(String email);
+
+    boolean checkPhoneExists(String phone);
+
+    boolean createUser(User user);
+
+    User getUserByEmail(String email);
 }

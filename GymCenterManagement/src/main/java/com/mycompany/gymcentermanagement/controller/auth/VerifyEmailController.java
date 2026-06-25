@@ -3,7 +3,7 @@
  * @file          : VerifyEmailController.java
  * @description   : Controller tiếp nhận link kích hoạt từ email của người dùng, kiểm tra tính hợp lệ và thời hạn
  *                  của Token trong bảng User_Tokens để kích hoạt trạng thái tài khoản từ Inactive sang Active.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
  * @last_modified : 2026-06-11 bởi Antigravity
  * =========================================================================
@@ -64,3 +64,4 @@ public class VerifyEmailController extends HttpServlet {
         doGet(request, response);
     }
 }
+

@@ -6,7 +6,7 @@
   =========================================================================
   Document    : portal.jsp
   Created on  : 2026-06-04
-  Author      : Nguyễn Thành Linh (linhnt)
+  Author      : Nguyễn Trí Linh (linhnt)
   Description : Giao diện cổng thông tin (Portal) của hội viên.
   =========================================================================
 --%>
@@ -65,22 +65,16 @@
                                 <span class="fw-bold text-dark fs-6"><%= profile.get("type") %></span>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="p-3 bg-white rounded border h-100">
                                 <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Địa chỉ Email</small>
-                                <span class="fw-semibold text-dark small"><%= profile.get("email") %></span>
+                                <span class="fw-semibold text-dark fs-6 text-break"><%= profile.get("email") %></span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-white rounded border h-100">
                                 <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Số điện thoại</small>
                                 <span class="fw-semibold text-dark fs-6"><%= profile.get("phone") %></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-3 bg-white rounded border h-100">
-                                <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Ngày gia nhập</small>
-                                <span class="fw-semibold text-dark fs-6"><%= profile.get("date").split("\\.")[0] %></span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -92,10 +86,11 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="col-12 mt-4 text-end">
-                            <a href="<%= contextPath %>/profile" class="btn btn-primary py-2 px-4 fw-bold shadow-sm">
-                                <i class="fa fa-user-edit me-2"></i>Chỉnh sửa thông tin cá nhân
-                            </a>
+                        <div class="col-12">
+                            <div class="p-3 bg-white rounded border h-100">
+                                <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Ngày gia nhập</small>
+                                <span class="fw-semibold text-dark fs-6"><%= profile.get("date").split("\\.")[0] %></span>
+                            </div>
                         </div>
                     </div>
                 <% } else { %>

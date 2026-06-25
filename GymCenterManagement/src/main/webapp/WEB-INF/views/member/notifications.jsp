@@ -5,7 +5,7 @@
   =========================================================================
   Document    : notifications.jsp
   Created on  : 2026-06-04
-  Author      : Nguyễn Thành Linh (linhnt)
+  Author      : Nguyễn Trí Linh (linhnt)
   Description : Giao diện xem danh sách thông báo gửi tới hội viên.
   =========================================================================
 --%>

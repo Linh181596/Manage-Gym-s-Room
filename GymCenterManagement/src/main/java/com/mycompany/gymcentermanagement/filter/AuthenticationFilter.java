@@ -23,7 +23,8 @@ import java.io.IOException;
  * Filter to verify authentication status and enforce role-based access control (RBAC).
  * Mapped to protected dashboard/profile paths.
  */
-@WebFilter(filterName = "AuthenticationFilter", urlPatterns = {"/admin/*", "/staff/*", "/member/*", "/pt/*", "/profile"})
+@WebFilter(filterName = "AuthenticationFilter", urlPatterns = { "/admin/*", "/staff/*", "/member/*", "/pt/*",
+        "/profile" })
 public class AuthenticationFilter extends HttpFilter {
 
     @Override
@@ -79,8 +80,12 @@ public class AuthenticationFilter extends HttpFilter {
         
         if (relativePath.equals("/profile")) {
             authorized = true;
-        } else if (relativePath.startsWith("/admin/") && role == User.Role.Admin) {
-            authorized = true;
+        } else if (relativePath.startsWith("/admin/")) {
+            if (role == User.Role.Admin) {
+                authorized = true;
+            } else if (relativePath.startsWith("/admin/pt/edit") && role == User.Role.Staff) {
+                authorized = true;
+            }
         } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {
             authorized = true;
         } else if (relativePath.startsWith("/member/")) {

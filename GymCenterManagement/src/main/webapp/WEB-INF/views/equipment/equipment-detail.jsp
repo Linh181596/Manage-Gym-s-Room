@@ -5,7 +5,7 @@
   =========================================================================
   Document    : equipment-detail.jsp
   Created on  : 2026-06-04
-  Author      : Đào Minh Hoàng (hoangdm)
+  Author      : Đỗ Minh Hoàng (hoangdm)
   Description : Giao diện hiển thị chi tiết thông tin thiết bị phòng tập.
   =========================================================================
 --%>
@@ -156,6 +156,74 @@
             </div>
         </div>
     </div>
+
+    <!-- Equipment Issues Section -->
+    <div class="bg-light rounded p-4 mt-4 shadow-sm">
+        <h5 class="fw-bold text-danger mb-4 pb-2 border-bottom">
+            <i class="fa fa-history me-2"></i>Lịch sử sự cố thiết bị
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 10%;">Mã sự cố</th>
+                        <th scope="col" style="width: 15%;">Loại sự cố</th>
+                        <th scope="col" style="width: 30%;">Mô tả hiện trạng</th>
+                        <th scope="col" style="width: 15%;">Người báo cáo</th>
+                        <th scope="col" style="width: 15%;">Thời gian báo cáo</th>
+                        <th scope="col" style="width: 15%;">Trạng thái</th>
+                        <th scope="col" class="text-center" style="width: 10%;">Xem chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="issue" items="${issues}">
+                        <tr>
+                            <td><strong>#SC-${issue.issueId}</strong></td>
+                            <td>
+                                <span class="badge bg-secondary-subtle text-secondary border">
+                                    ${issue.issueTypeDisplay}
+                                </span>
+                            </td>
+                            <td class="text-truncate" style="max-width: 250px;" title="${issue.description}">
+                                ${issue.description}
+                            </td>
+                            <td>${issue.reporterName}</td>
+                            <td class="small">${issue.reportedAtDisplay}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${issue.status == 'Pending'}">
+                                        <span class="badge bg-warning text-dark"><i class="fa fa-clock me-1"></i>Chờ xử lý</span>
+                                    </c:when>
+                                    <c:when test="${issue.status == 'InProgress'}">
+                                        <span class="badge bg-info"><i class="fa fa-spinner me-1"></i>Đang xử lý</span>
+                                    </c:when>
+                                    <c:when test="${issue.status == 'Resolved'}">
+                                        <span class="badge bg-success"><i class="fa fa-check me-1"></i>Đã khắc phục</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="badge bg-secondary">${issue.status}</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment-issues?action=detail&id=${issue.issueId}" title="Xem chi tiết sự cố">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    <c:if test="${empty issues}">
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                <i class="fa fa-check-circle fa-2x mb-2 d-block text-success"></i> Thiết bị hoạt động tốt, không ghi nhận sự cố nào.
+                            </td>
+                        </tr>
+                    </c:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp" />
+

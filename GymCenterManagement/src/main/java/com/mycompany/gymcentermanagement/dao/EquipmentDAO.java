@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : EquipmentDAO.java
  * @description   : Lớp truy cập dữ liệu để quản lý thông tin thiết bị và dụng cụ phòng gym.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao;
@@ -289,3 +289,4 @@ public class EquipmentDAO {
         }
     }
 }
+
