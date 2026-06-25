@@ -102,7 +102,7 @@
                         <c:when test="${role == 'PT'}">
                             <a href="${pageContext.request.contextPath}/pt/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/pt/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-user-friends me-2"></i>Hội viên của tôi</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-alt me-2"></i>Lịch dạy học</a>
+                            <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/pt/schedule-dashboard') ? 'active' : ''}"><i class="fa fa-calendar-alt me-2"></i>Lịch dạy học</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-tasks me-2"></i>Giáo án tập luyện</a>
                         </c:when>
                         <c:when test="${role == 'Member'}">
