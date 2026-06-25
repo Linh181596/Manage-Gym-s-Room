@@ -71,17 +71,17 @@
                         <form id="registerForm" action="${pageContext.request.contextPath}/register" method="POST">
                             
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control" id="floatingFullName" name="displayName" value="${requestScope.oldDisplayName}" placeholder="Nguyễn Văn A" maxlength="100" required>
+                                <input type="text" class="form-control" id="floatingFullName" name="displayName" value="${requestScope.oldDisplayName}" placeholder="Nguyễn Văn A" maxlength="100" required oninvalid="this.setCustomValidity('Vui lòng nhập họ và tên')" oninput="this.setCustomValidity('')">
                                 <label for="floatingFullName">Họ và tên <span class="text-danger">*</span></label>
                             </div>
 
                             <div class="form-floating mb-3">
-                                <input type="email" class="form-control" id="floatingEmail" name="email" value="${requestScope.oldEmail}" placeholder="name@example.com" maxlength="100" required>
+                                <input type="email" class="form-control" id="floatingEmail" name="email" value="${requestScope.oldEmail}" placeholder="name@example.com" maxlength="100" required oninvalid="if(this.validity.valueMissing){this.setCustomValidity('Vui lòng nhập địa chỉ email')}else{this.setCustomValidity('Vui lòng nhập đúng định dạng email (ví dụ: name@example.com)')}" oninput="this.setCustomValidity('')">
                                 <label for="floatingEmail">Địa chỉ Email <span class="text-danger">*</span></label>
                             </div>
 
                             <div class="form-floating mb-3">
-                                <input type="tel" class="form-control" id="floatingPhone" name="phone" value="${requestScope.oldPhone}" placeholder="0912345678" pattern="[0-9]{10}" title="Vui lòng nhập đúng 10 số điện thoại" required>
+                                <input type="tel" class="form-control" id="floatingPhone" name="phone" value="${requestScope.oldPhone}" placeholder="0912345678" pattern="[0-9]{10}" title="Vui lòng nhập đúng 10 số điện thoại" required oninvalid="if(this.validity.valueMissing){this.setCustomValidity('Vui lòng nhập số điện thoại')}else{this.setCustomValidity('Vui lòng nhập đúng 10 số điện thoại')}" oninput="this.setCustomValidity('')">
                                 <label for="floatingPhone">Số điện thoại <span class="text-danger">*</span></label>
                             </div>
 
@@ -106,7 +106,7 @@
                             </div>
 
                             <div class="form-floating mb-3" style="position: relative;">
-                                <input type="password" class="form-control" id="floatingPassword" name="password" placeholder="Mật khẩu" minlength="8" style="padding-right: 45px;" required>
+                                <input type="password" class="form-control" id="floatingPassword" name="password" placeholder="Mật khẩu" minlength="8" style="padding-right: 45px;" required oninvalid="if(this.validity.valueMissing){this.setCustomValidity('Vui lòng nhập mật khẩu')}else{this.setCustomValidity('Mật khẩu phải chứa ít nhất 8 ký tự')}" oninput="this.setCustomValidity('')">
                                 <label for="floatingPassword">Mật khẩu (Tối thiểu 8 ký tự) <span class="text-danger">*</span></label>
                                 <span id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 100; color: #6c757d;">
                                     <i class="fa fa-eye-slash fa-lg"></i>
@@ -114,7 +114,7 @@
                             </div>
 
                             <div class="form-floating mb-4" style="position: relative;">
-                                <input type="password" class="form-control" id="floatingConfirmPassword" name="confirmPassword" placeholder="Xác nhận mật khẩu" style="padding-right: 45px;" required>
+                                <input type="password" class="form-control" id="floatingConfirmPassword" name="confirmPassword" placeholder="Xác nhận mật khẩu" style="padding-right: 45px;" required oninvalid="this.setCustomValidity('Vui lòng xác nhận lại mật khẩu')" oninput="this.setCustomValidity('')">
                                 <label for="floatingConfirmPassword">Xác nhận mật khẩu <span class="text-danger">*</span></label>
                                 <span id="toggleConfirmPassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 100; color: #6c757d;">
                                     <i class="fa fa-eye-slash fa-lg"></i>

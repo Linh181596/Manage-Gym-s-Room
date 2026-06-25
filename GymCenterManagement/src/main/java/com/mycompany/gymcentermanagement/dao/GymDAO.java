@@ -18,7 +18,7 @@ public class GymDAO {
         String sql = """
                 SELECT u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                        m.MemberID, m.MembershipStatus, m.CreatedDate,
-                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' THEN gp.PackageName END), m.MembershipStatus) AS MembershipType
+                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN gp.PackageName END), m.MembershipStatus) AS MembershipType
                 FROM [dbo].[Users] u
                 INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
                 LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
@@ -72,6 +72,30 @@ public class GymDAO {
             conn = DBContext.getConnection();
             conn.setAutoCommit(false);
 
+            // Defensive check for duplicate email
+            String sqlCheckEmail = "SELECT COUNT(*) FROM [dbo].[Users] WHERE Email = ? AND IsDeleted = 0";
+            try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckEmail)) {
+                psCheck.setString(1, email);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        return false;
+                    }
+                }
+            }
+
+            // Defensive check for duplicate phone
+            if (phone != null && !phone.trim().isEmpty()) {
+                String sqlCheckPhone = "SELECT COUNT(*) FROM [dbo].[Users] WHERE Phone = ? AND IsDeleted = 0";
+                try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckPhone)) {
+                    psCheck.setString(1, phone.trim());
+                    try (ResultSet rs = psCheck.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) > 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
             String sqlUser = """
                     INSERT INTO [dbo].[Users]
                     (Email, PasswordHash, DisplayName, Phone, Status, MustChangePassword, CreatedBy, IsDeleted)
@@ -113,16 +137,37 @@ public class GymDAO {
                 }
             }
 
-            Integer packageId = findPackageId(conn, membershipType);
+            Integer packageId = null;
+            int durationMonths = 1;
+            String name = blankToNull(membershipType);
+            if (name != null) {
+                try (PreparedStatement psPack = conn.prepareStatement("""
+                        SELECT TOP 1 PackageID, DurationMonths
+                        FROM [dbo].[GymPackages]
+                        WHERE IsDeleted = 0 AND Status = 'Active' AND (PackageName = ? OR PackageName LIKE ?)
+                        ORDER BY PackageID
+                        """)) {
+                    psPack.setString(1, name);
+                    psPack.setString(2, "%" + name + "%");
+                    try (ResultSet rsPack = psPack.executeQuery()) {
+                        if (rsPack.next()) {
+                            packageId = rsPack.getInt("PackageID");
+                            durationMonths = rsPack.getInt("DurationMonths");
+                        }
+                    }
+                }
+            }
+
             if (packageId != null) {
                 int memberId = findMemberId(conn, userId);
                 try (PreparedStatement psPackage = conn.prepareStatement("""
                         INSERT INTO [dbo].[MemberPackages]
                         (MemberID, PackageID, StartDate, EndDate, Status, CreatedBy, IsDeleted)
-                        VALUES (?, ?, CAST(GETDATE() AS date), DATEADD(month, 1, CAST(GETDATE() AS date)), 'Active', 'System', 0)
+                        VALUES (?, ?, CAST(GETDATE() AS date), DATEADD(month, ?, CAST(GETDATE() AS date)), 'Active', 'System', 0)
                         """)) {
                     psPackage.setInt(1, memberId);
                     psPackage.setInt(2, packageId);
+                    psPackage.setInt(3, durationMonths);
                     psPackage.executeUpdate();
                 }
             }
@@ -188,25 +233,43 @@ public class GymDAO {
         String sql = """
                 SELECT TOP 1 u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                        m.MemberID, m.MembershipStatus, m.CreatedDate,
-                       gp.PackageName
+                       gp.PackageName, mp.EndDate, mp.Status AS PackageStatus
                 FROM [dbo].[Users] u
                 INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
                 LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
                 LEFT JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID AND gp.IsDeleted = 0
                 WHERE u.UserID = ? AND u.IsDeleted = 0 AND m.IsDeleted = 0
-                ORDER BY mp.EndDate DESC
+                ORDER BY CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN 1 ELSE 2 END, mp.EndDate DESC
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    String packageName = rs.getString("PackageName");
+                    Date endDate = rs.getDate("EndDate");
+                    String packageStatus = rs.getString("PackageStatus");
+                    
+                    String type = "Chưa đăng ký gói";
+                    if (packageName != null && "Active".equalsIgnoreCase(packageStatus)) {
+                        if (endDate != null) {
+                            java.time.LocalDate endLd = endDate.toLocalDate();
+                            java.time.LocalDate todayLd = java.time.LocalDate.now();
+                            if (!endLd.isBefore(todayLd)) {
+                                type = packageName;
+                            }
+                        }
+                    }
+                    if ("Chưa đăng ký gói".equals(type)) {
+                        type = coalesce(null, rs.getString("MembershipStatus"));
+                    }
+
                     profile.put("userId", String.valueOf(rs.getInt("UserID")));
                     profile.put("memberId", String.valueOf(rs.getInt("MemberID")));
                     profile.put("fullName", safe(rs.getString("DisplayName")));
                     profile.put("email", safe(rs.getString("Email")));
                     profile.put("phone", safe(rs.getString("Phone")));
-                    profile.put("type", coalesce(rs.getString("PackageName"), rs.getString("MembershipStatus")));
+                    profile.put("type", type);
                     profile.put("status", safe(rs.getString("Status")));
                     profile.put("date", String.valueOf(rs.getTimestamp("CreatedDate")));
                 }
@@ -374,24 +437,7 @@ public class GymDAO {
         }
     }
 
-    private Integer findPackageId(Connection conn, String packageName) throws SQLException {
-        String name = blankToNull(packageName);
-        if (name == null) {
-            return null;
-        }
-        try (PreparedStatement ps = conn.prepareStatement("""
-                SELECT TOP 1 PackageID
-                FROM [dbo].[GymPackages]
-                WHERE IsDeleted = 0 AND Status = 'Active' AND (PackageName = ? OR PackageName LIKE ?)
-                ORDER BY PackageID
-                """)) {
-            ps.setString(1, name);
-            ps.setString(2, "%" + name + "%");
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getInt("PackageID") : null;
-            }
-        }
-    }
+
 
     private int findMemberId(Connection conn, int userId) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("SELECT MemberID FROM [dbo].[Members] WHERE UserID = ?")) {

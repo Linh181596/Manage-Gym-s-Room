@@ -54,4 +54,13 @@ public class GymPackageServiceImpl implements GymPackageService {
     public boolean deletePackage(int id) throws SQLException {
         return gymPackageDAO.delete(id);
     }
+
+    @Override
+    public boolean isPackageNameExists(String name, int excludeId) throws SQLException {
+        GymPackage pkg = gymPackageDAO.findByName(name);
+        if (pkg == null) {
+            return false;
+        }
+        return pkg.getPackageId() != excludeId;
+    }
 }

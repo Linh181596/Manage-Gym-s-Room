@@ -140,12 +140,15 @@
                         </div>
                     </c:when>
                     <c:otherwise>
-                        <div class="alert alert-danger border-0 rounded p-3 mb-4 d-flex align-items-center">
-                            <i class="fa fa-times-circle fs-3 me-3 text-danger"></i>
-                            <div>
-                                <h6 class="alert-heading fw-bold mb-0 text-danger">HÓA ĐƠN ĐÃ HỦY</h6>
-                                <span class="small text-muted">Giao dịch này đã bị hủy và không thể thực hiện thanh toán.</span>
+                        <div class="alert alert-danger border-0 rounded p-3 mb-4 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-times-circle fs-3 me-3 text-danger"></i>
+                                <div>
+                                    <h6 class="alert-heading fw-bold mb-0 text-danger">HÓA ĐƠN ĐÃ HỦY</h6>
+                                    <span class="small text-muted">Giao dịch này đã bị hủy và không thể thực hiện thanh toán.</span>
+                                </div>
                             </div>
+                            <span class="badge bg-danger rounded-pill px-3 py-1"><i class="fa fa-times"></i> Đã hủy</span>
                         </div>
                     </c:otherwise>
                 </c:choose>
@@ -252,6 +255,15 @@
                     </c:if>
                     
                     <c:if test="${invoice.status == 'Pending'}">
+                        <form id="cancelInvoiceForm" action="${pageContext.request.contextPath}/staff/record-payment" method="post" style="display: none;">
+                            <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                            <input type="hidden" name="action" value="cancel" />
+                        </form>
+                        
+                        <button type="button" class="btn btn-lg btn-outline-danger px-4" onclick="confirmCancelInvoice()">
+                            <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
+                        </button>
+                        
                         <form action="${pageContext.request.contextPath}/staff/record-payment" method="post">
                             <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
                             <input type="hidden" name="action" value="pay" />
@@ -266,5 +278,13 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmCancelInvoice() {
+    if (confirm("Bạn có chắc chắn muốn HỦY hóa đơn này không? Gói đăng ký liên quan cũng sẽ bị hủy bỏ.")) {
+        document.getElementById("cancelInvoiceForm").submit();
+    }
+}
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp" />

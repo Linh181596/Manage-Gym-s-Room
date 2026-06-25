@@ -109,4 +109,68 @@ public class InvoiceServiceImpl implements InvoiceService {
         
         return success;
     }
+
+    @Override
+    public boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException {
+        Connection conn = null;
+        boolean success = false;
+        
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+            
+            InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
+            MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
+            
+            // 1. Fetch Invoice
+            Invoice inv = invDAO.findById(invoiceId);
+            if (inv == null) {
+                throw new SQLException("Invoice not found.");
+            }
+            if (!"Pending".equals(inv.getStatus())) {
+                throw new SQLException("Invoice is already processed (Status: " + inv.getStatus() + ").");
+            }
+            
+            // 2. Update Invoice Status to Cancelled
+            inv.setStatus("Cancelled");
+            inv.setProcessBy(staffUserId);
+            inv.setUpdatedBy("StaffUserID: " + staffUserId);
+            inv.setUpdatedDate(LocalDateTime.now());
+            
+            boolean updateInvoiceSuccess = invDAO.update(inv);
+            if (!updateInvoiceSuccess) {
+                throw new SQLException("Failed to update invoice status.");
+            }
+            
+            // 3. Mark Associated Member Package as Deleted
+            if (inv.getMemberPackageId() != null) {
+                boolean deletePackageSuccess = mpDAO.delete(inv.getMemberPackageId());
+                if (!deletePackageSuccess) {
+                    throw new SQLException("Failed to delete associated Member Package.");
+                }
+            }
+            
+            conn.commit();
+            success = true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    // Ignore
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException ex) {
+                    // Ignore
+                }
+            }
+        }
+        
+        return success;
+    }
 }

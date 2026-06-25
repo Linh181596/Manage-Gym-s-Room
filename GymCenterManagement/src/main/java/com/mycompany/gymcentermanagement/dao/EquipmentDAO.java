@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : EquipmentDAO.java
  * @description   : Lớp truy cập dữ liệu để quản lý thông tin thiết bị và dụng cụ phòng gym.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao;
@@ -160,7 +160,7 @@ public class EquipmentDAO {
     public List<Equipment> findWithIssueCounts(int offset, int limit) throws SQLException {
         ensureEquipmentTypeColumn();
         String sql = """
-                SELECT e.*, COUNT(i.IssueID) AS IssueCount
+                SELECT e.*, COUNT(i.IssueID) AS IssueCount, MAX(i.IssueID) AS LatestIssueID
                 FROM Equipments e
                 LEFT JOIN EquipmentIssues i ON i.EquipmentID = e.EquipmentID AND i.IsDeleted = 0
                 WHERE e.IsDeleted = 0
@@ -178,6 +178,7 @@ public class EquipmentDAO {
                 while (resultSet.next()) {
                     Equipment equipment = mapEquipment(resultSet);
                     equipment.setIssueCount(resultSet.getInt("IssueCount"));
+                    equipment.setLatestIssueId(resultSet.getInt("LatestIssueID"));
                     items.add(equipment);
                 }
                 return items;
@@ -257,7 +258,12 @@ public class EquipmentDAO {
     }
 
     // Runtime guard for older DB copies; the SQL migration file is the preferred fix.
+    private static boolean checkedEquipmentTypeColumn = false;
+
     private void ensureEquipmentTypeColumn() throws SQLException {
+        if (checkedEquipmentTypeColumn) {
+            return;
+        }
         String checkSql = """
                 SELECT COUNT(*) AS ColumnCount
                 FROM INFORMATION_SCHEMA.COLUMNS
@@ -267,6 +273,7 @@ public class EquipmentDAO {
                 PreparedStatement checkStatement = connection.prepareStatement(checkSql);
                 ResultSet resultSet = checkStatement.executeQuery()) {
             if (resultSet.next() && resultSet.getInt("ColumnCount") > 0) {
+                checkedEquipmentTypeColumn = true;
                 return;
             }
 
@@ -278,6 +285,8 @@ public class EquipmentDAO {
                     "UPDATE Equipments SET EquipmentType = N'Khac' WHERE EquipmentType IS NULL OR EquipmentType = N'Gym'")) {
                 updateStatement.executeUpdate();
             }
+            checkedEquipmentTypeColumn = true;
         }
     }
 }
+

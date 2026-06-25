@@ -53,6 +53,12 @@ public class AuthenticationFilter extends HttpFilter {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
+        // If user must change password, enforce redirection to /change-password
+        if (user.isMustChangePassword()) {
+            response.sendRedirect(request.getContextPath() + "/change-password");
+            return;
+        }
         
         // RBAC Check based on request path
         String requestURI = request.getRequestURI();
@@ -62,12 +68,20 @@ public class AuthenticationFilter extends HttpFilter {
         boolean authorized = false;
         User.Role role = user.getRole();
         
-        if (relativePath.startsWith("/admin/") && role == User.Role.Admin) {
-            authorized = true;
+        if (relativePath.startsWith("/admin/")) {
+            if (role == User.Role.Admin) {
+                authorized = true;
+            } else if (relativePath.startsWith("/admin/pt/edit") && role == User.Role.Staff) {
+                authorized = true;
+            }
         } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {
             authorized = true;
-        } else if (relativePath.startsWith("/member/") && role == User.Role.Member) {
-            authorized = true;
+        } else if (relativePath.startsWith("/member/")) {
+            if (role == User.Role.Member) {
+                authorized = true;
+            } else if (relativePath.startsWith("/member/portal") && (role == User.Role.Staff || role == User.Role.Admin)) {
+                authorized = true;
+            }
         } else if (relativePath.startsWith("/pt/")) {
             if (relativePath.startsWith("/pt/list") || relativePath.startsWith("/pt/detail")) {
                 authorized = true;

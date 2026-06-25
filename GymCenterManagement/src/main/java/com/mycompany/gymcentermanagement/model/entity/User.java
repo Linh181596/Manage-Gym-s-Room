@@ -12,7 +12,7 @@ public class User {
     }
 
     public enum AccountStatus {
-        Active, Inactive, Pending, Rejected
+        Active, Inactive, Pending, Rejected, Locked
     }
 
     private int userId;
@@ -20,6 +20,7 @@ public class User {
     private String passwordHash;
     private String fullName;
     private String phoneNumber;
+    private String avatarPath; // Thêm trường avatarPath để hiển thị ảnh đại diện
     private Role role;
     private AccountStatus accountStatus;
     private boolean mustChangePassword; //add new attribute for change pass
@@ -107,6 +108,14 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getAvatarPath() {
+        return avatarPath;
+    }
+
+    public void setAvatarPath(String avatarPath) {
+        this.avatarPath = avatarPath;
     }
 
     public Role getRole() {

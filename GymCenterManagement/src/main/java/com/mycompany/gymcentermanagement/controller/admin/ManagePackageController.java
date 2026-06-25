@@ -65,8 +65,11 @@ public class ManagePackageController extends HttpServlet {
                     if (delIdStr != null) {
                         int id = Integer.parseInt(delIdStr);
                         gymPackageService.deletePackage(id);
+                        response.sendRedirect(request.getContextPath() + "/admin/packages?successMsg=" + 
+                                java.net.URLEncoder.encode("Xóa gói tập thành công!", java.nio.charset.StandardCharsets.UTF_8));
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/admin/packages");
                     }
-                    response.sendRedirect(request.getContextPath() + "/admin/packages");
                     break;
                 case "list":
                 default:
@@ -133,11 +136,36 @@ public class ManagePackageController extends HttpServlet {
             int durationMonths = Integer.parseInt(durationStr);
             BigDecimal price = new BigDecimal(priceStr);
 
+            int currentId = 0;
+            if (idStr != null && !idStr.trim().isEmpty()) {
+                currentId = Integer.parseInt(idStr);
+            }
+
+            if (gymPackageService.isPackageNameExists(packageName.trim(), currentId)) {
+                request.setAttribute("errorMessage", "Tên gói tập đã tồn tại trên hệ thống. Vui lòng chọn tên khác.");
+                request.setAttribute("formTitle", idStr == null || idStr.isEmpty() ? "Thêm gói tập mới" : "Sửa gói tập");
+                
+                GymPackage pkg = new GymPackage();
+                if (currentId != 0) {
+                    pkg.setPackageId(currentId);
+                }
+                pkg.setPackageName(packageName);
+                pkg.setDescription(description);
+                pkg.setStatus(status);
+                pkg.setDurationMonths(durationMonths);
+                pkg.setPrice(price);
+                request.setAttribute("pkg", pkg);
+                request.getRequestDispatcher("/WEB-INF/views/admin/package-form.jsp").forward(request, response);
+                return;
+            }
+
+            String successMsg;
             if (idStr == null || idStr.trim().isEmpty()) {
                 // Insert new package
                 GymPackage pkg = new GymPackage(0, packageName.trim(), durationMonths, price, description, status);
                 pkg.setCreatedBy(creatorName);
                 gymPackageService.createPackage(pkg);
+                successMsg = "Thêm gói tập mới thành công!";
             } else {
                 // Update existing package
                 int id = Integer.parseInt(idStr);
@@ -151,8 +179,10 @@ public class ManagePackageController extends HttpServlet {
                     pkg.setUpdatedBy(creatorName);
                     gymPackageService.updatePackage(pkg);
                 }
+                successMsg = "Cập nhật thông tin gói tập thành công!";
             }
-            response.sendRedirect(request.getContextPath() + "/admin/packages");
+            response.sendRedirect(request.getContextPath() + "/admin/packages?successMsg=" + 
+                    java.net.URLEncoder.encode(successMsg, java.nio.charset.StandardCharsets.UTF_8));
         } catch (SQLException | NumberFormatException ex) {
             request.setAttribute("errorMessage", "Lỗi cơ sở dữ liệu hoặc định dạng: " + ex.getMessage());
             request.setAttribute("formTitle", idStr == null || idStr.isEmpty() ? "Thêm gói tập mới" : "Sửa gói tập");

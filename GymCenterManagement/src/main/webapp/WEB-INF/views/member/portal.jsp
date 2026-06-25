@@ -1,11 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*" %>
+<%@ page import="com.mycompany.gymcentermanagement.model.entity.User" %>
 
 <%--
   =========================================================================
   Document    : portal.jsp
   Created on  : 2026-06-04
-  Author      : Nguyễn Thành Linh (linhnt)
+  Author      : Nguyễn Trí Linh (linhnt)
   Description : Giao diện cổng thông tin (Portal) của hội viên.
   =========================================================================
 --%>
@@ -16,6 +17,11 @@
     Map<String, String> profile = (Map<String, String>) request.getAttribute("memberProfile");
     List<Map<String, String>> services = (List<Map<String, String>>) request.getAttribute("memberServices");
     String contextPath = request.getContextPath();
+    
+    User sessionUser = (session != null) ? (User) session.getAttribute("currentUser") : null;
+    boolean isStaffOrAdmin = sessionUser != null && (sessionUser.getRole() == User.Role.Staff || sessionUser.getRole() == User.Role.Admin);
+    String backLink = isStaffOrAdmin ? (contextPath + "/staff/members") : (contextPath + "/member/dashboard");
+    String backText = isStaffOrAdmin ? "Quay lại danh sách" : "Về Bảng điều khiển";
 %>
 
 <!-- Member Portal Content -->
@@ -26,8 +32,8 @@
             <h5 class="mb-1 text-primary fw-bold"><i class="fa fa-id-card me-2"></i>Cổng thông tin hội viên (Portal)</h5>
             <small class="text-muted">Theo dõi và kiểm tra thời hạn các gói tập của bạn tại trung tâm</small>
         </div>
-        <a href="<%= contextPath %>/member/dashboard" class="btn btn-outline-primary py-2 px-3 fw-bold">
-            <i class="fa fa-arrow-left me-2"></i>Về Bảng điều khiển
+        <a href="<%= backLink %>" class="btn btn-outline-primary py-2 px-3 fw-bold">
+            <i class="fa fa-arrow-left me-2"></i><%= backText %>
         </a>
     </div>
 
@@ -59,10 +65,10 @@
                                 <span class="fw-bold text-dark fs-6"><%= profile.get("type") %></span>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="p-3 bg-white rounded border h-100">
                                 <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Địa chỉ Email</small>
-                                <span class="fw-semibold text-dark small"><%= profile.get("email") %></span>
+                                <span class="fw-semibold text-dark fs-6 text-break"><%= profile.get("email") %></span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -73,17 +79,17 @@
                         </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-white rounded border h-100">
-                                <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Ngày gia nhập</small>
-                                <span class="fw-semibold text-dark fs-6"><%= profile.get("date").split("\\.")[0] %></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-3 bg-white rounded border h-100">
                                 <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Trạng thái tài khoản</small>
                                 <% boolean isActive = "Active".equalsIgnoreCase(profile.get("status")); %>
                                 <span class="badge <%= isActive ? "bg-success" : "bg-danger" %> mt-1 fw-bold fs-7">
                                     <i class="<%= isActive ? "fa fa-check-circle" : "fa fa-minus-circle" %> me-1"></i><%= isActive ? "Đang kích hoạt" : "Đang tạm khóa" %>
                                 </span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 bg-white rounded border h-100">
+                                <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Ngày gia nhập</small>
+                                <span class="fw-semibold text-dark fs-6"><%= profile.get("date").split("\\.")[0] %></span>
                             </div>
                         </div>
                     </div>
@@ -115,20 +121,49 @@
                             </thead>
                             <tbody>
                                 <% 
+                                    java.time.LocalDate today = java.time.LocalDate.now();
                                     for (Map<String, String> service : services) { 
                                         String sStatus = service.get("status");
-                                        boolean isActiveS = "Active".equalsIgnoreCase(sStatus);
+                                        String startStr = service.get("startDate");
+                                        String endStr = service.get("endDate");
+                                        
+                                        java.time.LocalDate startDate = java.time.LocalDate.parse(startStr);
+                                        java.time.LocalDate endDate = java.time.LocalDate.parse(endStr);
+                                        
+                                        String statusText = "Hết hạn / Hủy";
+                                        String badgeClass = "bg-secondary";
+                                        String iconClass = "fa-times-circle";
+                                        
+                                        if ("Pending".equalsIgnoreCase(sStatus)) {
+                                            statusText = "Chờ thanh toán";
+                                            badgeClass = "bg-warning text-dark";
+                                            iconClass = "fa-hourglass-half";
+                                        } else if ("Active".equalsIgnoreCase(sStatus)) {
+                                            if (today.isBefore(startDate)) {
+                                                statusText = "Chờ kích hoạt";
+                                                badgeClass = "bg-info text-white";
+                                                iconClass = "fa-clock";
+                                            } else if (today.isAfter(endDate)) {
+                                                statusText = "Hết hạn";
+                                                badgeClass = "bg-secondary";
+                                                iconClass = "fa-times-circle";
+                                            } else {
+                                                statusText = "Còn hạn dùng";
+                                                badgeClass = "bg-success";
+                                                iconClass = "fa-check-circle";
+                                            }
+                                        } else if ("Locked".equalsIgnoreCase(sStatus) || "Inactive".equalsIgnoreCase(sStatus)) {
+                                            statusText = "Bị hủy / Khóa";
+                                            badgeClass = "bg-danger";
+                                            iconClass = "fa-ban";
+                                        }
                                 %>
                                     <tr>
                                         <td><strong><%= service.get("serviceName") %></strong></td>
                                         <td class="text-muted small"><%= service.get("startDate") %></td>
                                         <td class="text-dark fw-bold small"><%= service.get("endDate") %></td>
                                         <td>
-                                            <% if (isActiveS) { %>
-                                                <span class="badge bg-success"><i class="fa fa-check-circle me-1"></i>Còn hạn dùng</span>
-                                            <% } else { %>
-                                                <span class="badge bg-secondary"><i class="fa fa-times-circle me-1"></i>Hết hạn / Hủy</span>
-                                            <% } %>
+                                            <span class="badge <%= badgeClass %>"><i class="fa <%= iconClass %> me-1"></i><%= statusText %></span>
                                         </td>
                                     </tr>
                                 <% } %>

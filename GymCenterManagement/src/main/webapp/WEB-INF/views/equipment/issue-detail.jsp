@@ -5,7 +5,7 @@
   =========================================================================
   Document    : issue-detail.jsp
   Created on  : 2026-06-04
-  Author      : Đào Minh Hoàng (hoangdm)
+  Author      : Đỗ Minh Hoàng (hoangdm)
   Description : Giao diện hiển thị chi tiết thông tin báo cáo sự cố thiết bị.
   =========================================================================
 --%>
@@ -25,14 +25,30 @@
                         <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/dashboard">Bảng điều khiển</a></li>
                     </c:otherwise>
                 </c:choose>
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/equipment-issues">Sự cố thiết bị</a></li>
+                <c:choose>
+                    <c:when test="${sessionScope.currentUser.role == 'Admin'}">
+                        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/admin/equipment-reports">Báo cáo thiết bị</a></li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/equipment-issues">Sự cố thiết bị</a></li>
+                    </c:otherwise>
+                </c:choose>
                 <li class="breadcrumb-item active" aria-current="page">Chi tiết sự cố</li>
             </ol>
         </nav>
         <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=list">
-                <i class="fa fa-arrow-left me-2"></i>Quay lại
-            </a>
+            <c:choose>
+                <c:when test="${sessionScope.currentUser.role == 'Admin'}">
+                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/equipment-reports">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=list">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:otherwise>
+            </c:choose>
             <a class="btn btn-warning text-dark" href="${pageContext.request.contextPath}/staff/equipment-issues?action=edit&id=${issue.issueId}">
                 <i class="fa fa-edit me-2"></i>Cập nhật tiến độ
             </a>
@@ -137,3 +153,4 @@
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp" />
+

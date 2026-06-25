@@ -71,7 +71,7 @@ public class RecordPaymentController extends HttpServlet {
         String invoiceIdStr = request.getParameter("invoiceId");
         String action = request.getParameter("action");
 
-        if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty() || !"pay".equals(action)) {
+        if (invoiceIdStr == null || invoiceIdStr.trim().isEmpty() || (!"pay".equals(action) && !"cancel".equals(action))) {
             request.setAttribute("errorMessage", "Thao tác hoặc thông tin hóa đơn không hợp lệ.");
             response.sendRedirect(request.getContextPath() + "/staff/record-payment");
             return;
@@ -79,14 +79,22 @@ public class RecordPaymentController extends HttpServlet {
 
         try {
             int invoiceId = Integer.parseInt(invoiceIdStr);
-            boolean success = invoiceService.recordCashPayment(invoiceId, staffUserId);
+            boolean success = false;
+            String message = "";
+            
+            if ("pay".equals(action)) {
+                success = invoiceService.recordCashPayment(invoiceId, staffUserId);
+                message = "Ghi nhận thanh toán thành công";
+            } else if ("cancel".equals(action)) {
+                success = invoiceService.cancelInvoice(invoiceId, staffUserId);
+                message = "Hủy hóa đơn thành công";
+            }
             
             if (success) {
-                // Redirect back to detail view which now shows "Paid" status and print receipt button
-                String successMsg = java.net.URLEncoder.encode("Ghi nhận thanh toán thành công", java.nio.charset.StandardCharsets.UTF_8);
+                String successMsg = java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
                 response.sendRedirect(request.getContextPath() + "/staff/record-payment?invoiceId=" + invoiceId + "&successMsg=" + successMsg);
             } else {
-                request.setAttribute("errorMessage", "Ghi nhận thanh toán thất bại.");
+                request.setAttribute("errorMessage", "Thao tác thất bại.");
                 Invoice inv = invoiceService.getInvoiceById(invoiceId);
                 request.setAttribute("invoice", inv);
                 request.getRequestDispatcher("/WEB-INF/views/staff/payment-record-detail.jsp").forward(request, response);

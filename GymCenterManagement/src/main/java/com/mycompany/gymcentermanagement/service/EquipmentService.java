@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : EquipmentService.java
  * @description   : Lớp xử lý logic nghiệp vụ quản lý thiết bị phòng gym và báo cáo sự cố.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.service;
@@ -80,6 +80,10 @@ public class EquipmentService {
 
     public EquipmentIssue getIssue(int id) throws SQLException {
         return issueDAO.findById(id);
+    }
+
+    public List<EquipmentIssue> getIssuesByEquipment(int equipmentId) throws SQLException {
+        return issueDAO.findByEquipmentId(equipmentId);
     }
 
     public int createIssue(EquipmentIssue issue) throws SQLException {
@@ -333,3 +337,4 @@ public class EquipmentService {
         }
     }
 }
+

@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : ManageEquipmentIssueController.java
  * @description   : Controller điều phối xử lý báo cáo sự cố hỏng hóc thiết bị.
- * @author        : Đào Minh Hoàng (hoangdm)
+ * @author        : Đỗ Minh Hoàng (hoangdm)
  * @created       : 2026-06-04
- * @last_modified : 2026-06-04 bởi Đào Minh Hoàng
+ * @last_modified : 2026-06-04 bởi Đỗ Minh Hoàng
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;
@@ -54,7 +54,16 @@ public class ManageEquipmentIssueController extends HttpServlet {
 
         try {
             switch (action) {
-                case "create" -> showForm(request, response, new EquipmentIssue());
+                case "create" -> {
+                    EquipmentIssue newIssue = new EquipmentIssue();
+                    String eqIdStr = request.getParameter("equipmentId");
+                    if (eqIdStr != null && !eqIdStr.isBlank()) {
+                        try {
+                            newIssue.setEquipmentId(Integer.parseInt(eqIdStr));
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    showForm(request, response, newIssue);
+                }
                 case "edit" -> showStatusForm(request, response);
                 case "detail" -> showDetail(request, response);
                 default -> list(request, response);
@@ -82,7 +91,11 @@ public class ManageEquipmentIssueController extends HttpServlet {
             } else {
                 service.createIssue(readIssue(request, currentUser.getUserId(), currentUser.getFullName()));
             }
-            response.sendRedirect(request.getContextPath() + "/staff/equipment-issues?action=list");
+            if ("Admin".equals(currentUser.getRole())) {
+                response.sendRedirect(request.getContextPath() + "/admin/equipment-reports");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/staff/equipment-issues?action=list");
+            }
         } catch (SQLException | IllegalArgumentException | IOException | ServletException ex) {
             request.setAttribute("error", ex.getMessage());
             try {
@@ -302,3 +315,4 @@ public class ManageEquipmentIssueController extends HttpServlet {
         return java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8);
     }
 }
+

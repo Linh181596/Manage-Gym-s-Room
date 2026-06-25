@@ -147,7 +147,7 @@
                         <!-- Action Button -->
                         <a href="${pageContext.request.contextPath}/pt/detail?id=<%= trainer.getPtId() %>" 
                            class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
-                            Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>
+                                Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>
                         </a>
                     </div>
                 </div>

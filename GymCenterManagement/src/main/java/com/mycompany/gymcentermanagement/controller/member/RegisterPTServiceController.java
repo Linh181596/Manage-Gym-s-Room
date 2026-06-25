@@ -9,13 +9,14 @@
  */
 package com.mycompany.gymcentermanagement.controller.member;
 
-import com.mycompany.gymcentermanagement.dao.PTRegistrationDAO;
 import com.mycompany.gymcentermanagement.dao.MemberDAO;
 import com.mycompany.gymcentermanagement.dao.impl.MemberDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 import com.mycompany.gymcentermanagement.model.entity.Member;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.service.PTRegistrationService;
+import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -32,7 +33,7 @@ import java.time.format.DateTimeParseException;
 @WebServlet(name = "RegisterPTServiceController", urlPatterns = {"/member/pt/register"})
 public class RegisterPTServiceController extends HttpServlet {
 
-    private final PTRegistrationDAO registrationDAO = new PTRegistrationDAO();
+    private final PTRegistrationService registrationService = new PTRegistrationServiceImpl();
     private final MemberDAO memberDAO = new MemberDAOImpl();
 
     @Override
@@ -53,7 +54,7 @@ public class RegisterPTServiceController extends HttpServlet {
             return;
         }
 
-        PTServicePrice servicePrice = registrationDAO.findServicePriceById(priceId);
+        PTServicePrice servicePrice = registrationService.getServicePriceById(priceId);
 
         if (servicePrice == null) {
             request.setAttribute("error", "Không tìm thấy gói PT phù hợp.");
@@ -82,7 +83,7 @@ public class RegisterPTServiceController extends HttpServlet {
             return;
         }
 
-        PTServicePrice servicePrice = registrationDAO.findServicePriceById(priceId);
+        PTServicePrice servicePrice = registrationService.getServicePriceById(priceId);
 
         if (servicePrice == null) {
             request.setAttribute("error", "Không tìm thấy gói PT phù hợp.");
@@ -158,7 +159,7 @@ public class RegisterPTServiceController extends HttpServlet {
         registration.setTotalAmount(servicePrice.getPrice());
         registration.setCreatedBy(currentUser.getFullName());
 
-        boolean inserted = registrationDAO.insert(registration);
+        boolean inserted = registrationService.registerPTService(registration);
 
         if (!inserted) {
             request.setAttribute("error", "Không thể đăng ký gói PT. Vui lòng thử lại.");
