@@ -341,6 +341,20 @@
                     reader.readAsDataURL(file);
                 }
             });
+
+            // Form submit validation for description word limit
+            $('form').submit(function(e) {
+                const bioField = $('#floatingBio');
+                if (bioField.length && !bioField.prop('disabled')) {
+                    const bioText = bioField.val().trim();
+                    const words = bioText ? bioText.split(/\s+/) : [];
+                    if (words.length > 500) {
+                        alert("Tiểu sử (Bio) không được vượt quá 500 từ. Hiện tại bạn đang nhập: " + words.length + " từ.");
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
         });
     </script>
 </body>

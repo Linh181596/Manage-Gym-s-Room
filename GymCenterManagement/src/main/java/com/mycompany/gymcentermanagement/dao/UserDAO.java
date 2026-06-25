@@ -55,5 +55,7 @@ public interface UserDAO {
     UserProfileBaseDTO getUserProfileById(int userId) throws SQLException;
     
     boolean updateUserProfile(UserProfileBaseDTO profileDto, String roleName) throws SQLException;
+
+    boolean updateBasicUserInfo(User user);
 }
 

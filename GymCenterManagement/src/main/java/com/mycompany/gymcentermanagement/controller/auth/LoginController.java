@@ -15,8 +15,6 @@ import com.mycompany.gymcentermanagement.dao.UserDAO;
 import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.model.entity.UserToken;
-import com.mycompany.gymcentermanagement.service.UserService;
-import com.mycompany.gymcentermanagement.service.impl.UserServiceImpl;
 import com.mycompany.gymcentermanagement.utils.PasswordUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -32,7 +30,6 @@ import java.util.UUID;
 @WebServlet(name = "LoginController", urlPatterns = {"/login"})
 public class LoginController extends HttpServlet {
     
-    private final UserService userService = new UserServiceImpl();
     private final UserDAO userDAO = new UserDAOImpl();
 
     @Override

@@ -53,7 +53,8 @@
                 </a>
                 <div class="d-flex align-items-center ms-4 mb-4">
                     <div class="position-relative">
-                        <img class="rounded-circle" src="${pageContext.request.contextPath}/img/user.jpg" alt="" style="width: 40px; height: 40px;">
+                        <img class="rounded-circle" src="${pageContext.request.contextPath}/${not empty sessionScope.currentUser.avatarPath ? sessionScope.currentUser.avatarPath : 'img/user.jpg'}" alt="" style="width: 40px; height: 40px; object-fit: cover;">
+                        <!-- If had upload img then -> sessionScope.currentUser.avatarPath \\ If not -> default img: /img/user.jpg(default) -->
                         <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
                     </div>
                     <div class="ms-3">
@@ -81,9 +82,11 @@
                             <a href="#" class="nav-item nav-link"><i class="fa fa-users me-2"></i>Quản lý người dùng</a>
                             <a href="${pageContext.request.contextPath}/admin/packages" class="nav-item nav-link ${fn:contains(reqUri, '/admin/packages') ? 'active' : ''}"><i class="fa fa-box me-2"></i>Gói tập Gym</a>
                             <a href="${pageContext.request.contextPath}/staff/equipment" class="nav-item nav-link ${(fn:contains(reqUri, '/staff/equipment') && !fn:contains(reqUri, '/staff/equipment-issues') && param.from != 'report') ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Thiết bị phòng tập</a>
+                            <a href="${pageContext.request.contextPath}/staff/maintenance-schedules" class="nav-item nav-link ${fn:contains(reqUri, '/staff/maintenance-schedules') ? 'active' : ''}"><i class="fa fa-tools me-2"></i>Lịch bảo trì</a>
                             <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/staff/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Đội ngũ HLV (PT)</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-alt me-2"></i>Lớp học & Lịch trình</a>
+                            <a href="${pageContext.request.contextPath}/admin/schedule/manage" class="nav-item nav-link"><i class="fa fa-calendar-alt me-2"></i>Lớp học & Lịch trình</a>
                             <a href="${pageContext.request.contextPath}/admin/equipment-reports" class="nav-item nav-link ${(fn:contains(reqUri, '/admin/equipment-reports') || fn:contains(reqUri, '/staff/equipment-issues') || param.from == 'report') ? 'active' : ''}"><i class="fa fa-chart-bar me-2"></i>Báo cáo thiết bị</a>
+                            <a href="${pageContext.request.contextPath}/admin/payment-history" class="nav-item nav-link ${fn:contains(reqUri, '/admin/payment-history') ? 'active' : ''}"><i class="fa fa-history me-2"></i>Lịch sử thanh toán</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-chart-line me-2"></i>Báo cáo thống kê</a>
                         </c:when>
                         <c:when test="${role == 'Staff'}">
@@ -92,7 +95,8 @@
                             <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/staff/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Quản lý HLV (PT)</a>
                             <a href="${pageContext.request.contextPath}/staff/equipment" class="nav-item nav-link ${(fn:contains(reqUri, '/staff/equipment') && !fn:contains(reqUri, '/staff/equipment-issues')) ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Quản lý thiết bị</a>
                             <a href="${pageContext.request.contextPath}/staff/equipment-issues" class="nav-item nav-link ${fn:contains(reqUri, '/staff/equipment-issues') ? 'active' : ''}"><i class="fa fa-exclamation-triangle me-2"></i>Sự cố thiết bị</a>
-                            <a href="${pageContext.request.contextPath}/staff/checkin" class="nav-item nav-link"><i class="fa fa-clipboard-check me-2"></i>Điểm danh ra vào</a>
+                            <a href="${pageContext.request.contextPath}/staff/maintenance-schedules" class="nav-item nav-link ${fn:contains(reqUri, '/staff/maintenance-schedules') ? 'active' : ''}"><i class="fa fa-tools me-2"></i>Lịch bảo trì</a>
+                            <a href="#" class="nav-item nav-link"><i class="fa fa-clipboard-check me-2"></i>Điểm danh ra vào</a>
                             <a href="${pageContext.request.contextPath}/staff/register-package" class="nav-item nav-link ${fn:contains(reqUri, '/staff/register-package') ? 'active' : ''}"><i class="fa fa-user-plus me-2"></i>Đăng ký gói tập</a>
                             <a href="${pageContext.request.contextPath}/staff/record-payment" class="nav-item nav-link ${fn:contains(reqUri, '/staff/record-payment') ? 'active' : ''}"><i class="fa fa-cash-register me-2"></i>Thanh toán hóa đơn</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-check me-2"></i>Lịch đặt trước</a>
