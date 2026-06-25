@@ -71,7 +71,12 @@ public class AuthenticationFilter extends HttpFilter {
         if (relativePath.startsWith("/admin/")) {
             if (role == User.Role.Admin) {
                 authorized = true;
-            } else if (relativePath.startsWith("/admin/pt/edit") && role == User.Role.Staff) {
+            } else if (role == User.Role.Staff && (
+                relativePath.startsWith("/admin/pt/edit") ||
+                relativePath.startsWith("/admin/schedule/manage") ||
+                relativePath.startsWith("/admin/pt/schedule-setup") ||
+                relativePath.startsWith("/admin/pt/cancel")
+            )) {
                 authorized = true;
             }
         } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {

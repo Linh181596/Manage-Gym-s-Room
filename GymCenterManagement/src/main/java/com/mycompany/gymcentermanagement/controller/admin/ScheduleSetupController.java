@@ -23,7 +23,6 @@ import java.util.List;
 public class ScheduleSetupController extends HttpServlet {
     private PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
     private PTScheduleService ptScheduleService = new PTScheduleServiceImpl();
-
     // Hàm siêu trí tuệ: Xây dựng ma trận lịch rảnh/bận
     private void setupTimetableMatrix(HttpServletRequest request, int ptId, LocalDate referenceDate) {
         // 1. Tìm ngày Thứ 2 và Chủ Nhật của cái tuần chứa referenceDate
@@ -102,6 +101,26 @@ public class ScheduleSetupController extends HttpServlet {
 
             LocalDate actualStartDate = LocalDate.parse(request.getParameter("actualStartDate"));
             String[] daysOfWeekStr = request.getParameterValues("daysOfWeek");
+
+            if (daysOfWeekStr != null && daysOfWeekStr.length > 0) {
+                request.setAttribute("submittedDays", Arrays.asList(daysOfWeekStr));
+            } else {
+                request.setAttribute("errorMsg", "Vui lòng chọn ít nhất một ngày.");
+                request.setAttribute("submittedDays", new ArrayList<String>());
+                request.setAttribute("submittedTimeSlot", request.getParameter("timeSlot"));
+                request.setAttribute("submittedStartDate", request.getParameter("actualStartDate"));
+                request.setAttribute("submittedPayment", request.getParameter("confirmPayment") != null);
+
+                PTRegistrationDTO reg = ptRegistrationService.getRegistrationById(regId);
+                request.setAttribute("reg", reg);
+
+                LocalDate refDate = LocalDate.parse(request.getParameter("actualStartDate"));
+                setupTimetableMatrix(request, ptId, refDate);
+
+                request.getRequestDispatcher("/WEB-INF/views/admin/schedule-setup.jsp").forward(request, response);
+                return;
+            }
+
             String timeSlot = request.getParameter("timeSlot");
             boolean isPaymentConfirmed = request.getParameter("confirmPayment") != null;
 
