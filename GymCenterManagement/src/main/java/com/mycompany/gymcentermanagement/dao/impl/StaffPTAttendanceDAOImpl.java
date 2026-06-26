@@ -2,6 +2,8 @@
  * =========================================================================
  * @file          : StaffPTAttendanceDAOImpl.java
  * @description   : Lớp triển khai truy xuất cơ sở dữ liệu JDBC cho điểm danh Staff và PT.
+ *                  Hỗ trợ UC 2.3.4 (Manage Staff & PT Check-ins) và
+ *                  UC 2.3.5 (View Staff & PT Work History).
  * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-26
  * @last_modified : 2026-06-26 bởi Antigravity Agent
@@ -80,7 +82,8 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
             ps.setString(6, attendance.getCreatedBy());
 
             int affected = ps.executeUpdate();
-            if (affected == 0) return 0;
+            if (affected == 0)
+                return 0;
 
             keys = ps.getGeneratedKeys();
             return keys.next() ? keys.getInt(1) : 0;
@@ -96,7 +99,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                     u.UserID,
                     u.DisplayName           AS TargetFullName,
                     u.Email                 AS TargetEmail,
-                    ur.RoleName             AS UserRole,
+                    r.RoleName             AS UserRole,
                     COALESCE(a.AttendanceID, 0)      AS AttendanceID,
                     a.CheckedInAt,
                     a.ShiftBlock,
@@ -138,7 +141,8 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     @Override
-    public List<StaffPTAttendance> searchHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException {
+    public List<StaffPTAttendance> searchHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate,
+            String keyword, int offset, int limit) throws SQLException {
         StringBuilder sql = new StringBuilder("""
                 SELECT
                     a.AttendanceID,
@@ -188,7 +192,8 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     @Override
-    public int countHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException {
+    public int countHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword)
+            throws SQLException {
         StringBuilder sql = new StringBuilder("""
                 SELECT COUNT(*) AS Total
                 FROM StaffPTAttendance a
@@ -242,9 +247,9 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     private void appendFilters(StringBuilder sql, List<Object> params,
-                                int userId, String userRole,
-                                LocalDate fromDate, LocalDate toDate,
-                                String keyword) {
+            int userId, String userRole,
+            LocalDate fromDate, LocalDate toDate,
+            String keyword) {
         if (userId > 0) {
             sql.append(" AND a.UserID = ?");
             params.add(userId);
@@ -284,15 +289,22 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
 
         String role = rs.getString("UserRole");
         if (role != null) {
-            try { a.setUserRole(role); } catch (IllegalArgumentException ignored) {}
+            try {
+                a.setUserRole(role);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         Timestamp checkedInAt = rs.getTimestamp("CheckedInAt");
-        if (checkedInAt != null) a.setCheckedInAt(checkedInAt.toLocalDateTime());
+        if (checkedInAt != null)
+            a.setCheckedInAt(checkedInAt.toLocalDateTime());
 
         String shift = rs.getString("ShiftBlock");
         if (shift != null) {
-            try { a.setShiftBlock(shift); } catch (IllegalArgumentException ignored) {}
+            try {
+                a.setShiftBlock(shift);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         a.setCheckedBy(rs.getInt("CheckedBy"));
@@ -309,18 +321,26 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
 
         String role = rs.getString("UserRole");
         if (role != null) {
-            try { a.setUserRole(role); } catch (IllegalArgumentException ignored) {}
+            try {
+                a.setUserRole(role);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         Timestamp checkedInAt = rs.getTimestamp("CheckedInAt");
-        if (checkedInAt != null) a.setCheckedInAt(checkedInAt.toLocalDateTime());
+        if (checkedInAt != null)
+            a.setCheckedInAt(checkedInAt.toLocalDateTime());
 
         Date attDate = rs.getDate("AttendanceDate");
-        if (attDate != null) a.setAttendanceDate(attDate.toLocalDate());
+        if (attDate != null)
+            a.setAttendanceDate(attDate.toLocalDate());
 
         String shift = rs.getString("ShiftBlock");
         if (shift != null) {
-            try { a.setShiftBlock(shift); } catch (IllegalArgumentException ignored) {}
+            try {
+                a.setShiftBlock(shift);
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         a.setCheckedBy(rs.getInt("CheckedBy"));
@@ -328,7 +348,8 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         a.setCreatedBy(rs.getString("CreatedBy"));
 
         Timestamp createdDate = rs.getTimestamp("CreatedDate");
-        if (createdDate != null) a.setCreatedDate(createdDate.toLocalDateTime());
+        if (createdDate != null)
+            a.setCreatedDate(createdDate.toLocalDateTime());
 
         a.setDeleted(rs.getBoolean("IsDeleted"));
         a.setTargetFullName(rs.getString("TargetFullName"));
