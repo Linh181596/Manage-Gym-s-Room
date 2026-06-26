@@ -97,7 +97,7 @@
                             <a href="${pageContext.request.contextPath}/staff/equipment" class="nav-item nav-link ${(fn:contains(reqUri, '/staff/equipment') && !fn:contains(reqUri, '/staff/equipment-issues')) ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Quản lý thiết bị</a>
                             <a href="${pageContext.request.contextPath}/staff/equipment-issues" class="nav-item nav-link ${fn:contains(reqUri, '/staff/equipment-issues') ? 'active' : ''}"><i class="fa fa-exclamation-triangle me-2"></i>Sự cố thiết bị</a>
                             <a href="${pageContext.request.contextPath}/staff/maintenance-schedules" class="nav-item nav-link ${fn:contains(reqUri, '/staff/maintenance-schedules') ? 'active' : ''}"><i class="fa fa-tools me-2"></i>Lịch bảo trì</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-clipboard-check me-2"></i>Điểm danh ra vào</a>
+                            <a href="${pageContext.request.contextPath}/staff/checkin" class="nav-item nav-link"><i class="fa fa-clipboard-check me-2"></i>Điểm danh ra vào</a>
                             <a href="${pageContext.request.contextPath}/staff/register-package" class="nav-item nav-link ${fn:contains(reqUri, '/staff/register-package') ? 'active' : ''}"><i class="fa fa-user-plus me-2"></i>Đăng ký gói tập</a>
                             <a href="${pageContext.request.contextPath}/staff/record-payment" class="nav-item nav-link ${fn:contains(reqUri, '/staff/record-payment') ? 'active' : ''}"><i class="fa fa-cash-register me-2"></i>Thanh toán hóa đơn</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-check me-2"></i>Lịch đặt trước</a>
