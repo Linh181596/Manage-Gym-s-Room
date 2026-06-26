@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : ManagePTServicePriceController.java
+ * @description   : Controller xử lý việc quản lý cấu hình biểu giá dịch vụ cho PT bởi Admin.
+ * @author        : Nguyễn Đình Phú (phund)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;

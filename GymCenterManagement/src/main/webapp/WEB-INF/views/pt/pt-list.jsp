@@ -1,6 +1,4 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page import="java.util.List" %>
-<%@ page import="com.mycompany.gymcentermanagement.model.entity.PersonalTrainer" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <%--
@@ -14,19 +12,6 @@
 
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
-
-<%
-    List<PersonalTrainer> trainers = (List<PersonalTrainer>) request.getAttribute("trainers");
-    List<String> specializationOptions = (List<String>) request.getAttribute("specializationOptions");
-    List<String> selectedSpecializations = (List<String>) request.getAttribute("selectedSpecializations");
-
-    if (specializationOptions == null) {
-        specializationOptions = java.util.Collections.emptyList();
-    }
-    if (selectedSpecializations == null) {
-        selectedSpecializations = java.util.Collections.emptyList();
-    }
-%>
 
 <div class="container-fluid pt-4 px-4">
     <!-- Page Title -->
@@ -90,16 +75,14 @@
                 <div class="col-12">
                     <label class="form-label fw-bold text-secondary mb-2"><i class="fa fa-filter me-1"></i> Lọc theo chuyên môn</label>
                     <div class="d-flex flex-wrap gap-3 p-3 bg-white border rounded">
-                        <% for (String option : specializationOptions) { 
-                            boolean checked = selectedSpecializations.contains(option);
-                        %>
+                        <c:forEach var="option" items="${specializationOptions}" varStatus="status">
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="specializations" 
-                                       id="spec_<%= option.hashCode() %>" value="<%= option %>" 
-                                       <%= checked ? "checked" : "" %>>
-                                <label class="form-check-label text-dark" for="spec_<%= option.hashCode() %>"><%= option %></label>
+                                       id="spec_${status.index}" value="${option}" 
+                                       <c:if test="${not empty selectedSpecializations and selectedSpecializations.contains(option)}">checked</c:if>>
+                                <label class="form-check-label text-dark" for="spec_${status.index}">${option}</label>
                             </div>
-                        <% } %>
+                        </c:forEach>
                     </div>
                 </div>
                 <div class="col-12 d-flex justify-content-end gap-2 mt-3">
@@ -112,89 +95,103 @@
 
     <!-- Trainer Grid -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
-        <% if (trainers == null || trainers.isEmpty()) { %>
-            <div class="col-12 w-100 text-center py-5 bg-light rounded shadow-sm">
-                <i class="fa fa-users-slash fa-3x text-muted mb-3"></i>
-                <h5 class="text-secondary fw-semibold">Hiện tại chưa có Huấn luyện viên nào phù hợp với bộ lọc.</h5>
-                <p class="text-muted small">Vui lòng quay lại sau hoặc xóa bộ lọc để tìm kiếm lại.</p>
-            </div>
-        <% } else { 
-            for (PersonalTrainer trainer : trainers) {
-        %>
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm hover-translate-y transition-all">
-                    <!-- Top Gradient Decoration -->
-                    <div class="bg-primary-gradient rounded-top" style="height: 6px;"></div>
-                    <div class="card-body p-4 d-flex flex-column align-items-center text-center">
-                        <!-- Avatar -->
-                        <div class="position-relative mb-3">
-                            <% if (trainer.getAvatarPath() != null && !trainer.getAvatarPath().trim().isEmpty()) { %>
-                                <img src="${pageContext.request.contextPath}/<%= trainer.getAvatarPath() %>" 
-                                     alt="Ảnh đại diện <%= trainer.getPublicName() %>" 
-                                     class="rounded-circle border border-3 border-white shadow" 
-                                     style="width: 100px; height: 100px; object-fit: cover;">
-                            <% } else { %>
-                                <div class="rounded-circle border border-3 border-white shadow bg-light text-primary d-flex align-items-center justify-content-center" 
-                                     style="width: 100px; height: 100px; font-size: 32px;">
-                                    <i class="fa fa-user"></i>
-                                </div>
-                            <% } %>
-                            <% if ("Inactive".equalsIgnoreCase(trainer.getStatus())) { %>
-                                <span class="position-absolute bottom-0 end-0 badge bg-danger rounded-circle border border-2 border-white p-2" title="Ngừng hoạt động">
-                                    <span class="visually-hidden">Ngừng hoạt động</span>
-                                </span>
-                            <% } else if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
-                                <span class="position-absolute bottom-0 end-0 badge bg-warning rounded-circle border border-2 border-white p-2" title="Bị khóa">
-                                    <span class="visually-hidden">Bị khóa</span>
-                                </span>
-                            <% } else { %>
-                                <span class="position-absolute bottom-0 end-0 badge bg-success rounded-circle border border-2 border-white p-2" title="Đang hoạt động">
-                                    <span class="visually-hidden">Đang hoạt động</span>
-                                </span>
-                            <% } %>
-                        </div>
-
-                        <!-- Name & Title -->
-                        <h5 class="card-title text-dark fw-bold mb-1"><%= trainer.getPublicName() %></h5>
-                        <p class="text-muted small mb-2"><%= trainer.getEmail() != null ? trainer.getEmail() : "Email chưa cập nhật" %></p>
-                        
-                        <!-- Specialization Badges -->
-                        <div class="mb-3">
-                            <span class="badge bg-light-primary text-primary px-3 py-1.5 rounded-pill fw-semibold">
-                                <i class="fa fa-dumbbell me-1"></i><%= trainer.getSpecialization() %>
-                            </span>
-                        </div>
-
-                        <!-- Stats Block -->
-                        <div class="row w-100 bg-light rounded p-3 mb-4 mt-auto">
-                            <div class="col-6 border-end text-center">
-                                <span class="d-block text-secondary small">Kinh nghiệm</span>
-                                <strong class="text-dark"><%= trainer.getExperienceYears() %> năm</strong>
-                            </div>
-                            <div class="col-6 text-center">
-                                <span class="d-block text-secondary small">Trạng thái</span>
-                                <% if ("Inactive".equalsIgnoreCase(trainer.getStatus())) { %>
-                                    <strong class="text-danger">Ngừng hoạt động</strong>
-                                    <% if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
-                                        <small class="d-block text-muted" style="font-size: 0.72rem; margin-top: 2px;"><i class="fa fa-lock me-1 text-secondary"></i>Đã khóa tài khoản</small>
-                                    <% } %>
-                                <% } else if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
-                                    <strong class="text-warning">Bị khóa</strong>
-                                <% } else { %>
-                                    <strong class="text-success">Đang hoạt động</strong>
-                                <% } %>
-                            </div>
-                        </div>
-
-                        <!-- Action Button -->
-                        <a href="${pageContext.request.contextPath}/pt/detail?id=<%= trainer.getPtId() %>" 
-                           class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
-                                Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>
-                        </a>
-                    </div>
+        <c:choose>
+            <c:when test="${empty trainers}">
+                <div class="col-12 w-100 text-center py-5 bg-light rounded shadow-sm">
+                    <i class="fa fa-users-slash fa-3x text-muted mb-3"></i>
+                    <h5 class="text-secondary fw-semibold">Hiện tại chưa có Huấn luyện viên nào phù hợp với bộ lọc.</h5>
+                    <p class="text-muted small">Vui lòng quay lại sau hoặc xóa bộ lọc để tìm kiếm lại.</p>
                 </div>
-            </div>
-        <% } } %>
+            </c:when>
+            <c:otherwise>
+                <c:forEach var="trainer" items="${trainers}">
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm hover-translate-y transition-all">
+                            <!-- Top Gradient Decoration -->
+                            <div class="bg-primary-gradient rounded-top" style="height: 6px;"></div>
+                            <div class="card-body p-4 d-flex flex-column align-items-center text-center">
+                                <!-- Avatar -->
+                                <div class="position-relative mb-3">
+                                    <c:choose>
+                                        <c:when test="${not empty trainer.avatarPath}">
+                                            <img src="${pageContext.request.contextPath}/${trainer.avatarPath}" 
+                                                 alt="Ảnh đại diện ${trainer.publicName}" 
+                                                 class="rounded-circle border border-3 border-white shadow" 
+                                                 style="width: 100px; height: 100px; object-fit: cover;">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="rounded-circle border border-3 border-white shadow bg-light text-primary d-flex align-items-center justify-content-center" 
+                                                 style="width: 100px; height: 100px; font-size: 32px;">
+                                                <i class="fa fa-user"></i>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <c:choose>
+                                        <c:when test="${trainer.status == 'Inactive'}">
+                                            <span class="position-absolute bottom-0 end-0 badge bg-danger rounded-circle border border-2 border-white p-2" title="Ngừng hoạt động">
+                                                <span class="visually-hidden">Ngừng hoạt động</span>
+                                            </span>
+                                        </c:when>
+                                        <c:when test="${trainer.accountStatus == 'Locked'}">
+                                            <span class="position-absolute bottom-0 end-0 badge bg-warning rounded-circle border border-2 border-white p-2" title="Bị khóa">
+                                                <span class="visually-hidden">Bị khóa</span>
+                                            </span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="position-absolute bottom-0 end-0 badge bg-success rounded-circle border border-2 border-white p-2" title="Đang hoạt động">
+                                                <span class="visually-hidden">Đang hoạt động</span>
+                                            </span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+
+                                <!-- Name & Title -->
+                                <h5 class="card-title text-dark fw-bold mb-1">${trainer.publicName}</h5>
+                                <p class="text-muted small mb-2">${not empty trainer.email ? trainer.email : 'Email chưa cập nhật'}</p>
+                                
+                                <!-- Specialization Badges -->
+                                <div class="mb-3">
+                                    <span class="badge bg-light-primary text-primary px-3 py-1.5 rounded-pill fw-semibold">
+                                        <i class="fa fa-dumbbell me-1"></i>${trainer.specialization}
+                                    </span>
+                                </div>
+
+                                <!-- Stats Block -->
+                                <div class="row w-100 bg-light rounded p-3 mb-4 mt-auto">
+                                    <div class="col-6 border-end text-center">
+                                        <span class="d-block text-secondary small">Kinh nghiệm</span>
+                                        <strong class="text-dark">${trainer.experienceYears} năm</strong>
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <span class="d-block text-secondary small">Trạng thái</span>
+                                        <c:choose>
+                                            <c:when test="${trainer.status == 'Inactive'}">
+                                                <strong class="text-danger">Ngừng hoạt động</strong>
+                                                <c:if test="${trainer.accountStatus == 'Locked'}">
+                                                    <small class="d-block text-muted" style="font-size: 0.72rem; margin-top: 2px;"><i class="fa fa-lock me-1 text-secondary"></i>Đã khóa tài khoản</small>
+                                                </c:if>
+                                            </c:when>
+                                            <c:when test="${trainer.accountStatus == 'Locked'}">
+                                                <strong class="text-warning">Bị khóa</strong>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <strong class="text-success">Đang hoạt động</strong>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </div>
+
+                                <!-- Action Button -->
+                                <a href="${pageContext.request.contextPath}/pt/detail?id=${trainer.ptId}" 
+                                   class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
+                                        Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </c:forEach>
+            </c:otherwise>
+        </c:choose>
     </div>
 </div>
 

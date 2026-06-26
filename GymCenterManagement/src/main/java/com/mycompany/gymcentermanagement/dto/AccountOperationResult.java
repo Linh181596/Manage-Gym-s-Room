@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : AccountOperationResult.java
  * @description   : DTO đóng gói kết quả thao tác quản lý tài khoản, thông báo phản hồi và mật khẩu tạm thời nếu có.
- * @author        : Codex
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-25
- * @last_modified : 2026-06-25
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dto;

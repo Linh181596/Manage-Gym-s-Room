@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : DashboardAlert.java
  * @description   : DTO biểu diễn một cảnh báo vận hành hiển thị trên bảng điều khiển quản trị.
- * @author        : Codex
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-25
- * @last_modified : 2026-06-25
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dto;

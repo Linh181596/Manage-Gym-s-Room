@@ -5,14 +5,15 @@
  *                  (UC 2.3.5).
  * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-26
- * @last_modified : 2026-06-26 bởi Nguyễn Trí Linh
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;
 
-import com.mycompany.gymcentermanagement.dao.StaffPTAttendanceDAO;
 import com.mycompany.gymcentermanagement.model.entity.StaffPTAttendance;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.service.StaffPTAttendanceService;
+import com.mycompany.gymcentermanagement.service.impl.StaffPTAttendanceServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -40,7 +41,7 @@ public class WorkHistoryController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(WorkHistoryController.class.getName());
     private static final int PAGE_SIZE = 20;
-    private final StaffPTAttendanceDAO attendanceDAO = new StaffPTAttendanceDAO();
+    private final StaffPTAttendanceService attendanceService = new StaffPTAttendanceServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -75,13 +76,13 @@ public class WorkHistoryController extends HttpServlet {
 
         // ---- Truy vấn DB ---------------------------------------------- //
         try {
-            int total = attendanceDAO.countHistory(
+            int total = attendanceService.countHistory(
                     filterUserId, filterRole, fromDate, toDate, keyword);
 
             int totalPages = (total == 0) ? 1 : (int) Math.ceil((double) total / PAGE_SIZE);
             int offset     = (page - 1) * PAGE_SIZE;
 
-            List<StaffPTAttendance> records = attendanceDAO.searchHistory(
+            List<StaffPTAttendance> records = attendanceService.searchHistory(
                     filterUserId, filterRole, fromDate, toDate, keyword, offset, PAGE_SIZE);
 
             // A1: Empty state
