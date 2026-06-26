@@ -1,176 +1,275 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%--
+  =========================================================================
+  Document    : dashboard.jsp
+  Created on  : 2026-06-25
+  Author      : Nguyễn Đại Dương (duongnd)
+  Description : Giao diện bảng điều khiển hiển thị tổng quan vận hành cho Admin.
+  =========================================================================
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
-<!-- Admin Dashboard Content -->
+<c:set var="data" value="${dashboardData}" />
+<c:set var="metric" value="${data.metric}" />
+
 <div class="container-fluid pt-4 px-4">
-    <!-- Row 1: KPI Cards -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-1 text-dark fw-bold"><i class="fa fa-tachometer-alt me-2 text-primary"></i>Bảng điều khiển quản trị</h4>
+            <small class="text-muted">Tổng quan vận hành phòng tập theo dữ liệu hiện có trong cơ sở dữ liệu</small>
+        </div>
+        <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-primary">
+            <i class="fa fa-sync-alt me-1"></i> Làm mới
+        </a>
+    </div>
+
+    <c:if test="${not empty dashboardLoadError}">
+        <div class="alert alert-danger d-flex align-items-center justify-content-between shadow-sm" role="alert">
+            <div><i class="fa fa-exclamation-circle me-2"></i>${dashboardLoadError}</div>
+            <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-danger">Thử lại</a>
+        </div>
+    </c:if>
+
     <div class="row g-4">
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-users fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Tổng số hội viên</p>
-                    <h6 class="mb-0">1,248</h6>
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/members">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-users fa-3x text-primary"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Hội viên đang hoạt động</p>
+                        <h5 class="mb-0 text-dark fw-bold">${empty metric ? 0 : metric.activeMembers}</h5>
+                        <small class="text-muted">+${empty metric ? 0 : metric.newMembershipsToday} gói kích hoạt hôm nay</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/record-payment">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-dollar-sign fa-3x text-success"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Doanh thu hôm nay</p>
+                        <h5 class="mb-0 text-dark fw-bold">
+                            <fmt:formatNumber value="${empty metric ? 0 : metric.todayRevenue}" type="number" maxFractionDigits="0"/> đ
+                        </h5>
+                        <small class="text-muted">Tháng này:
+                            <fmt:formatNumber value="${empty metric ? 0 : metric.monthRevenue}" type="number" maxFractionDigits="0"/> đ
+                        </small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/pt/list">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-user-tie fa-3x text-info"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Huấn luyện viên đang hoạt động</p>
+                        <h5 class="mb-0 text-dark fw-bold">${empty metric ? 0 : metric.activeTrainers}</h5>
+                        <small class="text-muted">${empty metric ? 0 : metric.todayPtSessions} lịch huấn luyện hôm nay</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <a class="text-decoration-none" href="#operationAlerts">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-exclamation-triangle fa-3x text-warning"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Cần xử lý</p>
+                        <h5 class="mb-0 text-dark fw-bold">${empty metric ? 0 : metric.pendingAlerts}</h5>
+                        <small class="text-muted">Cảnh báo vận hành</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-light rounded p-4 shadow-sm h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h6 class="mb-0 text-dark fw-bold">Biểu đồ doanh thu</h6>
+                        <small class="text-muted">Doanh thu đã thanh toán trong 7 ngày gần nhất</small>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/staff/record-payment">Xem hóa đơn</a>
+                </div>
+                <div class="position-relative" style="height: 280px;">
+                    <canvas id="admin-revenue-chart" 
+                            data-labels='${empty data ? "[]" : data.revenueChartLabelsJson}' 
+                            data-values='${empty data ? "[]" : data.revenueChartValuesJson}'></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-user-tie fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">PT đang hoạt động</p>
-                    <h6 class="mb-0">34</h6>
+        <div class="col-sm-12 col-xl-4">
+            <div id="operationAlerts" class="bg-light rounded p-4 shadow-sm h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h6 class="mb-0 text-dark fw-bold">Cảnh báo vận hành</h6>
+                        <small class="text-muted">Các mục cần quản trị viên theo dõi</small>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-calendar-alt fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Lớp học hôm nay</p>
-                    <h6 class="mb-0">12 Lớp</h6>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-dollar-sign fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Doanh thu tháng này</p>
-                    <h6 class="mb-0">311.250.000 ₫</h6>
-                </div>
+
+                <c:choose>
+                    <c:when test="${empty data or empty data.alerts}">
+                        <div class="text-center text-muted py-4">
+                            <i class="fa fa-check-circle fa-3x text-success mb-3 d-block"></i>
+                            Không có cảnh báo đang chờ.
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="alert" items="${data.alerts}">
+                            <a class="text-decoration-none" href="${pageContext.request.contextPath}${alert.targetUrl}">
+                                <div class="d-flex align-items-start border-bottom py-3">
+                                    <div class="rounded-circle bg-${alert.severity} text-white d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
+                                        <i class="fa fa-bell"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">${alert.title}</div>
+                                        <small class="text-muted">${alert.message}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
     </div>
 </div>
 
 <div class="container-fluid pt-4 px-4">
-    <!-- Row 2: Charts -->
-    <div class="row g-4">
-        <div class="col-sm-12 col-xl-6">
-            <div class="bg-light text-center rounded p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h6 class="mb-0">Số lượng đăng ký hội viên theo tháng</h6>
-                    <a href="#">Xem tất cả</a>
-                </div>
-                <canvas id="worldwide-sales"></canvas>
-            </div>
-        </div>
-        <div class="col-sm-12 col-xl-6">
-            <div class="bg-light text-center rounded p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h6 class="mb-0">Phân tích doanh thu (Hội viên vs PT)</h6>
-                    <a href="#">Xem tất cả</a>
-                </div>
-                <canvas id="salse-revenue"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container-fluid pt-4 px-4">
-    <!-- Row 3: Recent Activity & Management Shortcuts -->
-    <div class="bg-light text-center rounded p-4">
+    <div class="bg-light rounded p-4 shadow-sm">
         <div class="d-flex align-items-center justify-content-between mb-4">
-            <h6 class="mb-0">Người dùng đăng ký gần đây</h6>
-            <a href="#">Xem tất cả người dùng</a>
+            <div>
+                <h6 class="mb-0 text-dark fw-bold">Hóa đơn gần đây</h6>
+                <small class="text-muted">Hóa đơn đăng ký gói tập và dịch vụ huấn luyện gần đây</small>
+            </div>
+            <a href="${pageContext.request.contextPath}/staff/record-payment">Xem tất cả</a>
         </div>
         <div class="table-responsive">
             <table class="table text-start align-middle table-bordered table-hover mb-0">
                 <thead>
                     <tr class="text-dark">
-                        <th scope="col">Mã người dùng</th>
-                        <th scope="col">Họ và tên</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Vai trò</th>
-                        <th scope="col">Trạng thái</th>
-                        <th scope="col">Hành động</th>
+                        <th scope="col">Ngày lập</th>
+                        <th scope="col">Mã hóa đơn</th>
+                        <th scope="col">Khách hàng</th>
+                        <th scope="col">Gói dịch vụ</th>
+                        <th scope="col" class="text-end">Số tiền</th>
+                        <th scope="col" class="text-center">Trạng thái</th>
+                        <th scope="col" class="text-center">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>USR-01</td>
-                        <td>Nguyễn Văn A</td>
-                        <td>member@gym.com</td>
-                        <td>Hội viên</td>
-                        <td><span class="badge bg-success">Hoạt động</span></td>
-                        <td><a class="btn btn-sm btn-primary" href="#">Sửa</a></td>
-                    </tr>
-                    <tr>
-                        <td>USR-02</td>
-                        <td>Trần Thị B</td>
-                        <td>staff@gym.com</td>
-                        <td>Nhân viên</td>
-                        <td><span class="badge bg-success">Hoạt động</span></td>
-                        <td><a class="btn btn-sm btn-primary" href="#">Sửa</a></td>
-                    </tr>
-                    <tr>
-                        <td>USR-03</td>
-                        <td>Lê Văn C</td>
-                        <td>pt@gym.com</td>
-                        <td>HLV (PT)</td>
-                        <td><span class="badge bg-success">Hoạt động</span></td>
-                        <td><a class="btn btn-sm btn-primary" href="#">Sửa</a></td>
-                    </tr>
+                    <c:choose>
+                        <c:when test="${empty data or empty data.recentInvoices}">
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="fa fa-receipt fa-3x mb-3 text-secondary d-block"></i>
+                                    Chưa có hóa đơn nào trong cơ sở dữ liệu.
+                                </td>
+                            </tr>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="invoice" items="${data.recentInvoices}">
+                                <tr>
+                                    <td><small class="text-muted">${invoice.paymentDateText}</small></td>
+                                    <td class="fw-bold text-secondary">${invoice.invoiceCode}</td>
+                                    <td>${invoice.customerName}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border me-2">${invoice.serviceType}</span>
+                                        ${invoice.serviceName}
+                                    </td>
+                                    <td class="text-end fw-bold text-primary">
+                                        <fmt:formatNumber value="${invoice.amount}" type="number" maxFractionDigits="0"/> đ
+                                    </td>
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${invoice.status == 'Paid'}">
+                                                <span class="badge bg-success">Đã thanh toán</span>
+                                            </c:when>
+                                            <c:when test="${invoice.status == 'Pending'}">
+                                                <span class="badge bg-warning text-dark">Đang chờ</span>
+                                            </c:when>
+                                            <c:when test="${invoice.status == 'Cancelled'}">
+                                                <span class="badge bg-danger">Đã hủy</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-danger">${invoice.status}</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="${pageContext.request.contextPath}/staff/record-payment?invoiceId=${invoice.invoiceId}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-eye me-1"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-<div class="container-fluid pt-4 px-4">
-    <!-- Row 4: Widgets (Calendar & Tasks) -->
-    <div class="row g-4">
-        <div class="col-sm-12 col-md-6">
-            <div class="h-100 bg-light rounded p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h6 class="mb-0">Lịch phòng tập</h6>
-                    <a href="#">Xem tất cả</a>
-                </div>
-                <div id="calender"></div>
-            </div>
-        </div>
-        <div class="col-sm-12 col-md-6">
-            <div class="h-100 bg-light rounded p-4">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h6 class="mb-0">Danh sách công việc của Admin</h6>
-                    <a href="#">Xem tất cả</a>
-                </div>
-                <div class="d-flex mb-2">
-                    <input class="form-control bg-transparent" type="text" placeholder="Nhập công việc...">
-                    <button type="button" class="btn btn-primary ms-2">Thêm</button>
-                </div>
-                <div class="d-flex align-items-center border-bottom py-2">
-                    <input class="form-check-input m-0" type="checkbox">
-                    <div class="w-100 ms-3">
-                        <div class="d-flex w-100 align-items-center justify-content-between">
-                            <span>Duyệt các đăng ký PT đang chờ</span>
-                            <button class="btn btn-sm"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center border-bottom py-2">
-                    <input class="form-check-input m-0" type="checkbox">
-                    <div class="w-100 ms-3">
-                        <div class="d-flex w-100 align-items-center justify-content-between">
-                            <span>Xác minh báo cáo sổ sách hàng tháng</span>
-                            <button class="btn btn-sm"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center pt-2">
-                    <input class="form-check-input m-0" type="checkbox" checked>
-                    <div class="w-100 ms-3">
-                        <div class="d-flex w-100 align-items-center justify-content-between">
-                            <span><del>Cập nhật chi tiết khuyến mãi mùa hè</del></span>
-                            <button class="btn btn-sm text-primary"><i class="fa fa-times"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const chartElement = document.getElementById("admin-revenue-chart");
+        if (!chartElement || typeof Chart === "undefined") {
+            return;
+        }
+
+        const labelsData = JSON.parse(chartElement.getAttribute("data-labels") || "[]");
+        const valuesData = JSON.parse(chartElement.getAttribute("data-values") || "[]");
+
+        new Chart(chartElement.getContext("2d"), {
+            type: "bar",
+            data: {
+                labels: labelsData,
+                datasets: [{
+                    label: "Doanh thu",
+                    data: valuesData,
+                    backgroundColor: "rgba(0, 156, 255, 0.45)",
+                    borderColor: "rgba(0, 156, 255, 1)",
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value) {
+                                return new Intl.NumberFormat("vi-VN").format(value);
+                            }
+                        }
+                    }]
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return new Intl.NumberFormat("vi-VN").format(tooltipItem.yLabel) + " đ";
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp" />

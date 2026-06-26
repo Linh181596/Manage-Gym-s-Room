@@ -1,12 +1,10 @@
 /**
  * =========================================================================
- *
- * @file : UserDAOImpl.java
- * @description : Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ
- * liệu cho Users và Profiles.
- * @author : Nguyễn Đại Dương
- * @created : 2026-06-05
- * @last_modified : 2026-06-11 bởi Antigravity
+ * @file          : UserDAOImpl.java
+ * @description   : Lớp triển khai truy vấn JDBC cho Users, token xác thực, đổi mật khẩu và hồ sơ người dùng. Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ liệu cho Users và Profiles.
+ * @author        : Nguyễn Đại Dương
+ * @created       : 2026-06-05
+ * @last_modified : 2026-06-25 (Cập nhật bởi Antigravity: 2026-06-11)
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao.impl;
@@ -407,6 +405,97 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         } finally {
             closeResource(conn, stmt, null);
+        }
+    }
+
+    @Override
+    public int revokeRememberMeTokensByUserId(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = getActiveConnection();
+
+            String sql = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'REMEMBER_ME'
+                          AND IsUsed = 0
+                    """;
+
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+
+            return stmt.executeUpdate();
+
+        } finally {
+            closeResource(conn, stmt, null);
+        }
+    }
+
+    @Override
+    public boolean changePasswordAndRevokeTokens(int userId, String newPasswordHash, boolean mustChangePassword)
+            throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmtPassword = null;
+        PreparedStatement stmtTokens = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String sqlPassword = """
+                        UPDATE Users
+                        SET PasswordHash = ?,
+                            MustChangePassword = ?,
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                          AND IsDeleted = 0
+                    """;
+
+            stmtPassword = conn.prepareStatement(sqlPassword);
+            stmtPassword.setString(1, newPasswordHash);
+            stmtPassword.setBoolean(2, mustChangePassword);
+            stmtPassword.setInt(3, userId);
+
+            int passwordRows = stmtPassword.executeUpdate();
+            if (passwordRows <= 0) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            String sqlTokens = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'REMEMBER_ME'
+                          AND IsUsed = 0
+                    """;
+
+            stmtTokens = conn.prepareStatement(sqlTokens);
+            stmtTokens.setInt(1, userId);
+            stmtTokens.executeUpdate();
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+
+            return true;
+
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (stmtTokens != null) stmtTokens.close();
+            closeResource(conn, stmtPassword, null);
         }
     }
 
@@ -930,6 +1019,606 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return list;
     }
 
+    @Override
+    public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<User> list = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
+
+        try {
+            conn = getActiveConnection();
+            StringBuilder sql = new StringBuilder("""
+                        SELECT u.*, r.RoleName
+                        FROM Users u
+                        LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
+                        LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        WHERE u.IsDeleted = 0
+                    """);
+
+            String normalizedKeyword = normalizeBlank(keyword);
+            if (normalizedKeyword != null) {
+                sql.append("""
+                            AND (
+                                u.DisplayName LIKE ?
+                                OR u.Email LIKE ?
+                                OR u.Phone LIKE ?
+                                OR r.RoleName LIKE ?
+                                OR u.Status LIKE ?
+                            )
+                        """);
+                String pattern = "%" + normalizedKeyword + "%";
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+            }
+
+            if (role != null) {
+                sql.append(" AND r.RoleName = ?");
+                params.add(role.name());
+            }
+
+            if (status != null) {
+                sql.append(" AND u.Status = ?");
+                params.add(status.name());
+            }
+
+            sql.append(" ORDER BY u.UserID DESC");
+            stmt = conn.prepareStatement(sql.toString());
+
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToUser(rs));
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return list;
+    }
+
+    @Override
+    public boolean checkEmailExistsForOtherUser(String email, int excludedUserId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT 1 FROM Users WHERE Email = ? AND UserID <> ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, email);
+            stmt.setInt(2, excludedUserId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    @Override
+    public boolean checkPhoneExistsForOtherUser(String phone, int excludedUserId) throws SQLException {
+        if (normalizeBlank(phone) == null) {
+            return false;
+        }
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT 1 FROM Users WHERE Phone = ? AND UserID <> ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, phone);
+            stmt.setInt(2, excludedUserId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    @Override
+    public boolean insertManagedAccount(User user) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmtUser = null;
+        ResultSet generatedKeys = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String sqlUser = """
+                        INSERT INTO Users (
+                            Email,
+                            PasswordHash,
+                            DisplayName,
+                            Phone,
+                            Status,
+                            MustChangePassword,
+                            CreatedBy,
+                            CreatedDate,
+                            IsDeleted
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), 0)
+                    """;
+
+            stmtUser = conn.prepareStatement(sqlUser, Statement.RETURN_GENERATED_KEYS);
+            stmtUser.setString(1, user.getEmail());
+            stmtUser.setString(2, user.getPasswordHash());
+            stmtUser.setString(3, user.getFullName());
+            stmtUser.setString(4, user.getPhoneNumber());
+            stmtUser.setString(5, user.getAccountStatus().name());
+            stmtUser.setBoolean(6, user.isMustChangePassword());
+            stmtUser.setString(7, user.getCreatedBy());
+
+            int rows = stmtUser.executeUpdate();
+            if (rows <= 0) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            generatedKeys = stmtUser.getGeneratedKeys();
+            if (!generatedKeys.next()) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            user.setUserId(generatedKeys.getInt(1));
+            setUserRole(conn, user.getUserId(), user.getRole());
+            ensureManagedProfile(conn, user.getUserId(), user.getRole(), user.getAccountStatus().name(), user.getCreatedBy());
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (generatedKeys != null) generatedKeys.close();
+            closeResource(conn, stmtUser, null);
+        }
+    }
+
+    @Override
+    public boolean updateManagedAccount(User user) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String sql = """
+                        UPDATE Users
+                        SET Email = ?,
+                            DisplayName = ?,
+                            Phone = ?,
+                            Status = ?,
+                            UpdatedBy = ?,
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                          AND IsDeleted = 0
+                    """;
+
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, user.getEmail());
+            stmt.setString(2, user.getFullName());
+            stmt.setString(3, user.getPhoneNumber());
+            stmt.setString(4, user.getAccountStatus().name());
+            stmt.setString(5, user.getUpdatedBy());
+            stmt.setInt(6, user.getUserId());
+
+            int rows = stmt.executeUpdate();
+            if (rows <= 0) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            User.Role currentRole = findCurrentRole(conn, user.getUserId());
+            User.Role requestedRole = user.getRole() != null ? user.getRole() : currentRole;
+            if (isStaffOrMember(currentRole) && isStaffOrMember(requestedRole) && currentRole != requestedRole) {
+                setUserRole(conn, user.getUserId(), requestedRole);
+                ensureManagedProfile(conn, user.getUserId(), requestedRole, user.getAccountStatus().name(), user.getUpdatedBy());
+                disableManagedProfile(conn, user.getUserId(), currentRole, user.getUpdatedBy());
+            } else if (isStaffOrMember(currentRole)) {
+                ensureManagedProfile(conn, user.getUserId(), currentRole, user.getAccountStatus().name(), user.getUpdatedBy());
+            }
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            closeResource(conn, stmt, null);
+        }
+    }
+
+    @Override
+    public boolean changeManagedAccountRole(int userId, User.Role newRole, String updatedBy) throws SQLException {
+        if (!isStaffOrMember(newRole)) {
+            return false;
+        }
+
+        Connection conn = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            User.Role currentRole = findCurrentRole(conn, userId);
+            if (!isStaffOrMember(currentRole)) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            if (currentRole == newRole) {
+                if (isLocalTx) {
+                    conn.commit();
+                }
+                return true;
+            }
+
+            setUserRole(conn, userId, newRole);
+            String currentStatus = findUserStatus(conn, userId);
+            ensureManagedProfile(conn, userId, newRole, currentStatus, updatedBy);
+            disableManagedProfile(conn, userId, currentRole, updatedBy);
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            closeResource(conn, null, null);
+        }
+    }
+
+    @Override
+    public boolean updateAccountStatus(int userId, User.AccountStatus status, String updatedBy) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String sql = """
+                        UPDATE Users
+                        SET Status = ?,
+                            UpdatedBy = ?,
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                          AND IsDeleted = 0
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, status.name());
+            stmt.setString(2, updatedBy);
+            stmt.setInt(3, userId);
+
+            int rows = stmt.executeUpdate();
+            if (rows <= 0) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            User.Role role = findCurrentRole(conn, userId);
+            if (role == User.Role.Member || role == User.Role.Staff) {
+                ensureManagedProfile(conn, userId, role, status.name(), updatedBy);
+            }
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            closeResource(conn, stmt, null);
+        }
+    }
+
+    @Override
+    public boolean deactivateAccount(int userId, String updatedBy) throws SQLException {
+        return updateAccountStatus(userId, User.AccountStatus.Inactive, updatedBy);
+    }
+
+    @Override
+    public boolean resetPassword(int userId, String newPasswordHash, String updatedBy) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmtPassword = null;
+        PreparedStatement stmtTokens = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String sqlPassword = """
+                        UPDATE Users
+                        SET PasswordHash = ?,
+                            MustChangePassword = 1,
+                            UpdatedBy = ?,
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                          AND IsDeleted = 0
+                    """;
+            stmtPassword = conn.prepareStatement(sqlPassword);
+            stmtPassword.setString(1, newPasswordHash);
+            stmtPassword.setString(2, updatedBy);
+            stmtPassword.setInt(3, userId);
+
+            if (stmtPassword.executeUpdate() <= 0) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            String sqlTokens = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'REMEMBER_ME'
+                          AND IsUsed = 0
+                    """;
+            stmtTokens = conn.prepareStatement(sqlTokens);
+            stmtTokens.setInt(1, userId);
+            stmtTokens.executeUpdate();
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (stmtTokens != null) stmtTokens.close();
+            closeResource(conn, stmtPassword, null);
+        }
+    }
+
+    private User.Role findCurrentRole(Connection conn, int userId) throws SQLException {
+        String sql = """
+                    SELECT TOP 1 r.RoleName
+                    FROM UserRoles ur
+                    INNER JOIN Roles r ON ur.RoleID = r.RoleID
+                    WHERE ur.UserID = ?
+                      AND r.IsDeleted = 0
+                    ORDER BY r.RoleLevel ASC
+                """;
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    try {
+                        return User.Role.valueOf(rs.getString("RoleName"));
+                    } catch (IllegalArgumentException ex) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private String findUserStatus(Connection conn, int userId) throws SQLException {
+        String sql = "SELECT Status FROM Users WHERE UserID = ? AND IsDeleted = 0";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Status");
+                }
+            }
+        }
+        return User.AccountStatus.Inactive.name();
+    }
+
+    private int findRoleId(Connection conn, User.Role role) throws SQLException {
+        String sql = "SELECT RoleID FROM Roles WHERE RoleName = ? AND IsDeleted = 0";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, role.name());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("RoleID");
+                }
+            }
+        }
+        throw new SQLException("Role not found: " + role.name());
+    }
+
+    private void setUserRole(Connection conn, int userId, User.Role role) throws SQLException {
+        int roleId = findRoleId(conn, role);
+        String updateSql = "UPDATE UserRoles SET RoleID = ? WHERE UserID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
+            stmt.setInt(1, roleId);
+            stmt.setInt(2, userId);
+            if (stmt.executeUpdate() > 0) {
+                return;
+            }
+        }
+
+        String insertSql = "INSERT INTO UserRoles (UserID, RoleID) VALUES (?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, roleId);
+            stmt.executeUpdate();
+        }
+    }
+
+    private void ensureManagedProfile(Connection conn, int userId, User.Role role, String status, String actor) throws SQLException {
+        String profileStatus = profileStatusForRole(role, status);
+        if (role == User.Role.Member) {
+            if (profileExists(conn, "Members", userId)) {
+                String sql = """
+                            UPDATE Members
+                            SET MembershipStatus = ?,
+                                IsDeleted = 0,
+                                UpdatedBy = ?,
+                                UpdatedDate = SYSDATETIME()
+                            WHERE UserID = ?
+                """;
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, profileStatus);
+                    stmt.setString(2, actor);
+                    stmt.setInt(3, userId);
+                    stmt.executeUpdate();
+                }
+            } else {
+                String sql = """
+                            INSERT INTO Members (UserID, MembershipStatus, CreatedBy, CreatedDate, IsDeleted)
+                            VALUES (?, ?, ?, SYSDATETIME(), 0)
+                """;
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, userId);
+                    stmt.setString(2, profileStatus);
+                    stmt.setString(3, actor);
+                    stmt.executeUpdate();
+                }
+            }
+        } else if (role == User.Role.Staff) {
+            if (profileExists(conn, "Staffs", userId)) {
+                String sql = """
+                            UPDATE Staffs
+                            SET Status = ?,
+                                IsDeleted = 0,
+                                UpdatedBy = ?,
+                                UpdatedDate = SYSDATETIME()
+                            WHERE UserID = ?
+                """;
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, profileStatus);
+                    stmt.setString(2, actor);
+                    stmt.setInt(3, userId);
+                    stmt.executeUpdate();
+                }
+            } else {
+                String sql = """
+                            INSERT INTO Staffs (UserID, Position, Status, CreatedBy, CreatedDate, IsDeleted)
+                            VALUES (?, ?, ?, ?, SYSDATETIME(), 0)
+                """;
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setInt(1, userId);
+                    stmt.setString(2, "Staff");
+                    stmt.setString(3, profileStatus);
+                    stmt.setString(4, actor);
+                    stmt.executeUpdate();
+                }
+            }
+        }
+    }
+
+    private String profileStatusForRole(User.Role role, String accountStatus) {
+        if (role == User.Role.Member && User.AccountStatus.Pending.name().equals(accountStatus)) {
+            return "Pending";
+        }
+        return User.AccountStatus.Active.name().equals(accountStatus) ? "Active" : "Inactive";
+    }
+
+    private void disableManagedProfile(Connection conn, int userId, User.Role role, String actor) throws SQLException {
+        if (role == User.Role.Member) {
+            String sql = """
+                        UPDATE Members
+                        SET MembershipStatus = 'Inactive',
+                            IsDeleted = 1,
+                            UpdatedBy = ?,
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                    """;
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, actor);
+                stmt.setInt(2, userId);
+                stmt.executeUpdate();
+            }
+        } else if (role == User.Role.Staff) {
+            String sql = """
+                        UPDATE Staffs
+                        SET Status = 'Inactive',
+                            IsDeleted = 1,
+                            UpdatedBy = ?,
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                    """;
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, actor);
+                stmt.setInt(2, userId);
+                stmt.executeUpdate();
+            }
+        }
+    }
+
+    private boolean profileExists(Connection conn, String tableName, int userId) throws SQLException {
+        String sql = "SELECT 1 FROM " + tableName + " WHERE UserID = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private boolean isStaffOrMember(User.Role role) {
+        return role == User.Role.Staff || role == User.Role.Member;
+    }
+
+    private String normalizeBlank(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     // --- Profile Methods (UC-03) ---
     @Override
     public String getHighestPriorityRole(int userId) throws SQLException {
@@ -1066,16 +1755,16 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 conn.setAutoCommit(false);
             }
 
-            // 1. Cập nhật dữ liệu cốt lõi vào bảng Users chính
+            // 1. Cáº­p nháº­t dá»¯ liá»‡u cá»‘t lÃµi vÃ o báº£ng Users chÃ­nh
             psUser = conn.prepareStatement(sqlUser);
             psUser.setString(1, profileDto.getDisplayName());
             psUser.setString(2, profileDto.getPhone());
             psUser.setInt(3, profileDto.getUserId());
             int userRows = psUser.executeUpdate();
 
-            int subRows = 1; // Mặc định hợp lệ cho trường hợp Admin hoặc Staff (không có bảng phụ cần cập nhật qua trang profile của Dương)
+            int subRows = 1; // Máº·c Ä‘á»‹nh há»£p lá»‡ cho trÆ°á»ng há»£p Admin hoáº·c Staff (khÃ´ng cÃ³ báº£ng phá»¥ cáº§n cáº­p nháº­t qua trang profile cá»§a DÆ°Æ¡ng)
 
-            // 2. Rẽ nhánh cập nhật dữ liệu đặc thù phụ thuộc theo vai trò
+            // 2. Ráº½ nhÃ¡nh cáº­p nháº­t dá»¯ liá»‡u Ä‘áº·c thÃ¹ phá»¥ thuá»™c theo vai trÃ²
             if ("Member".equalsIgnoreCase(roleName) && profileDto instanceof MemberProfileDTO) {
                 MemberProfileDTO memberDto = (MemberProfileDTO) profileDto;
                 String sqlMember = "UPDATE Members SET Gender = ?, DateOfBirth = ?, Address = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
@@ -1099,7 +1788,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 subRows = psSub.executeUpdate();
             }
 
-            // 3. Xác nhận lưu dữ liệu thành công nếu cả 2 khối lệnh thực thi trơn tru
+            // 3. XÃ¡c nháº­n lÆ°u dá»¯ liá»‡u thÃ nh cÃ´ng náº¿u cáº£ 2 khá»‘i lá»‡nh thá»±c thi trÆ¡n tru
             if (userRows > 0 && subRows > 0) {
                 success = true;
             }

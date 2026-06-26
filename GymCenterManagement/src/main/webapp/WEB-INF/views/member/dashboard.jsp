@@ -1,104 +1,283 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%--
+  =========================================================================
+  Document    : dashboard.jsp
+  Created on  : 2026-06-26
+  Author      : Nguyen Dai Duong (duongnd)
+  Description : Giao diện bảng điều khiển động hiển thị hoạt động và chi tiêu cho Hội viên (Member).
+  =========================================================================
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
+<c:set var="data" value="${dashboardData}" />
+
 <!-- Member Dashboard Content -->
 <div class="container-fluid pt-4 px-4">
+    <!-- Welcome Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-1 text-dark fw-bold"><i class="fa fa-home me-2 text-primary"></i>Chào mừng quay trở lại, ${sessionScope.currentUser.fullName}!</h4>
+            <small class="text-muted">GCMS cung cấp cái nhìn tổng quan về lịch tập, các gói dịch vụ và chi tiêu của bạn</small>
+        </div>
+        <a href="${pageContext.request.contextPath}/member/dashboard" class="btn btn-sm btn-primary shadow-sm">
+            <i class="fa fa-sync-alt me-1"></i> Làm mới
+        </a>
+    </div>
+
     <!-- Row 1: KPI Cards -->
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-calendar-check fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Lịch hẹn của tôi</p>
-                    <h6 class="mb-0">2 Đã lên lịch</h6>
+            <a href="#upcoming-sessions" class="text-decoration-none">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-calendar-check fa-3x text-primary"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Lịch hẹn của tôi</p>
+                        <h5 class="mb-0 text-dark fw-bold">${empty data ? 0 : data.upcomingAppointmentsCount} Buổi hẹn</h5>
+                        <small class="text-muted">Sắp diễn ra</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <a href="${pageContext.request.contextPath}/member/portal" class="text-decoration-none">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-id-card fa-3x text-success"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Gói hội viên</p>
+                        <h5 class="mb-0 text-dark fw-bold text-truncate" style="max-width: 150px;" title="${empty data ? 'Chưa đăng ký' : data.activePackageName}">
+                            ${empty data ? "Chưa đăng ký" : data.activePackageName}
+                        </h5>
+                        <small class="text-success fw-semibold">Còn lại: ${empty data ? 0 : data.activePackageRemainingDays} ngày</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <a href="${pageContext.request.contextPath}/member/portal" class="text-decoration-none">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-dollar-sign fa-3x text-info"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Chi tiêu tháng này</p>
+                        <h5 class="mb-0 text-dark fw-bold">
+                            <fmt:formatNumber value="${empty data ? 0 : data.spendThisMonth}" type="number" maxFractionDigits="0"/> đ
+                        </h5>
+                        <small class="text-muted">Lịch sử giao dịch</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <a href="${pageContext.request.contextPath}/member/notifications" class="text-decoration-none">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-bell fa-3x text-warning"></i>
+                    <div class="ms-3 text-end">
+                        <p class="mb-2 text-muted fw-semibold">Hộp thư thông báo</p>
+                        <h5 class="mb-0 text-dark fw-bold">${empty data ? 0 : data.unreadNotificationsCount} Thông báo</h5>
+                        <small class="text-muted">Xem tin tức mới</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Row 2: Spend History Chart & Quick Actions -->
+    <div class="row g-4 mb-4">
+        <!-- Spend Chart -->
+        <div class="col-sm-12 col-xl-8">
+            <div class="bg-light rounded p-4 shadow-sm h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h6 class="mb-0 text-dark fw-bold">Biểu đồ chi tiêu hàng tháng</h6>
+                        <small class="text-muted">Lịch sử chi trả phí tập và thuê PT trong 6 tháng gần nhất</small>
+                    </div>
+                </div>
+                <div class="position-relative" style="height: 280px;">
+                    <canvas id="member-spend-chart" 
+                            data-labels='${empty data ? "[]" : data.spendChartLabelsJson}' 
+                            data-values='${empty data ? "[]" : data.spendChartValuesJson}'></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-id-card fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Gói hội viên</p>
-                    <h6 class="mb-0">Hoạt động (VIP)</h6>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-running fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Lượt tập tháng này</p>
-                    <h6 class="mb-0">14 Lượt check-in</h6>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-user-tag fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">PT hướng dẫn</p>
-                    <h6 class="mb-0">HLV John Doe</h6>
+        
+        <!-- Quick Actions Panel -->
+        <div class="col-sm-12 col-xl-4">
+            <div class="bg-light rounded p-4 shadow-sm h-100">
+                <h6 class="mb-4 text-dark fw-bold">Thao tác nhanh</h6>
+                <div class="d-grid gap-3">
+                    <a href="${pageContext.request.contextPath}/pt/list" class="btn btn-primary py-3 fw-bold shadow-sm">
+                        <i class="fa fa-dumbbell me-2"></i>Đăng ký gói tập / PT
+                    </a>
+                    <a href="${pageContext.request.contextPath}/pt/list" class="btn btn-outline-primary py-3 fw-bold">
+                        <i class="fa fa-user-tie me-2"></i>Đặt lịch tập với PT
+                    </a>
+                    <a href="${pageContext.request.contextPath}/member/portal" class="btn btn-outline-primary py-3 fw-bold">
+                        <i class="fa fa-history me-2"></i>Xem lịch sử & thẻ
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="container-fluid pt-4 px-4">
-    <!-- Row 2: Upcoming Bookings & Profile Actions -->
-    <div class="row g-4">
-        <!-- Upcoming Bookings Table -->
-        <div class="col-12 col-xl-8">
-            <div class="bg-light text-center rounded p-4 h-100">
+    <!-- Row 3: Upcoming Sessions & Recent Invoices -->
+    <div class="row g-4" id="upcoming-sessions">
+        <!-- Upcoming Sessions Table -->
+        <div class="col-12 col-xl-7">
+            <div class="bg-light rounded p-4 shadow-sm h-100">
                 <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h6 class="mb-0">Lớp học & Buổi tập sắp tới</h6>
-                    <a href="#">Xem lịch sử đặt lịch</a>
+                    <h6 class="mb-0 text-dark fw-bold">Lịch tập sắp tới</h6>
+                    <small class="text-muted">Danh sách buổi tập đã lên lịch của bạn</small>
                 </div>
                 <div class="table-responsive">
                     <table class="table text-start align-middle table-bordered table-hover mb-0">
                         <thead>
                             <tr class="text-dark">
-                                <th scope="col">Ngày</th>
-                                <th scope="col">Giờ</th>
-                                <th scope="col">Hoạt động / Lớp</th>
-                                <th scope="col">Huấn luyện viên</th>
-                                <th scope="col">Hành động</th>
+                                <th scope="col">Ngày tập</th>
+                                <th scope="col">Khung giờ</th>
+                                <th scope="col">Dịch vụ</th>
+                                <th scope="col">Huấn luyện viên (PT)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>22 May 2026</td>
-                                <td>08:00 - 09:30</td>
-                                <td>Buổi tập cá nhân (PT)</td>
-                                <td>HLV John Doe</td>
-                                <td><a class="btn btn-sm btn-danger" href="#">Hủy</a></td>
-                            </tr>
-                            <tr>
-                                <td>23 May 2026</td>
-                                <td>17:00 - 18:00</td>
-                                <td>Lớp Yoga Nâng cao</td>
-                                <td>Instructor Lê Thị D</td>
-                                <td><a class="btn btn-sm btn-danger" href="#">Hủy</a></td>
-                            </tr>
+                            <c:choose>
+                                <c:when test="${empty data or empty data.upcomingSessions}">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            <i class="fa fa-calendar-times fa-3x mb-3 text-secondary d-block"></i>
+                                            Bạn chưa có buổi tập nào sắp tới.
+                                        </td>
+                                    </tr>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach var="session" items="${data.upcomingSessions}">
+                                        <tr>
+                                            <td class="fw-bold">${session.sessionDate}</td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">
+                                                    <fmt:formatDate value="${session.startTime}" pattern="HH:mm"/> - 
+                                                    <fmt:formatDate value="${session.endTime}" pattern="HH:mm"/>
+                                                </span>
+                                            </td>
+                                            <td>${empty session.packageName ? 'Thuê PT cá nhân' : session.packageName}</td>
+                                            <td><span class="text-primary fw-semibold"><i class="fa fa-user-tie me-1"></i>${session.ptName}</span></td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Booking Panel -->
-        <div class="col-12 col-xl-4">
-            <div class="bg-light rounded p-4 h-100">
-                <h6 class="mb-4">Thao tác nhanh</h6>
-                <div class="d-grid gap-3">
-                    <button class="btn btn-primary py-3" type="button"><i class="fa fa-dumbbell me-2"></i>Đặt lớp tập</button>
-                    <button class="btn btn-outline-primary py-3" type="button"><i class="fa fa-user-tie me-2"></i>Đặt lịch tập với PT</button>
-                    <button class="btn btn-outline-primary py-3" type="button"><i class="fa fa-history me-2"></i>Xem lịch sử tập luyện</button>
+        <!-- Recent Invoices Table -->
+        <div class="col-12 col-xl-5">
+            <div class="bg-light rounded p-4 shadow-sm h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="mb-0 text-dark fw-bold">Hóa đơn gần đây</h6>
+                    <a href="${pageContext.request.contextPath}/member/portal" class="small text-decoration-none">Tất cả hóa đơn</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table text-start align-middle table-bordered table-hover mb-0">
+                        <thead>
+                            <tr class="text-dark">
+                                <th scope="col">Mã</th>
+                                <th scope="col">Dịch vụ</th>
+                                <th scope="col" class="text-end">Số tiền</th>
+                                <th scope="col" class="text-center">Xem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:choose>
+                                <c:when test="${empty data or empty data.recentInvoices}">
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            <i class="fa fa-receipt fa-3x mb-3 text-secondary d-block"></i>
+                                            Không tìm thấy hóa đơn nào của bạn.
+                                        </td>
+                                    </tr>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach var="invoice" items="${data.recentInvoices}">
+                                        <tr>
+                                            <td class="fw-bold text-secondary text-nowrap">${invoice.invoiceCode}</td>
+                                            <td>
+                                                <small class="d-block text-muted text-uppercase" style="font-size: 0.7rem; font-weight: 600;">${invoice.serviceType}</small>
+                                                <span class="text-truncate d-inline-block text-dark fw-semibold" style="max-width: 140px;" title="${invoice.serviceName}">${invoice.serviceName}</span>
+                                            </td>
+                                            <td class="text-end fw-bold text-primary text-nowrap">
+                                                <fmt:formatNumber value="${invoice.amount}" type="number" maxFractionDigits="0"/> đ
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="${pageContext.request.contextPath}/member/invoice-detail?invoiceId=${invoice.invoiceId}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem;">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const chartElement = document.getElementById("member-spend-chart");
+        if (!chartElement || typeof Chart === "undefined") {
+            return;
+        }
+
+        const labelsData = JSON.parse(chartElement.getAttribute("data-labels") || "[]");
+        const valuesData = JSON.parse(chartElement.getAttribute("data-values") || "[]");
+
+        new Chart(chartElement.getContext("2d"), {
+            type: "line",
+            data: {
+                labels: labelsData,
+                datasets: [{
+                    label: "Chi tiêu hàng tháng",
+                    data: valuesData,
+                    fill: true,
+                    backgroundColor: "rgba(0, 156, 255, 0.15)",
+                    borderColor: "rgba(0, 156, 255, 1)",
+                    borderWidth: 2,
+                    pointBackgroundColor: "rgba(0, 156, 255, 1)",
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value) {
+                                return new Intl.NumberFormat("vi-VN").format(value) + " đ";
+                            }
+                        }
+                    }]
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return new Intl.NumberFormat("vi-VN").format(tooltipItem.yLabel) + " đ";
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp" />

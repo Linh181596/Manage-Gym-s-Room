@@ -1,9 +1,16 @@
+/**
+ * =========================================================================
+ * @file          : AdminEditPTController.java
+ * @description   : Controller xử lý việc chỉnh sửa hồ sơ thông tin và trạng thái hoạt động của PT bởi Admin.
+ * @author        : Nguyễn Đình Phú (phund)
+ * @created       : 2026-06-04
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.model.entity.User;
-import com.mycompany.gymcentermanagement.dao.UserDAO;
-import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
 import com.mycompany.gymcentermanagement.service.UserService;
 import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
@@ -31,7 +38,6 @@ import java.time.LocalDate;
 public class AdminEditPTController extends HttpServlet {
     private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
     private final UserService userService = new UserServiceImpl();
-    private final UserDAO userDAO = new UserDAOImpl();
 
     //Load old i4 PT info for PT view
     @Override
@@ -137,7 +143,7 @@ public class AdminEditPTController extends HttpServlet {
 
             // Kiểm tra trùng số điện thoại nếu thay đổi số điện thoại từ nhánh develop
             if (!phone.equals(ptFromDb.getPhone())) {
-                if (userDAO.checkPhoneExists(phone)) {
+                if (userService.checkPhoneExists(phone)) {
                     throw new IllegalArgumentException("Số điện thoại này đã tồn tại trong hệ thống. Vui lòng điền số khác!");
                 }
             }
