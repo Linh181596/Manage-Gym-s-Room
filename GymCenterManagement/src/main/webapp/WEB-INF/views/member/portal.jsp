@@ -117,6 +117,7 @@
                                     <th scope="col">Ngày Kích Hoạt</th>
                                     <th scope="col">Ngày Hết Hạn</th>
                                     <th scope="col">Trạng Thái Gói</th>
+                                    <th scope="col" class="text-center">Hóa đơn</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -164,6 +165,23 @@
                                         <td class="text-dark fw-bold small"><%= service.get("endDate") %></td>
                                         <td>
                                             <span class="badge <%= badgeClass %>"><i class="fa <%= iconClass %> me-1"></i><%= statusText %></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <% 
+                                                String invId = service.get("invoiceId");
+                                                if (invId != null && !invId.trim().isEmpty()) { 
+                                                    String extraParam = "";
+                                                    String viewMemId = request.getParameter("viewMemberId");
+                                                    if (viewMemId != null && !viewMemId.trim().isEmpty()) {
+                                                        extraParam = "&viewMemberId=" + viewMemId;
+                                                    }
+                                            %>
+                                                <a href="<%= contextPath %>/member/invoice-detail?invoiceId=<%= invId %><%= extraParam %>" class="btn btn-sm btn-link text-primary fw-semibold p-0">
+                                                    <i class="fa fa-receipt me-1"></i>Xem #<%= invId %>
+                                                </a>
+                                            <% } else { %>
+                                                <span class="text-muted small">-</span>
+                                            <% } %>
                                         </td>
                                     </tr>
                                 <% } %>
