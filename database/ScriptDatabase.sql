@@ -1,13 +1,13 @@
-﻿USE [master]
+USE [master]
+GO
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'GymCenterManagement')
+BEGIN
+    ALTER DATABASE [GymCenterManagement] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE [GymCenterManagement];
+END
 GO
 /****** Object:  Database [GymCenterManagement]    Script Date: 6/26/2026 2:58:07 AM ******/
 CREATE DATABASE [GymCenterManagement]
- CONTAINMENT = NONE
- ON  PRIMARY 
-( NAME = N'GymCenterManagement', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\GymCenterManagement.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON 
-( NAME = N'GymCenterManagement_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\GymCenterManagement_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
 GO
 ALTER DATABASE [GymCenterManagement] SET COMPATIBILITY_LEVEL = 160
 GO
