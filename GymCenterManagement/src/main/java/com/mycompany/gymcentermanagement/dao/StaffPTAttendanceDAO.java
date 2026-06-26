@@ -105,7 +105,7 @@ public class StaffPTAttendanceDAO {
                     u.UserID,
                     u.DisplayName           AS TargetFullName,
                     u.Email                 AS TargetEmail,
-                    ur.RoleName             AS UserRole,
+                    r.RoleName             AS UserRole,
                     COALESCE(a.AttendanceID, 0)      AS AttendanceID,
                     a.CheckedInAt,
                     a.ShiftBlock,

@@ -108,7 +108,7 @@ public class ManageCheckinController extends HttpServlet {
             return;
         }
 
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = (User) session.getAttribute("currentUser");
         int checkedBy = currentUser.getUserId();
         String checkedByName = currentUser.getFullName();
 
