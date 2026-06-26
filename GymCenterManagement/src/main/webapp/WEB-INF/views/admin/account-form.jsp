@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%--
+  =========================================================================
+  Document    : account-form.jsp
+  Created on  : 2026-06-25
+  Author      : Nguyễn Đại Dương (duongnd)
+  Description : Giao diện tạo mới và chỉnh sửa thông tin tài khoản người dùng cho quản trị viên (Admin).
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="../common/dashboard_header.jsp" />

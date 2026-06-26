@@ -1,13 +1,13 @@
-﻿USE [master]
+USE [master]
+GO
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'GymCenterManagement')
+BEGIN
+    ALTER DATABASE [GymCenterManagement] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE [GymCenterManagement];
+END
 GO
 /****** Object:  Database [GymCenterManagement]    Script Date: 6/26/2026 2:58:07 AM ******/
 CREATE DATABASE [GymCenterManagement]
- CONTAINMENT = NONE
- ON  PRIMARY 
-( NAME = N'GymCenterManagement', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\GymCenterManagement.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON 
-( NAME = N'GymCenterManagement_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.SQLEXPRESS\MSSQL\DATA\GymCenterManagement_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
 GO
 ALTER DATABASE [GymCenterManagement] SET COMPATIBILITY_LEVEL = 160
 GO
@@ -495,6 +495,17 @@ SET IDENTITY_INSERT [dbo].[Invoices] ON
 
 INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 1, 1, 1, NULL, CAST(300000.00 AS Decimal(12, 2)), N'Cash', CAST(N'2026-05-01T00:00:00.0000000' AS DateTime2), N'Paid', N'System', CAST(N'2026-05-31T18:27:47.4884214' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, 1, 1, NULL, 1, CAST(1200000.00 AS Decimal(12, 2)), N'Cash', CAST(N'2026-05-31T00:00:00.0000000' AS DateTime2), N'Paid', N'System', CAST(N'2026-05-31T18:27:47.4884214' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (3, 1, 2, 1, NULL, CAST(300000.00 AS Decimal(12, 2)), N'Cash', CAST(N'2026-06-20T09:30:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (4, 1, 2, NULL, 1, CAST(1200000.00 AS Decimal(12, 2)), N'Banking', CAST(N'2026-06-20T15:45:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (5, 1, 2, 1, NULL, CAST(300000.00 AS Decimal(12, 2)), N'Cash', CAST(N'2026-06-21T10:15:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (6, 1, 2, NULL, 3, CAST(1200000.00 AS Decimal(12, 2)), N'Banking', CAST(N'2026-06-21T18:20:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (7, 1, 2, 1, NULL, CAST(300000.00 AS Decimal(12, 2)), N'Banking', CAST(N'2026-06-22T08:00:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (8, 1, 2, NULL, 4, CAST(1200000.00 AS Decimal(12, 2)), N'Cash', CAST(N'2026-06-23T14:10:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (9, 1, 2, 1, NULL, CAST(300000.00 AS Decimal(12, 2)), N'Banking', CAST(N'2026-06-23T19:30:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (10, 1, 2, NULL, 5, CAST(1200000.00 AS Decimal(12, 2)), N'Banking', CAST(N'2026-06-24T11:05:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (11, 1, 2, 1, NULL, CAST(800000.00 AS Decimal(12, 2)), N'Cash', CAST(N'2026-06-25T10:00:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+INSERT [dbo].[Invoices] ([InvoiceID], [MemberID], [ProcessBy], [MemberPackageID], [PTRegistrationID], [Amount], [PaymentMethod], [PaymentDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (12, 1, 2, NULL, 6, CAST(1100000.00 AS Decimal(12, 2)), N'Banking', CAST(N'2026-06-25T16:50:00.000' AS DateTime2), N'Paid', N'System', SYSDATETIME(), NULL, NULL, 0)
+
 SET IDENTITY_INSERT [dbo].[Invoices] OFF
 GO
 SET IDENTITY_INSERT [dbo].[MemberPackages] ON 
@@ -1264,4 +1275,80 @@ GO
 USE [master]
 GO
 ALTER DATABASE [GymCenterManagement] SET  READ_WRITE 
+GO
+
+USE [GymCenterManagement]
+GO
+
+-- =========================================================================
+-- Table: MaintenanceSchedules
+-- =========================================================================
+CREATE TABLE [dbo].[MaintenanceSchedules](
+	[MaintenanceScheduleID] [int] IDENTITY(1,1) NOT NULL,
+	[EquipmentID] [int] NOT NULL,
+	[IssueID] [int] NULL,
+	[ScheduledDate] [date] NOT NULL,
+	[MaintenanceType] [varchar](20) NOT NULL,
+	[Description] [nvarchar](max) NOT NULL,
+	[Status] [varchar](20) NOT NULL,
+	[CompletionDate] [datetime2](7) NULL,
+	[CompletionNote] [nvarchar](max) NULL,
+	[CreatedBy] [nvarchar](50) NULL,
+	[CreatedDate] [datetime2](7) NOT NULL,
+	[UpdatedBy] [nvarchar](50) NULL,
+	[UpdatedDate] [datetime2](7) NULL,
+	[IsDeleted] [bit] NOT NULL,
+ CONSTRAINT [PK_MaintenanceSchedules] PRIMARY KEY CLUSTERED 
+(
+	[MaintenanceScheduleID] ASC
+)
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_MaintenanceSchedules_Search] ON [dbo].[MaintenanceSchedules]
+(
+	[Status] ASC,
+	[ScheduledDate] DESC,
+	[EquipmentID] ASC
+)
+INCLUDE([MaintenanceType],[IssueID],[IsDeleted])
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_MaintenanceSchedules_Equipment_Date_Active] ON [dbo].[MaintenanceSchedules]
+(
+	[EquipmentID] ASC,
+	[ScheduledDate] ASC
+)
+WHERE ([IsDeleted]=(0) AND [Status]<>'Cancelled')
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD CONSTRAINT [DF_MaintenanceSchedules_Status] DEFAULT ('Scheduled') FOR [Status]
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD CONSTRAINT [DF_MaintenanceSchedules_CreatedDate] DEFAULT (sysdatetime()) FOR [CreatedDate]
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD CONSTRAINT [DF_MaintenanceSchedules_IsDeleted] DEFAULT ((0)) FOR [IsDeleted]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [FK_MaintenanceSchedules_Equipments] FOREIGN KEY([EquipmentID])
+REFERENCES [dbo].[Equipments] ([EquipmentID])
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [FK_MaintenanceSchedules_Equipments]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [FK_MaintenanceSchedules_EquipmentIssues] FOREIGN KEY([IssueID])
+REFERENCES [dbo].[EquipmentIssues] ([IssueID])
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [FK_MaintenanceSchedules_EquipmentIssues]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [CK_MaintenanceSchedules_Status]
+CHECK (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='Completed' OR [Status]='Cancelled'))
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Status]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [CK_MaintenanceSchedules_Type]
+CHECK (([MaintenanceType]='Preventive' OR [MaintenanceType]='Corrective'))
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Type]
 GO

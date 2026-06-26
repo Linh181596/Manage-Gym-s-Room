@@ -4,14 +4,15 @@
  * @description   : Controller điều phối điểm danh Staff và PT (UC 2.3.4).
  * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-26
- * @last_modified : 2026-06-26 bởi Nguyễn Trí Linh
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.staff;
 
-import com.mycompany.gymcentermanagement.dao.StaffPTAttendanceDAO;
 import com.mycompany.gymcentermanagement.model.entity.StaffPTAttendance;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.service.StaffPTAttendanceService;
+import com.mycompany.gymcentermanagement.service.impl.StaffPTAttendanceServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -33,7 +34,7 @@ import java.util.logging.Logger;
 public class ManageCheckinController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ManageCheckinController.class.getName());
-    private final StaffPTAttendanceDAO attendanceDAO = new StaffPTAttendanceDAO();
+    private final StaffPTAttendanceService attendanceService = new StaffPTAttendanceServiceImpl();
 
     // ------------------------------------------------------------------ //
     //  GET – hiển thị danh sách điểm danh theo ca và ngày
@@ -59,7 +60,7 @@ public class ManageCheckinController extends HttpServlet {
 
         try {
             List<StaffPTAttendance> records =
-                    attendanceDAO.listUsersWithCheckinStatus(shift, date);
+                    attendanceService.getCheckinStatusList(shift, date);
             request.setAttribute("attendanceList", records);
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Error loading check-in list", ex);
@@ -108,13 +109,13 @@ public class ManageCheckinController extends HttpServlet {
             return;
         }
 
-        User currentUser = (User) session.getAttribute("user");
+        User currentUser = (User) session.getAttribute("currentUser");
         int checkedBy = currentUser.getUserId();
         String checkedByName = currentUser.getFullName();
 
         try {
             // A1: Kiểm tra trùng lặp điểm danh trong cùng ca ngày
-            if (attendanceDAO.existsCheckinForShift(targetUserId, shift, date)) {
+            if (attendanceService.existsCheckinForShift(targetUserId, shift, date)) {
                 setFlash(session, "warning",
                         "Người này đã được điểm danh trong ca " + shift + " ngày " + date + ".");
                 redirectBack(response, request, shift, date);
@@ -130,7 +131,7 @@ public class ManageCheckinController extends HttpServlet {
             attendance.setNote(request.getParameter("note"));
             attendance.setCreatedBy(checkedByName);
 
-            int newId = attendanceDAO.create(attendance);
+            int newId = attendanceService.checkinUser(attendance);
             if (newId > 0) {
                 setFlash(session, "success", "Điểm danh thành công!");
             } else {

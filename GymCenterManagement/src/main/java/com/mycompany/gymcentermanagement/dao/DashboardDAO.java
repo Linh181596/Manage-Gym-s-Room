@@ -2,9 +2,9 @@
  * =========================================================================
  * @file          : DashboardDAO.java
  * @description   : Interface định nghĩa các truy vấn đọc dữ liệu phục vụ bảng điều khiển quản trị.
- * @author        : Codex
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-25
- * @last_modified : 2026-06-25
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao;

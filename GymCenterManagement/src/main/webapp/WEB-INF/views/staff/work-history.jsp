@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%--
+  =========================================================================
+  Document    : work-history.jsp
+  Created on  : 2026-06-26
+  Author      : Nguyễn Trí Linh (linhnt)
+  Description : Giao diện lịch sử làm việc của Staff & PT (UC 2.3.5).
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="../common/dashboard_header.jsp" />

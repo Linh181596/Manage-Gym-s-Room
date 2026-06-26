@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%--
+  =========================================================================
+  Document    : manage-pt-service-prices.jsp
+  Created on  : 2026-06-04
+  Author      : Nguyễn Đình Phú (phund)
+  Description : Giao diện cấu hình giá dịch vụ tập luyện với HLV cá nhân.
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
