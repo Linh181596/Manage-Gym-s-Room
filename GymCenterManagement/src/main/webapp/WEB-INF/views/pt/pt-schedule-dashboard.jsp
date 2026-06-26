@@ -56,7 +56,14 @@
                                             <i class="fa fa-clock text-warning"></i>
                                             ${session.startTime.toString().substring(0,5)} - ${session.endTime.toString().substring(0,5)}
                                         </span>
-                                        <span class="badge bg-${borderColor}">${session.sessionStatus}</span>
+                                        <div>
+                                            <span class="badge bg-${borderColor}">${session.sessionStatus}</span>
+                                            <c:if test="${not empty session.attendanceStatus && session.attendanceStatus != 'Pending'}">
+                                                <span class="badge bg-${session.attendanceStatus == 'Attended' ? 'success' : 'danger'} ms-1">
+                                                    ${session.attendanceStatus == 'Attended' ? 'Có mặt' : 'Vắng mặt'}
+                                                </span>
+                                            </c:if>
+                                        </div>
                                     </div>
 
                                     <h6 class="fw-bold text-dark mb-1">

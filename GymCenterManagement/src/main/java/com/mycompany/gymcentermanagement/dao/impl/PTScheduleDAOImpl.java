@@ -115,7 +115,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
         // JOIN 4 bảng để lấy chi tiết: Lịch -> Đơn Đăng Ký -> Hội Viên -> Gói Tập
         String sql = """
                     SELECT
-                                 s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus,
+                                 s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus, s.PTAttendanceResult,
                                 u.DisplayName AS MemberName,
                                 p.PackageName 
                         FROM PTSchedules s
@@ -145,6 +145,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     dto.setStartTime(rs.getTime("StartTime"));
                     dto.setEndTime(rs.getTime("EndTime"));
                     dto.setSessionStatus(rs.getString("SessionStatus"));
+                    dto.setAttendanceStatus(rs.getString("PTAttendanceResult"));
                     dto.setMemberName(rs.getString("MemberName"));
                     dto.setPackageName(rs.getString("PackageName"));
                     list.add(dto);

@@ -10,8 +10,17 @@ public class PTScheduleDetailDTO {
     private String sessionStatus;
     private String memberName;
     private String packageName;
+    private String attendanceStatus; // Thêm trường này để chứa kết quả điểm danh
 
     public PTScheduleDetailDTO() {
+    }
+
+    public String getAttendanceStatus() {
+        return attendanceStatus;
+    }
+
+    public void setAttendanceStatus(String attendanceStatus) {
+        this.attendanceStatus = attendanceStatus;
     }
 
     public Time getEndTime() {
