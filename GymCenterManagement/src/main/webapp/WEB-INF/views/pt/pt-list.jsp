@@ -13,6 +13,113 @@
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
+<c:if test="${sessionScope.currentUser == null}">
+    <!-- Custom styling to hide dashboard wrapper components and fit public page design -->
+    <style>
+        :root {
+            --home-primary: #009cff;
+            --home-primary-dark: #0078c4;
+            --home-ink: #191c24;
+            --home-muted: #6c7293;
+            --home-soft: #f3f6f9;
+            --home-line: #dce6ef;
+        }
+
+        .sidebar {
+            display: none !important;
+        }
+        .content {
+            width: 100% !important;
+            margin-left: 0 !important;
+        }
+        .navbar.sticky-top {
+            display: none !important;
+        }
+
+        .home-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            background: rgba(255, 255, 255, 0.96);
+            border-bottom: 1px solid var(--home-line);
+            backdrop-filter: blur(14px);
+        }
+
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff !important;
+            background: var(--home-primary);
+            border-radius: 8px;
+        }
+
+        .brand-title {
+            color: var(--home-ink);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .home-nav a {
+            color: var(--home-muted) !important;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 10px 12px;
+        }
+
+        .home-nav a:hover,
+        .home-nav a:focus {
+            color: var(--home-primary) !important;
+        }
+        
+        .footer-home {
+            background: var(--home-ink);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .footer-home a {
+            color: rgba(255, 255, 255, 0.82) !important;
+            text-decoration: none;
+        }
+
+        .footer-home a:hover {
+            color: #ffffff !important;
+        }
+    </style>
+    
+    <!-- Public Home-style Topbar -->
+    <header class="home-topbar mb-4">
+        <nav class="container py-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <a href="${pageContext.request.contextPath}/" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                    <span class="brand-mark"><i class="fa fa-dumbbell"></i></span>
+                    <span class="brand-title">GCMS<br><small class="fw-semibold text-primary">Phòng tập hiện đại</small></span>
+                </a>
+
+                <div class="home-nav d-flex justify-content-center">
+                    <a href="${pageContext.request.contextPath}/#gioi-thieu">Giới thiệu</a>
+                    <a href="${pageContext.request.contextPath}/pt/list" class="text-primary fw-bold">Danh sách PT</a>
+                    <a href="${pageContext.request.contextPath}/#goi-tap">Gói tập</a>
+                    <a href="${pageContext.request.contextPath}/#tien-ich">Tiện ích</a>
+                    <a href="${pageContext.request.contextPath}/#lien-he">Liên hệ</a>
+                </div>
+
+                <div class="home-actions d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                    <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-primary">
+                        <i class="fa fa-sign-in-alt me-1"></i>Đăng nhập
+                    </a>
+                    <a href="${pageContext.request.contextPath}/register" class="btn btn-primary">
+                        <i class="fa fa-user-plus me-1"></i>Đăng ký thành viên
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+</c:if>
+
 <div class="container-fluid pt-4 px-4">
     <!-- Page Title -->
     <div class="d-flex align-items-center justify-content-between mb-4">
@@ -182,10 +289,20 @@
                                 </div>
 
                                 <!-- Action Button -->
-                                <a href="${pageContext.request.contextPath}/pt/detail?id=${trainer.ptId}" 
-                                   class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
-                                        Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>
-                                </a>
+                                <c:choose>
+                                    <c:when test="${sessionScope.currentUser != null}">
+                                        <a href="${pageContext.request.contextPath}/pt/detail?id=${trainer.ptId}" 
+                                           class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
+                                                Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="${pageContext.request.contextPath}/login" 
+                                           class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
+                                                Đăng nhập để xem chi tiết <i class="fa fa-arrow-right ms-2"></i>
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
                     </div>
@@ -194,5 +311,47 @@
         </c:choose>
     </div>
 </div>
+
+<c:if test="${sessionScope.currentUser == null}">
+    <!-- Public Home-style Footer -->
+    <footer id="lien-he" class="footer-home py-5 mt-5 bg-dark text-light">
+        <div class="container">
+            <div class="row g-4 align-items-start text-start">
+                <div class="col-lg-5">
+                    <div class="d-inline-flex align-items-center gap-2 mb-3">
+                        <span class="brand-mark bg-primary text-white"><i class="fa fa-dumbbell"></i></span>
+                        <strong class="fs-4 text-white">GCMS</strong>
+                    </div>
+                    <p class="mb-0 text-muted">Không gian quản lý và tập luyện dành cho phòng gym hiện đại, rõ ràng và thân thiện với người dùng Việt.</p>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="text-white fw-bold">Truy cập nhanh</h6>
+                    <div class="d-grid gap-2">
+                        <a href="${pageContext.request.contextPath}/#gioi-thieu" class="text-muted text-decoration-none small">Giới thiệu</a>
+                        <a href="${pageContext.request.contextPath}/pt/list" class="text-muted text-decoration-none small">Danh sách PT</a>
+                        <a href="${pageContext.request.contextPath}/#goi-tap" class="text-muted text-decoration-none small">Gói tập</a>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="text-white fw-bold">Tài khoản</h6>
+                    <div class="d-grid gap-2">
+                        <a href="${pageContext.request.contextPath}/login" class="text-muted text-decoration-none small">Đăng nhập</a>
+                        <a href="${pageContext.request.contextPath}/register" class="text-muted text-decoration-none small">Đăng ký thành viên</a>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="text-white fw-bold">Liên hệ phòng tập</h6>
+                    <p class="mb-2 text-muted"><i class="fa fa-map-marker-alt me-2 text-primary"></i>QL21 Hồ Chí Minh, Hòa Lạc, Hà Nội</p>
+                    <p class="mb-2 text-muted"><i class="fa fa-phone me-2 text-primary"></i>(+84) 987-654-321</p>
+                    <p class="mb-0 text-muted"><i class="fa fa-envelope me-2 text-primary"></i>support@gcms.com</p>
+                </div>
+            </div>
+            <div class="border-top border-secondary mt-4 pt-4 d-flex flex-wrap justify-content-between gap-2 text-muted small">
+                <span>© 2026 Hệ thống quản lý phòng tập GCMS.</span>
+                <span>Thiết kế cho trải nghiệm thuần Việt.</span>
+            </div>
+        </div>
+    </footer>
+</c:if>
 
 <jsp:include page="../common/dashboard_footer.jsp" />

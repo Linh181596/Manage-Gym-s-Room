@@ -2,8 +2,6 @@
  * =========================================================================
  * @file          : StaffPTAttendanceDAOImpl.java
  * @description   : Lớp triển khai truy xuất cơ sở dữ liệu JDBC cho điểm danh Staff và PT.
- *                  Hỗ trợ UC 2.3.4 (Manage Staff & PT Check-ins) và
- *                  UC 2.3.5 (View Staff & PT Work History).
  * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-26
  * @last_modified : 2026-06-26 bởi Antigravity Agent

@@ -31,6 +31,15 @@ public class AuthenticationFilter extends HttpFilter {
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String relativePath = requestURI.substring(contextPath.length());
+        
+        if ("/pt/list".equals(relativePath)) {
+            chain.doFilter(request, response);
+            return;
+        }
+        
         HttpSession session = request.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("currentUser") : null;
         
@@ -71,10 +80,6 @@ public class AuthenticationFilter extends HttpFilter {
         }
         
         // RBAC Check based on request path
-        String requestURI = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        String relativePath = requestURI.substring(contextPath.length());
-        
         boolean authorized = false;
         User.Role role = user.getRole();
         

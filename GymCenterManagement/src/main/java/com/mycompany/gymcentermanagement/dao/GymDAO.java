@@ -283,10 +283,11 @@ public class GymDAO {
     public List<Map<String, String>> getMemberServices(int userId) {
         List<Map<String, String>> services = new ArrayList<>();
         String sql = """
-                SELECT gp.PackageName, mp.StartDate, mp.EndDate, mp.Status
+                SELECT gp.PackageName, mp.StartDate, mp.EndDate, mp.Status, i.InvoiceID
                 FROM [dbo].[MemberPackages] mp
                 INNER JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID
                 INNER JOIN [dbo].[Members] m ON mp.MemberID = m.MemberID
+                LEFT JOIN [dbo].[Invoices] i ON mp.MemberPackageID = i.MemberPackageID AND i.IsDeleted = 0
                 WHERE m.UserID = ? AND mp.IsDeleted = 0 AND gp.IsDeleted = 0
                 ORDER BY mp.EndDate DESC
                 """;
@@ -300,6 +301,8 @@ public class GymDAO {
                     map.put("startDate", String.valueOf(rs.getDate("StartDate")));
                     map.put("endDate", String.valueOf(rs.getDate("EndDate")));
                     map.put("status", safe(rs.getString("Status")));
+                    int invoiceId = rs.getInt("InvoiceID");
+                    map.put("invoiceId", rs.wasNull() ? "" : String.valueOf(invoiceId));
                     services.add(map);
                 }
             }
