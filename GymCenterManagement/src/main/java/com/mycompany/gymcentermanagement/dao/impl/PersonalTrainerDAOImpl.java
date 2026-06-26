@@ -515,6 +515,107 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
         return trainers;
     }
 
+    @Override
+    public List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status) {
+        List<PersonalTrainer> trainers = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("""
+                    SELECT
+                        pt.PTID,
+                        pt.UserID,
+                        pt.FullName,
+                        pt.DisplayName,
+                        pt.Specialization,
+                        pt.CareerStartDate,
+                        pt.CertificateFileName,
+                        pt.CertificateFilePath,
+                        pt.Description,
+                        pt.AvatarPath,
+                        pt.Status,
+                        pt.CreatedBy,
+                        pt.CreatedDate,
+                        pt.UpdatedBy,
+                        pt.UpdatedDate,
+                        pt.IsDeleted,
+                        u.Email,
+                        u.Phone,
+                        u.Status AS AccountStatus,
+                        u.MustChangePassword
+                    FROM PersonalTrainers pt
+                    INNER JOIN Users u ON pt.UserID = u.UserID
+                    WHERE pt.IsDeleted = 0
+                      AND u.IsDeleted = 0
+                """);
+
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasSpecializations = specializations != null && !specializations.isEmpty();
+        boolean hasStatus = status != null && !status.trim().isEmpty() && !"All".equalsIgnoreCase(status);
+
+        if (hasKeyword) {
+            sql.append("""
+                        AND (
+                            pt.FullName LIKE ?
+                            OR pt.DisplayName LIKE ?
+                            OR pt.Specialization LIKE ?
+                            OR pt.Description LIKE ?
+                            OR u.Email LIKE ?
+                        )
+                    """);
+        }
+
+        if (hasSpecializations) {
+            sql.append(" AND (");
+            for (int i = 0; i < specializations.size(); i++) {
+                sql.append("pt.Specialization LIKE ?");
+                if (i < specializations.size() - 1) {
+                    sql.append(" OR ");
+                }
+            }
+            sql.append(") ");
+        }
+
+        if (hasStatus) {
+            if ("Active".equalsIgnoreCase(status)) {
+                sql.append(" AND pt.Status = 'Active' AND u.Status = 'Active' ");
+            } else if ("Inactive".equalsIgnoreCase(status)) {
+                sql.append(" AND pt.Status = 'Inactive' ");
+            } else if ("Locked".equalsIgnoreCase(status)) {
+                sql.append(" AND u.Status = 'Locked' ");
+            }
+        }
+
+        sql.append(" ORDER BY pt.CreatedDate DESC ");
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+
+            if (hasKeyword) {
+                String searchLike = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+            }
+
+            if (hasSpecializations) {
+                for (String spec : specializations) {
+                    ps.setString(paramIndex++, "%" + spec.trim() + "%");
+                }
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trainers.add(mapPersonalTrainer(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return trainers;
+    }
+
     /**
      * Inserts an official Personal Trainer profile.
      */
@@ -576,7 +677,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
      */
     @Override
     public boolean updatePersonalTrainer(PersonalTrainer trainer) {
-        String sql = """
+        String sqlPT = """
                     UPDATE PersonalTrainers
                     SET FullName = ?,
                         DisplayName = ?,
@@ -593,38 +694,76 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                       AND IsDeleted = 0
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sqlUser = """
+                    UPDATE Users
+                    SET Status = ?,
+                        UpdatedDate = GETDATE()
+                    WHERE UserID = ?
+                      AND IsDeleted = 0
+                """;
 
-            ps.setString(1, trainer.getFullName());
-            ps.setString(2, trainer.getDisplayName());
-            ps.setString(3, trainer.getSpecialization());
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
 
-            if (trainer.getCareerStartDate() != null) {
-                ps.setDate(4, Date.valueOf(trainer.getCareerStartDate()));
-            } else {
-                ps.setNull(4, Types.DATE);
+            // 1. Cập nhật PersonalTrainers
+            try (PreparedStatement ps = conn.prepareStatement(sqlPT)) {
+                ps.setString(1, trainer.getFullName());
+                ps.setString(2, trainer.getDisplayName());
+                ps.setString(3, trainer.getSpecialization());
+
+                if (trainer.getCareerStartDate() != null) {
+                    ps.setDate(4, Date.valueOf(trainer.getCareerStartDate()));
+                } else {
+                    ps.setNull(4, Types.DATE);
+                }
+
+                ps.setString(5, trainer.getCertificateFileName());
+                ps.setString(6, trainer.getCertificateFilePath());
+                ps.setString(7, trainer.getDescription());
+                ps.setString(8, trainer.getAvatarPath());
+
+                String status = trainer.getStatus();
+                if (status == null || status.trim().isEmpty()) {
+                    status = "Active";
+                }
+                ps.setString(9, status);
+                ps.setString(10, trainer.getUpdatedBy());
+                ps.setInt(11, trainer.getPtId());
+
+                ps.executeUpdate();
             }
 
-            ps.setString(5, trainer.getCertificateFileName());
-            ps.setString(6, trainer.getCertificateFilePath());
-            ps.setString(7, trainer.getDescription());
-            ps.setString(8, trainer.getAvatarPath());
-
-            String status = trainer.getStatus();
-            if (status == null || status.trim().isEmpty()) {
-                status = "Active";
+            // 2. Cập nhật Users
+            try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
+                String userStatus = "Active".equalsIgnoreCase(trainer.getStatus()) ? "Active" : "Locked";
+                psUser.setString(1, userStatus);
+                psUser.setInt(2, trainer.getUserId());
+                psUser.executeUpdate();
             }
-            ps.setString(9, status);
 
-            ps.setString(10, trainer.getUpdatedBy());
-            ps.setInt(11, trainer.getPtId());
-
-            return ps.executeUpdate() > 0;
-
+            conn.commit();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-
         return false;
     }
 
@@ -633,7 +772,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
      */
     @Override
     public boolean updateTrainerStatus(int ptId, String status, String updatedBy) {
-        String sql = """
+        String sqlPT = """
                     UPDATE PersonalTrainers
                     SET Status = ?,
                         UpdatedBy = ?,
@@ -642,18 +781,56 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                       AND IsDeleted = 0
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sqlUser = """
+                    UPDATE Users
+                    SET Status = ?,
+                        UpdatedDate = GETDATE()
+                    WHERE UserID = (SELECT UserID FROM PersonalTrainers WHERE PTID = ?)
+                      AND IsDeleted = 0
+                """;
 
-            ps.setString(1, status);
-            ps.setString(2, updatedBy);
-            ps.setInt(3, ptId);
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
 
-            return ps.executeUpdate() > 0;
+            // 1. Cập nhật PersonalTrainers
+            try (PreparedStatement ps = conn.prepareStatement(sqlPT)) {
+                ps.setString(1, status);
+                ps.setString(2, updatedBy);
+                ps.setInt(3, ptId);
+                ps.executeUpdate();
+            }
 
+            // 2. Cập nhật Users
+            try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
+                String userStatus = "Active".equalsIgnoreCase(status) ? "Active" : "Locked";
+                psUser.setString(1, userStatus);
+                psUser.setInt(2, ptId);
+                psUser.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-
         return false;
     }
 

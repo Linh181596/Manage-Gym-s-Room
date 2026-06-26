@@ -67,12 +67,28 @@ public class PTListController extends HttpServlet {
             }
         }
 
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        com.mycompany.gymcentermanagement.model.entity.User currentUser = 
+            (session != null) ? (com.mycompany.gymcentermanagement.model.entity.User) session.getAttribute("currentUser") : null;
+        boolean isManagement = (currentUser != null && 
+            (currentUser.getRole() == com.mycompany.gymcentermanagement.model.entity.User.Role.Admin 
+            || currentUser.getRole() == com.mycompany.gymcentermanagement.model.entity.User.Role.Staff));
+
+        String status = request.getParameter("status");
+        if (status == null || status.trim().isEmpty()) {
+            status = isManagement ? "All" : "Active";
+        }
+
         List<PersonalTrainer> trainers;
 
-        if (keyword == null && selectedSpecializations.isEmpty()) {
-            trainers = personalTrainerService.getActiveTrainers();
+        if (isManagement) {
+            trainers = personalTrainerService.searchTrainersForManagement(keyword, selectedSpecializations, status);
         } else {
-            trainers = personalTrainerService.searchActiveTrainers(keyword, selectedSpecializations);
+            if (keyword == null && selectedSpecializations.isEmpty()) {
+                trainers = personalTrainerService.getActiveTrainers();
+            } else {
+                trainers = personalTrainerService.searchActiveTrainers(keyword, selectedSpecializations);
+            }
         }
 
         request.setAttribute("trainers", trainers);
@@ -80,6 +96,8 @@ public class PTListController extends HttpServlet {
         request.setAttribute("specializationOptions", specializationOptions);
         request.setAttribute("selectedSpecializations", selectedSpecializations);
         request.setAttribute("keyword", keyword);
+        request.setAttribute("isManagement", isManagement);
+        request.setAttribute("status", status);
         request.getRequestDispatcher("/WEB-INF/views/pt/pt-list.jsp").forward(request, response);
     }
 }

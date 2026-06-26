@@ -46,6 +46,8 @@ public interface PersonalTrainerDAO {
      */
     public List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations);
 
+    public List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status);
+
     /**
      * Inserts an official Personal Trainer profile.
      */

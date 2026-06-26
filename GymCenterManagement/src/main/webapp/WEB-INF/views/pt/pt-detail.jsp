@@ -86,7 +86,18 @@
                     <li class="list-group-item d-flex justify-content-between px-0">
                         <span class="text-muted"><i
                                 class="fa fa-info-circle me-1.5 text-secondary"></i>Trạng thái:</span>
-                        <span class="badge bg-success rounded-pill px-2.5 py-1">Hoạt động</span>
+                        <% if ("Inactive".equalsIgnoreCase(trainer.getStatus())) { %>
+                            <div>
+                                <span class="badge bg-danger rounded-pill px-2.5 py-1">Ngừng hoạt động</span>
+                                <% if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
+                                    <span class="badge bg-secondary rounded-pill px-2 py-1 ms-1 text-white shadow-sm" style="font-size: 0.72rem;" title="Tài khoản đăng nhập bị khóa"><i class="fa fa-lock me-1"></i>Đã khóa tài khoản</span>
+                                <% } %>
+                            </div>
+                        <% } else if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
+                            <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">Bị khóa</span>
+                        <% } else { %>
+                            <span class="badge bg-success rounded-pill px-2.5 py-1">Đang hoạt động</span>
+                        <% } %>
                     </li>
                 </ul>
 
@@ -180,10 +191,14 @@
             </div>
 
             <c:if test="${sessionScope.currentUser.role == 'Admin' or sessionScope.currentUser.role == 'Staff'}">
-                <div class="mt-4">
+                <div class="mt-4 d-flex gap-2">
                     <a href="${pageContext.request.contextPath}/admin/pt/edit?id=<%= trainer.getPtId() %>" 
-                       class="btn btn-warning w-100 py-2 fw-bold shadow-sm text-dark">
+                       class="btn btn-warning flex-fill py-2 fw-bold shadow-sm text-dark">
                         <i class="fa fa-edit me-2"></i>Chỉnh sửa thông tin PT
+                    </a>
+                    <a href="${pageContext.request.contextPath}/admin/pt/service-prices?id=<%= trainer.getPtId() %>" 
+                       class="btn btn-primary flex-fill py-2 fw-bold shadow-sm text-white">
+                        <i class="fa fa-hand-holding-usd me-2"></i>Quản lý giá dịch vụ
                     </a>
                 </div>
             </c:if>
