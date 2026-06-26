@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : AuthenticationFilter.java
+ * @description   : Filter kiểm tra đăng nhập, phân quyền theo vai trò và chặn truy cập khi tài khoản bắt buộc đổi mật khẩu.
+ * @author        : Nguyễn Đại Dương
+ * @created       : 2026-06-11
+ * @last_modified : 2026-06-25
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.filter;
 
 import com.mycompany.gymcentermanagement.model.entity.User;
@@ -12,9 +21,10 @@ import java.io.IOException;
 
 /**
  * Filter to verify authentication status and enforce role-based access control (RBAC).
- * Mapped to /admin/*, /staff/*, /member/*, and /pt/* paths.
+ * Mapped to protected dashboard/profile paths.
  */
-@WebFilter(filterName = "AuthenticationFilter", urlPatterns = {"/admin/*", "/staff/*", "/member/*", "/pt/*"})
+@WebFilter(filterName = "AuthenticationFilter", urlPatterns = { "/admin/*", "/staff/*", "/member/*", "/pt/*",
+        "/profile" })
 public class AuthenticationFilter extends HttpFilter {
 
     @Override
@@ -68,10 +78,18 @@ public class AuthenticationFilter extends HttpFilter {
         boolean authorized = false;
         User.Role role = user.getRole();
         
-        if (relativePath.startsWith("/admin/")) {
+        if (relativePath.equals("/profile")) {
+            authorized = true;
+        } else if (relativePath.startsWith("/admin/")) {
             if (role == User.Role.Admin) {
                 authorized = true;
-            } else if (relativePath.startsWith("/admin/pt/edit") && role == User.Role.Staff) {
+            } else if (role == User.Role.Staff && (
+                relativePath.startsWith("/admin/pt/edit") ||
+                relativePath.startsWith("/admin/pt/service-prices") ||
+                relativePath.startsWith("/admin/schedule/manage") ||
+                relativePath.startsWith("/admin/pt/schedule-setup") ||
+                relativePath.startsWith("/admin/pt/cancel")
+            )) {
                 authorized = true;
             }
         } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {

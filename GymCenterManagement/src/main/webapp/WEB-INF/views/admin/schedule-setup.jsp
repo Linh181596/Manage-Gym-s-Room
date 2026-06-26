@@ -178,6 +178,7 @@
                                 ${not empty submittedDays && submittedDays.contains('SATURDAY') ? 'checked' : ''}>
                                 <label class="form-check-label" for="day6">Thứ 7</label>
                             </div>
+
                         </div>
                     </div>
 
@@ -252,6 +253,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // 1. LOGIC CHẶN NGÀY THÁNG LÙI VỀ QUÁ KHỨ

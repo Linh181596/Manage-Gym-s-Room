@@ -1,4 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%--
+  =========================================================================
+  Document    : dashboard_navbar.jsp
+  Created on  : 2026-06-11
+  Author      : Nguyễn Đại Dương
+  Description : Thanh điều hướng phía trên (top navbar) chứa thông tin tin nhắn, thông báo và menu cá nhân
+  =========================================================================
+--%>
 <!-- Navbar Start -->
 <nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0">
     <a href="${pageContext.request.contextPath}/" class="navbar-brand d-flex d-lg-none me-4">
@@ -53,7 +62,8 @@
                 <span class="d-none d-lg-inline-flex">${sessionScope.currentUser.fullName}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
-                <a href="${pageContext.request.contextPath}/pt/profile" class="dropdown-item">Hồ sơ cá nhân</a>
+                <a href="${pageContext.request.contextPath}${sessionScope.currentUser.role == 'PT' ? '/pt/profile' : '/profile'}" class="dropdown-item">Hồ sơ cá nhân</a>
+                <a href="${pageContext.request.contextPath}/change-password" class="dropdown-item ${sessionScope.currentUser.role == 'PT' ? 'd-none' : ''}">Đổi mật khẩu</a>
                 <a href="#" class="dropdown-item">Cài đặt</a>
                 <a href="${pageContext.request.contextPath}/logout" class="dropdown-item">Đăng xuất</a>
             </div>
