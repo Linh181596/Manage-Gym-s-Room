@@ -1,4 +1,4 @@
-USE [master]
+﻿USE [master]
 GO
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'GymCenterManagement')
 BEGIN
@@ -1264,4 +1264,80 @@ GO
 USE [master]
 GO
 ALTER DATABASE [GymCenterManagement] SET  READ_WRITE 
+GO
+
+USE [GymCenterManagement]
+GO
+
+-- =========================================================================
+-- Table: MaintenanceSchedules
+-- =========================================================================
+CREATE TABLE [dbo].[MaintenanceSchedules](
+	[MaintenanceScheduleID] [int] IDENTITY(1,1) NOT NULL,
+	[EquipmentID] [int] NOT NULL,
+	[IssueID] [int] NULL,
+	[ScheduledDate] [date] NOT NULL,
+	[MaintenanceType] [varchar](20) NOT NULL,
+	[Description] [nvarchar](max) NOT NULL,
+	[Status] [varchar](20) NOT NULL,
+	[CompletionDate] [datetime2](7) NULL,
+	[CompletionNote] [nvarchar](max) NULL,
+	[CreatedBy] [nvarchar](50) NULL,
+	[CreatedDate] [datetime2](7) NOT NULL,
+	[UpdatedBy] [nvarchar](50) NULL,
+	[UpdatedDate] [datetime2](7) NULL,
+	[IsDeleted] [bit] NOT NULL,
+ CONSTRAINT [PK_MaintenanceSchedules] PRIMARY KEY CLUSTERED 
+(
+	[MaintenanceScheduleID] ASC
+)
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_MaintenanceSchedules_Search] ON [dbo].[MaintenanceSchedules]
+(
+	[Status] ASC,
+	[ScheduledDate] DESC,
+	[EquipmentID] ASC
+)
+INCLUDE([MaintenanceType],[IssueID],[IsDeleted])
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_MaintenanceSchedules_Equipment_Date_Active] ON [dbo].[MaintenanceSchedules]
+(
+	[EquipmentID] ASC,
+	[ScheduledDate] ASC
+)
+WHERE ([IsDeleted]=(0) AND [Status]<>'Cancelled')
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD CONSTRAINT [DF_MaintenanceSchedules_Status] DEFAULT ('Scheduled') FOR [Status]
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD CONSTRAINT [DF_MaintenanceSchedules_CreatedDate] DEFAULT (sysdatetime()) FOR [CreatedDate]
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD CONSTRAINT [DF_MaintenanceSchedules_IsDeleted] DEFAULT ((0)) FOR [IsDeleted]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [FK_MaintenanceSchedules_Equipments] FOREIGN KEY([EquipmentID])
+REFERENCES [dbo].[Equipments] ([EquipmentID])
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [FK_MaintenanceSchedules_Equipments]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [FK_MaintenanceSchedules_EquipmentIssues] FOREIGN KEY([IssueID])
+REFERENCES [dbo].[EquipmentIssues] ([IssueID])
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [FK_MaintenanceSchedules_EquipmentIssues]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [CK_MaintenanceSchedules_Status]
+CHECK (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='Completed' OR [Status]='Cancelled'))
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Status]
+GO
+
+ALTER TABLE [dbo].[MaintenanceSchedules] WITH CHECK ADD CONSTRAINT [CK_MaintenanceSchedules_Type]
+CHECK (([MaintenanceType]='Preventive' OR [MaintenanceType]='Corrective'))
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Type]
 GO
