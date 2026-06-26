@@ -63,6 +63,29 @@
                        placeholder="Tìm theo tên, email, chuyên môn..."
                        class="form-control">
             </div>
+            <c:if test="${isManagement}">
+                <div class="mb-3 p-3 bg-white border rounded">
+                    <label class="form-label fw-bold text-secondary"><i class="fa fa-info-circle me-1"></i> Trạng thái HLV</label>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusAll" value="All" ${status == 'All' ? 'checked' : ''}>
+                            <label class="form-check-label text-dark" for="statusAll">Tất cả</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusActive" value="Active" ${status == 'Active' ? 'checked' : ''}>
+                            <label class="form-check-label text-success" for="statusActive">Đang hoạt động (Active)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusInactive" value="Inactive" ${status == 'Inactive' ? 'checked' : ''}>
+                            <label class="form-check-label text-danger" for="statusInactive">Ngừng hoạt động (Inactive)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusLocked" value="Locked" ${status == 'Locked' ? 'checked' : ''}>
+                            <label class="form-check-label text-warning" for="statusLocked">Tài khoản bị khóa (Locked)</label>
+                        </div>
+                    </div>
+                </div>
+            </c:if>
             <div class="row align-items-end g-3">
                 <div class="col-12">
                     <label class="form-label fw-bold text-secondary mb-2"><i class="fa fa-filter me-1"></i> Lọc theo chuyên môn</label>
@@ -116,9 +139,19 @@
                                     <i class="fa fa-user"></i>
                                 </div>
                             <% } %>
-                            <span class="position-absolute bottom-0 end-0 badge bg-success rounded-circle border border-2 border-white p-2" title="Active">
-                                <span class="visually-hidden">Hoạt động</span>
-                            </span>
+                            <% if ("Inactive".equalsIgnoreCase(trainer.getStatus())) { %>
+                                <span class="position-absolute bottom-0 end-0 badge bg-danger rounded-circle border border-2 border-white p-2" title="Ngừng hoạt động">
+                                    <span class="visually-hidden">Ngừng hoạt động</span>
+                                </span>
+                            <% } else if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
+                                <span class="position-absolute bottom-0 end-0 badge bg-warning rounded-circle border border-2 border-white p-2" title="Bị khóa">
+                                    <span class="visually-hidden">Bị khóa</span>
+                                </span>
+                            <% } else { %>
+                                <span class="position-absolute bottom-0 end-0 badge bg-success rounded-circle border border-2 border-white p-2" title="Đang hoạt động">
+                                    <span class="visually-hidden">Đang hoạt động</span>
+                                </span>
+                            <% } %>
                         </div>
 
                         <!-- Name & Title -->
@@ -140,7 +173,16 @@
                             </div>
                             <div class="col-6 text-center">
                                 <span class="d-block text-secondary small">Trạng thái</span>
-                                <strong class="text-success"><%= trainer.getStatus() %></strong>
+                                <% if ("Inactive".equalsIgnoreCase(trainer.getStatus())) { %>
+                                    <strong class="text-danger">Ngừng hoạt động</strong>
+                                    <% if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
+                                        <small class="d-block text-muted" style="font-size: 0.72rem; margin-top: 2px;"><i class="fa fa-lock me-1 text-secondary"></i>Đã khóa tài khoản</small>
+                                    <% } %>
+                                <% } else if ("Locked".equalsIgnoreCase(trainer.getAccountStatus())) { %>
+                                    <strong class="text-warning">Bị khóa</strong>
+                                <% } else { %>
+                                    <strong class="text-success">Đang hoạt động</strong>
+                                <% } %>
                             </div>
                         </div>
 

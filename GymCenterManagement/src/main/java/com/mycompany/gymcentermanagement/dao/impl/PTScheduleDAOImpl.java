@@ -1,6 +1,7 @@
 package com.mycompany.gymcentermanagement.dao.impl;
 
 import com.mycompany.gymcentermanagement.dao.PTScheduleDAO;
+import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
 import com.mycompany.gymcentermanagement.utils.DBContext;
 
@@ -100,6 +101,54 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     s.setSessionDate(rs.getDate("SessionDate").toLocalDate());
                     s.setStartTime(rs.getTime("StartTime"));
                     list.add(s);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate) {
+        List<PTScheduleDetailDTO> list = new ArrayList<>();
+        // JOIN 4 bảng để lấy chi tiết: Lịch -> Đơn Đăng Ký -> Hội Viên -> Gói Tập
+        String sql = """
+                    SELECT
+                                 s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus, s.PTAttendanceResult,
+                                u.DisplayName AS MemberName,
+                                p.PackageName 
+                        FROM PTSchedules s
+                                                               JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
+                                                               JOIN Members m ON r.MemberID = m.MemberID
+                                                               JOIN Users u ON m.UserID = u.UserID
+                                                               JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                                                               JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                                                               WHERE s.PTID = ?
+                                                                 AND s.SessionDate >= ?
+                                                                 AND s.SessionDate <= ?
+                                                                 AND s.IsDeleted = 0
+                                                               ORDER BY s.SessionDate ASC, s.StartTime ASC                                  
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, ptId);
+            ps.setDate(2, java.sql.Date.valueOf(startDate));
+            ps.setDate(3, java.sql.Date.valueOf(endDate));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTScheduleDetailDTO dto = new PTScheduleDetailDTO();
+                    dto.setSessionDate(rs.getDate("SessionDate").toLocalDate());
+                    dto.setStartTime(rs.getTime("StartTime"));
+                    dto.setEndTime(rs.getTime("EndTime"));
+                    dto.setSessionStatus(rs.getString("SessionStatus"));
+                    dto.setAttendanceStatus(rs.getString("PTAttendanceResult"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    list.add(dto);
                 }
             }
         } catch (SQLException e) {

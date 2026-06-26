@@ -664,4 +664,89 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
             return false;
         }
     }
+
+    @Override
+    public List<PTServicePrice> getAllServicePricesByTrainerId(int ptId) {
+        List<PTServicePrice> prices = new ArrayList<>();
+
+        String sql = """
+                    SELECT
+                        sp.PTServicePriceID,
+                        sp.PTID,
+                        sp.PTPackageTypeID,
+                        sp.Price,
+                        sp.Status AS PriceStatus,
+                        COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
+                        pkg.PackageName,
+                        pkg.Description AS PackageDescription,
+                        pkg.DurationMonths,
+                        pkg.NumberOfSessions
+                    FROM PTServicePrices sp
+                    INNER JOIN PTPackageTypes pkg
+                        ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    INNER JOIN PersonalTrainers pt
+                        ON sp.PTID = pt.PTID
+                    WHERE sp.PTID = ?
+                      AND sp.IsDeleted = 0
+                      AND pkg.IsDeleted = 0
+                    ORDER BY pkg.DurationMonths
+                """;
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    prices.add(mapServicePrice(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return prices;
+    }
+
+    @Override
+    public boolean saveOrUpdateServicePrice(PTServicePrice price) {
+        String checkSql = "SELECT PTServicePriceID FROM PTServicePrices WHERE PTID = ? AND PTPackageTypeID = ? AND IsDeleted = 0";
+        String insertSql = """
+            INSERT INTO PTServicePrices (PTID, PTPackageTypeID, Price, Status, CreatedBy, CreatedDate, IsDeleted)
+            VALUES (?, ?, ?, 'Active', 'System', GETDATE(), 0)
+        """;
+        String updateSql = """
+            UPDATE PTServicePrices
+            SET Price = ?, Status = 'Active', UpdatedBy = 'System', UpdatedDate = GETDATE()
+            WHERE PTServicePriceID = ?
+        """;
+
+        try (Connection conn = DBContext.getConnection()) {
+            int existingId = -1;
+            try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+                checkPs.setInt(1, price.getPtId());
+                checkPs.setInt(2, price.getPtPackageTypeId());
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    if (rs.next()) {
+                        existingId = rs.getInt("PTServicePriceID");
+                    }
+                }
+            }
+
+            if (existingId != -1) {
+                try (PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
+                    updatePs.setBigDecimal(1, price.getPrice());
+                    updatePs.setInt(2, existingId);
+                    return updatePs.executeUpdate() > 0;
+                }
+            } else {
+                try (PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
+                    insertPs.setInt(1, price.getPtId());
+                    insertPs.setInt(2, price.getPtPackageTypeId());
+                    insertPs.setBigDecimal(3, price.getPrice());
+                    return insertPs.executeUpdate() > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

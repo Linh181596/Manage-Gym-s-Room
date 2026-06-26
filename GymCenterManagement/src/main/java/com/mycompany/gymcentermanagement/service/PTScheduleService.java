@@ -1,5 +1,6 @@
 package com.mycompany.gymcentermanagement.service;
 
+import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
 
 import java.time.LocalDate;
@@ -11,4 +12,6 @@ public interface PTScheduleService {
     boolean insertSchedules(List<PTSchedule> schedules, int createdByUserId);
 
     List<PTSchedule> getSchedulesForWeek(int ptId, LocalDate startDate, LocalDate endDate);
+
+    List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate);
 }

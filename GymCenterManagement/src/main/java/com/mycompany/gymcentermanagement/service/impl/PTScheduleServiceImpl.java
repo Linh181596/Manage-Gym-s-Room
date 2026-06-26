@@ -2,6 +2,7 @@ package com.mycompany.gymcentermanagement.service.impl;
 
 import com.mycompany.gymcentermanagement.dao.PTScheduleDAO;
 import com.mycompany.gymcentermanagement.dao.impl.PTScheduleDAOImpl;
+import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
 import com.mycompany.gymcentermanagement.service.PTScheduleService;
 
@@ -23,5 +24,10 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     @Override
     public List<PTSchedule> getSchedulesForWeek(int ptId, LocalDate startDate, LocalDate endDate) {
         return ptScheduleDAO.getSchedulesForWeek(ptId, startDate, endDate);
+    }
+
+    @Override
+    public List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate) {
+        return  ptScheduleDAO.getPTScheduleDetailsForWeek(ptId, startDate, endDate);
     }
 }
