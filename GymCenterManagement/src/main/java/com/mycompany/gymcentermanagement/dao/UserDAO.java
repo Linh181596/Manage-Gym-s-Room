@@ -1,10 +1,10 @@
 /**
  * =========================================================================
  * @file          : UserDAO.java
- * @description   : Interface quản lý tương tác dữ liệu trực tiếp với bảng Users và các bảng liên quan.
+ * @description   : Interface định nghĩa các thao tác dữ liệu cho người dùng, xác thực, token và hồ sơ tài khoản.
  * @author        : Nguyễn Đại Dương
  * @created       : 2026-06-05
- * @last_modified : 2026-06-11 bởi Antigravity
+ * @last_modified : 2026-06-25
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao;
@@ -30,6 +30,24 @@ public interface UserDAO {
 
     List<User> findAllActive() throws SQLException;
 
+    List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException;
+
+    boolean checkEmailExistsForOtherUser(String email, int excludedUserId) throws SQLException;
+
+    boolean checkPhoneExistsForOtherUser(String phone, int excludedUserId) throws SQLException;
+
+    boolean insertManagedAccount(User user) throws SQLException;
+
+    boolean updateManagedAccount(User user) throws SQLException;
+
+    boolean changeManagedAccountRole(int userId, User.Role newRole, String updatedBy) throws SQLException;
+
+    boolean updateAccountStatus(int userId, User.AccountStatus status, String updatedBy) throws SQLException;
+
+    boolean deactivateAccount(int userId, String updatedBy) throws SQLException;
+
+    boolean resetPassword(int userId, String newPasswordHash, String updatedBy) throws SQLException;
+
     // --- New Auth & Verification Methods ---
     
     boolean checkEmailExists(String email) throws SQLException;
@@ -46,7 +64,11 @@ public interface UserDAO {
     
     boolean deleteRememberMeToken(String tokenValue) throws SQLException;
     
+    int revokeRememberMeTokensByUserId(int userId) throws SQLException;
+
     boolean updatePassword(int userId, String newPasswordHash, boolean mustChangePassword) throws SQLException;
+
+    boolean changePasswordAndRevokeTokens(int userId, String newPasswordHash, boolean mustChangePassword) throws SQLException;
 
     // --- Profile Methods (UC-03) ---
     

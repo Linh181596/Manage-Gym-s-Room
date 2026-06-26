@@ -1,6 +1,17 @@
+/**
+ * =========================================================================
+ * @file          : UserService.java
+ * @description   : Interface định nghĩa các nghiệp vụ người dùng, xác thực, hồ sơ cá nhân và quản lý tài khoản cho Admin.
+ * @author        : Nguyễn Đại Dương
+ * @created       : 2026-06-25
+ * @last_modified : 2026-06-25
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.service;
 
+import com.mycompany.gymcentermanagement.dto.AccountOperationResult;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import java.util.List;
 
 /**
  * Service interface for User business operations (Auth, Account Management).
@@ -40,6 +51,26 @@ public interface UserService {
      * @return true if update is successful.
      */
     boolean updateProfile(User user);
+
+    List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status);
+
+    User getAccountById(int userId);
+
+    AccountOperationResult createManagedAccount(User user, String createdBy);
+
+    AccountOperationResult updateManagedAccount(User user, User.Role requestedRole, int currentAdminId, String updatedBy);
+
+    AccountOperationResult changeManagedAccountRole(int targetUserId, User.Role newRole, int currentAdminId, String updatedBy);
+
+    AccountOperationResult updateAccountStatus(int targetUserId, User.AccountStatus status, int currentAdminId, String updatedBy);
+
+    AccountOperationResult lockAccount(int targetUserId, int currentAdminId, String updatedBy);
+
+    AccountOperationResult unlockAccount(int targetUserId, String updatedBy);
+
+    AccountOperationResult deactivateAccount(int targetUserId, int currentAdminId, String updatedBy);
+
+    AccountOperationResult resetManagedPassword(int targetUserId, String updatedBy);
 
     boolean updateBasicUserInfo(User user);
 
