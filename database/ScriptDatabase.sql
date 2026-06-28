@@ -1352,3 +1352,49 @@ CHECK (([MaintenanceType]='Preventive' OR [MaintenanceType]='Corrective'))
 GO
 ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Type]
 GO
+
+CREATE TABLE [dbo].[StaffPTAttendance] (
+    [AttendanceID] INT IDENTITY(1,1) NOT NULL,
+    [UserID] INT NOT NULL,
+    [UserRole] VARCHAR(10) NOT NULL, -- 'Staff' | 'PT'
+    [CheckedInAt] DATETIME2(7) NOT NULL
+        CONSTRAINT [DF_StaffPTAttendance_CheckedInAt] DEFAULT SYSDATETIME(),
+    [ShiftBlock] VARCHAR(20) NOT NULL, -- 'Morning' | 'Afternoon' | 'Evening'
+    [CheckedBy] INT NOT NULL, -- UserID of the Staff performing the check-in
+    [Note] NVARCHAR(255) NULL,
+    [CreatedBy] NVARCHAR(50) NULL,
+    [CreatedDate] DATETIME2(7) NOT NULL
+        CONSTRAINT [DF_StaffPTAttendance_CreatedDate] DEFAULT SYSDATETIME(),
+    [IsDeleted] BIT NOT NULL
+        CONSTRAINT [DF_StaffPTAttendance_IsDeleted] DEFAULT 0,
+
+    CONSTRAINT [PK_StaffPTAttendance]
+        PRIMARY KEY CLUSTERED ([AttendanceID] ASC),
+
+    CONSTRAINT [FK_StaffPTAttendance_User]
+        FOREIGN KEY ([UserID]) REFERENCES [dbo].[Users] ([UserID]),
+
+    CONSTRAINT [FK_StaffPTAttendance_CheckedBy]
+        FOREIGN KEY ([CheckedBy]) REFERENCES [dbo].[Users] ([UserID]),
+
+    CONSTRAINT [CK_StaffPTAttendance_UserRole]
+        CHECK ([UserRole] IN ('Staff', 'PT')),
+
+    CONSTRAINT [CK_StaffPTAttendance_ShiftBlock]
+        CHECK ([ShiftBlock] IN ('Morning', 'Afternoon', 'Evening'))
+) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_StaffPTAttendance_UserID_Date]
+    ON [dbo].[StaffPTAttendance] ([UserID], [CheckedInAt])
+    INCLUDE ([ShiftBlock], [UserRole], [CheckedBy])
+GO
+
+ALTER TABLE [dbo].[StaffPTAttendance]
+    ADD [AttendanceDate] AS CAST([CheckedInAt] AS DATE) PERSISTED
+GO
+
+ALTER TABLE [dbo].[StaffPTAttendance]
+    ADD CONSTRAINT [UQ_StaffPTAttendance_UserShiftDate]
+        UNIQUE ([UserID], [AttendanceDate], [ShiftBlock])
+GO
