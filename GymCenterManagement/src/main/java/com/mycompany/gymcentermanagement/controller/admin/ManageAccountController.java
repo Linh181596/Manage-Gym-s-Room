@@ -27,6 +27,8 @@ public class ManageAccountController extends HttpServlet {
 
     private static final String LIST_VIEW = "/WEB-INF/views/admin/account-list.jsp";
     private static final String FORM_VIEW = "/WEB-INF/views/admin/account-form.jsp";
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 50;
     private static final User.AccountStatus[] MANAGED_STATUSES = {
             User.AccountStatus.Active,
             User.AccountStatus.Inactive,
@@ -100,14 +102,26 @@ public class ManageAccountController extends HttpServlet {
         String keyword = normalizeBlank(request.getParameter("keyword"));
         User.Role role = parseRole(request.getParameter("role"));
         User.AccountStatus status = parseStatus(request.getParameter("status"));
+        int pageSize = parsePositiveInt(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE);
+        int currentPage = parsePositiveInt(request.getParameter("page"), 1);
 
-        List<User> accounts = userService.searchAccounts(keyword, role, status);
+        int totalAccounts = userService.countAccounts(keyword, role, status);
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalAccounts / pageSize));
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        List<User> accounts = userService.searchAccounts(keyword, role, status, currentPage, pageSize);
         request.setAttribute("accounts", accounts);
         request.setAttribute("keyword", keyword);
         request.setAttribute("selectedRole", role != null ? role.name() : "");
         request.setAttribute("selectedStatus", status != null ? status.name() : "");
         request.setAttribute("roles", User.Role.values());
         request.setAttribute("statuses", MANAGED_STATUSES);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalAccounts", totalAccounts);
+        request.setAttribute("totalPages", totalPages);
         request.getRequestDispatcher(LIST_VIEW).forward(request, response);
     }
 
@@ -281,6 +295,19 @@ public class ManageAccountController extends HttpServlet {
             return normalized == null ? null : Integer.parseInt(normalized);
         } catch (NumberFormatException ex) {
             return null;
+        }
+    }
+
+    private int parsePositiveInt(String rawValue, int defaultValue) {
+        try {
+            String normalized = normalizeBlank(rawValue);
+            if (normalized == null) {
+                return defaultValue;
+            }
+            int value = Integer.parseInt(normalized);
+            return value > 0 ? Math.min(value, MAX_PAGE_SIZE) : defaultValue;
+        } catch (NumberFormatException ex) {
+            return defaultValue;
         }
     }
 

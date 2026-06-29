@@ -47,7 +47,7 @@
 
     <div class="bg-light rounded p-4 mb-4 shadow-sm">
         <form method="get" action="${pageContext.request.contextPath}/admin/accounts" class="row align-items-end g-3">
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label for="keyword" class="form-label fw-bold text-secondary">Tìm kiếm</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa fa-search"></i></span>
@@ -55,7 +55,7 @@
                            value="${keyword}" placeholder="Tên, email, điện thoại, vai trò hoặc trạng thái">
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="role" class="form-label fw-bold text-secondary">Vai trò</label>
                 <select id="role" name="role" class="form-select">
                     <option value="">Tất cả vai trò</option>
@@ -64,7 +64,7 @@
                     </c:forEach>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="status" class="form-label fw-bold text-secondary">Trạng thái</label>
                 <select id="status" name="status" class="form-select">
                     <option value="">Tất cả trạng thái</option>
@@ -73,7 +73,16 @@
                     </c:forEach>
                 </select>
             </div>
-            <div class="col-md-1 d-grid">
+            <div class="col-md-2">
+                <label for="pageSize" class="form-label fw-bold text-secondary">Dòng/trang</label>
+                <select id="pageSize" name="pageSize" class="form-select">
+                    <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
+                    <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+                    <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+                    <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
                 <button type="submit" class="btn btn-primary" title="Lọc danh sách">
                     <i class="fa fa-filter"></i>
                 </button>
@@ -195,6 +204,57 @@
                     </c:choose>
                 </tbody>
             </table>
+        </div>
+
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mt-4">
+            <div class="text-muted small">
+                Hiển thị ${accounts.size()} / ${totalAccounts} tài khoản, trang ${currentPage} / ${totalPages}.
+            </div>
+
+            <c:if test="${totalPages > 1}">
+                <nav aria-label="Account pagination">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                            <c:url var="prevPageUrl" value="/admin/accounts">
+                                <c:param name="keyword" value="${keyword}" />
+                                <c:param name="role" value="${selectedRole}" />
+                                <c:param name="status" value="${selectedStatus}" />
+                                <c:param name="pageSize" value="${pageSize}" />
+                                <c:param name="page" value="${currentPage - 1}" />
+                            </c:url>
+                            <a class="page-link" href="${prevPageUrl}" aria-label="Trang trước">
+                                <i class="fa fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        <c:forEach begin="1" end="${totalPages}" var="pageNumber">
+                            <c:url var="pageUrl" value="/admin/accounts">
+                                <c:param name="keyword" value="${keyword}" />
+                                <c:param name="role" value="${selectedRole}" />
+                                <c:param name="status" value="${selectedStatus}" />
+                                <c:param name="pageSize" value="${pageSize}" />
+                                <c:param name="page" value="${pageNumber}" />
+                            </c:url>
+                            <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
+                                <a class="page-link" href="${pageUrl}">${pageNumber}</a>
+                            </li>
+                        </c:forEach>
+
+                        <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                            <c:url var="nextPageUrl" value="/admin/accounts">
+                                <c:param name="keyword" value="${keyword}" />
+                                <c:param name="role" value="${selectedRole}" />
+                                <c:param name="status" value="${selectedStatus}" />
+                                <c:param name="pageSize" value="${pageSize}" />
+                                <c:param name="page" value="${currentPage + 1}" />
+                            </c:url>
+                            <a class="page-link" href="${nextPageUrl}" aria-label="Trang sau">
+                                <i class="fa fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </c:if>
         </div>
     </div>
 </div>
