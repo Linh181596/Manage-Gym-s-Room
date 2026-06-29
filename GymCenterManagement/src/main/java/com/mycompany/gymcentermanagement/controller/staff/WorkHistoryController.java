@@ -54,6 +54,13 @@ public class WorkHistoryController extends HttpServlet {
             return;
         }
 
+        // Quyền truy cập: Chỉ Admin, Staff, PT mới được phép truy cập
+        User.Role currentRole = currentUser.getRole();
+        if (currentRole != User.Role.Admin && currentRole != User.Role.Staff && currentRole != User.Role.PT) {
+            request.getRequestDispatcher("/WEB-INF/views/common/error-403.jsp").forward(request, response);
+            return;
+        }
+
         // ---- Đọc bộ lọc từ request ------------------------------------ //
         int filterUserId = parseIntParam(request, "userId", 0);
         String filterRole = request.getParameter("role");    // 'Staff' | 'PT' | null
