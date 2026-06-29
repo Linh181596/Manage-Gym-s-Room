@@ -92,7 +92,7 @@
             <div class="card border-0 shadow-sm rounded h-100 bg-white">
                 <div class="card-header bg-dark text-white p-4 border-0 rounded-top d-flex align-items-center">
                     <i class="fa fa-shopping-cart me-2 fs-5 text-primary"></i>
-                    <h5 class="mb-0 fw-bold">Tóm tắt đăng ký</h5>
+                    <h5 class="mb-0 fw-bold text-white">Tóm tắt đăng ký</h5>
                 </div>
                 <div class="card-body p-4 d-flex flex-column justify-content-between">
                     <div>

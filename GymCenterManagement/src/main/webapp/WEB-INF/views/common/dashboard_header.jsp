@@ -114,7 +114,6 @@
                             <a href="${pageContext.request.contextPath}/member/notifications" class="nav-item nav-link ${fn:contains(reqUri, '/member/notifications') ? 'active' : ''}"><i class="fa fa-bell me-2"></i>Hộp thư thông báo</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-plus me-2"></i>Đặt lớp tập</a>
                             <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/member/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Thuê HLV (PT)</a>
-                            <a href="${pageContext.request.contextPath}/member/portal" class="nav-item nav-link ${fn:contains(reqUri, '/member/portal') ? 'active' : ''}"><i class="fa fa-id-card me-2"></i>Thẻ hội viên</a>
                         </c:when>
                     </c:choose>
                 </div>
