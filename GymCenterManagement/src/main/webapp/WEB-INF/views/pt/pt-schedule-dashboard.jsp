@@ -11,6 +11,22 @@
 <jsp:include page="../common/dashboard_navbar.jsp"/>
 
 <div class="container-fluid mt-4 px-4">
+    <!-- Flash Messages -->
+    <c:if test="${not empty sessionScope.successMessage}">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fa fa-check-circle me-2"></i>${sessionScope.successMessage}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <c:remove var="successMessage" scope="session" />
+    </c:if>
+    <c:if test="${not empty sessionScope.errorMessage}">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fa fa-exclamation-circle me-2"></i>${sessionScope.errorMessage}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <c:remove var="errorMessage" scope="session" />
+    </c:if>
+
     <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
         <h4 class="mb-0 fw-bold text-dark">
             <i class="fa fa-calendar-alt text-primary me-2"></i> Lịch Dạy Của Tôi
@@ -45,33 +61,45 @@
                             </div>
                         </c:if>
 
-                        <c:forEach var="session" items="${entry.value}">
+                        <c:forEach var="s" items="${entry.value}">
                             <c:set var="borderColor"
-                                   value="${session.sessionStatus == 'Completed' ? 'success' : 'primary'}"/>
+                                   value="${s.sessionStatus == 'Completed' ? 'success' : (s.sessionStatus == 'Cancelled' ? 'danger' : 'primary')}"/>
 
                             <div class="card mb-3 border-start border-${borderColor} border-4 shadow-sm hover-zoom">
                                 <div class="card-body p-3">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <span class="badge bg-light text-dark border">
                                             <i class="fa fa-clock text-warning"></i>
-                                            ${session.startTime.toString().substring(0,5)} - ${session.endTime.toString().substring(0,5)}
+                                            ${s.startTime.toString().substring(0,5)} - ${s.endTime.toString().substring(0,5)}
                                         </span>
                                         <div>
-                                            <span class="badge bg-${borderColor}">${session.sessionStatus}</span>
-                                            <c:if test="${not empty session.attendanceStatus && session.attendanceStatus != 'Pending'}">
-                                                <span class="badge bg-${session.attendanceStatus == 'Attended' ? 'success' : 'danger'} ms-1">
-                                                    ${session.attendanceStatus == 'Attended' ? 'Có mặt' : 'Vắng mặt'}
-                                                </span>
-                                            </c:if>
+                                            <span class="badge bg-${borderColor}">
+                                                <c:choose>
+                                                    <c:when test="${s.sessionStatus == 'Completed'}">Completed</c:when>
+                                                    <c:when test="${s.sessionStatus == 'Cancelled'}">Cancelled</c:when>
+                                                    <c:otherwise>Upcoming</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                            <c:choose>
+                                                <c:when test="${s.attendanceStatus == 'Attended'}">
+                                                    <span class="badge bg-success ms-1">Có mặt</span>
+                                                </c:when>
+                                                <c:when test="${s.attendanceStatus == 'Absent'}">
+                                                    <span class="badge bg-danger ms-1">Vắng mặt</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge bg-secondary ms-1">Chờ điểm danh</span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </div>
                                     </div>
 
                                     <h6 class="fw-bold text-dark mb-1">
-                                        <i class="fa fa-user text-secondary me-1"></i> ${session.memberName}
+                                        <i class="fa fa-user text-secondary me-1"></i> ${s.memberName}
                                     </h6>
 
                                     <div class="text-muted small">
-                                        <i class="fa fa-dumbbell me-1"></i> Gói: ${session.packageName}
+                                        <i class="fa fa-dumbbell me-1"></i> Gói: ${s.packageName}
                                     </div>
                                 </div>
                             </div>

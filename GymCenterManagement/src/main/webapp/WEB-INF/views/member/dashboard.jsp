@@ -110,9 +110,6 @@
                     <a href="${pageContext.request.contextPath}/pt/list" class="btn btn-primary py-3 fw-bold shadow-sm">
                         <i class="fa fa-dumbbell me-2"></i>Đăng ký gói tập / PT
                     </a>
-                    <a href="${pageContext.request.contextPath}/pt/list" class="btn btn-outline-primary py-3 fw-bold">
-                        <i class="fa fa-user-tie me-2"></i>Đặt lịch tập với PT
-                    </a>
                     <a href="${pageContext.request.contextPath}/member/portal" class="btn btn-outline-primary py-3 fw-bold">
                         <i class="fa fa-history me-2"></i>Xem lịch sử & thẻ
                     </a>
@@ -151,17 +148,17 @@
                                     </tr>
                                 </c:when>
                                 <c:otherwise>
-                                    <c:forEach var="session" items="${data.upcomingSessions}">
+                                    <c:forEach var="s" items="${data.upcomingSessions}">
                                         <tr>
-                                            <td class="fw-bold">${session.sessionDate}</td>
+                                            <td class="fw-bold">${s.sessionDate}</td>
                                             <td>
                                                 <span class="badge bg-light text-dark border">
-                                                    <fmt:formatDate value="${session.startTime}" pattern="HH:mm"/> - 
-                                                    <fmt:formatDate value="${session.endTime}" pattern="HH:mm"/>
+                                                    <fmt:formatDate value="${s.startTime}" pattern="HH:mm"/> - 
+                                                    <fmt:formatDate value="${s.endTime}" pattern="HH:mm"/>
                                                 </span>
                                             </td>
-                                            <td>${empty session.packageName ? 'Thuê PT cá nhân' : session.packageName}</td>
-                                            <td><span class="text-primary fw-semibold"><i class="fa fa-user-tie me-1"></i>${session.ptName}</span></td>
+                                            <td>${empty s.packageName ? 'Thuê PT cá nhân' : s.packageName}</td>
+                                            <td><span class="text-primary fw-semibold"><i class="fa fa-user-tie me-1"></i>${s.ptName}</span></td>
                                         </tr>
                                     </c:forEach>
                                 </c:otherwise>
