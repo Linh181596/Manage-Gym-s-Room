@@ -1021,6 +1021,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
     @Override
     public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException {
+        return searchAccounts(keyword, role, status, 0, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -1066,7 +1071,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 params.add(status.name());
             }
 
-            sql.append(" ORDER BY u.UserID DESC");
+            sql.append(" ORDER BY u.UserID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            params.add(Math.max(offset, 0));
+            params.add(limit <= 0 ? 10 : limit);
             stmt = conn.prepareStatement(sql.toString());
 
             for (int i = 0; i < params.size(); i++) {
@@ -1081,6 +1088,64 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             closeResource(conn, stmt, rs);
         }
         return list;
+    }
+
+    @Override
+    public int countAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<Object> params = new ArrayList<>();
+
+        try {
+            conn = getActiveConnection();
+            StringBuilder sql = new StringBuilder("""
+                        SELECT COUNT(*) AS Total
+                        FROM Users u
+                        LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
+                        LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        WHERE u.IsDeleted = 0
+                    """);
+
+            String normalizedKeyword = normalizeBlank(keyword);
+            if (normalizedKeyword != null) {
+                sql.append("""
+                            AND (
+                                u.DisplayName LIKE ?
+                                OR u.Email LIKE ?
+                                OR u.Phone LIKE ?
+                                OR r.RoleName LIKE ?
+                                OR u.Status LIKE ?
+                            )
+                        """);
+                String pattern = "%" + normalizedKeyword + "%";
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+            }
+
+            if (role != null) {
+                sql.append(" AND r.RoleName = ?");
+                params.add(role.name());
+            }
+
+            if (status != null) {
+                sql.append(" AND u.Status = ?");
+                params.add(status.name());
+            }
+
+            stmt = conn.prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            rs = stmt.executeQuery();
+            return rs.next() ? rs.getInt("Total") : 0;
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
     }
 
     @Override
