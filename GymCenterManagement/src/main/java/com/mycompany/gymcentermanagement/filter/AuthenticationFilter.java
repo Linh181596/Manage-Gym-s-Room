@@ -91,7 +91,7 @@ public class AuthenticationFilter extends HttpFilter {
             } else if (role == User.Role.Staff && (
                 relativePath.startsWith("/admin/pt/edit") ||
                 relativePath.startsWith("/admin/pt/service-prices") ||
-                relativePath.startsWith("/admin/schedule/manage") ||
+                relativePath.startsWith("/admin/schedule/") ||
                 relativePath.startsWith("/admin/pt/schedule-setup") ||
                 relativePath.startsWith("/admin/pt/cancel")
             )) {

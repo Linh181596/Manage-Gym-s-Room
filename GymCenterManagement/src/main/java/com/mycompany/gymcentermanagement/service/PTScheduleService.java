@@ -14,4 +14,6 @@ public interface PTScheduleService {
     List<PTSchedule> getSchedulesForWeek(int ptId, LocalDate startDate, LocalDate endDate);
 
     List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate);
+    List<PTScheduleDetailDTO> getAllSchedulesByDate(LocalDate date);
+    boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus);
 }

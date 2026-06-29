@@ -32,17 +32,20 @@ public class ScheduleSetupController extends HttpServlet {
         // 2. Gọi DB lấy danh sách lịch PT đã có trong tuần đó
         List<PTSchedule> weekSchedules = ptScheduleService.getSchedulesForWeek(ptId, monday, sunday);
 
-        // 3. Khởi tạo ma trận 3 hàng (Sáng, Chiều, Tối) x 7 cột (T2 -> CN). Mặc định Java gán sẵn là FALSE (Rảnh)
-        boolean[][] matrix = new boolean[3][7];
+        // 3. Khởi tạo ma trận 6 hàng (6 ca tập) x 7 cột (T2 -> CN). Mặc định Java gán sẵn là FALSE (Rảnh)
+        boolean[][] matrix = new boolean[6][7];
 
         for (PTSchedule s : weekSchedules) {
             int col = s.getSessionDate().getDayOfWeek().getValue() - 1; // Thứ 2 = 1 -> Đẩy về index 0
 
             int row = -1;
             String timeStr = s.getStartTime().toString();
-            if (timeStr.startsWith("08")) row = 0;      // Ca Sáng
-            else if (timeStr.startsWith("15")) row = 1; // Ca Chiều
-            else if (timeStr.startsWith("18")) row = 2; // Ca Tối
+            if (timeStr.startsWith("08:15")) row = 0;
+            else if (timeStr.startsWith("10:00")) row = 1;
+            else if (timeStr.startsWith("13:30")) row = 2;
+            else if (timeStr.startsWith("15:15")) row = 3;
+            else if (timeStr.startsWith("17:00")) row = 4;
+            else if (timeStr.startsWith("18:45")) row = 5;
 
             if (row != -1) matrix[row][col] = true; // Chuyển thành TRUE (Bận)
         }

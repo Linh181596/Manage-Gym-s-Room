@@ -4,15 +4,33 @@ import java.sql.Time;
 import java.time.LocalDate;
 
 public class PTScheduleDetailDTO {
+    private int scheduleId; // Thêm mã lịch để điểm danh
     private LocalDate sessionDate;
     private Time startTime;
     private Time endTime;
     private String sessionStatus;
     private String memberName;
     private String packageName;
+    private String ptName; // Thêm tên PT để hiển thị ở trang quản lý lịch của Admin/Staff
     private String attendanceStatus; // Thêm trường này để chứa kết quả điểm danh
 
     public PTScheduleDetailDTO() {
+    }
+
+    public String getPtName() {
+        return ptName;
+    }
+
+    public void setPtName(String ptName) {
+        this.ptName = ptName;
+    }
+
+    public int getScheduleId() {
+        return scheduleId;
+    }
+
+    public void setScheduleId(int scheduleId) {
+        this.scheduleId = scheduleId;
     }
 
     public String getAttendanceStatus() {

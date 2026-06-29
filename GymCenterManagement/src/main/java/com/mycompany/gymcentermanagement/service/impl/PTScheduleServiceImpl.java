@@ -30,4 +30,14 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     public List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate) {
         return  ptScheduleDAO.getPTScheduleDetailsForWeek(ptId, startDate, endDate);
     }
+
+    @Override
+    public List<PTScheduleDetailDTO> getAllSchedulesByDate(LocalDate date) {
+        return ptScheduleDAO.getAllSchedulesByDate(date);
+    }
+
+    @Override
+    public boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus) {
+        return ptScheduleDAO.updateAttendance(scheduleId, attendanceStatus, sessionStatus);
+    }
 }

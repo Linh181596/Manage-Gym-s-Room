@@ -162,7 +162,7 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
                 "Đăng ký huấn luyện viên đang chờ",
                 "đăng ký huấn luyện viên chưa hoàn tất thanh toán/xử lý",
                 "warning",
-                "/pt/list",
+                "/admin/schedule/manage",
                 "SELECT COUNT(*) FROM PTRegistrations WHERE IsDeleted = 0 AND (Status = 'Pending' OR PaymentStatus = 'Unpaid')");
         addCountAlert(alerts,
                 "Package Expiration",
