@@ -17,4 +17,5 @@ public interface PersonalTrainerService {
     List<PersonalTrainer> getActiveTrainers();
     List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations);
     List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status);
+    List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId);
 }

@@ -72,4 +72,9 @@ public interface PersonalTrainerDAO {
      * Update PT profile(PT feat): Change avatar, bio/description and displayName
      */
     public boolean updateProfile(PersonalTrainer pt) throws SQLException;
+
+    /**
+     * Gets all active members currently trained by the Personal Trainer.
+     */
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId);
 }

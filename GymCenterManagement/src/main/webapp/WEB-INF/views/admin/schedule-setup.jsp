@@ -64,9 +64,9 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <!-- Hàng Ca Sáng -->
+                            <!-- Hàng Ca Sáng 1 -->
                             <tr>
-                                <td class="fw-bold bg-light">Sáng <br><small class="text-muted">08:00</small></td>
+                                <td class="fw-bold bg-light">Sáng 1 <br><small class="text-muted">08:15 - 09:45</small></td>
                                 <c:forEach var="i" begin="0" end="6">
                                     <td>
                                         <c:choose>
@@ -78,9 +78,9 @@
                                     </td>
                                 </c:forEach>
                             </tr>
-                            <!-- Hàng Ca Chiều -->
+                            <!-- Hàng Ca Sáng 2 -->
                             <tr>
-                                <td class="fw-bold bg-light">Chiều <br><small class="text-muted">15:00</small></td>
+                                <td class="fw-bold bg-light">Sáng 2 <br><small class="text-muted">10:00 - 11:30</small></td>
                                 <c:forEach var="i" begin="0" end="6">
                                     <td>
                                         <c:choose>
@@ -92,13 +92,55 @@
                                     </td>
                                 </c:forEach>
                             </tr>
-                            <!-- Hàng Ca Tối -->
+                            <!-- Hàng Ca Chiều 1 -->
                             <tr>
-                                <td class="fw-bold bg-light">Tối <br><small class="text-muted">18:00</small></td>
+                                <td class="fw-bold bg-light">Chiều 1 <br><small class="text-muted">13:30 - 15:00</small></td>
                                 <c:forEach var="i" begin="0" end="6">
                                     <td>
                                         <c:choose>
                                             <c:when test="${timetableMatrix[2][i]}"><span
+                                                    class="badge bg-danger">Bận</span></c:when>
+                                            <c:otherwise><span
+                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </c:forEach>
+                            </tr>
+                            <!-- Hàng Ca Chiều 2 -->
+                            <tr>
+                                <td class="fw-bold bg-light">Chiều 2 <br><small class="text-muted">15:15 - 16:45</small></td>
+                                <c:forEach var="i" begin="0" end="6">
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${timetableMatrix[3][i]}"><span
+                                                    class="badge bg-danger">Bận</span></c:when>
+                                            <c:otherwise><span
+                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </c:forEach>
+                            </tr>
+                            <!-- Hàng Ca Tối 1 -->
+                            <tr>
+                                <td class="fw-bold bg-light">Tối 1 <br><small class="text-muted">17:00 - 18:30</small></td>
+                                <c:forEach var="i" begin="0" end="6">
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${timetableMatrix[4][i]}"><span
+                                                    class="badge bg-danger">Bận</span></c:when>
+                                            <c:otherwise><span
+                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </c:forEach>
+                            </tr>
+                            <!-- Hàng Ca Tối 2 -->
+                            <tr>
+                                <td class="fw-bold bg-light">Tối 2 <br><small class="text-muted">18:45 - 20:15</small></td>
+                                <c:forEach var="i" begin="0" end="6">
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${timetableMatrix[5][i]}"><span
                                                     class="badge bg-danger">Bận</span></c:when>
                                             <c:otherwise><span
                                                     class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
@@ -186,15 +228,12 @@
                         <label class="form-label fw-bold">Khung giờ tập (Ca tập)</label>
                         <select class="form-select" name="timeSlot" required>
                             <option value="">-- Chọn khung giờ --</option>
-                            <option value="08:00-09:30" ${submittedTimeSlot == '08:00-09:30' ? 'selected' : ''}>Ca sáng:
-                                08:00 - 09:30
-                            </option>
-                            <option value="15:00-16:30" ${submittedTimeSlot == '15:00-16:30' ? 'selected' : ''}>Ca
-                                chiều: 15:00 - 16:30
-                            </option>
-                            <option value="18:00-19:30" ${submittedTimeSlot == '18:00-19:30' ? 'selected' : ''}>Ca tối:
-                                18:00 - 19:30
-                            </option>
+                            <option value="08:15-09:45" ${submittedTimeSlot == '08:15-09:45' ? 'selected' : ''}>Sáng 1: 08:15 - 09:45</option>
+                            <option value="10:00-11:30" ${submittedTimeSlot == '10:00-11:30' ? 'selected' : ''}>Sáng 2: 10:00 - 11:30</option>
+                            <option value="13:30-15:00" ${submittedTimeSlot == '13:30-15:00' ? 'selected' : ''}>Chiều 1: 13:30 - 15:00</option>
+                            <option value="15:15-16:45" ${submittedTimeSlot == '15:15-16:45' ? 'selected' : ''}>Chiều 2: 15:15 - 16:45</option>
+                            <option value="17:00-18:30" ${submittedTimeSlot == '17:00-18:30' ? 'selected' : ''}>Tối 1: 17:00 - 18:30</option>
+                            <option value="18:45-20:15" ${submittedTimeSlot == '18:45-20:15' ? 'selected' : ''}>Tối 2: 18:45 - 20:15</option>
                         </select>
                     </div>
 
