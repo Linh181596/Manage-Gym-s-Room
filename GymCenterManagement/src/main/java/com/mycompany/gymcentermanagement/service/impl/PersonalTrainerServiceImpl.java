@@ -169,4 +169,9 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
     public List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status) {
         return personalTrainerDAO.searchTrainersForManagement(keyword, specializations, status);
     }
+
+    @Override
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId) {
+        return personalTrainerDAO.getActiveMembersForPT(ptId);
+    }
 }

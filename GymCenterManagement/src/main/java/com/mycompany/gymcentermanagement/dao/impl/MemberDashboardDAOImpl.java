@@ -197,7 +197,8 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
                 SELECT TOP (?) s.SessionDate, s.StartTime, s.EndTime, u_pt.DisplayName AS PTName, gp.PackageName, s.PTScheduleID
                 FROM PTSchedules s
                 INNER JOIN PTRegistrations reg ON s.PTRegistrationID = reg.PTRegistrationID
-                INNER JOIN Users u_pt ON s.PTID = u_pt.UserID
+                INNER JOIN PersonalTrainers pt ON s.PTID = pt.PTID
+                INNER JOIN Users u_pt ON pt.UserID = u_pt.UserID
                 LEFT JOIN PTServicePrices psp ON reg.PTServicePriceID = psp.PTServicePriceID
                 LEFT JOIN PTPackageTypes gp ON psp.PTPackageTypeID = gp.PTPackageTypeID
                 WHERE s.MemberID = ? 
