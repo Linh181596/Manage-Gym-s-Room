@@ -30,11 +30,17 @@ public interface StaffPTAttendanceDAO {
          */
         int create(StaffPTAttendance attendance) throws SQLException;
 
+        boolean checkout(int attendanceId, int checkedBy) throws SQLException;
+
+        boolean undoCheckout(int attendanceId, int updatedBy) throws SQLException;
+
+        boolean cancel(int attendanceId, int cancelledBy) throws SQLException;
+
         /**
          * Lấy danh sách người dùng kèm trạng thái đã điểm danh hay chưa trong ca và
          * ngày.
          */
-        List<StaffPTAttendance> listUsersWithCheckinStatus(String shiftBlock, LocalDate date) throws SQLException;
+        List<StaffPTAttendance> listUsersWithCheckinStatus(String shiftBlock, LocalDate date, String keyword) throws SQLException;
 
         /**
          * Lấy lịch sử điểm danh với phân trang và bộ lọc.

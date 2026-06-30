@@ -16,7 +16,7 @@
 
     <!-- Page Header -->
     <div class="d-flex align-items-center justify-content-between mb-4">
-        <h4 class="mb-0"><i class="fa fa-history me-2 text-primary"></i>Lịch Sử Làm Việc Staff &amp; PT</h4>
+        <h4 class="mb-0"><i class="fa fa-history me-2 text-primary"></i>Lịch sử điểm danh</h4>
         <c:if test="${currentUser.role.name() eq 'Staff' or currentUser.role.name() eq 'Admin'}">
             <a href="${pageContext.request.contextPath}/staff/checkin" class="btn btn-primary btn-sm">
                 <i class="fa fa-user-check me-1"></i>Điểm danh
@@ -26,7 +26,7 @@
 
     <!-- Bộ lọc tìm kiếm -->
     <div class="bg-light rounded p-3 mb-4">
-        <form method="get" action="${pageContext.request.contextPath}/staff/work-history" class="row g-3 align-items-end">
+        <form id="workHistoryFilterForm" method="get" action="${pageContext.request.contextPath}/staff/work-history" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-semibold">Tìm kiếm (tên / email)</label>
                 <input type="text" name="keyword" class="form-control"
@@ -38,18 +38,20 @@
                     <label class="form-label fw-semibold">Vai trò</label>
                     <select name="role" class="form-select">
                         <option value="">Tất cả</option>
-                        <option value="Staff" ${filterRole eq 'Staff' ? 'selected' : ''}>Staff</option>
-                        <option value="PT"    ${filterRole eq 'PT'    ? 'selected' : ''}>Personal Trainer</option>
+                        <option value="Staff" ${filterRole eq 'Staff' ? 'selected' : ''}>Nhân viên</option>
+                        <option value="PT"    ${filterRole eq 'PT'    ? 'selected' : ''}>Huấn luyện viên</option>
                     </select>
                 </div>
             </c:if>
             <div class="col-md-2">
                 <label class="form-label fw-semibold">Từ ngày</label>
-                <input type="date" name="from" class="form-control" value="${filterFrom}">
+                <input type="date" id="fromDate" name="from" class="form-control" value="${filterFrom}" max="${filterTo}">
+                <div id="fromDateError" class="text-danger small mt-1 d-none">Từ ngày phải trước hoặc bằng đến ngày.</div>
             </div>
             <div class="col-md-2">
                 <label class="form-label fw-semibold">Đến ngày</label>
-                <input type="date" name="to" class="form-control" value="${filterTo}">
+                <input type="date" id="toDate" name="to" class="form-control" value="${filterTo}" min="${filterFrom}">
+                <div id="toDateError" class="text-danger small mt-1 d-none">Đến ngày phải sau hoặc bằng từ ngày.</div>
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">
@@ -93,7 +95,8 @@
                                 <th>Vai trò</th>
                                 <th>Ngày</th>
                                 <th>Ca</th>
-                                <th>Giờ check-in</th>
+                                <th>Giờ vào</th>
+                                <th>Giờ ra</th>
                                 <th>Người điểm danh</th>
                                 <th>Ghi chú</th>
                             </tr>
@@ -107,14 +110,17 @@
                                     <td class="text-muted small">${a.targetEmail}</td>
                                     <td>
                                         <span class="badge ${a.userRole.name() eq 'PT' ? 'bg-info' : 'bg-secondary'}">
-                                            ${a.userRole}
+                                            ${a.userRoleLabel}
                                         </span>
                                     </td>
                                     <td>${a.attendanceDate}</td>
                                     <td>
                                         <span class="badge bg-light text-dark border">${a.shiftLabel}</span>
                                     </td>
-                                    <td class="small text-muted">${a.checkedInAt}</td>
+                                    <td class="small text-muted">${a.checkedInAtDisplay}</td>
+                                    <td class="small text-muted">
+                                        <c:out value="${a.checkedOutAtDisplay}" default="—"/>
+                                    </td>
                                     <td class="small text-muted">
                                         <c:out value="${a.checkedByName}" default="—"/>
                                     </td>
@@ -160,5 +166,32 @@
     </c:choose>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('workHistoryFilterForm');
+    const fromDate = document.getElementById('fromDate');
+    const toDate = document.getElementById('toDate');
+    const fromDateError = document.getElementById('fromDateError');
+    const toDateError = document.getElementById('toDateError');
+
+    function validateDateRange() {
+        const hasInvalidRange = fromDate.value && toDate.value && fromDate.value > toDate.value;
+        fromDate.classList.toggle('is-invalid', hasInvalidRange);
+        toDate.classList.toggle('is-invalid', hasInvalidRange);
+        fromDateError.classList.toggle('d-none', !hasInvalidRange);
+        toDateError.classList.toggle('d-none', !hasInvalidRange);
+        return !hasInvalidRange;
+    }
+
+    fromDate.addEventListener('change', validateDateRange);
+    toDate.addEventListener('change', validateDateRange);
+    form.addEventListener('submit', function (event) {
+        if (!validateDateRange()) {
+            event.preventDefault();
+        }
+    });
+});
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp" />

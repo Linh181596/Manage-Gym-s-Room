@@ -11,12 +11,16 @@ package com.mycompany.gymcentermanagement.model.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Entity representing the 'StaffPTAttendance' table in the database.
  * Ghi lại mỗi lần check-in (điểm danh) của Staff hoặc Personal Trainer.
  */
 public class StaffPTAttendance {
+
+    private static final DateTimeFormatter DISPLAY_DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     /** Ca làm việc */
     public enum ShiftBlock {
@@ -28,12 +32,18 @@ public class StaffPTAttendance {
         Staff, PT
     }
 
+    public enum AttendanceStatus {
+        Active, Cancelled
+    }
+
     private int attendanceId;
     private int userId;
     private UserRole userRole;
     private LocalDateTime checkedInAt;
+    private LocalDateTime checkedOutAt;
     private LocalDate attendanceDate;   // computed column từ DB
     private ShiftBlock shiftBlock;
+    private AttendanceStatus status;
     private int checkedBy;
     private String note;
 
@@ -86,8 +96,24 @@ public class StaffPTAttendance {
         return checkedInAt;
     }
 
+    public String getCheckedInAtDisplay() {
+        return formatDateTime(checkedInAt);
+    }
+
     public void setCheckedInAt(LocalDateTime checkedInAt) {
         this.checkedInAt = checkedInAt;
+    }
+
+    public LocalDateTime getCheckedOutAt() {
+        return checkedOutAt;
+    }
+
+    public String getCheckedOutAtDisplay() {
+        return formatDateTime(checkedOutAt);
+    }
+
+    public void setCheckedOutAt(LocalDateTime checkedOutAt) {
+        this.checkedOutAt = checkedOutAt;
     }
 
     public LocalDate getAttendanceDate() {
@@ -108,6 +134,18 @@ public class StaffPTAttendance {
 
     public void setShiftBlock(String shiftBlock) {
         this.shiftBlock = ShiftBlock.valueOf(shiftBlock);
+    }
+
+    public AttendanceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AttendanceStatus status) {
+        this.status = status;
+    }
+
+    public void setStatus(String status) {
+        this.status = AttendanceStatus.valueOf(status);
     }
 
     public int getCheckedBy() {
@@ -180,10 +218,30 @@ public class StaffPTAttendance {
     public String getShiftLabel() {
         if (shiftBlock == null) return "";
         return switch (shiftBlock) {
-            case Morning   -> "Sáng (Morning)";
-            case Afternoon -> "Chiều (Afternoon)";
-            case Evening   -> "Tối (Evening)";
+            case Morning   -> "Sáng";
+            case Afternoon -> "Chiều";
+            case Evening   -> "Tối";
         };
+    }
+
+    public String getUserRoleLabel() {
+        if (userRole == null) return "";
+        return switch (userRole) {
+            case Staff -> "Nhân viên";
+            case PT -> "Huấn luyện viên";
+        };
+    }
+
+    public String getStatusLabel() {
+        if (status == null) return "";
+        return switch (status) {
+            case Active -> "Đang hiệu lực";
+            case Cancelled -> "Đã hủy";
+        };
+    }
+
+    private String formatDateTime(LocalDateTime value) {
+        return value == null ? "" : value.format(DISPLAY_DATE_TIME_FORMATTER);
     }
 
     @Override
