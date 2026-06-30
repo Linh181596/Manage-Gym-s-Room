@@ -54,13 +54,6 @@ public class WorkHistoryController extends HttpServlet {
             return;
         }
 
-        // Quyền truy cập: Chỉ Admin, Staff, PT mới được phép truy cập
-        User.Role currentRole = currentUser.getRole();
-        if (currentRole != User.Role.Admin && currentRole != User.Role.Staff && currentRole != User.Role.PT) {
-            request.getRequestDispatcher("/WEB-INF/views/common/error-403.jsp").forward(request, response);
-            return;
-        }
-
         // ---- Đọc bộ lọc từ request ------------------------------------ //
         int filterUserId = parseIntParam(request, "userId", 0);
         String filterRole = request.getParameter("role");    // 'Staff' | 'PT' | null
@@ -71,6 +64,7 @@ public class WorkHistoryController extends HttpServlet {
 
         LocalDate fromDate = parseDate(fromStr);
         LocalDate toDate   = parseDate(toStr);
+        boolean validDateRange = isValidDateRange(fromDate, toDate);
 
         // A2: PT chỉ được xem lịch sử của chính mình
         if (currentUser.getRole() == User.Role.PT) {
@@ -82,6 +76,13 @@ public class WorkHistoryController extends HttpServlet {
         }
 
         // ---- Truy vấn DB ---------------------------------------------- //
+        if (!validDateRange) {
+            request.setAttribute("errorMessage", "Từ ngày phải trước hoặc bằng đến ngày.");
+            request.setAttribute("historyList", List.of());
+            request.setAttribute("total", 0);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("currentPage", 1);
+        } else {
         try {
             int total = attendanceService.countHistory(
                     filterUserId, filterRole, fromDate, toDate, keyword);
@@ -110,6 +111,7 @@ public class WorkHistoryController extends HttpServlet {
         }
 
         // Trả lại các tham số lọc để form hiển thị đúng giá trị đã chọn
+        }
         request.setAttribute("filterUserId", filterUserId);
         request.setAttribute("filterRole",   filterRole);
         request.setAttribute("filterFrom",   fromStr);
@@ -134,5 +136,9 @@ public class WorkHistoryController extends HttpServlet {
     private LocalDate parseDate(String dateStr) {
         if (dateStr == null || dateStr.isBlank()) return null;
         try { return LocalDate.parse(dateStr); } catch (Exception e) { return null; }
+    }
+
+    static boolean isValidDateRange(LocalDate fromDate, LocalDate toDate) {
+        return fromDate == null || toDate == null || !fromDate.isAfter(toDate);
     }
 }

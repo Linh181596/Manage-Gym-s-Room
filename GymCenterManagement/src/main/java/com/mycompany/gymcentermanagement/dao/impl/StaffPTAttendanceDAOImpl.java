@@ -42,6 +42,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                   AND ShiftBlock = ?
                   AND AttendanceDate = ?
                   AND IsDeleted = 0
+                  AND Status = 'Active'
                 """;
         Connection conn = null;
         PreparedStatement ps = null;
@@ -63,8 +64,8 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     public int create(StaffPTAttendance attendance) throws SQLException {
         String sql = """
                 INSERT INTO StaffPTAttendance
-                    (UserID, UserRole, ShiftBlock, CheckedBy, Note, CreatedBy, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, 0)
+                    (CheckedInAt, UserID, UserRole, ShiftBlock, CheckedBy, Note, Status, CreatedBy, IsDeleted)
+                VALUES (SYSDATETIME(), ?, ?, ?, ?, ?, 'Active', ?, 0)
                 """;
         Connection conn = null;
         PreparedStatement ps = null;
@@ -91,7 +92,82 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     @Override
-    public List<StaffPTAttendance> listUsersWithCheckinStatus(String shiftBlock, LocalDate date) throws SQLException {
+    public boolean checkout(int attendanceId, int checkedBy) throws SQLException {
+        String sql = """
+                UPDATE StaffPTAttendance
+                SET CheckedOutAt = SYSDATETIME(),
+                    UpdatedBy = CAST(? AS nvarchar(50)),
+                    UpdatedDate = SYSDATETIME()
+                WHERE AttendanceID = ?
+                  AND IsDeleted = 0
+                  AND Status = 'Active'
+                  AND CheckedOutAt IS NULL
+                """;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, checkedBy);
+            ps.setInt(2, attendanceId);
+            return ps.executeUpdate() > 0;
+        } finally {
+            closeResource(conn, ps, null);
+        }
+    }
+
+    @Override
+    public boolean undoCheckout(int attendanceId, int updatedBy) throws SQLException {
+        String sql = """
+                UPDATE StaffPTAttendance
+                SET CheckedOutAt = NULL,
+                    UpdatedBy = CAST(? AS nvarchar(50)),
+                    UpdatedDate = SYSDATETIME()
+                WHERE AttendanceID = ?
+                  AND IsDeleted = 0
+                  AND Status = 'Active'
+                  AND CheckedOutAt IS NOT NULL
+                """;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, updatedBy);
+            ps.setInt(2, attendanceId);
+            return ps.executeUpdate() > 0;
+        } finally {
+            closeResource(conn, ps, null);
+        }
+    }
+
+    @Override
+    public boolean cancel(int attendanceId, int cancelledBy) throws SQLException {
+        String sql = """
+                UPDATE StaffPTAttendance
+                SET Status = 'Cancelled',
+                    IsDeleted = 1,
+                    UpdatedBy = CAST(? AS nvarchar(50)),
+                    UpdatedDate = SYSDATETIME()
+                WHERE AttendanceID = ?
+                  AND IsDeleted = 0
+                  AND Status = 'Active'
+                """;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, cancelledBy);
+            ps.setInt(2, attendanceId);
+            return ps.executeUpdate() > 0;
+        } finally {
+            closeResource(conn, ps, null);
+        }
+    }
+
+    @Override
+    public List<StaffPTAttendance> listUsersWithCheckinStatus(String shiftBlock, LocalDate date, String keyword) throws SQLException {
         String sql = """
                 SELECT
                     u.UserID,
@@ -100,6 +176,8 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                     r.RoleName             AS UserRole,
                     COALESCE(a.AttendanceID, 0)      AS AttendanceID,
                     a.CheckedInAt,
+                    a.CheckedOutAt,
+                    a.Status,
                     a.ShiftBlock,
                     a.CheckedBy,
                     cb.DisplayName          AS CheckedByName,
@@ -114,9 +192,11 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                     AND a.ShiftBlock   = ?
                     AND a.AttendanceDate = ?
                     AND a.IsDeleted    = 0
+                    AND a.Status       = 'Active'
                 LEFT JOIN Users cb ON cb.UserID = a.CheckedBy
                 WHERE u.IsDeleted = 0
                   AND u.Status    = 'Active'
+                  AND (? = '' OR u.DisplayName LIKE ? OR u.Email LIKE ?)
                 ORDER BY r.RoleName, u.DisplayName
                 """;
         List<StaffPTAttendance> results = new ArrayList<>();
@@ -128,6 +208,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
             ps = conn.prepareStatement(sql);
             ps.setString(1, shiftBlock);
             ps.setDate(2, Date.valueOf(date));
+            String kw = keyword == null ? "" : keyword.trim();
+            ps.setString(3, kw);
+            ps.setString(4, "%" + kw + "%");
+            ps.setString(5, "%" + kw + "%");
             rs = ps.executeQuery();
             while (rs.next()) {
                 results.add(mapStatusRow(rs));
@@ -147,8 +231,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                     a.UserID,
                     a.UserRole,
                     a.CheckedInAt,
+                    a.CheckedOutAt,
                     a.AttendanceDate,
                     a.ShiftBlock,
+                    a.Status,
                     a.CheckedBy,
                     a.Note,
                     a.CreatedBy,
@@ -219,8 +305,8 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     public StaffPTAttendance findById(int attendanceId) throws SQLException {
         String sql = """
                 SELECT
-                    a.AttendanceID, a.UserID, a.UserRole, a.CheckedInAt,
-                    a.AttendanceDate, a.ShiftBlock, a.CheckedBy, a.Note,
+                    a.AttendanceID, a.UserID, a.UserRole, a.CheckedInAt, a.CheckedOutAt,
+                    a.AttendanceDate, a.ShiftBlock, a.Status, a.CheckedBy, a.Note,
                     a.CreatedBy, a.CreatedDate, a.IsDeleted,
                     u.DisplayName  AS TargetFullName,
                     u.Email        AS TargetEmail,
@@ -297,10 +383,22 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         if (checkedInAt != null)
             a.setCheckedInAt(checkedInAt.toLocalDateTime());
 
+        Timestamp checkedOutAt = rs.getTimestamp("CheckedOutAt");
+        if (checkedOutAt != null)
+            a.setCheckedOutAt(checkedOutAt.toLocalDateTime());
+
         String shift = rs.getString("ShiftBlock");
         if (shift != null) {
             try {
                 a.setShiftBlock(shift);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        String status = rs.getString("Status");
+        if (status != null) {
+            try {
+                a.setStatus(status);
             } catch (IllegalArgumentException ignored) {
             }
         }
@@ -329,6 +427,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         if (checkedInAt != null)
             a.setCheckedInAt(checkedInAt.toLocalDateTime());
 
+        Timestamp checkedOutAt = rs.getTimestamp("CheckedOutAt");
+        if (checkedOutAt != null)
+            a.setCheckedOutAt(checkedOutAt.toLocalDateTime());
+
         Date attDate = rs.getDate("AttendanceDate");
         if (attDate != null)
             a.setAttendanceDate(attDate.toLocalDate());
@@ -337,6 +439,14 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         if (shift != null) {
             try {
                 a.setShiftBlock(shift);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        String status = rs.getString("Status");
+        if (status != null) {
+            try {
+                a.setStatus(status);
             } catch (IllegalArgumentException ignored) {
             }
         }
