@@ -16,6 +16,47 @@ public class PTRegistrationDTO {
     private String note; // Hoặc description (Ghi chú/Mong muốn của khách)
     private String ptStatus; // Trạng thái của PT (Active/Inactive)
     private String status; // Trạng thái đơn (Pending, Active, Completed, Cancelled)
+    private String processedByUserName;
+    private java.time.LocalDateTime processedAt;
+    private String paymentStatus;
+    private LocalDate endDate;
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getFormattedEndDate() {
+        if (endDate == null) return "";
+        return endDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    public String getProcessedByUserName() {
+        return processedByUserName;
+    }
+
+    public void setProcessedByUserName(String processedByUserName) {
+        this.processedByUserName = processedByUserName;
+    }
+
+    public java.time.LocalDateTime getProcessedAt() {
+        return processedAt;
+    }
+
+    public void setProcessedAt(java.time.LocalDateTime processedAt) {
+        this.processedAt = processedAt;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
 
     public String getStatus() {
         return status;
@@ -63,6 +104,16 @@ public class PTRegistrationDTO {
 
     public void setPreferredStartDate(LocalDate preferredStartDate) {
         this.preferredStartDate = preferredStartDate;
+    }
+
+    public String getFormattedPreferredStartDate() {
+        if (preferredStartDate == null) return "";
+        return preferredStartDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    public String getFormattedProcessedAt() {
+        if (processedAt == null) return "";
+        return processedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
     public String getPtDisplayName() {
