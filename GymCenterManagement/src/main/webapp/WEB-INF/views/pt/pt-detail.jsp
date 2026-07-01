@@ -194,10 +194,12 @@
                            class="btn btn-warning flex-fill py-2 fw-bold shadow-sm text-dark">
                             <i class="fa fa-edit me-2"></i>Chỉnh sửa thông tin PT
                         </a>
-                        <a href="${pageContext.request.contextPath}/admin/pt/service-prices?id=${trainer.ptId}" 
-                           class="btn btn-primary flex-fill py-2 fw-bold shadow-sm text-white">
-                            <i class="fa fa-hand-holding-usd me-2"></i>Quản lý giá dịch vụ
-                        </a>
+                        <c:if test="${sessionScope.currentUser.role == 'Admin'}">
+                            <a href="${pageContext.request.contextPath}/admin/pt/service-prices?id=${trainer.ptId}" 
+                               class="btn btn-primary flex-fill py-2 fw-bold shadow-sm text-white">
+                                <i class="fa fa-hand-holding-usd me-2"></i>Quản lý giá dịch vụ
+                            </a>
+                        </c:if>
                     </div>
                 </c:if>
             </div>

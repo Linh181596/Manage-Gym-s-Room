@@ -209,6 +209,9 @@ public class AdminEditPTController extends HttpServlet {
             pt.setDisplayName(displayName);
             pt.setSpecialization(specialization);
             pt.setDescription(description);
+            if (currentUser.getRole() == User.Role.Staff) {
+                status = ptFromDb.getStatus();
+            }
             pt.setStatus(status);
             pt.setAvatarPath(avatarPath);
             pt.setCertificateFilePath(certPath);
@@ -219,6 +222,12 @@ public class AdminEditPTController extends HttpServlet {
                 LocalDate careerDate = LocalDate.parse(careerStartDate);
                 if (careerDate.isAfter(LocalDate.now())) {
                     throw new IllegalArgumentException("Ngày bắt đầu sự nghiệp không được lớn hơn ngày hiện tại.");
+                }
+                if (careerDate.isAfter(LocalDate.now().minusYears(1))) {
+                    throw new IllegalArgumentException("Kinh nghiệm làm việc của PT phải tối thiểu từ 1 năm trở lên.");
+                }
+                if (careerDate.isBefore(LocalDate.now().minusYears(25))) {
+                    throw new IllegalArgumentException("Kinh nghiệm làm việc của PT không được vượt quá 25 năm.");
                 }
                 pt.setCareerStartDate(careerDate);
             }

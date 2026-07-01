@@ -62,9 +62,9 @@
                         <div class="input-group">
                             <input type="number" class="form-control form-control-lg border-2" id="price12" name="price12" 
                                    value="${price12.price != null ? price12.price.toBigInteger() : '0'}" 
-                                   placeholder="Nhập giá tiền cho gói 12 buổi" min="0" step="1000" required>
+                                   placeholder="Nhập giá tiền cho gói 12 buổi" min="1000" step="1000" required>
                             <span class="input-group-text bg-white border-2 border-start-0 fw-semibold text-secondary">₫</span>
-                            <div class="invalid-feedback">Vui lòng nhập giá tiền hợp lệ cho gói 12 buổi (số không âm).</div>
+                            <div class="invalid-feedback">Vui lòng nhập giá tiền hợp lệ cho gói 12 buổi (phải lớn hơn 0 và không để trống).</div>
                         </div>
                         <div class="form-text">Đây là giá tiền áp dụng cho gói PT 12 buổi trong 1 tháng.</div>
                     </div>
@@ -77,9 +77,9 @@
                         <div class="input-group">
                             <input type="number" class="form-control form-control-lg border-2" id="price36" name="price36" 
                                    value="${price36.price != null ? price36.price.toBigInteger() : '0'}" 
-                                   placeholder="Nhập giá tiền cho gói 36 buổi" min="0" step="1000" required>
+                                   placeholder="Nhập giá tiền cho gói 36 buổi" min="1000" step="1000" required>
                             <span class="input-group-text bg-white border-2 border-start-0 fw-semibold text-secondary">₫</span>
-                            <div class="invalid-feedback">Vui lòng nhập giá tiền hợp lệ cho gói 36 buổi (số không âm).</div>
+                            <div class="invalid-feedback">Vui lòng nhập giá tiền hợp lệ cho gói 36 buổi (phải lớn hơn 0 và không để trống).</div>
                         </div>
                         <div class="form-text">Đây là giá tiền áp dụng cho gói PT 36 buổi trong 3 tháng.</div>
                     </div>

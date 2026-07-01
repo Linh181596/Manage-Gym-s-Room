@@ -91,8 +91,35 @@ public class PTListController extends HttpServlet {
             }
         }
 
-        request.setAttribute("trainers", trainers);
-        request.setAttribute("trainerCount", trainers.size());
+        // Pagination (6 trainers per page)
+        int page = 1;
+        String pageRaw = request.getParameter("page");
+        if (pageRaw != null && !pageRaw.trim().isEmpty()) {
+            try {
+                page = Integer.parseInt(pageRaw);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        int pageSize = 6;
+        int totalTrainers = trainers.size();
+        int totalPages = (int) Math.ceil((double) totalTrainers / pageSize);
+        if (totalPages == 0) totalPages = 1;
+        if (page > totalPages) page = totalPages;
+
+        int start = (page - 1) * pageSize;
+        int end = Math.min(start + pageSize, totalTrainers);
+        List<PersonalTrainer> paginatedTrainers = new ArrayList<>();
+        if (start < totalTrainers) {
+            paginatedTrainers = trainers.subList(start, end);
+        }
+
+        request.setAttribute("trainers", paginatedTrainers);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalTrainers", totalTrainers);
+        request.setAttribute("pageSize", pageSize);
         request.setAttribute("specializationOptions", specializationOptions);
         request.setAttribute("selectedSpecializations", selectedSpecializations);
         request.setAttribute("keyword", keyword);

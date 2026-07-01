@@ -200,6 +200,16 @@
         </form>
     </div>
 
+    <!-- Count Summary -->
+    <c:if test="${not empty totalTrainers and totalTrainers > 0}">
+        <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+            <span class="text-secondary fw-semibold">
+                Hiển thị ${(currentPage - 1) * pageSize + 1} - ${currentPage * pageSize > totalTrainers ? totalTrainers : currentPage * pageSize} 
+                trong tổng số <strong class="text-primary">${totalTrainers}</strong> Huấn luyện viên.
+            </span>
+        </div>
+    </c:if>
+
     <!-- Trainer Grid -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
         <c:choose>
@@ -310,6 +320,29 @@
             </c:otherwise>
         </c:choose>
     </div>
+
+    <!-- Pagination -->
+    <c:if test="${totalPages > 1}">
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="?page=${currentPage - 1}&keyword=${keyword != null ? keyword : ''}&status=${status != null ? status : ''}<c:forEach var='s' items='${selectedSpecializations}'>&specializations=${s}</c:forEach>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <c:forEach var="p" begin="1" end="${totalPages}">
+                    <li class="page-item ${currentPage == p ? 'active' : ''}">
+                        <a class="page-link" href="?page=${p}&keyword=${keyword != null ? keyword : ''}&status=${status != null ? status : ''}<c:forEach var='s' items='${selectedSpecializations}'>&specializations=${s}</c:forEach>">${p}</a>
+                    </li>
+                </c:forEach>
+                <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="?page=${currentPage + 1}&keyword=${keyword != null ? keyword : ''}&status=${status != null ? status : ''}<c:forEach var='s' items='${selectedSpecializations}'>&specializations=${s}</c:forEach>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </c:if>
 </div>
 
 <c:if test="${sessionScope.currentUser == null}">
