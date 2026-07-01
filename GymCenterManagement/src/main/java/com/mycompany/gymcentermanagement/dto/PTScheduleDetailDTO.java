@@ -88,4 +88,23 @@ public class PTScheduleDetailDTO {
     public void setStartTime(Time startTime) {
         this.startTime = startTime;
     }
+
+    public boolean isFuture() {
+        if (sessionDate == null || startTime == null) {
+            return false;
+        }
+        LocalDate today = LocalDate.now();
+        java.time.LocalTime nowTime = java.time.LocalTime.now();
+        return sessionDate.isAfter(today) || (sessionDate.isEqual(today) && startTime.toLocalTime().isAfter(nowTime));
+    }
+
+    private String note;
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
 }

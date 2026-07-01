@@ -97,6 +97,16 @@ public class PTMemberDTO {
         this.daysOfWeek = daysOfWeek;
     }
 
+    private int cancelledSessions;
+
+    public int getCancelledSessions() {
+        return cancelledSessions;
+    }
+
+    public void setCancelledSessions(int cancelledSessions) {
+        this.cancelledSessions = cancelledSessions;
+    }
+
     public String getTimeSlot() {
         return timeSlot;
     }

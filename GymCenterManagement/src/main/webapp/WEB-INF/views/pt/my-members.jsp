@@ -53,9 +53,18 @@
                                         <span class="fw-semibold text-primary">${m.packageName}</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info text-white px-2 py-1.5" style="font-size: 0.85rem;">
-                                            ${m.completedSessions} / ${m.totalSessions} buổi
-                                        </span>
+                                        <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="text-decoration-none">
+                                            <span class="badge bg-info text-white px-2 py-1.5" style="font-size: 0.85rem;" title="Xem lịch dạy">
+                                                ${m.completedSessions} / ${m.totalSessions} buổi
+                                            </span>
+                                        </a>
+                                        <c:if test="${m.cancelledSessions > 0}">
+                                            <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="text-decoration-none d-block mt-1">
+                                                <small class="text-danger fw-bold" title="Xem ca học bị hủy trên lịch tuần">
+                                                    <i class="fa fa-times-circle"></i> Đã hủy: ${m.cancelledSessions} ca
+                                                </small>
+                                            </a>
+                                        </c:if>
                                     </td>
                                     <td>
                                         <c:choose>

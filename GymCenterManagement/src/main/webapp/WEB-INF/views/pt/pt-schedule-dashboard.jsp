@@ -101,6 +101,13 @@
                                     <div class="text-muted small">
                                         <i class="fa fa-dumbbell me-1"></i> Gói: ${s.packageName}
                                     </div>
+
+                                    <c:if test="${s.sessionStatus == 'Cancelled' && not empty s.note}">
+                                        <div class="text-danger small mt-2" data-bs-toggle="tooltip" title="Lý do hủy: ${s.note}">
+                                            <i class="fa fa-times-circle me-1"></i>
+                                            <strong>Lý do hủy:</strong> ${s.note}
+                                        </div>
+                                    </c:if>
                                 </div>
                             </div>
                         </c:forEach>
@@ -120,6 +127,15 @@
         transform: translateY(-3px);
     }
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp"/>
 
