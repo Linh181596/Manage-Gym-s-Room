@@ -1021,6 +1021,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
     @Override
     public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException {
+        return searchAccounts(keyword, role, status, 0, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -1066,7 +1071,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 params.add(status.name());
             }
 
-            sql.append(" ORDER BY u.UserID DESC");
+            sql.append(" ORDER BY u.UserID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            params.add(Math.max(offset, 0));
+            params.add(limit <= 0 ? 10 : limit);
             stmt = conn.prepareStatement(sql.toString());
 
             for (int i = 0; i < params.size(); i++) {

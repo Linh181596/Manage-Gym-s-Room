@@ -27,6 +27,8 @@ public class ManageAccountController extends HttpServlet {
 
     private static final String LIST_VIEW = "/WEB-INF/views/admin/account-list.jsp";
     private static final String FORM_VIEW = "/WEB-INF/views/admin/account-form.jsp";
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 50;
     private static final User.AccountStatus[] MANAGED_STATUSES = {
             User.AccountStatus.Active,
             User.AccountStatus.Inactive,
@@ -316,6 +318,19 @@ public class ManageAccountController extends HttpServlet {
             return normalized == null ? null : Integer.parseInt(normalized);
         } catch (NumberFormatException ex) {
             return null;
+        }
+    }
+
+    private int parsePositiveInt(String rawValue, int defaultValue) {
+        try {
+            String normalized = normalizeBlank(rawValue);
+            if (normalized == null) {
+                return defaultValue;
+            }
+            int value = Integer.parseInt(normalized);
+            return value > 0 ? Math.min(value, MAX_PAGE_SIZE) : defaultValue;
+        } catch (NumberFormatException ex) {
+            return defaultValue;
         }
     }
 
