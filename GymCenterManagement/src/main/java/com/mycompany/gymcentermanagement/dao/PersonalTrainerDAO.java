@@ -77,4 +77,8 @@ public interface PersonalTrainerDAO {
      * Gets all active members currently trained by the Personal Trainer.
      */
     public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId);
+    
+    public int getActiveMembersForPTCount(int ptId);
+    
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPTPaginated(int ptId, int offset, int limit);
 }

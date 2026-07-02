@@ -258,4 +258,54 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         }
         return list;
     }
+
+    @Override
+    public int countAll() throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT COUNT(*) FROM Invoices WHERE IsDeleted = 0";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return 0;
+    }
+
+    @Override
+    public List<Invoice> findAllPaginated(int offset, int limit) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<Invoice> list = new ArrayList<>();
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName " +
+                         "FROM Invoices i " +
+                         "INNER JOIN Members m ON i.MemberID = m.MemberID " +
+                         "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
+                         "INNER JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
+                         "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
+                         "WHERE i.IsDeleted = 0 " +
+                         "ORDER BY i.InvoiceID DESC " +
+                         "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, Math.max(0, offset));
+            stmt.setInt(2, limit);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToInvoice(rs));
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return list;
+    }
 }

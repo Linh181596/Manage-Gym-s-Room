@@ -45,8 +45,24 @@ public class PTMembersController extends HttpServlet {
                 return;
             }
 
-            List<PTMemberDTO> membersList = personalTrainerService.getActiveMembersForPT(pt.getPtId());
+            // Pagination using PaginationHelper
+            int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+            int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                    com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
+            
+            int totalItems = personalTrainerService.getActiveMembersForPTCount(pt.getPtId());
+            int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+            page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
+            int offset = (page - 1) * pageSize;
+
+            List<PTMemberDTO> membersList = personalTrainerService.getActiveMembersForPTPaginated(pt.getPtId(), offset, pageSize);
             request.setAttribute("membersList", membersList);
+
+            String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                    request, "/pt/members", "pageSize", String.valueOf(pageSize));
+
+            com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                    request, page, pageSize, totalItems, queryBase, "hội viên");
 
             request.getRequestDispatcher("/WEB-INF/views/pt/my-members.jsp").forward(request, response);
         } catch (Exception e) {

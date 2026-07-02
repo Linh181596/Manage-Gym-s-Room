@@ -54,6 +54,10 @@ public interface UserService {
 
     List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status);
 
+    int countAccounts(String keyword, User.Role role, User.AccountStatus status);
+
+    List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit);
+
     User getAccountById(int userId);
 
     AccountOperationResult createManagedAccount(User user, String createdBy);

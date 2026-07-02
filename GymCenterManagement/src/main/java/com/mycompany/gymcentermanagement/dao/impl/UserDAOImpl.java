@@ -1084,6 +1084,135 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    public int countAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<Object> params = new ArrayList<>();
+
+        try {
+            conn = getActiveConnection();
+            StringBuilder sql = new StringBuilder("""
+                        SELECT COUNT(*)
+                        FROM Users u
+                        LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
+                        LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        WHERE u.IsDeleted = 0
+                    """);
+
+            String normalizedKeyword = normalizeBlank(keyword);
+            if (normalizedKeyword != null) {
+                sql.append("""
+                            AND (
+                                u.DisplayName LIKE ?
+                                OR u.Email LIKE ?
+                                OR u.Phone LIKE ?
+                                OR r.RoleName LIKE ?
+                                OR u.Status LIKE ?
+                            )
+                        """);
+                String pattern = "%" + normalizedKeyword + "%";
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+            }
+
+            if (role != null) {
+                sql.append(" AND r.RoleName = ?");
+                params.add(role.name());
+            }
+
+            if (status != null) {
+                sql.append(" AND u.Status = ?");
+                params.add(status.name());
+            }
+
+            stmt = conn.prepareStatement(sql.toString());
+
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return 0;
+    }
+
+    @Override
+    public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<User> list = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
+
+        try {
+            conn = getActiveConnection();
+            StringBuilder sql = new StringBuilder("""
+                        SELECT u.*, r.RoleName
+                        FROM Users u
+                        LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
+                        LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        WHERE u.IsDeleted = 0
+                    """);
+
+            String normalizedKeyword = normalizeBlank(keyword);
+            if (normalizedKeyword != null) {
+                sql.append("""
+                            AND (
+                                u.DisplayName LIKE ?
+                                OR u.Email LIKE ?
+                                OR u.Phone LIKE ?
+                                OR r.RoleName LIKE ?
+                                OR u.Status LIKE ?
+                            )
+                        """);
+                String pattern = "%" + normalizedKeyword + "%";
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+                params.add(pattern);
+            }
+
+            if (role != null) {
+                sql.append(" AND r.RoleName = ?");
+                params.add(role.name());
+            }
+
+            if (status != null) {
+                sql.append(" AND u.Status = ?");
+                params.add(status.name());
+            }
+
+            sql.append(" ORDER BY u.UserID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+            params.add(Math.max(0, offset));
+            params.add(limit);
+
+            stmt = conn.prepareStatement(sql.toString());
+
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToUser(rs));
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return list;
+    }
+
+    @Override
     public boolean checkEmailExistsForOtherUser(String email, int excludedUserId) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
