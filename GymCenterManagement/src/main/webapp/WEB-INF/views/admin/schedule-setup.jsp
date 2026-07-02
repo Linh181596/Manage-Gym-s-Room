@@ -79,7 +79,6 @@
                                         <th style="width: 12%;">T5</th>
                                         <th style="width: 12%;">T6</th>
                                         <th style="width: 12%;">T7</th>
-                                        <th style="width: 12%;">CN</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -95,7 +94,7 @@
                                                     <c:when test="${rowIdx == 5}">Tối 2 <br><small class="text-muted">18:45 - 20:15</small></c:when>
                                                 </c:choose>
                                             </td>
-                                            <c:forEach var="colIdx" begin="0" end="6">
+                                            <c:forEach var="colIdx" begin="0" end="5">
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${ptMatrix[rowIdx][colIdx]}">
@@ -127,7 +126,6 @@
                                         <th style="width: 12%;">T5</th>
                                         <th style="width: 12%;">T6</th>
                                         <th style="width: 12%;">T7</th>
-                                        <th style="width: 12%;">CN</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -143,7 +141,7 @@
                                                     <c:when test="${rowIdx == 5}">Tối 2 <br><small class="text-muted">18:45 - 20:15</small></c:when>
                                                 </c:choose>
                                             </td>
-                                            <c:forEach var="colIdx" begin="0" end="6">
+                                            <c:forEach var="colIdx" begin="0" end="5">
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${memberMatrix[rowIdx][colIdx]}">
