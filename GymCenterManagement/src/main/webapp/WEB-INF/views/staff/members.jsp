@@ -198,6 +198,9 @@
                                 <% } %>
                             </tbody>
                         </table>
+                        
+                        <!-- Pagination -->
+                        <jsp:include page="../common/pagination.jsp" />
                     <% } else { %>
                         <div class="text-center py-5 text-muted">
                             <i class="fa fa-folder-open fa-3x mb-3 text-secondary"></i>

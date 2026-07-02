@@ -99,6 +99,7 @@
                         </tbody>
                     </table>
                 </div>
+                <jsp:include page="../common/pagination.jsp" />
             </c:otherwise>
         </c:choose>
     </div>

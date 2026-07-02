@@ -16,6 +16,8 @@ import java.util.List;
 public interface InvoiceService {
     Invoice getInvoiceById(int id) throws SQLException;
     List<Invoice> getAllInvoices() throws SQLException;
+    int getInvoicesCount() throws SQLException;
+    List<Invoice> getInvoicesPaginated(int offset, int limit) throws SQLException;
     boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException;
     boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException;
 }

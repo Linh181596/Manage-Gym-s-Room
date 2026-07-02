@@ -97,11 +97,13 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         String status = trim(request.getParameter("status"));
         String type = trim(request.getParameter("type"));
         Integer equipmentId = nullablePositiveInt(request.getParameter("equipmentId"));
-        int page = parseInt(request.getParameter("page"), 1);
-        int pageSize = normalizePageSize(parseInt(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE));
+        
+        int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+        int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE));
         int totalItems = service.countSearch(keyword, status, equipmentId, type);
-        int totalPages = totalPages(totalItems, pageSize);
-        page = Math.min(Math.max(1, page), totalPages);
+        int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+        page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
         int offset = (page - 1) * pageSize;
 
         request.setAttribute("schedules", service.search(keyword, status, equipmentId, type, offset, pageSize));
@@ -112,8 +114,14 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         request.setAttribute("type", type);
         request.setAttribute("equipmentId", equipmentId);
         exposeFlash(request);
-        setPaginationAttributes(request, page, pageSize, totalItems,
-                buildQueryBase(request, keyword, status, equipmentId, type, pageSize));
+        
+        String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                request, "/staff/maintenance-schedules", "action", "list", "keyword", keyword, "status", status, 
+                "equipmentId", equipmentId == null ? null : String.valueOf(equipmentId), "type", type, "pageSize", String.valueOf(pageSize));
+
+        com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                request, page, pageSize, totalItems, queryBase, "lịch bảo trì");
+
         request.getRequestDispatcher(VIEW_DIR + "maintenance-schedule-list.jsp").forward(request, response);
     }
 
@@ -316,64 +324,6 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
     private Integer nullablePositiveInt(String value) {
         int parsed = parseInt(value, 0);
         return parsed > 0 ? parsed : null;
-    }
-
-    private int normalizePageSize(int pageSize) {
-        return switch (pageSize) {
-            case 5, 10, 20, 50 -> pageSize;
-            default -> DEFAULT_PAGE_SIZE;
-        };
-    }
-
-    private int totalPages(int totalItems, int pageSize) {
-        return Math.max(1, (int) Math.ceil(Math.max(0, totalItems) / (double) pageSize));
-    }
-
-    private void setPaginationAttributes(HttpServletRequest request, int page, int pageSize,
-            int totalItems, String queryBase) {
-        int totalPages = totalPages(totalItems, pageSize);
-        int offset = (page - 1) * pageSize;
-        int visiblePages = Math.min(5, totalPages);
-        int startPage = Math.max(1, page - visiblePages / 2);
-        int endPage = Math.min(totalPages, startPage + visiblePages - 1);
-        startPage = Math.max(1, endPage - visiblePages + 1);
-
-        request.setAttribute("showPagination", true);
-        request.setAttribute("page", page);
-        request.setAttribute("pageSize", pageSize);
-        request.setAttribute("totalItems", totalItems);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("startItem", totalItems == 0 ? 0 : offset + 1);
-        request.setAttribute("endItem", Math.min(totalItems, offset + pageSize));
-        request.setAttribute("hasPrevious", page > 1);
-        request.setAttribute("hasNext", page < totalPages);
-        request.setAttribute("previousPage", Math.max(1, page - 1));
-        request.setAttribute("nextPage", Math.min(totalPages, page + 1));
-        request.setAttribute("startPage", startPage);
-        request.setAttribute("endPage", endPage);
-        request.setAttribute("queryBase", queryBase);
-    }
-
-    private String buildQueryBase(HttpServletRequest request, String keyword, String status,
-            Integer equipmentId, String type, int pageSize) {
-        StringBuilder query = new StringBuilder(request.getContextPath())
-                .append("/staff/maintenance-schedules?action=list");
-        appendQuery(query, "keyword", keyword);
-        appendQuery(query, "status", status);
-        appendQuery(query, "equipmentId", equipmentId == null ? null : equipmentId.toString());
-        appendQuery(query, "type", type);
-        appendQuery(query, "pageSize", String.valueOf(pageSize));
-        return query.append('&').toString();
-    }
-
-    private void appendQuery(StringBuilder query, String key, String value) {
-        if (value == null || value.isBlank()) {
-            return;
-        }
-        query.append('&')
-                .append(java.net.URLEncoder.encode(key, java.nio.charset.StandardCharsets.UTF_8))
-                .append('=')
-                .append(java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8));
     }
 
     private String trim(String value) {

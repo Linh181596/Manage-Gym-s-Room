@@ -32,6 +32,10 @@ public interface UserDAO {
 
     List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException;
 
+    int countAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException;
+
+    List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit) throws SQLException;
+
     boolean checkEmailExistsForOtherUser(String email, int excludedUserId) throws SQLException;
 
     boolean checkPhoneExistsForOtherUser(String phone, int excludedUserId) throws SQLException;

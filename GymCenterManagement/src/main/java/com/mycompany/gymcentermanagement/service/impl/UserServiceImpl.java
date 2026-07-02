@@ -114,6 +114,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public int countAccounts(String keyword, User.Role role, User.AccountStatus status) {
+        try {
+            return userDAO.countAccounts(keyword, role, status);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error counting accounts", ex);
+            return 0;
+        }
+    }
+
+    @Override
+    public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit) {
+        try {
+            return userDAO.searchAccounts(keyword, role, status, offset, limit);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error searching accounts paginated", ex);
+            return List.of();
+        }
+    }
+
+    @Override
     public User getAccountById(int userId) {
         try {
             return userDAO.findById(userId);

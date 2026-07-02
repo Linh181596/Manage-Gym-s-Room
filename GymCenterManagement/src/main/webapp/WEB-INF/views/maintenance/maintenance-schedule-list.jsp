@@ -193,28 +193,7 @@
             </table>
         </div>
 
-        <c:if test="${showPagination}">
-            <div class="d-flex align-items-center justify-content-between mt-4">
-                <div class="small text-muted">
-                    Hiển thị <strong>${startItem}</strong> - <strong>${endItem}</strong> trong <strong>${totalItems}</strong> lịch
-                </div>
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item ${!hasPrevious ? 'disabled' : ''}">
-                            <a class="page-link" href="${queryBase}page=${previousPage}">&lsaquo;</a>
-                        </li>
-                        <c:forEach var="pageNumber" begin="${startPage}" end="${endPage}">
-                            <li class="page-item ${pageNumber == page ? 'active' : ''}">
-                                <a class="page-link" href="${queryBase}page=${pageNumber}">${pageNumber}</a>
-                            </li>
-                        </c:forEach>
-                        <li class="page-item ${!hasNext ? 'disabled' : ''}">
-                            <a class="page-link" href="${queryBase}page=${nextPage}">&rsaquo;</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </c:if>
+        <jsp:include page="../common/pagination.jsp" />
     </div>
 </div>
 

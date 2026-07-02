@@ -174,4 +174,14 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
     public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId) {
         return personalTrainerDAO.getActiveMembersForPT(ptId);
     }
+
+    @Override
+    public int getActiveMembersForPTCount(int ptId) {
+        return personalTrainerDAO.getActiveMembersForPTCount(ptId);
+    }
+
+    @Override
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPTPaginated(int ptId, int offset, int limit) {
+        return personalTrainerDAO.getActiveMembersForPTPaginated(ptId, offset, limit);
+    }
 }

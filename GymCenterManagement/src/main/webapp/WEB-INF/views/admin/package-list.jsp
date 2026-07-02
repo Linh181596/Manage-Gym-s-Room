@@ -154,6 +154,7 @@
                 </tbody>
             </table>
         </div>
+        <jsp:include page="../common/pagination.jsp" />
     </div>
 
     <!-- Delete Confirmation Modal -->

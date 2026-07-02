@@ -12,21 +12,7 @@
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
-<!-- Calculate KPI variables dynamically -->
-<c:set var="totalRevenue" value="0" />
-<c:set var="pendingCount" value="0" />
-<c:set var="paidCount" value="0" />
-<c:forEach var="inv" items="${invoices}">
-    <c:choose>
-        <c:when test="${inv.status == 'Paid'}">
-            <c:set var="totalRevenue" value="${totalRevenue + inv.amount}" />
-            <c:set var="paidCount" value="${paidCount + 1}" />
-        </c:when>
-        <c:when test="${inv.status == 'Pending'}">
-            <c:set var="pendingCount" value="${pendingCount + 1}" />
-        </c:when>
-    </c:choose>
-</c:forEach>
+<!-- KPI variables are calculated and passed directly from the controller -->
 
 <c:set var="isAdmin" value="${sessionScope.currentUser.role == 'Admin'}" />
 <div class="container-fluid pt-4 px-4">
@@ -214,6 +200,7 @@
                 </tbody>
             </table>
         </div>
+        <jsp:include page="../common/pagination.jsp" />
     </div>
 </div>
 
