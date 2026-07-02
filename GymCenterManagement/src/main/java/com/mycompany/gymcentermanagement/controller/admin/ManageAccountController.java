@@ -4,7 +4,7 @@
  * @description   : Controller xử lý chức năng quản lý tài khoản cho Admin, bao gồm tìm kiếm, tạo, cập nhật, khóa, mở khóa, đặt lại mật khẩu và vô hiệu hóa tài khoản.
  * @author        : Duongnd
  * @created       : 2026-06-25
- * @last_modified : 2026-06-25
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller.admin;
@@ -100,28 +100,51 @@ public class ManageAccountController extends HttpServlet {
     private void showAccountList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String keyword = normalizeBlank(request.getParameter("keyword"));
-        User.Role role = parseRole(request.getParameter("role"));
-        User.AccountStatus status = parseStatus(request.getParameter("status"));
-        int pageSize = parsePositiveInt(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE);
-        int currentPage = parsePositiveInt(request.getParameter("page"), 1);
+        String roleStr = normalizeBlank(request.getParameter("role"));
+        String statusStr = normalizeBlank(request.getParameter("status"));
 
-        int totalAccounts = userService.countAccounts(keyword, role, status);
-        int totalPages = Math.max(1, (int) Math.ceil((double) totalAccounts / pageSize));
-        if (currentPage > totalPages) {
-            currentPage = totalPages;
+        User.Role role = null;
+        if (roleStr != null) {
+            try {
+                role = User.Role.valueOf(roleStr);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid role
+            }
         }
 
-        List<User> accounts = userService.searchAccounts(keyword, role, status, currentPage, pageSize);
+        User.AccountStatus status = null;
+        if (statusStr != null) {
+            try {
+                status = User.AccountStatus.valueOf(statusStr);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid status
+            }
+        }
+
+        // Pagination setup
+        int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+        int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
+        
+        int totalItems = userService.countAccounts(keyword, role, status);
+        int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+        page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
+        int offset = (page - 1) * pageSize;
+
+        List<User> accounts = userService.searchAccounts(keyword, role, status, offset, pageSize);
         request.setAttribute("accounts", accounts);
-        request.setAttribute("keyword", keyword);
-        request.setAttribute("selectedRole", role != null ? role.name() : "");
-        request.setAttribute("selectedStatus", status != null ? status.name() : "");
-        request.setAttribute("roles", User.Role.values());
         request.setAttribute("statuses", MANAGED_STATUSES);
-        request.setAttribute("currentPage", currentPage);
-        request.setAttribute("pageSize", pageSize);
-        request.setAttribute("totalAccounts", totalAccounts);
-        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("roles", new User.Role[]{User.Role.Staff, User.Role.Member});
+        request.setAttribute("selectedRole", roleStr);
+        request.setAttribute("selectedStatus", statusStr);
+        request.setAttribute("keyword", keyword);
+
+        String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                request, "/admin/accounts", "keyword", keyword, "role", roleStr, "status", statusStr, "pageSize", String.valueOf(pageSize));
+
+        com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                request, page, pageSize, totalItems, queryBase, "tài khoản");
+
         request.getRequestDispatcher(LIST_VIEW).forward(request, response);
     }
 

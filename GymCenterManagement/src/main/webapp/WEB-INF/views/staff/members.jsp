@@ -120,7 +120,7 @@
                                     <th scope="col">Gói tập hiện tại</th>
                                     <th scope="col">Ngày tham gia</th>
                                     <th scope="col">Trạng thái</th>
-                                    <th scope="col" class="text-center" style="width: 320px;">Thao tác</th>
+                                    <th scope="col" class="text-center" style="width: 420px;">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,6 +156,16 @@
                                                     <i class="fa fa-eye"></i> Hồ sơ
                                                 </a>
                                                 <% if (isActive) { %>
+                                                    <a href="<%= contextPath %>/staff/package/renew?memberId=<%= userId %>" 
+                                                       class="btn btn-sm btn-outline-success" 
+                                                       title="Gia hạn gói tập">
+                                                        <i class="fa fa-history"></i> Gia hạn
+                                                    </a>
+                                                    <a href="<%= contextPath %>/staff/package/transfer?senderId=<%= userId %>" 
+                                                       class="btn btn-sm btn-outline-danger" 
+                                                       title="Chuyển nhượng gói tập">
+                                                        <i class="fa fa-exchange-alt"></i> Chuyển nhượng
+                                                    </a>
                                                     <a href="<%= contextPath %>/staff/members/toggle?userId=<%= userId %>&targetStatus=Locked" 
                                                        class="btn btn-sm btn-outline-warning" 
                                                        onclick="return confirm('Bạn có chắc chắn muốn KHÓA hội viên này?')" 
@@ -188,6 +198,9 @@
                                 <% } %>
                             </tbody>
                         </table>
+                        
+                        <!-- Pagination -->
+                        <jsp:include page="../common/pagination.jsp" />
                     <% } else { %>
                         <div class="text-center py-5 text-muted">
                             <i class="fa fa-folder-open fa-3x mb-3 text-secondary"></i>

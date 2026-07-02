@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%--
+  =========================================================================
+  Document    : dashboard.jsp
+  Created on  : 2026-06-25
+  Author      : Nguyễn Đại Dương (duongnd)
+  Description : Giao diện bảng điều khiển hiển thị tổng quan vận hành cho Admin.
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="../common/dashboard_header.jsp" />
@@ -93,7 +101,9 @@
                     <a href="${pageContext.request.contextPath}/staff/record-payment">Xem hóa đơn</a>
                 </div>
                 <div class="position-relative" style="height: 280px;">
-                    <canvas id="admin-revenue-chart"></canvas>
+                    <canvas id="admin-revenue-chart" 
+                            data-labels='${empty data ? "[]" : data.revenueChartLabelsJson}' 
+                            data-values='${empty data ? "[]" : data.revenueChartValuesJson}'></canvas>
                 </div>
             </div>
         </div>
@@ -219,13 +229,16 @@
             return;
         }
 
+        const labelsData = JSON.parse(chartElement.getAttribute("data-labels") || "[]");
+        const valuesData = JSON.parse(chartElement.getAttribute("data-values") || "[]");
+
         new Chart(chartElement.getContext("2d"), {
             type: "bar",
             data: {
-                labels: ${empty data ? "[]" : data.revenueChartLabelsJson},
+                labels: labelsData,
                 datasets: [{
                     label: "Doanh thu",
-                    data: ${empty data ? "[]" : data.revenueChartValuesJson},
+                    data: valuesData,
                     backgroundColor: "rgba(0, 156, 255, 0.45)",
                     borderColor: "rgba(0, 156, 255, 1)",
                     borderWidth: 1

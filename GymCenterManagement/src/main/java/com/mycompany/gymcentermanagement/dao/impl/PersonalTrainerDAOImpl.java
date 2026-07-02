@@ -1,5 +1,15 @@
+/**
+ * =========================================================================
+ * @file          : PersonalTrainerDAOImpl.java
+ * @description   : Lớp truy cập dữ liệu để quản lý hồ sơ Huấn luyện viên cá nhân (PT).
+ * @author        : Nguyễn Đình Phú (phund)
+ * @created       : 2026-06-02
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.dao.impl;
 
+import com.mycompany.gymcentermanagement.dao.BaseDAO;
 import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.utils.DBContext;
@@ -8,7 +18,20 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
+public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDAO {
+
+    public PersonalTrainerDAOImpl() {
+        super();
+    }
+
+    public PersonalTrainerDAOImpl(Connection connection) {
+        super(connection);
+    }
+
+    private Connection getActiveConnection() throws SQLException {
+        return (this.connection != null) ? this.connection : DBContext.getConnection();
+    }
+
     /**
      * Maps a ResultSet row to a PersonalTrainer object.
      */
@@ -94,15 +117,21 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                 """;
 
         List<PersonalTrainer> trainers = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
             while (rs.next()) {
                 trainers.add(mapPersonalTrainer(rs));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            closeResource(conn, ps, rs);
         }
 
         return trainers;
@@ -161,20 +190,26 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                     ORDER BY pt.FullName
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
 
             for (int i = 0; i < specializations.size(); i++) {
                 ps.setString(i + 1, "%" + specializations.get(i) + "%");
             }
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    trainers.add(mapPersonalTrainer(rs));
-                }
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                trainers.add(mapPersonalTrainer(rs));
             }
-
         } catch (SQLException e) {
             throw new RuntimeException("Lỗi khi lấy danh sách PT active", e);
+        } finally {
+            closeResource(conn, ps, rs);
         }
 
         return trainers;
@@ -211,23 +246,26 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                       AND u.IsDeleted = 0
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, ptId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapPersonalTrainer(rs);
-                }
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapPersonalTrainer(rs);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            closeResource(conn, ps, rs);
         }
 
         return null;
     }
-
 
     @Override
     public PersonalTrainer findPTByUserId(int userId) {
@@ -260,18 +298,22 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                       AND u.IsDeleted = 0
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, userId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapPersonalTrainer(rs);
-                }
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapPersonalTrainer(rs);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            closeResource(conn, ps, rs);
         }
 
         return null;
@@ -313,14 +355,21 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                     ORDER BY pt.CreatedDate DESC
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
             while (rs.next()) {
                 trainers.add(mapPersonalTrainer(rs));
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            closeResource(conn, ps, rs);
         }
 
         return trainers;
@@ -385,7 +434,13 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
             specializationValue = "%" + specialization.trim() + "%";
         }
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
             ps.setString(1, searchValue);
             ps.setString(2, searchValue);
             ps.setString(3, searchValue);
@@ -400,20 +455,20 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                 ps.setString(7, specializationValue);
             }
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    trainers.add(mapPersonalTrainer(rs));
-                }
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                trainers.add(mapPersonalTrainer(rs));
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            closeResource(conn, ps, rs);
         }
 
         return trainers;
     }
 
-    /*
+    /**
      * Search active PT by keyword and multiple specializations.
      */
     @Override
@@ -481,8 +536,13 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
 
         sql.append(" ORDER BY pt.FullName ");
 
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql.toString());
 
             int index = 1;
 
@@ -502,14 +562,122 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                 }
             }
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    trainers.add(mapPersonalTrainer(rs));
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                trainers.add(mapPersonalTrainer(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+
+        return trainers;
+    }
+
+    @Override
+    public List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status) {
+        List<PersonalTrainer> trainers = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("""
+                    SELECT
+                        pt.PTID,
+                        pt.UserID,
+                        pt.FullName,
+                        pt.DisplayName,
+                        pt.Specialization,
+                        pt.CareerStartDate,
+                        pt.CertificateFileName,
+                        pt.CertificateFilePath,
+                        pt.Description,
+                        pt.AvatarPath,
+                        pt.Status,
+                        pt.CreatedBy,
+                        pt.CreatedDate,
+                        pt.UpdatedBy,
+                        pt.UpdatedDate,
+                        pt.IsDeleted,
+                        u.Email,
+                        u.Phone,
+                        u.Status AS AccountStatus,
+                        u.MustChangePassword
+                    FROM PersonalTrainers pt
+                    INNER JOIN Users u ON pt.UserID = u.UserID
+                    WHERE pt.IsDeleted = 0
+                      AND u.IsDeleted = 0
+                """);
+
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasSpecializations = specializations != null && !specializations.isEmpty();
+        boolean hasStatus = status != null && !status.trim().isEmpty() && !"All".equalsIgnoreCase(status);
+
+        if (hasKeyword) {
+            sql.append("""
+                        AND (
+                            pt.FullName LIKE ?
+                            OR pt.DisplayName LIKE ?
+                            OR pt.Specialization LIKE ?
+                            OR pt.Description LIKE ?
+                            OR u.Email LIKE ?
+                        )
+                    """);
+        }
+
+        if (hasSpecializations) {
+            sql.append(" AND (");
+            for (int i = 0; i < specializations.size(); i++) {
+                sql.append("pt.Specialization LIKE ?");
+                if (i < specializations.size() - 1) {
+                    sql.append(" OR ");
+                }
+            }
+            sql.append(") ");
+        }
+
+        if (hasStatus) {
+            if ("Active".equalsIgnoreCase(status)) {
+                sql.append(" AND pt.Status = 'Active' AND u.Status = 'Active' ");
+            } else if ("Inactive".equalsIgnoreCase(status)) {
+                sql.append(" AND pt.Status = 'Inactive' ");
+            } else if ("Locked".equalsIgnoreCase(status)) {
+                sql.append(" AND u.Status = 'Locked' ");
+            }
+        }
+
+        sql.append(" ORDER BY pt.CreatedDate DESC ");
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+
+            if (hasKeyword) {
+                String searchLike = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+                ps.setString(paramIndex++, searchLike);
+            }
+
+            if (hasSpecializations) {
+                for (String spec : specializations) {
+                    ps.setString(paramIndex++, "%" + spec.trim() + "%");
                 }
             }
 
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                trainers.add(mapPersonalTrainer(rs));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            closeResource(conn, ps, rs);
         }
 
         return trainers;
@@ -539,7 +707,12 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), 0)
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
             ps.setInt(1, trainer.getUserId());
             ps.setString(2, trainer.getFullName());
             ps.setString(3, trainer.getDisplayName());
@@ -563,12 +736,12 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
             ps.setString(11, trainer.getCreatedBy());
 
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            closeResource(conn, ps, null);
         }
-
-        return false;
     }
 
     /**
@@ -576,7 +749,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
      */
     @Override
     public boolean updatePersonalTrainer(PersonalTrainer trainer) {
-        String sql = """
+        String sqlPT = """
                     UPDATE PersonalTrainers
                     SET FullName = ?,
                         DisplayName = ?,
@@ -593,8 +766,12 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                       AND IsDeleted = 0
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
 
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sqlPT);
             ps.setString(1, trainer.getFullName());
             ps.setString(2, trainer.getDisplayName());
             ps.setString(3, trainer.getSpecialization());
@@ -615,17 +792,16 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                 status = "Active";
             }
             ps.setString(9, status);
-
             ps.setString(10, trainer.getUpdatedBy());
             ps.setInt(11, trainer.getPtId());
 
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            closeResource(conn, ps, null);
         }
-
-        return false;
     }
 
     /**
@@ -633,7 +809,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
      */
     @Override
     public boolean updateTrainerStatus(int ptId, String status, String updatedBy) {
-        String sql = """
+        String sqlPT = """
                     UPDATE PersonalTrainers
                     SET Status = ?,
                         UpdatedBy = ?,
@@ -642,19 +818,22 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                       AND IsDeleted = 0
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
 
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sqlPT);
             ps.setString(1, status);
             ps.setString(2, updatedBy);
             ps.setInt(3, ptId);
-
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            closeResource(conn, ps, null);
         }
-
-        return false;
     }
 
     /**
@@ -670,18 +849,21 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
                     WHERE PTID = ?
                 """;
 
-        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement ps = null;
 
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
             ps.setString(1, updatedBy);
             ps.setInt(2, ptId);
-
             return ps.executeUpdate() > 0;
-
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        } finally {
+            closeResource(conn, ps, null);
         }
-
-        return false;
     }
 
     /**
@@ -692,8 +874,7 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
         Connection conn = null;
         PreparedStatement stm = null;
         try {
-            //get connection
-            conn = DBContext.getConnection();
+            conn = getActiveConnection();
             String sql = "UPDATE PersonalTrainers SET "
                     + "DisplayName = ?, "
                     + "Description = ?, "
@@ -711,17 +892,171 @@ public class PersonalTrainerDAOImpl implements PersonalTrainerDAO {
             stm.setInt(5, pt.getPtId());
 
             int rowAffected = stm.executeUpdate();
-
-            return (rowAffected > 0); //true -> updated successfully
-
-
+            return (rowAffected > 0);
         } catch (SQLException e) {
             System.err.println("Lỗi SQL khi update profile: " + e.getMessage());
-            throw e; //throw exception -> service
+            throw e;
         } finally {
-            if (stm != null) stm.close();
-            if (conn != null) conn.close();
+            closeResource(conn, stm, null);
         }
+    }
 
+    @Override
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId) {
+        List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> list = new ArrayList<>();
+        String sql = """
+                SELECT 
+                    r.PTRegistrationID,
+                    u.DisplayName AS MemberName,
+                    u.Phone AS MemberPhone,
+                    p.PackageName,
+                    r.StartDate,
+                    r.EndDate,
+                    p.NumberOfSessions AS TotalSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Completed' AND IsDeleted = 0) AS CompletedSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Cancelled' AND IsDeleted = 0) AS CancelledSessions,
+                    (SELECT STRING_AGG(
+                        CASE wd
+                            WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
+                            WHEN 5 THEN N'T5' WHEN 6 THEN N'T6' WHEN 7 THEN N'T7' WHEN 1 THEN N'CN'
+                        END, ', ') 
+                     FROM (SELECT DISTINCT DATEPART(weekday, SessionDate) AS wd FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS sub) AS DaysOfWeek,
+                    (SELECT TOP 1 CONVERT(varchar(5), StartTime, 108) + ' - ' + CONVERT(varchar(5), EndTime, 108)
+                     FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS TimeSlot
+                FROM PTRegistrations r
+                INNER JOIN Members m ON r.MemberID = m.MemberID
+                INNER JOIN Users u ON m.UserID = u.UserID
+                INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                WHERE sp.PTID = ? AND r.Status = 'Active' AND r.IsDeleted = 0
+                ORDER BY r.StartDate DESC
+                """;
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, ptId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                com.mycompany.gymcentermanagement.dto.PTMemberDTO dto = new com.mycompany.gymcentermanagement.dto.PTMemberDTO();
+                dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                dto.setMemberName(rs.getString("MemberName"));
+                dto.setMemberPhone(rs.getString("MemberPhone"));
+                dto.setPackageName(rs.getString("PackageName"));
+                dto.setStartDate(rs.getDate("StartDate") != null ? rs.getDate("StartDate").toLocalDate() : null);
+                dto.setEndDate(rs.getDate("EndDate") != null ? rs.getDate("EndDate").toLocalDate() : null);
+                dto.setTotalSessions(rs.getInt("TotalSessions"));
+                dto.setCompletedSessions(rs.getInt("CompletedSessions"));
+                dto.setCancelledSessions(rs.getInt("CancelledSessions"));
+                dto.setDaysOfWeek(rs.getString("DaysOfWeek"));
+                dto.setTimeSlot(rs.getString("TimeSlot"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi getActiveMembersForPT: " + e.getMessage());
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+        return list;
+    }
+
+    @Override
+    public int getActiveMembersForPTCount(int ptId) {
+        String sql = """
+                SELECT COUNT(*)
+                FROM PTRegistrations r
+                INNER JOIN Members m ON r.MemberID = m.MemberID
+                INNER JOIN Users u ON m.UserID = u.UserID
+                INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                WHERE sp.PTID = ? AND r.Status = 'Active' AND r.IsDeleted = 0
+                """;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, ptId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi getActiveMembersForPTCount: " + e.getMessage());
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+        return 0;
+    }
+
+    @Override
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPTPaginated(int ptId, int offset, int limit) {
+        List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> list = new ArrayList<>();
+        String sql = """
+                SELECT 
+                    r.PTRegistrationID,
+                    u.DisplayName AS MemberName,
+                    u.Phone AS MemberPhone,
+                    p.PackageName,
+                    r.StartDate,
+                    r.EndDate,
+                    p.NumberOfSessions AS TotalSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Completed' AND IsDeleted = 0) AS CompletedSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Cancelled' AND IsDeleted = 0) AS CancelledSessions,
+                    (SELECT STRING_AGG(
+                        CASE wd
+                            WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
+                            WHEN 5 THEN N'T5' WHEN 6 THEN N'T6' WHEN 7 THEN N'T7' WHEN 1 THEN N'CN'
+                        END, ', ') 
+                     FROM (SELECT DISTINCT DATEPART(weekday, SessionDate) AS wd FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS sub) AS DaysOfWeek,
+                    (SELECT TOP 1 CONVERT(varchar(5), StartTime, 108) + ' - ' + CONVERT(varchar(5), EndTime, 108)
+                     FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS TimeSlot
+                FROM PTRegistrations r
+                INNER JOIN Members m ON r.MemberID = m.MemberID
+                INNER JOIN Users u ON m.UserID = u.UserID
+                INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                WHERE sp.PTID = ? AND r.Status = 'Active' AND r.IsDeleted = 0
+                ORDER BY r.StartDate DESC
+                OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, ptId);
+            ps.setInt(2, Math.max(0, offset));
+            ps.setInt(3, limit);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                com.mycompany.gymcentermanagement.dto.PTMemberDTO dto = new com.mycompany.gymcentermanagement.dto.PTMemberDTO();
+                dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                dto.setMemberName(rs.getString("MemberName"));
+                dto.setMemberPhone(rs.getString("MemberPhone"));
+                dto.setPackageName(rs.getString("PackageName"));
+                dto.setStartDate(rs.getDate("StartDate") != null ? rs.getDate("StartDate").toLocalDate() : null);
+                dto.setEndDate(rs.getDate("EndDate") != null ? rs.getDate("EndDate").toLocalDate() : null);
+                dto.setTotalSessions(rs.getInt("TotalSessions"));
+                dto.setCompletedSessions(rs.getInt("CompletedSessions"));
+                dto.setCancelledSessions(rs.getInt("CancelledSessions"));
+                dto.setDaysOfWeek(rs.getString("DaysOfWeek"));
+                dto.setTimeSlot(rs.getString("TimeSlot"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi getActiveMembersForPTPaginated: " + e.getMessage());
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+        return list;
     }
 }

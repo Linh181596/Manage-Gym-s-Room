@@ -28,4 +28,11 @@ public interface PTRegistrationService {
     PTRegistrationDTO getRegistrationById(int regId);
     boolean updateRegistrationAndPaymentStatus(int regId, String status, String paymentStatus);
     boolean cancelRegistration(int regId, String cancelReason, int processedByUserId, String updatedBy);
+
+    List<PTServicePrice> getAllServicePricesByTrainerId(int ptId);
+    boolean saveOrUpdateServicePrice(PTServicePrice price);
+
+    List<PTRegistrationDTO> getProcessedRegistrations(int page, int pageSize);
+    int getProcessedRegistrationsCount();
+    boolean deleteRegistrationPermanent(int regId);
 }

@@ -38,6 +38,16 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public int getInvoicesCount() throws SQLException {
+        return invoiceDAO.countAll();
+    }
+
+    @Override
+    public List<Invoice> getInvoicesPaginated(int offset, int limit) throws SQLException {
+        return invoiceDAO.findAllPaginated(offset, limit);
+    }
+
+    @Override
     public boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException {
         Connection conn = null;
         boolean success = false;
@@ -83,6 +93,33 @@ public class InvoiceServiceImpl implements InvoiceService {
                 boolean updatePackageSuccess = mpDAO.update(mp);
                 if (!updatePackageSuccess) {
                     throw new SQLException("Failed to activate Member Package.");
+                }
+
+                // Tự động đóng gói của người gửi nếu đây là giao dịch chuyển nhượng (Transfer)
+                if (inv.getCreatedBy() != null && inv.getCreatedBy().startsWith("Transfer;SenderPackageID:")) {
+                    try {
+                        String[] parts = inv.getCreatedBy().split(";");
+                        int senderPkgId = -1;
+                        for (String part : parts) {
+                            if (part.startsWith("SenderPackageID:")) {
+                                senderPkgId = Integer.parseInt(part.split(":")[1]);
+                                break;
+                            }
+                        }
+                        if (senderPkgId != -1) {
+                            MemberPackage senderPkg = mpDAO.findById(senderPkgId);
+                            if (senderPkg != null) {
+                                senderPkg.setStatus("Expired");
+                                senderPkg.setEndDate(java.time.LocalDate.now()); // Đặt EndDate về Hôm nay
+                                senderPkg.setUpdatedBy("Transferred by StaffUserID: " + staffUserId);
+                                senderPkg.setUpdatedDate(LocalDateTime.now());
+                                mpDAO.update(senderPkg);
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi đóng gói người gửi khi xử lý chuyển nhượng: " + e.getMessage());
+                        // Ghi log lỗi nhưng không rollback để tránh treo tiền khách hàng đã thanh toán
+                    }
                 }
             }
             

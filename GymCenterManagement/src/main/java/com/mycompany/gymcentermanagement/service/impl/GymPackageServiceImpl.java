@@ -63,4 +63,14 @@ public class GymPackageServiceImpl implements GymPackageService {
         }
         return pkg.getPackageId() != excludeId;
     }
+
+    @Override
+    public int getPackagesCount() throws SQLException {
+        return gymPackageDAO.countAll();
+    }
+
+    @Override
+    public List<GymPackage> getPackagesPaginated(int offset, int limit) throws SQLException {
+        return gymPackageDAO.findAllPaginated(offset, limit);
+    }
 }

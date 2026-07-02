@@ -62,18 +62,22 @@
 </style>
 
 <div class="container-fluid pt-4 px-4" id="printAreaParent">
+    <c:set var="isAdmin" value="${sessionScope.currentUser.role == 'Admin'}" />
+    <c:set var="backUrl" value="${pageContext.request.contextPath}${isAdmin ? '/admin/payment-history' : '/staff/record-payment'}" />
+    <c:set var="dashboardUrl" value="${pageContext.request.contextPath}${isAdmin ? '/admin/dashboard' : '/staff/dashboard'}" />
+    
     <!-- Breadcrumbs -->
     <div class="mb-4 no-print">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/dashboard">Bảng điều khiển</a></li>
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/staff/record-payment">Hóa đơn</a></li>
+                <li class="breadcrumb-item"><a href="${dashboardUrl}">Bảng điều khiển</a></li>
+                <li class="breadcrumb-item"><a href="${backUrl}">Hóa đơn</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Chi tiết hóa đơn</li>
             </ol>
         </nav>
         <div class="d-flex align-items-center justify-content-between">
             <h4 class="mb-0 text-dark fw-bold"><i class="fa fa-file-invoice-dollar me-2 text-primary"></i>Chi tiết hóa đơn</h4>
-            <a href="${pageContext.request.contextPath}/staff/record-payment" class="btn btn-outline-secondary d-flex align-items-center">
+            <a href="${backUrl}" class="btn btn-outline-secondary d-flex align-items-center">
                 <i class="fa fa-arrow-left me-2"></i> Quay lại danh sách
             </a>
         </div>
@@ -103,7 +107,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <h3 class="text-primary fw-bold mb-1"><i class="fa fa-dumbbell me-2"></i>GCMS GYM CENTER</h3>
-                            <p class="text-muted small mb-0">123 Đường Gym Center, Quận 1, TP. Hồ Chí Minh<br>SĐT: (+84) 987-654-321 | Email: support@gcms.com</p>
+                            <p class="text-muted small mb-0">QL21 Hồ Chí Minh, Hòa Lạc, Hà Nội<br>SĐT: (+84) 987-654-321 | Email: support@gcms.com</p>
                         </div>
                         <div class="col-md-6 text-md-end">
                             <h4 class="text-uppercase text-secondary fw-semibold mb-1">Hóa đơn / Biên lai</h4>
@@ -243,7 +247,7 @@
 
             <!-- Page Action Buttons -->
             <div class="d-flex justify-content-between align-items-center mb-5 no-print">
-                <a href="${pageContext.request.contextPath}/staff/record-payment" class="btn btn-lg btn-outline-secondary px-4">
+                <a href="${backUrl}" class="btn btn-lg btn-outline-secondary px-4">
                     <i class="fa fa-chevron-left me-1"></i> Quay lại danh sách
                 </a>
                 
@@ -255,22 +259,24 @@
                     </c:if>
                     
                     <c:if test="${invoice.status == 'Pending'}">
-                        <form id="cancelInvoiceForm" action="${pageContext.request.contextPath}/staff/record-payment" method="post" style="display: none;">
+                        <form id="cancelInvoiceForm" action="${backUrl}" method="post" style="display: none;">
                             <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
                             <input type="hidden" name="action" value="cancel" />
                         </form>
                         
-                        <button type="button" class="btn btn-lg btn-outline-danger px-4" onclick="confirmCancelInvoice()">
-                            <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
-                        </button>
-                        
-                        <form action="${pageContext.request.contextPath}/staff/record-payment" method="post">
-                            <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
-                            <input type="hidden" name="action" value="pay" />
-                            <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
-                                <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
+                        <c:if test="${!isAdmin}">
+                            <button type="button" class="btn btn-lg btn-outline-danger px-4" onclick="confirmCancelInvoice()">
+                                <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
                             </button>
-                        </form>
+                            
+                            <form action="${backUrl}" method="post">
+                                <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                                <input type="hidden" name="action" value="pay" />
+                                <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
+                                    <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
+                                </button>
+                            </form>
+                        </c:if>
                     </c:if>
                 </div>
             </div>

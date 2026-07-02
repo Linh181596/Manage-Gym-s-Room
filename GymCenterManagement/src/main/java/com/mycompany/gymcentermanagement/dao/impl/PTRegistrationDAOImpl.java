@@ -571,7 +571,11 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.TotalAmount,
                            r.Note,
                            pt.Status AS PTStatus,
-                           r.Status
+                           CASE 
+                               WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                               ELSE r.Status
+                           END AS Status,
+                           r.EndDate
                     FROM PTRegistrations r
                     INNER JOIN Members m ON r.MemberID = m.MemberID
                     INNER JOIN Users u ON m.UserID = u.UserID
@@ -604,6 +608,9 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                     dto.setNote(rs.getString("Note"));
                     dto.setPtStatus(rs.getString("PTStatus"));
                     dto.setStatus(rs.getString("Status"));
+                    if (rs.getDate("EndDate") != null) {
+                        dto.setEndDate(rs.getDate("EndDate").toLocalDate());
+                    }
                     return dto;
                 }
             }
@@ -663,5 +670,189 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public List<PTServicePrice> getAllServicePricesByTrainerId(int ptId) {
+        List<PTServicePrice> prices = new ArrayList<>();
+
+        String sql = """
+                    SELECT
+                        sp.PTServicePriceID,
+                        sp.PTID,
+                        sp.PTPackageTypeID,
+                        sp.Price,
+                        sp.Status AS PriceStatus,
+                        COALESCE(pt.DisplayName, pt.FullName) AS TrainerName,
+                        pkg.PackageName,
+                        pkg.Description AS PackageDescription,
+                        pkg.DurationMonths,
+                        pkg.NumberOfSessions
+                    FROM PTServicePrices sp
+                    INNER JOIN PTPackageTypes pkg
+                        ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    INNER JOIN PersonalTrainers pt
+                        ON sp.PTID = pt.PTID
+                    WHERE sp.PTID = ?
+                      AND sp.IsDeleted = 0
+                      AND pkg.IsDeleted = 0
+                    ORDER BY pkg.DurationMonths
+                """;
+
+        try (Connection conn = DBContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    prices.add(mapServicePrice(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return prices;
+    }
+
+    @Override
+    public boolean saveOrUpdateServicePrice(PTServicePrice price) {
+        String checkSql = "SELECT PTServicePriceID FROM PTServicePrices WHERE PTID = ? AND PTPackageTypeID = ? AND IsDeleted = 0";
+        String insertSql = """
+            INSERT INTO PTServicePrices (PTID, PTPackageTypeID, Price, Status, CreatedBy, CreatedDate, IsDeleted)
+            VALUES (?, ?, ?, 'Active', 'System', GETDATE(), 0)
+        """;
+        String updateSql = """
+            UPDATE PTServicePrices
+            SET Price = ?, Status = 'Active', UpdatedBy = 'System', UpdatedDate = GETDATE()
+            WHERE PTServicePriceID = ?
+        """;
+
+        try (Connection conn = DBContext.getConnection()) {
+            int existingId = -1;
+            try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+                checkPs.setInt(1, price.getPtId());
+                checkPs.setInt(2, price.getPtPackageTypeId());
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    if (rs.next()) {
+                        existingId = rs.getInt("PTServicePriceID");
+                    }
+                }
+            }
+
+            if (existingId != -1) {
+                try (PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
+                    updatePs.setBigDecimal(1, price.getPrice());
+                    updatePs.setInt(2, existingId);
+                    return updatePs.executeUpdate() > 0;
+                }
+            } else {
+                try (PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
+                    insertPs.setInt(1, price.getPtId());
+                    insertPs.setInt(2, price.getPtPackageTypeId());
+                    insertPs.setBigDecimal(3, price.getPrice());
+                    return insertPs.executeUpdate() > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getProcessedRegistrations(int page, int pageSize) {
+        List<PTRegistrationDTO> list = new ArrayList<>();
+        String sql = """
+                    SELECT r.PTRegistrationID, 
+                           u.DisplayName AS MemberName, 
+                           u.Phone AS MemberPhone,
+                           COALESCE(pt.DisplayName, pt.FullName) AS PTDisplayName, 
+                           pkg.PackageName, 
+                           pkg.NumberOfSessions, 
+                           r.PreferredStartDate, 
+                           r.TotalAmount,
+                           CASE 
+                               WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                               ELSE r.Status
+                           END AS Status,
+                           r.PaymentStatus,
+                           r.Note,
+                           r.ProcessedAt,
+                           u_proc.DisplayName AS ProcessedByUserName,
+                           r.EndDate
+                    FROM PTRegistrations r
+                    INNER JOIN Members m ON r.MemberID = m.MemberID
+                    INNER JOIN Users u ON m.UserID = u.UserID
+                    INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PersonalTrainers pt ON sp.PTID = pt.PTID
+                    INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    LEFT JOIN Users u_proc ON r.ProcessedByUserID = u_proc.UserID
+                    WHERE r.Status <> 'Pending' AND r.IsDeleted = 0
+                    ORDER BY r.ProcessedAt DESC, r.PTRegistrationID DESC
+                    OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, (page - 1) * pageSize);
+            ps.setInt(2, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTRegistrationDTO dto = new PTRegistrationDTO();
+                    dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setMemberPhone(rs.getString("MemberPhone"));
+                    dto.setPtDisplayName(rs.getString("PTDisplayName"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    dto.setNumberOfSessions(rs.getInt("NumberOfSessions"));
+                    if (rs.getDate("PreferredStartDate") != null) {
+                        dto.setPreferredStartDate(rs.getDate("PreferredStartDate").toLocalDate());
+                    }
+                    dto.setTotalAmount(rs.getDouble("TotalAmount"));
+                    dto.setStatus(rs.getString("Status"));
+                    dto.setPaymentStatus(rs.getString("PaymentStatus"));
+                    dto.setNote(rs.getString("Note"));
+                    if (rs.getTimestamp("ProcessedAt") != null) {
+                        dto.setProcessedAt(rs.getTimestamp("ProcessedAt").toLocalDateTime());
+                    }
+                    dto.setProcessedByUserName(rs.getString("ProcessedByUserName"));
+                    if (rs.getDate("EndDate") != null) {
+                        dto.setEndDate(rs.getDate("EndDate").toLocalDate());
+                    }
+                    list.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public int getProcessedRegistrationsCount() {
+        String sql = "SELECT COUNT(*) FROM PTRegistrations WHERE Status <> 'Pending' AND IsDeleted = 0";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean deleteRegistrationPermanent(int regId) {
+        String sql = "UPDATE PTRegistrations SET IsDeleted = 1, UpdatedDate = SYSDATETIME() WHERE PTRegistrationID = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, regId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

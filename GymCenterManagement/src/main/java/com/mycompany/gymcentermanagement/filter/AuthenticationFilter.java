@@ -31,6 +31,15 @@ public class AuthenticationFilter extends HttpFilter {
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String relativePath = requestURI.substring(contextPath.length());
+        
+        if ("/pt/list".equals(relativePath)) {
+            chain.doFilter(request, response);
+            return;
+        }
+        
         HttpSession session = request.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("currentUser") : null;
         
@@ -71,10 +80,6 @@ public class AuthenticationFilter extends HttpFilter {
         }
         
         // RBAC Check based on request path
-        String requestURI = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        String relativePath = requestURI.substring(contextPath.length());
-        
         boolean authorized = false;
         User.Role role = user.getRole();
         
@@ -83,7 +88,12 @@ public class AuthenticationFilter extends HttpFilter {
         } else if (relativePath.startsWith("/admin/")) {
             if (role == User.Role.Admin) {
                 authorized = true;
-            } else if (relativePath.startsWith("/admin/pt/edit") && role == User.Role.Staff) {
+            } else if (role == User.Role.Staff && (
+                relativePath.startsWith("/admin/pt/edit") ||
+                relativePath.startsWith("/admin/schedule/") ||
+                relativePath.startsWith("/admin/pt/schedule-setup") ||
+                relativePath.startsWith("/admin/pt/cancel")
+            )) {
                 authorized = true;
             }
         } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {

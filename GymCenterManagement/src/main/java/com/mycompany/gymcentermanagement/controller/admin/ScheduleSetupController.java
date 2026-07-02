@@ -23,36 +23,56 @@ import java.util.List;
 public class ScheduleSetupController extends HttpServlet {
     private PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
     private PTScheduleService ptScheduleService = new PTScheduleServiceImpl();
-
     // Hàm siêu trí tuệ: Xây dựng ma trận lịch rảnh/bận
-    private void setupTimetableMatrix(HttpServletRequest request, int ptId, LocalDate referenceDate) {
+    private void setupTimetableMatrix(HttpServletRequest request, int ptId, int memberId, LocalDate referenceDate) {
         // 1. Tìm ngày Thứ 2 và Chủ Nhật của cái tuần chứa referenceDate
         LocalDate monday = referenceDate.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
         LocalDate sunday = referenceDate.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY));
 
-        // 2. Gọi DB lấy danh sách lịch PT đã có trong tuần đó
+        // 2. Gọi DB lấy danh sách lịch PT và Member đã có trong tuần đó
         List<PTSchedule> weekSchedules = ptScheduleService.getSchedulesForWeek(ptId, monday, sunday);
+        List<PTSchedule> memberWeekSchedules = ptScheduleService.getMemberSchedulesForWeek(memberId, monday, sunday);
 
-        // 3. Khởi tạo ma trận 3 hàng (Sáng, Chiều, Tối) x 7 cột (T2 -> CN). Mặc định Java gán sẵn là FALSE (Rảnh)
-        boolean[][] matrix = new boolean[3][7];
+        // 3. Khởi tạo các ma trận bận/rảnh
+        boolean[][] matrix = new boolean[6][7];
+        boolean[][] ptMatrix = new boolean[6][7];
+        boolean[][] memberMatrix = new boolean[6][7];
 
         for (PTSchedule s : weekSchedules) {
             int col = s.getSessionDate().getDayOfWeek().getValue() - 1; // Thứ 2 = 1 -> Đẩy về index 0
+            int row = getTimeSlotRow(s.getStartTime().toString());
+            if (row != -1 && col >= 0 && col < 7) {
+                matrix[row][col] = true; // Chuyển thành TRUE (Bận)
+                ptMatrix[row][col] = true;
+            }
+        }
 
-            int row = -1;
-            String timeStr = s.getStartTime().toString();
-            if (timeStr.startsWith("08")) row = 0;      // Ca Sáng
-            else if (timeStr.startsWith("15")) row = 1; // Ca Chiều
-            else if (timeStr.startsWith("18")) row = 2; // Ca Tối
-
-            if (row != -1) matrix[row][col] = true; // Chuyển thành TRUE (Bận)
+        for (PTSchedule s : memberWeekSchedules) {
+            int col = s.getSessionDate().getDayOfWeek().getValue() - 1;
+            int row = getTimeSlotRow(s.getStartTime().toString());
+            if (row != -1 && col >= 0 && col < 7) {
+                matrix[row][col] = true; // Chuyển thành TRUE (Bận)
+                memberMatrix[row][col] = true;
+            }
         }
 
         // 4. Đẩy ra View
         java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
         request.setAttribute("timetableMatrix", matrix);
+        request.setAttribute("ptMatrix", ptMatrix);
+        request.setAttribute("memberMatrix", memberMatrix);
         request.setAttribute("weekStartStr", monday.format(fmt));
         request.setAttribute("weekEndStr", sunday.format(fmt));
+    }
+
+    private int getTimeSlotRow(String timeStr) {
+        if (timeStr.startsWith("08:15")) return 0;
+        if (timeStr.startsWith("10:00")) return 1;
+        if (timeStr.startsWith("13:30")) return 2;
+        if (timeStr.startsWith("15:15")) return 3;
+        if (timeStr.startsWith("17:00")) return 4;
+        if (timeStr.startsWith("18:45")) return 5;
+        return -1;
     }
 
     @Override
@@ -76,8 +96,8 @@ public class ScheduleSetupController extends HttpServlet {
             LocalDate today = LocalDate.now();
 
             //if expected date < today -> Today is point |||| if expected date >= today: expected day is point
-            LocalDate refDate = preferredDate.isBefore(today) ? today : preferredDate;
-            setupTimetableMatrix(request, reg.getPtId(), refDate);
+            LocalDate refDate = (preferredDate == null || preferredDate.isBefore(today)) ? today : preferredDate;
+            setupTimetableMatrix(request, reg.getPtId(), reg.getMemberId(), refDate);
             request.getRequestDispatcher("/WEB-INF/views/admin/schedule-setup.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -102,6 +122,44 @@ public class ScheduleSetupController extends HttpServlet {
 
             LocalDate actualStartDate = LocalDate.parse(request.getParameter("actualStartDate"));
             String[] daysOfWeekStr = request.getParameterValues("daysOfWeek");
+
+            if (daysOfWeekStr != null && daysOfWeekStr.length > 0) {
+                request.setAttribute("submittedDays", Arrays.asList(daysOfWeekStr));
+            } else {
+                request.setAttribute("errorMsg", "Vui lòng chọn ít nhất một ngày.");
+                request.setAttribute("submittedDays", new ArrayList<String>());
+                request.setAttribute("submittedTimeSlot", request.getParameter("timeSlot"));
+                request.setAttribute("submittedStartDate", request.getParameter("actualStartDate"));
+                request.setAttribute("submittedPayment", request.getParameter("confirmPayment") != null);
+
+                PTRegistrationDTO reg = ptRegistrationService.getRegistrationById(regId);
+                request.setAttribute("reg", reg);
+
+                LocalDate refDate = LocalDate.parse(request.getParameter("actualStartDate"));
+                setupTimetableMatrix(request, ptId, memberId, refDate);
+
+                request.getRequestDispatcher("/WEB-INF/views/admin/schedule-setup.jsp").forward(request, response);
+                return;
+            }
+
+            // Kiểm tra giới hạn thời gian (không quá 1 năm trong tương lai)
+            if (actualStartDate.isAfter(LocalDate.now().plusYears(1))) {
+                request.setAttribute("errorMsg", "Ngày bắt đầu chính thức không được vượt quá 1 năm trong tương lai.");
+                request.setAttribute("submittedDays", Arrays.asList(daysOfWeekStr));
+                request.setAttribute("submittedTimeSlot", request.getParameter("timeSlot"));
+                request.setAttribute("submittedStartDate", request.getParameter("actualStartDate"));
+                request.setAttribute("submittedPayment", request.getParameter("confirmPayment") != null);
+
+                PTRegistrationDTO reg = ptRegistrationService.getRegistrationById(regId);
+                request.setAttribute("reg", reg);
+
+                LocalDate refDate = LocalDate.parse(request.getParameter("actualStartDate"));
+                setupTimetableMatrix(request, ptId, memberId, refDate);
+
+                request.getRequestDispatcher("/WEB-INF/views/admin/schedule-setup.jsp").forward(request, response);
+                return;
+            }
+
             String timeSlot = request.getParameter("timeSlot");
             boolean isPaymentConfirmed = request.getParameter("confirmPayment") != null;
 
@@ -120,15 +178,23 @@ public class ScheduleSetupController extends HttpServlet {
             int sessionsSimulated = 0;
             int searchCounter = 0;
             int maxDaysToSearch = 180;
-            List<LocalDate> conflictDates = new ArrayList<>();
+            List<String> conflictDetails = new ArrayList<>();
             java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             while (sessionsSimulated < totalSessions && searchCounter < maxDaysToSearch) {
                 if (selectedDays.contains(checkDate.getDayOfWeek())) {
-                    boolean isConflict = ptScheduleService.isScheduleConflict(ptId, checkDate, startTime, endTime);
+                    boolean isPtConflict = ptScheduleService.isScheduleConflict(ptId, checkDate, startTime, endTime);
+                    boolean isMemberConflict = ptScheduleService.isMemberScheduleConflict(memberId, checkDate, startTime, endTime);
 
-                    if (isConflict) {
-                        conflictDates.add(checkDate);
+                    if (isPtConflict || isMemberConflict) {
+                        String daysInWeekVietnam = checkDate.getDayOfWeek().getDisplayName(
+                                java.time.format.TextStyle.FULL,
+                                new java.util.Locale("vi", "VN")
+                        );
+                        String reason = isPtConflict && isMemberConflict ? "trùng lịch cả HLV & hội viên" :
+                                       (isPtConflict ? "HLV trùng lịch" : "hội viên trùng lịch");
+
+                        conflictDetails.add(checkDate.format(formatter) + " (" + daysInWeekVietnam + " - " + reason + ")");
                     }
                     sessionsSimulated++;
                 }
@@ -136,17 +202,15 @@ public class ScheduleSetupController extends HttpServlet {
                 searchCounter++;
             }
 
-            if (!conflictDates.isEmpty()) {
+            if (!conflictDetails.isEmpty()) {
                 StringBuilder errorMsg = new StringBuilder("Ca tập này đã bị trùng vào các ngày: ");
-                for (LocalDate d : conflictDates) {
-                    String daysInWeekVietnam = d.getDayOfWeek().getDisplayName(
-                            java.time.format.TextStyle.FULL,
-                            new java.util.Locale("vi", "VN")
-                    );
-
-                    errorMsg.append(d.format(formatter)).append(" (").append(daysInWeekVietnam).append("), ");
+                for (int i = 0; i < conflictDetails.size(); i++) {
+                    errorMsg.append(conflictDetails.get(i));
+                    if (i < conflictDetails.size() - 1) {
+                        errorMsg.append(", ");
+                    }
                 }
-                errorMsg.append("vui lòng chọn Ca tập khác hoặc đổi lại Thứ/Ngày!");
+                errorMsg.append(". Vui lòng chọn Ca tập khác hoặc đổi lại Thứ/Ngày!");
 
                 request.setAttribute("errorMsg", errorMsg.toString());
 
@@ -158,7 +222,7 @@ public class ScheduleSetupController extends HttpServlet {
                 request.setAttribute("reg", ptRegistrationService.getRegistrationById(regId));
 
                 LocalDate refDate = LocalDate.parse(request.getParameter("actualStartDate"));
-                setupTimetableMatrix(request, ptId, refDate);
+                setupTimetableMatrix(request, ptId, memberId, refDate);
 
                 request.getRequestDispatcher("/WEB-INF/views/admin/schedule-setup.jsp").forward(request, response);
                 return;

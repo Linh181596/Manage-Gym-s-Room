@@ -1,0 +1,105 @@
+40efb2b | MinhHoang72 | 2026-06-13 | update equipment module
+5ead188 | MinhHoang72 | 2026-06-13 | Merge remote-tracking branch 'origin/develop' into hoangdmhe
+a02c1c8 | VPGreenLight | 2026-06-13 | refactor: Add phone uniqueness checks across user flows
+2e91fb2 | Nguyễn Hoàng Thắng | 2026-06-13 | Merge pull request #19 from Linh181596/phund/iter1-personal-trainer
+fc367e1 | phuhocfpt | 2026-06-13 | update(db): update database
+41a3c70 | MinhHoang72 | 2026-06-13 | Merge remote-tracking branch 'origin/develop' into hoangdmhe
+e211bdb | phuhocfpt | 2026-06-13 | update database
+c861663 | Nguyễn Hoàng Thắng | 2026-06-13 | Merge pull request #18 from Linh181596/phund/iter1-personal-trainer
+9a9bb7c | phuhocfpt | 2026-06-13 | Merge remote-tracking branch 'origin/develop' into phund/iter1-personal-trainer
+b94436b | phuhocfpt | 2026-06-13 | update database
+a9590c4 | phuhocfpt | 2026-06-13 | chore(pt): add PT sample certificates
+8d4fa6a | MinhHoang72 | 2026-06-13 | Add commit history file
+8cffff2 | Nguyễn Hoàng Thắng | 2026-06-12 | Merge pull request #17 from Linh181596/thangnh
+01726b2 | VPGreenLight | 2026-06-12 | refactor: UTF-8 encoding
+3029d6a | Nguyễn Hoàng Thắng | 2026-06-12 | Merge pull request #16 from Linh181596/thangnh
+3801fdb | Nguyễn Hoàng Thắng | 2026-06-12 | fix: remove UTF-8 BOM from Java and JSP source files to resolve compilation errors
+879fd65 | Nguyễn Hoàng Thắng | 2026-06-12 | Merge pull request #15 from Linh181596/thangnh
+d5cc8e5 | Nguyễn Hoàng Thắng | 2026-06-12 | fix(portal): remove Edit Personal Info button from Member Portal page
+1be0e38 | Nguyễn Hoàng Thắng | 2026-06-12 | Merge pull request #14 from Linh181596/thangnh
+d4aa726 | Nguyễn Hoàng Thắng | 2026-06-12 | docs: rename author duongnd to Nguyễn Đại Dương in file comments
+d60c6c5 | Nguyễn Hoàng Thắng | 2026-06-12 | docs: rename author Đào Minh Hoàng to Đỗ Minh Hoàng in file comments
+3f9f27e | Nguyễn Hoàng Thắng | 2026-06-12 | docs: rename author Nguyễn Thành Linh to Nguyễn Trí Linh in file comments
+34898e1 | Nguyễn Hoàng Thắng | 2026-06-12 | Merge pull request #13 from Linh181596/thangnh
+6fe2333 | Nguyễn Hoàng Thắng | 2026-06-12 | feat(auth): add Locked status check to block login
+9eaaac1 | VPGreenLight | 2026-06-11 | feat(finance,auth): add cancel pending invoice feature and refactor portal-profile navigation
+b84b457 | VPGreenLight | 2026-06-11 | refactor: fix authentication
+0471b05 | VPGreenLight | 2026-06-11 | feat(auth): di trú và tích hợp phân hệ Xác thực & Hồ sơ cá nhân từ nhánh duongnd
+05089c9 | Nguyễn Hoàng Thắng | 2026-06-11 | Merge pull request #12 from Linh181596/thangnh
+5ef2e00 | VPGreenLight | 2026-06-11 | feat: fix package expiration, duplication, and dynamic status badges
+74eb262 | Nguyễn Hoàng Thắng | 2026-06-09 | refactor: remove unused private method findPackageId from GymDAO
+3bf1638 | Nguyễn Hoàng Thắng | 2026-06-09 | fix: redirect available equipment reports to details page and keep admin report navigation context
+176243d | Nguyễn Hoàng Thắng | 2026-06-09 | fix: enforce mustChangePassword redirection flow on login and authentication filter
+d4886fd | Nguyễn Hoàng Thắng | 2026-06-09 | Merge pull request #11 from Linh181596/thangnh
+05637dc | Nguyễn Hoàng Thắng | 2026-06-09 | fix: adjust admin equipment report detail links, clean up console charts error, optimize DB metadata check caching, and align navigation flows
+344e47a | Nguyễn Hoàng Thắng | 2026-06-09 | Merge pull request #10 from Linh181596/phund/iter1-personal-trainer
+69596c2 | phuhocfpt | 2026-06-09 | chore: redirect root path to login page
+40aae9a | Nguyễn Hoàng Thắng | 2026-06-09 | Merge remote-tracking branch 'origin/duongnd' into thangnh
+ad5148d | daiduong07012004 | 2026-06-09 | save current work
+49ae5ae | phuhocfpt | 2026-06-08 | Merge remote-tracking branch 'origin/develop' into phund/iter1-personal-trainer
+0cde6b3 | VPGreenLight | 2026-06-08 | refactor(mail): tach cau truc SMTP credentials ra mail.properties
+4cc8e76 | phuhocfpt | 2026-06-08 | feat(pt): Fix author comment
+1d53b82 | Nguyễn Hoàng Thắng | 2026-06-07 | Merge pull request #8 from Linh181596/phund/iter1-personal-trainer
+4343682 | phuhocfpt | 2026-06-07 | feat(pt): complete PT iteration 1 flows
+28fc633 | phuhocfpt | 2026-06-07 | Merge remote-tracking branch 'origin/develop' into phund/iter1-personal-trainer
+06a0d1c | phuhocfpt | 2026-06-07 | Merge branch 'phund/iter1-personal-trainer' of https://github.com/Linh181596/Manage-Gym-s-Room into phund/iter1-personal-trainer
+c20f8cf | phuhocfpt | 2026-06-07 | db: update database schema for gym center management
+55babb7 | VPGreenLight | 2026-06-06 | feat(auth): tai cau truc va tich hop phan he xac thuc vao GymCenterManagement
+43a19f1 | Duongnd-07 | 2026-06-06 | Merge pull request #7 from Linh181596/duongnd
+69f866b | daiduong07012004 | 2026-06-06 | iter1
+f5377ae | Nguyễn Hoàng Thắng | 2026-06-05 | Merge pull request #6 from Linh181596/thangnh
+0ee5c04 | VPGreenLight | 2026-06-05 | style(layout): remove footer section
+c69fb98 | VPGreenLight | 2026-06-05 | fix(payment): URL-encode redirect query parameter to resolve white page error
+e458be2 | Nguyễn Hoàng Thắng | 2026-06-05 | fix: resolve equipment issue EL syntax error, fix sidebar highlighting, and fix PT registration database schema mismatch
+c36862f | VPGreenLight | 2026-06-05 | style(header): add file ownership headers to java and jsp files for group members
+c98ffda | VPGreenLight | 2026-06-05 | style(sidebar): widen sidebar to 280px to prevent text wrapping in long menus
+a128a47 | VPGreenLight | 2026-06-04 | fix(jsp): resolve syntax error in equipment select dropdown
+42e2bf1 | VPGreenLight | 2026-06-04 | feat: Clean workspace and integrate PT, Equipment, and Member portal modules into GymCenterManagement Maven project
+c2019d4 | Nguyễn Hoàng Thắng | 2026-06-04 | Merge pull request #5 from Linh181596/phund/iter1-personal-trainer
+5782f51 | Nguyễn Hoàng Thắng | 2026-06-04 | Merge branch 'develop' into phund/iter1-personal-trainer
+7721cd7 | VPGreenLight | 2026-06-04 | Reapply "Inter 1 - "
+e3e8381 | phuhocfpt | 2026-06-04 | feat(pt): add PT JSP screens for iteration 1
+c5c7fcb | phuhocfpt | 2026-06-04 | feat(pt): add PT servlets for iteration 1 flows
+c99e971 | phuhocfpt | 2026-06-04 | feat(pt): add DAO support for PT account and service registration
+f99ce08 | phuhocfpt | 2026-06-04 | feat(pt): update PT models and password utility
+39b7ca9 | phuhocfpt | 2026-06-04 | chore(pt): remove obsolete online PT application flow
+6f99678 | phuhocfpt | 2026-06-04 | chore(db): update PT database schema
+73f3eb2 | VPGreenLight | 2026-06-04 | Revert "Merge pull request #1 from Linh181596/LinhNT/inter1"
+5ac7f2b | Nguyễn Hoàng Thắng | 2026-06-04 | Merge pull request #3 from Linh181596/hoangdmhe
+5f6c391 | Nguyễn Hoàng Thắng | 2026-06-04 | Merge pull request #4 from Linh181596/revert-1-LinhNT/inter1
+16a3042 | Nguyễn Hoàng Thắng | 2026-06-04 | Revert "Inter 1 - "
+33e98ad | Nguyễn Hoàng Thắng | 2026-06-04 | Merge pull request #1 from Linh181596/LinhNT/inter1
+6c7cd11 | VPGreenLight | 2026-06-04 | Merge branch 'thangnh' into develop
+0d6ba3f | MinhHoang72 | 2026-06-04 | Merge branch 'hoangdmhe' of https://github.com/Linh181596/Manage-Gym-s-Room into hoangdmhe
+59b7a72 | MinhHoang72 | 2026-06-04 | Manage Equipment Manage Equipment Issues View Equipment Reports ver1.0
+5f162a3 | Linh181596 | 2026-06-04 | Merge branch 'LinhNT/inter1' of https://github.com/Linh181596/Manage-Gym-s-Room into LinhNT/inter1
+cc0cea7 | Linh181596 | 2026-06-04 | Inter 1
+b6d405a | VPGreenLight | 2026-06-04 | Merge branch 'thangnh' of https://github.com/Linh181596/Manage-Gym-s-Room into thangnh
+4436449 | phuhocfpt | 2026-06-03 | feat(database): update PT management schema
+e19437a | Nguyễn Hoàng Thắng | 2026-06-03 | feat(localization): dịch toàn bộ giao diện sang tiếng Việt và sửa lỗi giao diện
+9d17123 | Nguyễn Hoàng Thắng | 2026-06-03 | style(convention): bo sung file ownership comment block cho cac service class
+fdc176a | Nguyễn Hoàng Thắng | 2026-06-02 | feat(auth): doi kieu du lieu userId sang int va chuan hoa mapping database
+75f512f | Nguyễn Hoàng Thắng | 2026-06-02 | feat(payment): trien khai ghi nhan thanh toan va in hoa don (UC-17)
+ce97525 | Nguyễn Hoàng Thắng | 2026-06-02 | feat(package): trien khai chuc nang dang ky goi tap cho hoi vien (UC-16)
+b97fff8 | Nguyễn Hoàng Thắng | 2026-06-02 | feat(package): trien khai chuc nang CRUD quan ly goi tap (UC-15)
+006a752 | Nguyễn Hoàng Thắng | 2026-06-02 | feat(auth): doi kieu du lieu userId sang int va chuan hoa mapping database
+187adb1 | Nguyễn Hoàng Thắng | 2026-06-02 | feat(payment): trien khai ghi nhan thanh toan va in hoa don (UC-FIN-001)
+d367e91 | Nguyễn Hoàng Thắng | 2026-06-02 | feat(package): trien khai chuc nang dang ky goi tap cho hoi vien (UC-PKG-002)
+89a92a3 | Nguyễn Hoàng Thắng | 2026-06-02 | feat(package): trien khai chuc nang CRUD quan ly goi tap (UC-PKG-001)
+360ece1 | Nguyễn Hoàng Thắng | 2026-06-02 | refactor: adding database config
+e8af856 | phuhocfpt | 2026-06-02 | chore(ui): add temporary navigation page
+309f1bf | phuhocfpt | 2026-06-02 | feat(pt): implement PT service registration flow
+41ac0bb | phuhocfpt | 2026-06-02 | feat(pt): implement PT list and detail pages
+caea82b | phuhocfpt | 2026-06-02 | feat(pt): implement PT application flow
+c880695 | phuhocfpt | 2026-06-02 | feat(pt): add PT utility classes
+2ef3b06 | phuhocfpt | 2026-06-02 | feat(pt): add DAO layer for personal trainer module
+f319c90 | phuhocfpt | 2026-06-02 | feat(pt): add personal trainer domain models
+98bd88e | phuhocfpt | 2026-06-02 | build(config): configure Maven web project
+296a681 | phuhocfpt | 2026-06-02 | docs(db): update PT database tables
+3ffad1c | phuhocfpt | 2026-06-01 | docs(db): update database script
+a0f49c0 | phuhocfpt | 2026-06-01 | chore(git): add gitignore file
+19fe6e6 | phuhocfpt | 2026-06-01 | docs(db): add database script
+dce8e70 | Nguyễn Hoàng Thắng | 2026-05-29 | Update README.md
+10fc74e | Nguyễn Hoàng Thắng | 2026-05-29 | Update .gitignore
+40a5356 | Nguyễn Hoàng Thắng | 2026-05-29 | init: Initial GymCenterManagement project scaffold
+796231d | Linh181596 | 2026-05-12 | Initial commit

@@ -74,9 +74,25 @@ public class ManageMemberController extends HttpServlet {
         String keyword = request.getParameter("searchKeyword");
         String memberType = request.getParameter("memberType");
         
-        List<Map<String, String>> memberList = gymDAO.getMembers(keyword, memberType);
+        int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+        int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
+        
+        int totalItems = gymDAO.getMembersCount(keyword, memberType);
+        int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+        page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
+        int offset = (page - 1) * pageSize;
+        
+        List<Map<String, String>> memberList = gymDAO.getMembers(keyword, memberType, offset, pageSize);
         
         request.setAttribute("memberList", memberList);
+        
+        String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                request, "/staff/members", "searchKeyword", keyword, "memberType", memberType, "pageSize", String.valueOf(pageSize));
+
+        com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                request, page, pageSize, totalItems, queryBase, "hội viên");
+                
         request.getRequestDispatcher("/WEB-INF/views/staff/members.jsp").forward(request, response);
     }
 
@@ -176,4 +192,6 @@ public class ManageMemberController extends HttpServlet {
         }
         response.sendRedirect(request.getContextPath() + "/staff/members");
     }
+
+
 }

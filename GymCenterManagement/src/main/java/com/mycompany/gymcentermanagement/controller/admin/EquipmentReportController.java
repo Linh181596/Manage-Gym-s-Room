@@ -26,67 +26,24 @@ public class EquipmentReportController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            int page = parseInt(request.getParameter("page"), 1);
-            int pageSize = normalizePageSize(parseInt(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE));
+            int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+            int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                    com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE));
             int totalItems = service.countReportEquipments();
-            int totalPages = totalPages(totalItems, pageSize);
-            page = normalizePage(page, totalPages);
+            int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+            page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
             int offset = (page - 1) * pageSize;
             request.setAttribute("report", service.buildReport(offset, pageSize));
-            setPaginationAttributes(request, page, pageSize, totalItems, request.getContextPath() + "/admin/equipment-reports?pageSize=" + pageSize + "&");
+
+            String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                    request, "/admin/equipment-reports", "pageSize", String.valueOf(pageSize));
+
+            com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                    request, page, pageSize, totalItems, queryBase, "báo cáo thiết bị");
         } catch (SQLException ex) {
             request.setAttribute("error", ex.getMessage());
         }
         request.getRequestDispatcher("/WEB-INF/views/equipment/equipment-report.jsp").forward(request, response);
-    }
-
-    private int parseInt(String value, int fallback) {
-        try {
-            return value == null || value.isBlank() ? fallback : Integer.parseInt(value);
-        } catch (NumberFormatException ex) {
-            return fallback;
-        }
-    }
-
-    private int normalizePageSize(int pageSize) {
-        return switch (pageSize) {
-            case 5, 10, 20, 50 -> pageSize;
-            default -> DEFAULT_PAGE_SIZE;
-        };
-    }
-
-    private int totalPages(int totalItems, int pageSize) {
-        return Math.max(1, (int) Math.ceil(Math.max(0, totalItems) / (double) pageSize));
-    }
-
-    private int normalizePage(int page, int totalPages) {
-        return Math.min(Math.max(1, page), totalPages);
-    }
-
-    private void setPaginationAttributes(HttpServletRequest request, int page, int pageSize, int totalItems, String queryBase) {
-        int safeTotalItems = Math.max(0, totalItems);
-        int totalPages = totalPages(safeTotalItems, pageSize);
-        int offset = (page - 1) * pageSize;
-        int visiblePages = Math.min(5, totalPages);
-        int start = Math.max(1, page - visiblePages / 2);
-        int end = Math.min(totalPages, start + visiblePages - 1);
-        int startPage = Math.max(1, end - visiblePages + 1);
-        int endPage = Math.min(totalPages, startPage + visiblePages - 1);
-
-        request.setAttribute("showPagination", true);
-        request.setAttribute("page", page);
-        request.setAttribute("pageSize", pageSize);
-        request.setAttribute("totalItems", safeTotalItems);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("startItem", safeTotalItems == 0 ? 0 : offset + 1);
-        request.setAttribute("endItem", Math.min(safeTotalItems, offset + pageSize));
-        request.setAttribute("hasPrevious", page > 1);
-        request.setAttribute("hasNext", page < totalPages);
-        request.setAttribute("previousPage", Math.max(1, page - 1));
-        request.setAttribute("nextPage", Math.min(totalPages, page + 1));
-        request.setAttribute("startPage", startPage);
-        request.setAttribute("endPage", endPage);
-        request.setAttribute("queryBase", queryBase);
     }
 }
 

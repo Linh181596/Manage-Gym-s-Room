@@ -46,6 +46,8 @@ public interface PersonalTrainerDAO {
      */
     public List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations);
 
+    public List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status);
+
     /**
      * Inserts an official Personal Trainer profile.
      */
@@ -70,4 +72,13 @@ public interface PersonalTrainerDAO {
      * Update PT profile(PT feat): Change avatar, bio/description and displayName
      */
     public boolean updateProfile(PersonalTrainer pt) throws SQLException;
+
+    /**
+     * Gets all active members currently trained by the Personal Trainer.
+     */
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId);
+    
+    public int getActiveMembersForPTCount(int ptId);
+    
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPTPaginated(int ptId, int offset, int limit);
 }

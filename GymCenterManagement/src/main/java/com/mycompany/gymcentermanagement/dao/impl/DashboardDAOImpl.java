@@ -4,7 +4,7 @@
  * @description   : Lớp truy vấn dữ liệu tổng quan, doanh thu, hóa đơn gần đây và cảnh báo vận hành cho bảng điều khiển quản trị.
  * @author        : Duongnd
  * @created       : 2026-06-25
- * @last_modified : 2026-06-25
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.dao.impl;
@@ -156,6 +156,13 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
                 "danger",
                 "/staff/equipment-issues",
                 "SELECT COUNT(*) FROM EquipmentIssues WHERE IsDeleted = 0 AND Status IN ('Pending', 'InProgress')");
+        addCountAlert(alerts,
+                "PT Registration",
+                "Đăng ký huấn luyện viên đang chờ",
+                "đăng ký huấn luyện viên chưa hoàn tất thanh toán/xử lý",
+                "warning",
+                "/admin/schedule/manage",
+                "SELECT COUNT(*) FROM PTRegistrations WHERE IsDeleted = 0 AND (Status = 'Pending' OR PaymentStatus = 'Unpaid')");
         addCountAlert(alerts,
                 "Package Expiration",
                 "Gói tập sắp hết hạn",

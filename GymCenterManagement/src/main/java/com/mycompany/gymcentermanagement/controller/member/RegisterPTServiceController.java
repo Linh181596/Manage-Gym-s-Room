@@ -116,6 +116,13 @@ public class RegisterPTServiceController extends HttpServlet {
             return;
         }
 
+        if (preferredStartDate.isAfter(LocalDate.now().plusYears(1))) {
+            request.setAttribute("error", "Ngày bắt đầu không được vượt quá 1 năm trong tương lai.");
+            request.setAttribute("servicePrice", servicePrice);
+            request.getRequestDispatcher("/WEB-INF/views/pt/register-pt-service.jsp").forward(request, response);
+            return;
+        }
+
         Integer durationMonths = servicePrice.getDurationMonths();
 
         if (durationMonths == null || durationMonths <= 0) {

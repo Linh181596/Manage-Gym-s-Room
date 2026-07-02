@@ -228,4 +228,45 @@ public class GymPackageDAOImpl extends BaseDAO implements GymPackageDAO {
         }
         return success;
     }
+
+    @Override
+    public int countAll() throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT COUNT(*) FROM GymPackages WHERE IsDeleted = 0";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return 0;
+    }
+
+    @Override
+    public List<GymPackage> findAllPaginated(int offset, int limit) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        List<GymPackage> list = new ArrayList<>();
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT * FROM GymPackages WHERE IsDeleted = 0 ORDER BY PackageID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, Math.max(0, offset));
+            stmt.setInt(2, limit);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToGymPackage(rs));
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return list;
+    }
 }

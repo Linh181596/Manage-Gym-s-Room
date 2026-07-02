@@ -14,21 +14,23 @@ public class GymDAO {
     }
 
     public List<Map<String, String>> getMembers(String keyword, String memberType) {
-        List<Map<String, String>> list = new ArrayList<>();
+        return getMembers(keyword, memberType, 0, Integer.MAX_VALUE);
+    }
+
+    public int getMembersCount(String keyword, String memberType) {
         String sql = """
-                SELECT u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
-                       m.MemberID, m.MembershipStatus, m.CreatedDate,
-                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN gp.PackageName END), m.MembershipStatus) AS MembershipType
-                FROM [dbo].[Users] u
-                INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
-                LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
-                LEFT JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID AND gp.IsDeleted = 0
-                WHERE u.IsDeleted = 0 AND m.IsDeleted = 0
-                  AND (? IS NULL OR u.DisplayName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ?)
-                  AND (? IS NULL OR gp.PackageName LIKE ? OR m.MembershipStatus LIKE ?)
-                GROUP BY u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
-                         m.MemberID, m.MembershipStatus, m.CreatedDate
-                ORDER BY u.UserID DESC
+                SELECT COUNT(*) FROM (
+                    SELECT u.UserID
+                    FROM [dbo].[Users] u
+                    INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
+                    LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
+                    LEFT JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID AND gp.IsDeleted = 0
+                    WHERE u.IsDeleted = 0 AND m.IsDeleted = 0
+                      AND (? IS NULL OR u.DisplayName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ?)
+                      AND (? IS NULL OR gp.PackageName LIKE ? OR m.MembershipStatus LIKE ?)
+                    GROUP BY u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
+                             m.MemberID, m.MembershipStatus, m.CreatedDate
+                ) AS temp
                 """;
         String normalizedKeyword = blankToNull(keyword);
         String keywordPattern = normalizedKeyword == null ? null : "%" + normalizedKeyword + "%";
@@ -44,6 +46,59 @@ public class GymDAO {
             ps.setString(5, normalizedType);
             ps.setString(6, typePattern);
             ps.setString(7, typePattern);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<Map<String, String>> getMembers(String keyword, String memberType, int offset, int limit) {
+        List<Map<String, String>> list = new ArrayList<>();
+        
+        // When offset is 0 and limit is Integer.MAX_VALUE, we can skip the OFFSET/FETCH NEXT to avoid SQL syntax issue or pagination overhead
+        boolean usePagination = (limit != Integer.MAX_VALUE);
+        
+        String sql = """
+                SELECT u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
+                       m.MemberID, m.MembershipStatus, m.CreatedDate,
+                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN gp.PackageName END), m.MembershipStatus) AS MembershipType
+                FROM [dbo].[Users] u
+                INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
+                LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
+                LEFT JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID AND gp.IsDeleted = 0
+                WHERE u.IsDeleted = 0 AND m.IsDeleted = 0
+                  AND (? IS NULL OR u.DisplayName LIKE ? OR u.Email LIKE ? OR u.Phone LIKE ?)
+                  AND (? IS NULL OR gp.PackageName LIKE ? OR m.MembershipStatus LIKE ?)
+                GROUP BY u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
+                         m.MemberID, m.MembershipStatus, m.CreatedDate
+                ORDER BY u.UserID DESC
+                """ + (usePagination ? " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY" : "");
+                
+        String normalizedKeyword = blankToNull(keyword);
+        String keywordPattern = normalizedKeyword == null ? null : "%" + normalizedKeyword + "%";
+        String normalizedType = blankToNull(memberType);
+        String typePattern = normalizedType == null ? null : "%" + normalizedType + "%";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, normalizedKeyword);
+            ps.setString(2, keywordPattern);
+            ps.setString(3, keywordPattern);
+            ps.setString(4, keywordPattern);
+            ps.setString(5, normalizedType);
+            ps.setString(6, typePattern);
+            ps.setString(7, typePattern);
+            
+            if (usePagination) {
+                ps.setInt(8, Math.max(0, offset));
+                ps.setInt(9, limit);
+            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -283,10 +338,11 @@ public class GymDAO {
     public List<Map<String, String>> getMemberServices(int userId) {
         List<Map<String, String>> services = new ArrayList<>();
         String sql = """
-                SELECT gp.PackageName, mp.StartDate, mp.EndDate, mp.Status
+                SELECT gp.PackageName, mp.StartDate, mp.EndDate, mp.Status, i.InvoiceID
                 FROM [dbo].[MemberPackages] mp
                 INNER JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID
                 INNER JOIN [dbo].[Members] m ON mp.MemberID = m.MemberID
+                LEFT JOIN [dbo].[Invoices] i ON mp.MemberPackageID = i.MemberPackageID AND i.IsDeleted = 0
                 WHERE m.UserID = ? AND mp.IsDeleted = 0 AND gp.IsDeleted = 0
                 ORDER BY mp.EndDate DESC
                 """;
@@ -300,6 +356,8 @@ public class GymDAO {
                     map.put("startDate", String.valueOf(rs.getDate("StartDate")));
                     map.put("endDate", String.valueOf(rs.getDate("EndDate")));
                     map.put("status", safe(rs.getString("Status")));
+                    int invoiceId = rs.getInt("InvoiceID");
+                    map.put("invoiceId", rs.wasNull() ? "" : String.valueOf(invoiceId));
                     services.add(map);
                 }
             }

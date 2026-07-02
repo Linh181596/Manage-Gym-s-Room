@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%--
+  =========================================================================
+  Document    : account-list.jsp
+  Created on  : 2026-06-25
+  Author      : Nguyễn Đại Dương (duongnd)
+  Description : Giao diện danh sách tài khoản người dùng cho quản trị viên (Admin).
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <jsp:include page="../common/dashboard_header.jsp" />
@@ -197,57 +205,7 @@
                 </tbody>
             </table>
         </div>
-
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mt-4">
-            <div class="text-muted small">
-                Hiển thị ${accounts.size()} / ${totalAccounts} tài khoản, trang ${currentPage} / ${totalPages}.
-            </div>
-
-            <c:if test="${totalPages > 1}">
-                <nav aria-label="Account pagination">
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
-                            <c:url var="prevPageUrl" value="/admin/accounts">
-                                <c:param name="keyword" value="${keyword}" />
-                                <c:param name="role" value="${selectedRole}" />
-                                <c:param name="status" value="${selectedStatus}" />
-                                <c:param name="pageSize" value="${pageSize}" />
-                                <c:param name="page" value="${currentPage - 1}" />
-                            </c:url>
-                            <a class="page-link" href="${prevPageUrl}" aria-label="Trang trước">
-                                <i class="fa fa-chevron-left"></i>
-                            </a>
-                        </li>
-
-                        <c:forEach begin="1" end="${totalPages}" var="pageNumber">
-                            <c:url var="pageUrl" value="/admin/accounts">
-                                <c:param name="keyword" value="${keyword}" />
-                                <c:param name="role" value="${selectedRole}" />
-                                <c:param name="status" value="${selectedStatus}" />
-                                <c:param name="pageSize" value="${pageSize}" />
-                                <c:param name="page" value="${pageNumber}" />
-                            </c:url>
-                            <li class="page-item ${pageNumber == currentPage ? 'active' : ''}">
-                                <a class="page-link" href="${pageUrl}">${pageNumber}</a>
-                            </li>
-                        </c:forEach>
-
-                        <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
-                            <c:url var="nextPageUrl" value="/admin/accounts">
-                                <c:param name="keyword" value="${keyword}" />
-                                <c:param name="role" value="${selectedRole}" />
-                                <c:param name="status" value="${selectedStatus}" />
-                                <c:param name="pageSize" value="${pageSize}" />
-                                <c:param name="page" value="${currentPage + 1}" />
-                            </c:url>
-                            <a class="page-link" href="${nextPageUrl}" aria-label="Trang sau">
-                                <i class="fa fa-chevron-right"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </c:if>
-        </div>
+        <jsp:include page="../common/pagination.jsp" />
     </div>
 </div>
 

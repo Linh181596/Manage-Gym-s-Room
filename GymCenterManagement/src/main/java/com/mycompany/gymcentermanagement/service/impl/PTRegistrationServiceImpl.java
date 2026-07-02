@@ -66,4 +66,29 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
     public boolean cancelRegistration(int regId, String cancelReason, int processedByUserId, String updatedBy) {
         return registrationDAO.cancelRegistration(regId, cancelReason, processedByUserId, updatedBy);
     }
+
+    @Override
+    public List<PTServicePrice> getAllServicePricesByTrainerId(int ptId) {
+        return registrationDAO.getAllServicePricesByTrainerId(ptId);
+    }
+
+    @Override
+    public boolean saveOrUpdateServicePrice(PTServicePrice price) {
+        return registrationDAO.saveOrUpdateServicePrice(price);
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getProcessedRegistrations(int page, int pageSize) {
+        return registrationDAO.getProcessedRegistrations(page, pageSize);
+    }
+
+    @Override
+    public int getProcessedRegistrationsCount() {
+        return registrationDAO.getProcessedRegistrationsCount();
+    }
+
+    @Override
+    public boolean deleteRegistrationPermanent(int regId) {
+        return registrationDAO.deleteRegistrationPermanent(regId);
+    }
 }

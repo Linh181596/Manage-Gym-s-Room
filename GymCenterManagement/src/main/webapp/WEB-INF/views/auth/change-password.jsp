@@ -1,4 +1,12 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%--
+  =========================================================================
+  Document    : change-password.jsp
+  Created on  : 2026-06-25
+  Author      : Nguyễn Đại Dương (duongnd)
+  Description : Giao diện thay đổi mật khẩu người dùng.
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="vi">

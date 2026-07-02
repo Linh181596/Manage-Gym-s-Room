@@ -100,7 +100,7 @@
                                 <!-- Career Start Date -->
                                 <div class="col-md-6">
                                     <label for="careerStartDate" class="form-label fw-semibold text-secondary">Ngày bắt đầu sự nghiệp <span class="text-danger">*</span></label>
-                                    <input type="date" id="careerStartDate" name="careerStartDate" class="form-control" required value="${param.careerStartDate}" max="<%= java.time.LocalDate.now() %>">
+                                    <input type="date" id="careerStartDate" name="careerStartDate" class="form-control" required value="${param.careerStartDate}" min="<%= java.time.LocalDate.now().minusYears(40) %>" max="<%= java.time.LocalDate.now() %>">
                                     <small class="text-muted d-block mt-1 small">Sử dụng để tính số năm kinh nghiệm tự động.</small>
                                 </div>
 
