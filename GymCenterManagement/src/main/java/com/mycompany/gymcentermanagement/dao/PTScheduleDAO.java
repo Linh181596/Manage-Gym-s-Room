@@ -8,9 +8,14 @@ import java.util.List;
 
 public interface PTScheduleDAO {
     boolean isScheduleConflict(int ptId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime);
+    boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime);
     boolean insertSchedules(List<PTSchedule> schedules, int createdByUserId);
     List<PTSchedule> getSchedulesForWeek(int ptId, LocalDate startDate, LocalDate endDate);
+    List<PTSchedule> getMemberSchedulesForWeek(int memberId, LocalDate startDate, LocalDate endDate);
     List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate);
     List<PTScheduleDetailDTO> getAllSchedulesByDate(LocalDate date);
     boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus);
+    PTSchedule getScheduleById(int scheduleId);
+    List<PTScheduleDetailDTO> getCompletedSessions(int ptId);
+    boolean cancelSession(int scheduleId, String reason, String updatedBy);
 }

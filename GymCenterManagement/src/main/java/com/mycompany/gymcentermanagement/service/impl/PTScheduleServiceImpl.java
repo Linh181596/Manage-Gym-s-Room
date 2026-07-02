@@ -37,7 +37,32 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     }
 
     @Override
+    public boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) {
+        return ptScheduleDAO.isMemberScheduleConflict(memberId, sessionDate, startTime, endTime);
+    }
+
+    @Override
+    public List<PTSchedule> getMemberSchedulesForWeek(int memberId, LocalDate startDate, LocalDate endDate) {
+        return ptScheduleDAO.getMemberSchedulesForWeek(memberId, startDate, endDate);
+    }
+
+    @Override
     public boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus) {
         return ptScheduleDAO.updateAttendance(scheduleId, attendanceStatus, sessionStatus);
+    }
+
+    @Override
+    public PTSchedule getScheduleById(int scheduleId) {
+        return ptScheduleDAO.getScheduleById(scheduleId);
+    }
+
+    @Override
+    public List<PTScheduleDetailDTO> getCompletedSessions(int ptId) {
+        return ptScheduleDAO.getCompletedSessions(ptId);
+    }
+
+    @Override
+    public boolean cancelSession(int scheduleId, String reason, String updatedBy) {
+        return ptScheduleDAO.cancelSession(scheduleId, reason, updatedBy);
     }
 }

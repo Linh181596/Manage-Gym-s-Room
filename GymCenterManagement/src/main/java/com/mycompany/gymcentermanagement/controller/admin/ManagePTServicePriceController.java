@@ -114,8 +114,8 @@ public class ManagePTServicePriceController extends HttpServlet {
                 return;
             }
 
-            if (price12Val.compareTo(BigDecimal.ZERO) < 0 || price36Val.compareTo(BigDecimal.ZERO) < 0) {
-                request.setAttribute("error", "Giá tiền không được nhỏ hơn 0.");
+            if (price12Val.compareTo(BigDecimal.ZERO) <= 0 || price36Val.compareTo(BigDecimal.ZERO) <= 0) {
+                request.setAttribute("error", "Giá tiền không được để trống, không được nhỏ hơn hoặc bằng 0.");
                 doGet(request, response);
                 return;
             }

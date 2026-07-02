@@ -35,6 +35,37 @@ public class PTAttendanceController extends HttpServlet {
             try {
                 int scheduleId = Integer.parseInt(scheduleIdStr);
                 if ("Attended".equals(status) || "Absent".equals(status) || "Pending".equals(status)) {
+                    // Check if session is in the future
+                    com.mycompany.gymcentermanagement.model.entity.PTSchedule schedule = ptScheduleService.getScheduleById(scheduleId);
+                    if (schedule != null) {
+                        java.time.LocalDate today = java.time.LocalDate.now();
+                        java.time.LocalTime nowTime = java.time.LocalTime.now();
+                        java.time.LocalDate sessionDate = schedule.getSessionDate();
+                        java.time.LocalTime sessionStartTime = schedule.getStartTime().toLocalTime();
+                        
+                        boolean isInFuture = sessionDate.isAfter(today) || 
+                            (sessionDate.isEqual(today) && sessionStartTime.isAfter(nowTime));
+                        
+                        if (isInFuture && ("Attended".equals(status) || "Absent".equals(status))) {
+                            if (session != null) {
+                                session.setAttribute("errorMessage", "Không thể điểm danh cho ca dạy trong tương lai.");
+                            }
+                            String referer = request.getHeader("Referer");
+                            response.sendRedirect(referer != null && !referer.isEmpty() ? referer : request.getContextPath() + "/admin/schedule/manage");
+                            return;
+                        }
+
+                        boolean isInPast = sessionDate.isBefore(today);
+                        if (isInPast) {
+                            if (session != null) {
+                                session.setAttribute("errorMessage", "Không thể chỉnh sửa điểm danh của các ca dạy trong quá khứ.");
+                            }
+                            String referer = request.getHeader("Referer");
+                            response.sendRedirect(referer != null && !referer.isEmpty() ? referer : request.getContextPath() + "/admin/schedule/manage");
+                            return;
+                        }
+                    }
+
                     // Update attendance status
                     // If marked Attended or Absent, we can mark the session as Completed
                     // If marked Pending, we mark the session back to Upcoming

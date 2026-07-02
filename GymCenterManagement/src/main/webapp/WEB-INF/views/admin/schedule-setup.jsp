@@ -45,111 +45,123 @@
                 <!-- ================= BẢNG MINIMAP GỢI Ý LỊCH ================= -->
                 <div class="mt-4 border-top pt-4">
                     <h6 class="fw-bold text-dark mb-3">
-                        <i class="fa fa-calendar-check text-success me-2"></i>Lịch của PT trong tuần chứa Ngày bắt đầu
+                        <i class="fa fa-calendar-check text-success me-2"></i>Xem lịch bận/rảnh trong tuần
                         <span class="badge bg-secondary ms-1">(Từ ${weekStartStr} đến ${weekEndStr})</span>
                     </h6>
-                    <div class="table-responsive">
-                        <table class="table table-bordered text-center table-sm align-middle"
-                               style="font-size: 0.85rem;">
-                            <thead class="table-light text-muted">
-                            <tr>
-                                <th style="width: 16%;">Ca</th>
-                                <th style="width: 12%;">T2</th>
-                                <th style="width: 12%;">T3</th>
-                                <th style="width: 12%;">T4</th>
-                                <th style="width: 12%;">T5</th>
-                                <th style="width: 12%;">T6</th>
-                                <th style="width: 12%;">T7</th>
-                                <th style="width: 12%;">CN</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <!-- Hàng Ca Sáng 1 -->
-                            <tr>
-                                <td class="fw-bold bg-light">Sáng 1 <br><small class="text-muted">08:15 - 09:45</small></td>
-                                <c:forEach var="i" begin="0" end="6">
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${timetableMatrix[0][i]}"><span
-                                                    class="badge bg-danger">Bận</span></c:when>
-                                            <c:otherwise><span
-                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </c:forEach>
-                            </tr>
-                            <!-- Hàng Ca Sáng 2 -->
-                            <tr>
-                                <td class="fw-bold bg-light">Sáng 2 <br><small class="text-muted">10:00 - 11:30</small></td>
-                                <c:forEach var="i" begin="0" end="6">
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${timetableMatrix[1][i]}"><span
-                                                    class="badge bg-danger">Bận</span></c:when>
-                                            <c:otherwise><span
-                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </c:forEach>
-                            </tr>
-                            <!-- Hàng Ca Chiều 1 -->
-                            <tr>
-                                <td class="fw-bold bg-light">Chiều 1 <br><small class="text-muted">13:30 - 15:00</small></td>
-                                <c:forEach var="i" begin="0" end="6">
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${timetableMatrix[2][i]}"><span
-                                                    class="badge bg-danger">Bận</span></c:when>
-                                            <c:otherwise><span
-                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </c:forEach>
-                            </tr>
-                            <!-- Hàng Ca Chiều 2 -->
-                            <tr>
-                                <td class="fw-bold bg-light">Chiều 2 <br><small class="text-muted">15:15 - 16:45</small></td>
-                                <c:forEach var="i" begin="0" end="6">
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${timetableMatrix[3][i]}"><span
-                                                    class="badge bg-danger">Bận</span></c:when>
-                                            <c:otherwise><span
-                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </c:forEach>
-                            </tr>
-                            <!-- Hàng Ca Tối 1 -->
-                            <tr>
-                                <td class="fw-bold bg-light">Tối 1 <br><small class="text-muted">17:00 - 18:30</small></td>
-                                <c:forEach var="i" begin="0" end="6">
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${timetableMatrix[4][i]}"><span
-                                                    class="badge bg-danger">Bận</span></c:when>
-                                            <c:otherwise><span
-                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </c:forEach>
-                            </tr>
-                            <!-- Hàng Ca Tối 2 -->
-                            <tr>
-                                <td class="fw-bold bg-light">Tối 2 <br><small class="text-muted">18:45 - 20:15</small></td>
-                                <c:forEach var="i" begin="0" end="6">
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${timetableMatrix[5][i]}"><span
-                                                    class="badge bg-danger">Bận</span></c:when>
-                                            <c:otherwise><span
-                                                    class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span></c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </c:forEach>
-                            </tr>
-                            </tbody>
-                        </table>
+                    
+                    <!-- Bootstrap Nav Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="scheduleTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold" id="pt-tab" data-bs-toggle="tab" data-bs-target="#pt-schedule" type="button" role="tab" aria-controls="pt-schedule" aria-selected="true">
+                                <i class="fa fa-user-tie me-1"></i>Lịch HLV (${reg.ptDisplayName})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="member-tab" data-bs-toggle="tab" data-bs-target="#member-schedule" type="button" role="tab" aria-controls="member-schedule" aria-selected="false">
+                                <i class="fa fa-user me-1"></i>Lịch Hội viên (${reg.memberName})
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="scheduleTabContent">
+                        
+                        <!-- TAB 1: LỊCH PT -->
+                        <div class="tab-pane fade show active" id="pt-schedule" role="tabpanel" aria-labelledby="pt-tab">
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center table-sm align-middle" style="font-size: 0.85rem;">
+                                    <thead class="table-light text-muted">
+                                    <tr>
+                                        <th style="width: 16%;">Ca</th>
+                                        <th style="width: 12%;">T2</th>
+                                        <th style="width: 12%;">T3</th>
+                                        <th style="width: 12%;">T4</th>
+                                        <th style="width: 12%;">T5</th>
+                                        <th style="width: 12%;">T6</th>
+                                        <th style="width: 12%;">T7</th>
+                                        <th style="width: 12%;">CN</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach var="rowIdx" begin="0" end="5">
+                                        <tr>
+                                            <td class="fw-bold bg-light">
+                                                <c:choose>
+                                                    <c:when test="${rowIdx == 0}">Sáng 1 <br><small class="text-muted">08:15 - 09:45</small></c:when>
+                                                    <c:when test="${rowIdx == 1}">Sáng 2 <br><small class="text-muted">10:00 - 11:30</small></c:when>
+                                                    <c:when test="${rowIdx == 2}">Chiều 1 <br><small class="text-muted">13:30 - 15:00</small></c:when>
+                                                    <c:when test="${rowIdx == 3}">Chiều 2 <br><small class="text-muted">15:15 - 16:45</small></c:when>
+                                                    <c:when test="${rowIdx == 4}">Tối 1 <br><small class="text-muted">17:00 - 18:30</small></c:when>
+                                                    <c:when test="${rowIdx == 5}">Tối 2 <br><small class="text-muted">18:45 - 20:15</small></c:when>
+                                                </c:choose>
+                                            </td>
+                                            <c:forEach var="colIdx" begin="0" end="6">
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${ptMatrix[rowIdx][colIdx]}">
+                                                            <span class="badge bg-danger">Bận</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                            </c:forEach>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- TAB 2: LỊCH HỘI VIÊN -->
+                        <div class="tab-pane fade" id="member-schedule" role="tabpanel" aria-labelledby="member-tab">
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center table-sm align-middle" style="font-size: 0.85rem;">
+                                    <thead class="table-light text-muted">
+                                    <tr>
+                                        <th style="width: 16%;">Ca</th>
+                                        <th style="width: 12%;">T2</th>
+                                        <th style="width: 12%;">T3</th>
+                                        <th style="width: 12%;">T4</th>
+                                        <th style="width: 12%;">T5</th>
+                                        <th style="width: 12%;">T6</th>
+                                        <th style="width: 12%;">T7</th>
+                                        <th style="width: 12%;">CN</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach var="rowIdx" begin="0" end="5">
+                                        <tr>
+                                            <td class="fw-bold bg-light">
+                                                <c:choose>
+                                                    <c:when test="${rowIdx == 0}">Sáng 1 <br><small class="text-muted">08:15 - 09:45</small></c:when>
+                                                    <c:when test="${rowIdx == 1}">Sáng 2 <br><small class="text-muted">10:00 - 11:30</small></c:when>
+                                                    <c:when test="${rowIdx == 2}">Chiều 1 <br><small class="text-muted">13:30 - 15:00</small></c:when>
+                                                    <c:when test="${rowIdx == 3}">Chiều 2 <br><small class="text-muted">15:15 - 16:45</small></c:when>
+                                                    <c:when test="${rowIdx == 4}">Tối 1 <br><small class="text-muted">17:00 - 18:30</small></c:when>
+                                                    <c:when test="${rowIdx == 5}">Tối 2 <br><small class="text-muted">18:45 - 20:15</small></c:when>
+                                                </c:choose>
+                                            </td>
+                                            <c:forEach var="colIdx" begin="0" end="6">
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${memberMatrix[rowIdx][colIdx]}">
+                                                            <span class="badge bg-danger">Bận</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge bg-success bg-opacity-25 text-success border border-success">Rảnh</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                            </c:forEach>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -295,7 +307,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // 1. LOGIC CHẶN NGÀY THÁNG LÙI VỀ QUÁ KHỨ
+        // 1. LOGIC CHẶN NGÀY THÁNG LÙI VỀ QUÁ KHỨ VÀ GIỚI HẠN 1 NĂM TƯƠNG LAI
         const dateInput = document.querySelector('input[name="actualStartDate"]');
         const preferredDateStr = '${reg.preferredStartDate}';
         const preferredDate = new Date(preferredDateStr);
@@ -308,6 +320,11 @@
         const minDateString = new Date(minAllowedDate - offset).toISOString().split('T')[0];
 
         dateInput.setAttribute('min', minDateString);
+
+        const maxAllowedDate = new Date();
+        maxAllowedDate.setFullYear(today.getFullYear() + 1);
+        const maxDateString = new Date(maxAllowedDate - offset).toISOString().split('T')[0];
+        dateInput.setAttribute('max', maxDateString);
 
         if (new Date(dateInput.value) < minAllowedDate) {
             dateInput.value = minDateString;

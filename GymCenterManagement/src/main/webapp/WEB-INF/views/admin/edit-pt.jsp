@@ -49,7 +49,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Ngày bắt đầu sự nghiệp</label>
-                    <input type="date" class="form-control" name="careerStartDate" value="${pt.careerStartDate}" max="<%= java.time.LocalDate.now() %>">
+                    <input type="date" class="form-control" name="careerStartDate" value="${pt.careerStartDate}" min="<%= java.time.LocalDate.now().minusYears(40) %>" max="<%= java.time.LocalDate.now() %>">
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -72,10 +72,21 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Trạng thái hoạt động</label>
-                    <select name="status" class="form-select">
-                        <option value="Active" ${pt.status == 'Active' ? 'selected' : ''}>Hoạt động (Active)</option>
-                        <option value="Inactive" ${pt.status == 'Inactive' ? 'selected' : ''}>Khóa (Inactive)</option>
-                    </select>
+                    <c:choose>
+                        <c:when test="${sessionScope.currentUser.role == 'Staff'}">
+                            <select class="form-select" disabled>
+                                <option value="Active" ${pt.status == 'Active' ? 'selected' : ''}>Hoạt động (Active)</option>
+                                <option value="Inactive" ${pt.status == 'Inactive' ? 'selected' : ''}>Khóa (Inactive)</option>
+                            </select>
+                            <input type="hidden" name="status" value="${pt.status}">
+                        </c:when>
+                        <c:otherwise>
+                            <select name="status" class="form-select">
+                                <option value="Active" ${pt.status == 'Active' ? 'selected' : ''}>Hoạt động (Active)</option>
+                                <option value="Inactive" ${pt.status == 'Inactive' ? 'selected' : ''}>Khóa (Inactive)</option>
+                            </select>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
 

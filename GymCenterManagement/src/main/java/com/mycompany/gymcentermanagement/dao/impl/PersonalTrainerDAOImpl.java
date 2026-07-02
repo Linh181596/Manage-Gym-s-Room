@@ -914,6 +914,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                     r.EndDate,
                     p.NumberOfSessions AS TotalSessions,
                     (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Completed' AND IsDeleted = 0) AS CompletedSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Cancelled' AND IsDeleted = 0) AS CancelledSessions,
                     (SELECT STRING_AGG(
                         CASE wd
                             WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
@@ -950,6 +951,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                 dto.setEndDate(rs.getDate("EndDate") != null ? rs.getDate("EndDate").toLocalDate() : null);
                 dto.setTotalSessions(rs.getInt("TotalSessions"));
                 dto.setCompletedSessions(rs.getInt("CompletedSessions"));
+                dto.setCancelledSessions(rs.getInt("CancelledSessions"));
                 dto.setDaysOfWeek(rs.getString("DaysOfWeek"));
                 dto.setTimeSlot(rs.getString("TimeSlot"));
                 list.add(dto);

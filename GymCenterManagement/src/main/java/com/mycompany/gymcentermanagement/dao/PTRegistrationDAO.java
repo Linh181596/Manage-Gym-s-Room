@@ -58,4 +58,8 @@ public interface PTRegistrationDAO {
 
     List<PTServicePrice> getAllServicePricesByTrainerId(int ptId);
     boolean saveOrUpdateServicePrice(PTServicePrice price);
+
+    List<PTRegistrationDTO> getProcessedRegistrations(int page, int pageSize);
+    int getProcessedRegistrationsCount();
+    boolean deleteRegistrationPermanent(int regId);
 }
