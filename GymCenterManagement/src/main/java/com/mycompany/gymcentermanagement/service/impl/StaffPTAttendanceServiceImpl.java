@@ -20,7 +20,15 @@ import java.util.List;
 
 public class StaffPTAttendanceServiceImpl implements StaffPTAttendanceService {
 
-    private final StaffPTAttendanceDAO attendanceDAO = new StaffPTAttendanceDAOImpl();
+    private final StaffPTAttendanceDAO attendanceDAO;
+
+    public StaffPTAttendanceServiceImpl() {
+        this(new StaffPTAttendanceDAOImpl());
+    }
+
+    StaffPTAttendanceServiceImpl(StaffPTAttendanceDAO attendanceDAO) {
+        this.attendanceDAO = attendanceDAO;
+    }
 
     @Override
     public boolean existsCheckinForShift(int userId, String shiftBlock, LocalDate date) throws SQLException {
@@ -33,8 +41,23 @@ public class StaffPTAttendanceServiceImpl implements StaffPTAttendanceService {
     }
 
     @Override
-    public List<StaffPTAttendance> getCheckinStatusList(String shiftBlock, LocalDate date) throws SQLException {
-        return attendanceDAO.listUsersWithCheckinStatus(shiftBlock, date);
+    public boolean checkoutAttendance(int attendanceId, int checkedBy) throws SQLException {
+        return attendanceDAO.checkout(attendanceId, checkedBy);
+    }
+
+    @Override
+    public boolean undoCheckout(int attendanceId, int updatedBy) throws SQLException {
+        return attendanceDAO.undoCheckout(attendanceId, updatedBy);
+    }
+
+    @Override
+    public boolean cancelAttendance(int attendanceId, int cancelledBy) throws SQLException {
+        return attendanceDAO.cancel(attendanceId, cancelledBy);
+    }
+
+    @Override
+    public List<StaffPTAttendance> getCheckinStatusList(String shiftBlock, LocalDate date, String keyword) throws SQLException {
+        return attendanceDAO.listUsersWithCheckinStatus(shiftBlock, date, keyword);
     }
 
     @Override

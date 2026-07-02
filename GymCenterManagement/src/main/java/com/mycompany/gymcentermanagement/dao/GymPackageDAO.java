@@ -24,4 +24,6 @@ public interface GymPackageDAO {
     boolean insert(GymPackage pkg) throws SQLException;
     boolean update(GymPackage pkg) throws SQLException;
     boolean delete(int packageId) throws SQLException;
+    int countAll() throws SQLException;
+    List<GymPackage> findAllPaginated(int offset, int limit) throws SQLException;
 }

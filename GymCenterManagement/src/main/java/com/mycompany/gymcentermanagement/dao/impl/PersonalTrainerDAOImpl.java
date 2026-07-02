@@ -914,6 +914,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                     r.EndDate,
                     p.NumberOfSessions AS TotalSessions,
                     (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Completed' AND IsDeleted = 0) AS CompletedSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Cancelled' AND IsDeleted = 0) AS CancelledSessions,
                     (SELECT STRING_AGG(
                         CASE wd
                             WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
@@ -950,12 +951,109 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                 dto.setEndDate(rs.getDate("EndDate") != null ? rs.getDate("EndDate").toLocalDate() : null);
                 dto.setTotalSessions(rs.getInt("TotalSessions"));
                 dto.setCompletedSessions(rs.getInt("CompletedSessions"));
+                dto.setCancelledSessions(rs.getInt("CancelledSessions"));
                 dto.setDaysOfWeek(rs.getString("DaysOfWeek"));
                 dto.setTimeSlot(rs.getString("TimeSlot"));
                 list.add(dto);
             }
         } catch (SQLException e) {
             System.err.println("Lỗi SQL khi getActiveMembersForPT: " + e.getMessage());
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+        return list;
+    }
+
+    @Override
+    public int getActiveMembersForPTCount(int ptId) {
+        String sql = """
+                SELECT COUNT(*)
+                FROM PTRegistrations r
+                INNER JOIN Members m ON r.MemberID = m.MemberID
+                INNER JOIN Users u ON m.UserID = u.UserID
+                INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                WHERE sp.PTID = ? AND r.Status = 'Active' AND r.IsDeleted = 0
+                """;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, ptId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi getActiveMembersForPTCount: " + e.getMessage());
+        } finally {
+            closeResource(conn, ps, rs);
+        }
+        return 0;
+    }
+
+    @Override
+    public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPTPaginated(int ptId, int offset, int limit) {
+        List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> list = new ArrayList<>();
+        String sql = """
+                SELECT 
+                    r.PTRegistrationID,
+                    u.DisplayName AS MemberName,
+                    u.Phone AS MemberPhone,
+                    p.PackageName,
+                    r.StartDate,
+                    r.EndDate,
+                    p.NumberOfSessions AS TotalSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Completed' AND IsDeleted = 0) AS CompletedSessions,
+                    (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Cancelled' AND IsDeleted = 0) AS CancelledSessions,
+                    (SELECT STRING_AGG(
+                        CASE wd
+                            WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
+                            WHEN 5 THEN N'T5' WHEN 6 THEN N'T6' WHEN 7 THEN N'T7' WHEN 1 THEN N'CN'
+                        END, ', ') 
+                     FROM (SELECT DISTINCT DATEPART(weekday, SessionDate) AS wd FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS sub) AS DaysOfWeek,
+                    (SELECT TOP 1 CONVERT(varchar(5), StartTime, 108) + ' - ' + CONVERT(varchar(5), EndTime, 108)
+                     FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS TimeSlot
+                FROM PTRegistrations r
+                INNER JOIN Members m ON r.MemberID = m.MemberID
+                INNER JOIN Users u ON m.UserID = u.UserID
+                INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                WHERE sp.PTID = ? AND r.Status = 'Active' AND r.IsDeleted = 0
+                ORDER BY r.StartDate DESC
+                OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, ptId);
+            ps.setInt(2, Math.max(0, offset));
+            ps.setInt(3, limit);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                com.mycompany.gymcentermanagement.dto.PTMemberDTO dto = new com.mycompany.gymcentermanagement.dto.PTMemberDTO();
+                dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                dto.setMemberName(rs.getString("MemberName"));
+                dto.setMemberPhone(rs.getString("MemberPhone"));
+                dto.setPackageName(rs.getString("PackageName"));
+                dto.setStartDate(rs.getDate("StartDate") != null ? rs.getDate("StartDate").toLocalDate() : null);
+                dto.setEndDate(rs.getDate("EndDate") != null ? rs.getDate("EndDate").toLocalDate() : null);
+                dto.setTotalSessions(rs.getInt("TotalSessions"));
+                dto.setCompletedSessions(rs.getInt("CompletedSessions"));
+                dto.setCancelledSessions(rs.getInt("CancelledSessions"));
+                dto.setDaysOfWeek(rs.getString("DaysOfWeek"));
+                dto.setTimeSlot(rs.getString("TimeSlot"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi SQL khi getActiveMembersForPTPaginated: " + e.getMessage());
         } finally {
             closeResource(conn, ps, rs);
         }

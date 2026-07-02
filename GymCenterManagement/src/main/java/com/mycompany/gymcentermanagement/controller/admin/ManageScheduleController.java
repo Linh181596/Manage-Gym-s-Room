@@ -35,14 +35,13 @@ public class ManageScheduleController extends HttpServlet {
                     : LocalDate.now();
 
             LocalDate today = LocalDate.now();
-            if (selectedDate.isAfter(today)) {
-                selectedDate = today;
-            }
 
             List<PTScheduleDetailDTO> schedulesList = ptScheduleService.getAllSchedulesByDate(selectedDate);
             req.setAttribute("schedulesList", schedulesList);
             req.setAttribute("selectedDate", selectedDate.toString());
             req.setAttribute("todayDate", today.toString());
+            req.setAttribute("isFutureDate", selectedDate.isAfter(today));
+            req.setAttribute("isPastDate", selectedDate.isBefore(today));
 
             req.getRequestDispatcher("/WEB-INF/views/admin/manage-schedule.jsp").forward(req, resp);
         } catch (Exception e) {

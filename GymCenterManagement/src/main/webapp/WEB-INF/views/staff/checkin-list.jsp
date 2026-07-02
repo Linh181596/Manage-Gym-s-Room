@@ -1,28 +1,16 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%--
-  =========================================================================
-  Document    : checkin-list.jsp
-  Created on  : 2026-06-26
-  Author      : Nguyễn Trí Linh (linhnt)
-  Description : Giao diện điểm danh Staff & PT theo ca/ngày (UC 2.3.4).
-  =========================================================================
---%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
 <div class="container-fluid pt-4 px-4">
-
-    <!-- Page Header -->
     <div class="d-flex align-items-center justify-content-between mb-4">
-        <h4 class="mb-0"><i class="fa fa-user-check me-2 text-primary"></i>Điểm Danh Staff &amp; PT</h4>
+        <h4 class="mb-0"><i class="fa fa-user-check me-2 text-primary"></i>Điểm danh ra vào</h4>
         <a href="${pageContext.request.contextPath}/staff/work-history" class="btn btn-outline-secondary btn-sm">
-            <i class="fa fa-history me-1"></i>Xem lịch sử
+            <i class="fa fa-history me-1"></i>Lịch sử
         </a>
     </div>
 
-    <!-- Flash Messages -->
     <c:if test="${not empty sessionScope.flashMessage}">
         <div class="alert alert-${sessionScope.flashType eq 'success' ? 'success' : (sessionScope.flashType eq 'warning' ? 'warning' : 'danger')} alert-dismissible fade show" role="alert">
             <i class="fa fa-${sessionScope.flashType eq 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
@@ -33,20 +21,23 @@
         <c:remove var="flashType" scope="session"/>
     </c:if>
 
-    <!-- Bộ lọc Ca / Ngày -->
     <div class="bg-light rounded p-3 mb-4">
-        <form method="get" action="${pageContext.request.contextPath}/staff/checkin" class="row g-3 align-items-end">
+        <form id="checkinFilterForm" method="get" action="${pageContext.request.contextPath}/staff/checkin" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-semibold">Ca làm việc</label>
-                <select name="shift" class="form-select">
-                    <option value="Morning"   ${selectedShift eq 'Morning'   ? 'selected' : ''}>Sáng (Morning)</option>
-                    <option value="Afternoon" ${selectedShift eq 'Afternoon' ? 'selected' : ''}>Chiều (Afternoon)</option>
-                    <option value="Evening"   ${selectedShift eq 'Evening'   ? 'selected' : ''}>Tối (Evening)</option>
+                <select name="shift" class="form-select" onchange="this.form.submit()">
+                    <option value="Morning" ${selectedShift eq 'Morning' ? 'selected' : ''}>Sáng</option>
+                    <option value="Afternoon" ${selectedShift eq 'Afternoon' ? 'selected' : ''}>Chiều</option>
+                    <option value="Evening" ${selectedShift eq 'Evening' ? 'selected' : ''}>Tối</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-semibold">Ngày</label>
-                <input type="date" name="date" class="form-control" value="${selectedDate}">
+                <input type="date" name="date" class="form-control" value="${selectedDate}" onchange="this.form.submit()">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Tìm nhân viên hoặc huấn luyện viên</label>
+                <input type="search" name="keyword" class="form-control" value="${keyword}" placeholder="Nhập tên hoặc email">
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">
@@ -54,21 +45,29 @@
                 </button>
             </div>
         </form>
+        <div class="small text-muted mt-2">
+            <i class="fa fa-clock me-1"></i>Khung giờ ca hiện tại: ${shiftWindow}
+        </div>
     </div>
 
-    <!-- Bảng danh sách điểm danh -->
+    <c:if test="${not attendanceAllowed}">
+        <div class="alert alert-warning">
+            <i class="fa fa-exclamation-triangle me-2"></i>${attendanceBlockedMessage}
+        </div>
+    </c:if>
+
     <c:choose>
         <c:when test="${not empty errorMessage}">
             <div class="alert alert-danger">
                 <i class="fa fa-exclamation-circle me-2"></i>${errorMessage}
-                <a href="${pageContext.request.contextPath}/staff/checkin?shift=${selectedShift}&date=${selectedDate}"
+                <a href="${pageContext.request.contextPath}/staff/checkin?shift=${selectedShift}&date=${selectedDate}&keyword=${keyword}"
                    class="btn btn-sm btn-outline-danger ms-3">Thử lại</a>
             </div>
         </c:when>
         <c:when test="${empty attendanceList}">
-            <div class="text-center py-5 text-muted">
+            <div class="text-center py-5 text-muted bg-white rounded shadow-sm">
                 <i class="fa fa-users fa-3x mb-3 d-block"></i>
-                <p>Không có dữ liệu nhân sự để hiển thị.</p>
+                <p class="mb-0">Không tìm thấy nhân viên hoặc huấn luyện viên phù hợp.</p>
             </div>
         </c:when>
         <c:otherwise>
@@ -82,7 +81,8 @@
                                 <th>Email</th>
                                 <th>Vai trò</th>
                                 <th>Trạng thái</th>
-                                <th>Giờ check-in</th>
+                                <th>Giờ vào</th>
+                                <th>Giờ ra</th>
                                 <th>Người điểm danh</th>
                                 <th class="text-center">Thao tác</th>
                             </tr>
@@ -94,51 +94,86 @@
                                     <td class="fw-semibold">${a.targetFullName}</td>
                                     <td class="text-muted small">${a.targetEmail}</td>
                                     <td>
-                                        <span class="badge ${a.userRole.name() eq 'PT' ? 'bg-info' : 'bg-secondary'}">
-                                            ${a.userRole}
-                                        </span>
+                                        <span class="badge ${a.userRole.name() eq 'PT' ? 'bg-info' : 'bg-secondary'}">${a.userRoleLabel}</span>
                                     </td>
                                     <td>
                                         <c:choose>
+                                            <c:when test="${a.attendanceId > 0 && empty a.checkedOutAt}">
+                                                <span class="badge bg-success"><i class="fa fa-check me-1"></i>Đang làm việc</span>
+                                            </c:when>
                                             <c:when test="${a.attendanceId > 0}">
-                                                <span class="badge bg-success"><i class="fa fa-check me-1"></i>Đã điểm danh</span>
+                                                <span class="badge bg-primary"><i class="fa fa-sign-out-alt me-1"></i>Đã ghi giờ ra</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="badge bg-warning text-dark"><i class="fa fa-clock me-1"></i>Chưa điểm danh</span>
+                                                <span class="badge bg-warning text-dark"><i class="fa fa-clock me-1"></i>Chưa ghi giờ vào</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
-                                    <td class="text-muted small">
-                                        <c:if test="${a.attendanceId > 0}">
-                                            <fmt:formatDate value="${a.checkedInAt}" pattern="HH:mm:ss"
-                                                            type="time"/>
-                                            <%-- Fallback display if EL date formatter not available --%>
-                                            <c:if test="${empty a.checkedInAt}">—</c:if>
-                                        </c:if>
-                                        <c:if test="${a.attendanceId == 0}">—</c:if>
+                                    <td class="small text-muted">
+                                        <c:out value="${a.checkedInAtDisplay}" default="-"/>
                                     </td>
                                     <td class="small text-muted">
-                                        <c:out value="${a.checkedByName}" default="—"/>
+                                        <c:out value="${a.checkedOutAtDisplay}" default="-"/>
+                                    </td>
+                                    <td class="small text-muted">
+                                        <c:out value="${a.checkedByName}" default="-"/>
                                     </td>
                                     <td class="text-center">
-                                        <c:if test="${a.attendanceId == 0}">
-                                            <!-- Form điểm danh -->
-                                            <form method="post"
-                                                  action="${pageContext.request.contextPath}/staff/checkin"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Xác nhận điểm danh cho ${a.targetFullName}?')">
-                                                <input type="hidden" name="targetUserId"   value="${a.userId}">
-                                                <input type="hidden" name="targetUserRole" value="${a.userRole}">
-                                                <input type="hidden" name="shift" value="${selectedShift}">
-                                                <input type="hidden" name="date"  value="${selectedDate}">
-                                                <button type="submit" class="btn btn-sm btn-primary">
-                                                    <i class="fa fa-check me-1"></i>Điểm danh
-                                                </button>
-                                            </form>
-                                        </c:if>
-                                        <c:if test="${a.attendanceId > 0}">
-                                            <span class="text-muted small">✓ Đã xong</span>
-                                        </c:if>
+                                        <div class="d-inline-flex gap-2 flex-wrap justify-content-center">
+                                            <c:if test="${a.attendanceId == 0}">
+                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                      onsubmit="return confirm('Xác nhận ghi giờ vào cho ${a.targetFullName}?')">
+                                                    <input type="hidden" name="action" value="checkin">
+                                                    <input type="hidden" name="targetUserId" value="${a.userId}">
+                                                    <input type="hidden" name="targetUserRole" value="${a.userRole}">
+                                                    <input type="hidden" name="shift" value="${selectedShift}">
+                                                    <input type="hidden" name="date" value="${selectedDate}">
+                                                    <input type="hidden" name="keyword" value="${keyword}">
+                                                    <button type="submit" class="btn btn-sm btn-primary" ${attendanceAllowed ? '' : 'disabled'}>
+                                                        <i class="fa fa-check me-1"></i>Ghi giờ vào
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                            <c:if test="${a.attendanceId > 0 && empty a.checkedOutAt}">
+                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                      onsubmit="return confirm('Xác nhận ghi giờ ra cho ${a.targetFullName}?')">
+                                                    <input type="hidden" name="action" value="checkout">
+                                                    <input type="hidden" name="attendanceId" value="${a.attendanceId}">
+                                                    <input type="hidden" name="shift" value="${selectedShift}">
+                                                    <input type="hidden" name="date" value="${selectedDate}">
+                                                    <input type="hidden" name="keyword" value="${keyword}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fa fa-sign-out-alt me-1"></i>Ghi giờ ra
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                            <c:if test="${a.attendanceId > 0 && not empty a.checkedOutAt}">
+                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                      onsubmit="return confirm('Hoàn tác giờ ra cho ${a.targetFullName}?')">
+                                                    <input type="hidden" name="action" value="undoCheckout">
+                                                    <input type="hidden" name="attendanceId" value="${a.attendanceId}">
+                                                    <input type="hidden" name="shift" value="${selectedShift}">
+                                                    <input type="hidden" name="date" value="${selectedDate}">
+                                                    <input type="hidden" name="keyword" value="${keyword}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning">
+                                                        <i class="fa fa-undo me-1"></i>Hoàn tác
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                            <c:if test="${a.attendanceId > 0}">
+                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                      onsubmit="return confirm('Hủy bản ghi điểm danh này?')">
+                                                    <input type="hidden" name="action" value="cancel">
+                                                    <input type="hidden" name="attendanceId" value="${a.attendanceId}">
+                                                    <input type="hidden" name="shift" value="${selectedShift}">
+                                                    <input type="hidden" name="date" value="${selectedDate}">
+                                                    <input type="hidden" name="keyword" value="${keyword}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fa fa-times me-1"></i>Hủy
+                                                    </button>
+                                                </form>
+                                            </c:if>
+                                        </div>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -148,7 +183,6 @@
             </div>
         </c:otherwise>
     </c:choose>
-
 </div>
 
 <jsp:include page="../common/dashboard_footer.jsp" />

@@ -49,9 +49,42 @@ public class RecordPaymentController extends HttpServlet {
                 }
             }
             
-            // Show list of all invoices
-            List<Invoice> list = invoiceService.getAllInvoices();
-            request.setAttribute("invoices", list);
+            // Calculate KPI aggregates on server side from all invoices
+            List<Invoice> allInvoices = invoiceService.getAllInvoices();
+            java.math.BigDecimal totalRevenue = java.math.BigDecimal.ZERO;
+            int pendingCount = 0;
+            int paidCount = 0;
+            for (Invoice inv : allInvoices) {
+                if ("Paid".equals(inv.getStatus())) {
+                    totalRevenue = totalRevenue.add(inv.getAmount());
+                    paidCount++;
+                } else if ("Pending".equals(inv.getStatus())) {
+                    pendingCount++;
+                }
+            }
+            request.setAttribute("totalRevenue", totalRevenue);
+            request.setAttribute("pendingCount", pendingCount);
+            request.setAttribute("paidCount", paidCount);
+
+            // Pagination using PaginationHelper
+            int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+            int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                    com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
+            int totalItems = allInvoices.size();
+            int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+            page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
+            int offset = (page - 1) * pageSize;
+
+            List<Invoice> paginatedList = invoiceService.getInvoicesPaginated(offset, pageSize);
+            request.setAttribute("invoices", paginatedList);
+
+            String servletPath = request.getServletPath();
+            String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                    request, servletPath, "pageSize", String.valueOf(pageSize));
+
+            com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                    request, page, pageSize, totalItems, queryBase, "hóa đơn");
+            
             request.getRequestDispatcher("/WEB-INF/views/staff/payment-list.jsp").forward(request, response);
             
         } catch (SQLException | NumberFormatException ex) {

@@ -117,7 +117,8 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     SELECT
                                  s.PTScheduleID, s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus, s.PTAttendanceResult,
                                 u.DisplayName AS MemberName,
-                                p.PackageName 
+                                p.PackageName,
+                                s.Note
                         FROM PTSchedules s
                                                                JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
                                                                JOIN Members m ON r.MemberID = m.MemberID
@@ -149,6 +150,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     dto.setAttendanceStatus(rs.getString("PTAttendanceResult"));
                     dto.setMemberName(rs.getString("MemberName"));
                     dto.setPackageName(rs.getString("PackageName"));
+                    dto.setNote(rs.getString("Note"));
                     list.add(dto);
                 }
             }
@@ -185,7 +187,8 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                         s.PTScheduleID, s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus, s.PTAttendanceResult,
                         u_pt.DisplayName AS PTName,
                         u_mem.DisplayName AS MemberName,
-                        p.PackageName
+                        p.PackageName,
+                        s.Note
                     FROM PTSchedules s
                     INNER JOIN PersonalTrainers pt ON s.PTID = pt.PTID
                     INNER JOIN Users u_pt ON pt.UserID = u_pt.UserID
@@ -215,6 +218,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     dto.setMemberName(rs.getString("MemberName"));
                     dto.setPackageName(rs.getString("PackageName"));
                     dto.setPtName(rs.getString("PTName"));
+                    dto.setNote(rs.getString("Note"));
                     list.add(dto);
                 }
             }
@@ -222,5 +226,169 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    @Override
+    public boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) {
+        String sql = """
+                    SELECT COUNT(*) FROM PTSchedules 
+                    WHERE MemberID = ? 
+                      AND SessionDate = ? 
+                      AND StartTime = CAST(? AS TIME)
+                      AND EndTime = CAST(? AS TIME)
+                      AND SessionStatus != 'Cancelled' 
+                      AND IsDeleted = 0
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            ps.setDate(2, java.sql.Date.valueOf(sessionDate));
+            ps.setTime(3, startTime);
+            ps.setTime(4, endTime);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public List<PTSchedule> getMemberSchedulesForWeek(int memberId, LocalDate startDate, LocalDate endDate) {
+        List<PTSchedule> list = new ArrayList<>();
+        String sql = """
+                    SELECT SessionDate, StartTime FROM PTSchedules 
+                    WHERE MemberID = ? 
+                      AND SessionDate >= ? 
+                      AND SessionDate <= ? 
+                      AND SessionStatus != 'Cancelled' 
+                      AND IsDeleted = 0
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, memberId);
+            ps.setDate(2, java.sql.Date.valueOf(startDate));
+            ps.setDate(3, java.sql.Date.valueOf(endDate));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTSchedule s = new PTSchedule();
+                    s.setSessionDate(rs.getDate("SessionDate").toLocalDate());
+                    s.setStartTime(rs.getTime("StartTime"));
+                    list.add(s);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public PTSchedule getScheduleById(int scheduleId) {
+        String sql = """
+                    SELECT PTScheduleID, PTRegistrationID, PTID, MemberID, SessionDate, StartTime, EndTime, SessionStatus, PTAttendanceResult
+                    FROM PTSchedules 
+                    WHERE PTScheduleID = ? AND IsDeleted = 0
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, scheduleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    PTSchedule s = new PTSchedule();
+                    s.setScheduleId(rs.getInt("PTScheduleID"));
+                    s.setRegistrationId(rs.getInt("PTRegistrationID"));
+                    s.setPtId(rs.getInt("PTID"));
+                    s.setMemberId(rs.getInt("MemberID"));
+                    s.setSessionDate(rs.getDate("SessionDate").toLocalDate());
+                    s.setStartTime(rs.getTime("StartTime"));
+                    s.setEndTime(rs.getTime("EndTime"));
+                    s.setSessionStatus(rs.getString("SessionStatus"));
+                    return s;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public List<PTScheduleDetailDTO> getCompletedSessions(int ptId) {
+        List<PTScheduleDetailDTO> list = new ArrayList<>();
+        String sql = """
+                SELECT 
+                    s.PTScheduleID, s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus, s.PTAttendanceResult,
+                    u.DisplayName AS MemberName,
+                    p.PackageName,
+                    s.Note
+                FROM PTSchedules s
+                JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
+                JOIN Members m ON r.MemberID = m.MemberID
+                JOIN Users u ON m.UserID = u.UserID
+                JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                WHERE s.PTID = ? 
+                  AND s.SessionStatus = 'Completed' 
+                  AND s.IsDeleted = 0
+                ORDER BY s.SessionDate DESC, s.StartTime DESC
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, ptId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTScheduleDetailDTO dto = new PTScheduleDetailDTO();
+                    dto.setScheduleId(rs.getInt("PTScheduleID"));
+                    dto.setSessionDate(rs.getDate("SessionDate").toLocalDate());
+                    dto.setStartTime(rs.getTime("StartTime"));
+                    dto.setEndTime(rs.getTime("EndTime"));
+                    dto.setSessionStatus(rs.getString("SessionStatus"));
+                    dto.setAttendanceStatus(rs.getString("PTAttendanceResult"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    dto.setNote(rs.getString("Note"));
+                    list.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public boolean cancelSession(int scheduleId, String reason, String updatedBy) {
+        String sql = """
+                UPDATE PTSchedules 
+                SET SessionStatus = 'Cancelled', 
+                    PTAttendanceResult = 'Pending', 
+                    Note = ?, 
+                    UpdatedDate = GETDATE(), 
+                    UpdatedBy = ? 
+                WHERE PTScheduleID = ? AND IsDeleted = 0
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, reason);
+            ps.setString(2, updatedBy);
+            ps.setInt(3, scheduleId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

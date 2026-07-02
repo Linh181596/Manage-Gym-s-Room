@@ -38,6 +38,16 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public int getInvoicesCount() throws SQLException {
+        return invoiceDAO.countAll();
+    }
+
+    @Override
+    public List<Invoice> getInvoicesPaginated(int offset, int limit) throws SQLException {
+        return invoiceDAO.findAllPaginated(offset, limit);
+    }
+
+    @Override
     public boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException {
         Connection conn = null;
         boolean success = false;

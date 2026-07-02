@@ -113,13 +113,19 @@
 </div>
 
 <script>
-    // Set min date of preferredStartDate to today
+    // Set min date of preferredStartDate to today and max date to 1 year in the future
     document.addEventListener("DOMContentLoaded", function() {
         const dateInput = document.getElementById("preferredStartDate");
         if (dateInput) {
-            const today = new Date().toISOString().split('T')[0];
-            dateInput.min = today;
-            dateInput.value = today;
+            const todayDate = new Date();
+            const todayStr = todayDate.toISOString().split('T')[0];
+            dateInput.min = todayStr;
+            dateInput.value = todayStr;
+            
+            const maxDate = new Date();
+            maxDate.setFullYear(todayDate.getFullYear() + 1);
+            const maxStr = maxDate.toISOString().split('T')[0];
+            dateInput.max = maxStr;
         }
     });
 </script>

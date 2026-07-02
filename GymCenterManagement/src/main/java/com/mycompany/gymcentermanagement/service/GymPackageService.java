@@ -21,4 +21,6 @@ public interface GymPackageService {
     boolean updatePackage(GymPackage pkg) throws SQLException;
     boolean deletePackage(int id) throws SQLException;
     boolean isPackageNameExists(String name, int excludeId) throws SQLException;
+    int getPackagesCount() throws SQLException;
+    List<GymPackage> getPackagesPaginated(int offset, int limit) throws SQLException;
 }

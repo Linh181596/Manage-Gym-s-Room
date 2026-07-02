@@ -128,6 +128,16 @@ public class AddPersonalTrainerController extends HttpServlet {
             return;
         }
 
+        if (careerStartDate.isAfter(LocalDate.now().minusYears(1))) {
+            forwardBackWithError(request, response, "Kinh nghiệm làm việc của PT phải tối thiểu từ 1 năm trở lên.");
+            return;
+        }
+
+        if (careerStartDate.isBefore(LocalDate.now().minusYears(25))) {
+            forwardBackWithError(request, response, "Kinh nghiệm làm việc của PT không được vượt quá 25 năm.");
+            return;
+        }
+
         try {
             if (userService.getUserByEmail(email) != null) {
                 forwardBackWithError(request, response, "Email này đã được sử dụng bởi tài khoản khác.");

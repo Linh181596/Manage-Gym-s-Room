@@ -73,16 +73,45 @@ public class ManagePackageController extends HttpServlet {
                     break;
                 case "list":
                 default:
-                    List<GymPackage> list = gymPackageService.getAllPackages();
+                    int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+                    int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                            com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
+                    int totalItems = gymPackageService.getPackagesCount();
+                    int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+                    page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
+                    int offset = (page - 1) * pageSize;
+
+                    List<GymPackage> list = gymPackageService.getPackagesPaginated(offset, pageSize);
                     request.setAttribute("packages", list);
+
+                    String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                            request, "/admin/packages", "pageSize", String.valueOf(pageSize));
+
+                    com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                            request, page, pageSize, totalItems, queryBase, "gói tập");
+
                     request.getRequestDispatcher("/WEB-INF/views/admin/package-list.jsp").forward(request, response);
                     break;
             }
         } catch (SQLException | NumberFormatException ex) {
             request.setAttribute("errorMessage", "Lỗi xử lý yêu cầu: " + ex.getMessage());
             try {
-                List<GymPackage> list = gymPackageService.getAllPackages();
+                int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+                int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
+                        com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
+                int totalItems = gymPackageService.getPackagesCount();
+                int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
+                page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
+                int offset = (page - 1) * pageSize;
+
+                List<GymPackage> list = gymPackageService.getPackagesPaginated(offset, pageSize);
                 request.setAttribute("packages", list);
+
+                String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
+                        request, "/admin/packages", "pageSize", String.valueOf(pageSize));
+
+                com.mycompany.gymcentermanagement.utils.PaginationHelper.setPaginationAttributes(
+                        request, page, pageSize, totalItems, queryBase, "gói tập");
             } catch (SQLException sqle) {
                 // Ignore
             }

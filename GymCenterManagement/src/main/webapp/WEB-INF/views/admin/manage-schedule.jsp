@@ -42,9 +42,15 @@
         <!-- Tab 1: Pending Requests -->
         <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
             <div class="card border-0 shadow-sm p-4">
-                <h5 class="text-dark fw-bold mb-3">
-                    <i class="fa fa-list-ul text-primary me-2"></i>Yêu cầu đăng ký PT chờ duyệt
-                </h5>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="text-dark fw-bold m-0">
+                        <i class="fa fa-list-ul text-primary me-2"></i>Yêu cầu đăng ký PT chờ duyệt
+                    </h5>
+                    <a href="${pageContext.request.contextPath}/admin/schedule/registration-history" 
+                       class="btn btn-outline-secondary btn-sm shadow-sm">
+                        <i class="fa fa-history me-1"></i> Lịch sử duyệt đơn
+                    </a>
+                </div>
 
                 <c:choose>
                     <c:when test="${empty pendingRegistrations}">
@@ -61,7 +67,7 @@
                                     <th>Hội viên</th>
                                     <th>HLV yêu cầu</th>
                                     <th>Gói tập</th>
-                                    <th>Ngày bắt đầu</th>
+                                    <th>Ngày mong muốn bắt đầu</th>
                                     <th>Trạng thái</th>
                                     <th>Thao tác</th>
                                 </tr>
@@ -125,7 +131,7 @@
                     <input type="hidden" name="activeTab" value="attendance">
                     <div class="col-md-3 col-sm-6">
                         <label class="form-label fw-semibold">Chọn ngày xem lịch:</label>
-                        <input type="date" name="date" class="form-control" value="${selectedDate}" max="${todayDate}">
+                        <input type="date" name="date" class="form-control" value="${selectedDate}">
                     </div>
                     <div class="col-md-2 col-sm-6">
                         <button type="submit" class="btn btn-primary w-100">
@@ -200,32 +206,55 @@
                                                     </c:when>
                                                     <c:otherwise>
                                                         <div class="d-flex justify-content-center gap-1">
-                                                            <!-- Attended Form -->
-                                                            <form action="${pageContext.request.contextPath}/admin/schedule/attendance" method="post" class="m-0">
-                                                                <input type="hidden" name="scheduleId" value="${s.scheduleId}">
-                                                                <input type="hidden" name="status" value="Attended">
-                                                                <button type="submit" class="btn btn-xs ${s.attendanceStatus == 'Attended' ? 'btn-success' : 'btn-outline-success'} py-1 px-2 fw-bold" style="font-size: 0.75rem;">
-                                                                    Có mặt
-                                                                </button>
-                                                            </form>
-                                                            
-                                                            <!-- Absent Form -->
-                                                            <form action="${pageContext.request.contextPath}/admin/schedule/attendance" method="post" class="m-0">
-                                                                <input type="hidden" name="scheduleId" value="${s.scheduleId}">
-                                                                <input type="hidden" name="status" value="Absent">
-                                                                <button type="submit" class="btn btn-xs ${s.attendanceStatus == 'Absent' ? 'btn-danger' : 'btn-outline-danger'} py-1 px-2 fw-bold" style="font-size: 0.75rem;">
-                                                                    Vắng mặt
-                                                                </button>
-                                                            </form>
-
-                                                            <!-- Reset Pending Form -->
-                                                            <form action="${pageContext.request.contextPath}/admin/schedule/attendance" method="post" class="m-0">
-                                                                <input type="hidden" name="scheduleId" value="${s.scheduleId}">
-                                                                <input type="hidden" name="status" value="Pending">
-                                                                <button type="submit" class="btn btn-xs ${s.attendanceStatus == 'Pending' ? 'btn-secondary' : 'btn-outline-secondary'} py-1 px-2 fw-bold" style="font-size: 0.75rem;">
-                                                                    Chờ
-                                                                </button>
-                                                            </form>
+                                                            <c:choose>
+                                                                <c:when test="${isFutureDate}">
+                                                                    <c:choose>
+                                                                        <c:when test="${sessionScope.currentUser.role == 'Admin'}">
+                                                                            <button type="button" class="btn btn-xs btn-outline-danger py-1 px-2 fw-bold btn-cancel-session" 
+                                                                                    data-id="${s.scheduleId}" 
+                                                                                    data-time="<fmt:formatDate value="${s.startTime}" pattern="HH:mm"/>" 
+                                                                                    data-member="${s.memberName}" 
+                                                                                    data-pt="${s.ptName}"
+                                                                                    style="font-size: 0.75rem;">
+                                                                                Hủy ca
+                                                                            </button>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <button type="button" class="btn btn-xs btn-outline-danger py-1 px-2 fw-bold" 
+                                                                                    disabled title="Chỉ Admin mới có quyền hủy ca học"
+                                                                                    style="font-size: 0.75rem;">
+                                                                                Hủy ca
+                                                                            </button>
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                </c:when>
+                                                                <c:when test="${isPastDate}">
+                                                                    <span class="text-muted small"><i class="fa fa-lock me-1"></i>Đã khóa lịch quá khứ</span>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <form action="${pageContext.request.contextPath}/admin/schedule/attendance" method="post" class="m-0">
+                                                                        <input type="hidden" name="scheduleId" value="${s.scheduleId}">
+                                                                        <input type="hidden" name="status" value="Attended">
+                                                                        <button type="submit" class="btn btn-xs ${s.attendanceStatus == 'Attended' ? 'btn-success' : 'btn-outline-success'} py-1 px-2 fw-bold" style="font-size: 0.75rem;">
+                                                                            Có mặt
+                                                                        </button>
+                                                                    </form>
+                                                                    <form action="${pageContext.request.contextPath}/admin/schedule/attendance" method="post" class="m-0">
+                                                                        <input type="hidden" name="scheduleId" value="${s.scheduleId}">
+                                                                        <input type="hidden" name="status" value="Absent">
+                                                                        <button type="submit" class="btn btn-xs ${s.attendanceStatus == 'Absent' ? 'btn-danger' : 'btn-outline-danger'} py-1 px-2 fw-bold" style="font-size: 0.75rem;">
+                                                                            Vắng mặt
+                                                                        </button>
+                                                                    </form>
+                                                                    <form action="${pageContext.request.contextPath}/admin/schedule/attendance" method="post" class="m-0">
+                                                                        <input type="hidden" name="scheduleId" value="${s.scheduleId}">
+                                                                        <input type="hidden" name="status" value="Pending">
+                                                                        <button type="submit" class="btn btn-xs ${s.attendanceStatus == 'Pending' ? 'btn-secondary' : 'btn-outline-secondary'} py-1 px-2 fw-bold" style="font-size: 0.75rem;">
+                                                                            Chờ
+                                                                        </button>
+                                                                    </form>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
                                                     </c:otherwise>
                                                 </c:choose>
@@ -243,8 +272,9 @@
 </div>
 
 <%-- KHU VỰC CHỨA SCRIPT THÔNG BÁO --%>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <c:if test="${not empty sessionScope.toastMsg}">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             Swal.fire({
@@ -260,6 +290,27 @@
     </script>
     <c:remove var="toastMsg" scope="session"/>
 </c:if>
+
+<c:if test="${not empty sessionScope.errorMessage}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: '${sessionScope.errorMessage}',
+                timer: 4000,
+                showConfirmButton: true
+            });
+        });
+    </script>
+    <c:remove var="errorMessage" scope="session"/>
+</c:if>
+
+<%-- FORM ẨN ĐỂ HỦY CA HỌC --%>
+<form id="cancelSessionForm" action="${pageContext.request.contextPath}/admin/schedule/cancel-session" method="POST" style="display:none;">
+    <input type="hidden" name="scheduleId" id="cancelSessionId">
+    <input type="hidden" name="cancelReason" id="cancelSessionReason">
+</form>
 
 <%-- MODAL HỦY ĐƠN ĐĂNG KÝ --%>
 <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
@@ -314,6 +365,40 @@
                 triggerEl.show();
             }
         }
+
+        // Cancel session click handler
+        const cancelSessionButtons = document.querySelectorAll(".btn-cancel-session");
+        cancelSessionButtons.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                var scheduleId = btn.getAttribute("data-id");
+                var memberName = btn.getAttribute("data-member");
+                var ptName = btn.getAttribute("data-pt");
+                var sessionTime = btn.getAttribute("data-time");
+
+                Swal.fire({
+                    title: 'Hủy ca dạy học?',
+                    text: 'Lịch dạy của HLV ' + ptName + ' cho hội viên ' + memberName + ' lúc ' + sessionTime,
+                    input: 'text',
+                    inputPlaceholder: 'Nhập lý do hủy ca học...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Đồng ý hủy',
+                    cancelButtonText: 'Hủy bỏ',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    inputValidator: (value) => {
+                        if (!value || value.trim() === "") {
+                            return 'Vui lòng nhập lý do hủy lịch!';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById("cancelSessionId").value = scheduleId;
+                        document.getElementById("cancelSessionReason").value = result.value;
+                        document.getElementById("cancelSessionForm").submit();
+                    }
+                });
+            });
+        });
     });
 </script>
 

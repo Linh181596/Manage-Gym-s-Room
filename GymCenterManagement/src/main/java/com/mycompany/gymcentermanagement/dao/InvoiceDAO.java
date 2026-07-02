@@ -18,4 +18,6 @@ public interface InvoiceDAO {
     boolean insert(Invoice inv) throws SQLException;
     boolean update(Invoice inv) throws SQLException;
     List<Invoice> findAll() throws SQLException;
+    int countAll() throws SQLException;
+    List<Invoice> findAllPaginated(int offset, int limit) throws SQLException;
 }
