@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : DashboardServiceImpl.java
  * @description   : Lớp tổng hợp dữ liệu dashboard, chuẩn hóa chuỗi JSON cho biểu đồ doanh thu và xử lý ngày thiếu dữ liệu.
- * @author        : Nguyễn Đại Dương (duongnd)
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================

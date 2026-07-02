@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : DashboardDAOImpl.java
  * @description   : Lớp truy vấn dữ liệu tổng quan, doanh thu, hóa đơn gần đây và cảnh báo vận hành cho bảng điều khiển quản trị.
- * @author        : Nguyễn Đại Dương (duongnd)
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
@@ -65,7 +65,6 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
                 + "AND SessionDate = CAST(GETDATE() AS date)"));
         metric.setPendingAlerts(
                 queryInt("SELECT COUNT(*) FROM EquipmentIssues WHERE IsDeleted = 0 AND Status IN ('Pending', 'InProgress')")
-                + queryInt("SELECT COUNT(*) FROM PTRegistrations WHERE IsDeleted = 0 AND (Status = 'Pending' OR PaymentStatus = 'Unpaid')")
                 + queryInt("SELECT COUNT(*) FROM Invoices WHERE IsDeleted = 0 AND Status = 'Pending'")
                 + queryInt("SELECT COUNT(*) FROM MemberPackages WHERE IsDeleted = 0 AND Status = 'Active' AND EndDate BETWEEN CAST(GETDATE() AS date) AND DATEADD(day, 7, CAST(GETDATE() AS date))"));
         return metric;

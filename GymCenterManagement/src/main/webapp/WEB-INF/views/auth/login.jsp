@@ -86,6 +86,10 @@
                             </div>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Đăng nhập</button>
                         </form>
+                        <div class="text-center mb-3">
+                            <span class="text-muted">Chưa có tài khoản?</span>
+                            <a href="${pageContext.request.contextPath}/register" class="fw-bold">Đăng ký tài khoản</a>
+                        </div>
                         
                         <div class="border-top pt-3 mt-3">
                             <p class="mb-1 text-muted" style="font-size: 0.85rem;">Tài khoản dùng thử (Demo):</p>
