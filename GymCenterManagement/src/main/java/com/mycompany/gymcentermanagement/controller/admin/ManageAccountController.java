@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : ManageAccountController.java
  * @description   : Controller xử lý chức năng quản lý tài khoản cho Admin, bao gồm tìm kiếm, tạo, cập nhật, khóa, mở khóa, đặt lại mật khẩu và vô hiệu hóa tài khoản.
- * @author        : Codex
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : DashboardService.java
  * @description   : Interface định nghĩa dịch vụ tổng hợp dữ liệu cho bảng điều khiển quản trị.
- * @author        : Codex
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

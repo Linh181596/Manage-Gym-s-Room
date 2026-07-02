@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : AdminDashboardController.java
  * @description   : Controller tải dữ liệu tổng quan vận hành cho màn hình bảng điều khiển quản trị.
- * @author        : Codex
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

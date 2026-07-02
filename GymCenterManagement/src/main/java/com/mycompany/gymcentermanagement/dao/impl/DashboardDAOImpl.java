@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : DashboardDAOImpl.java
  * @description   : Lớp truy vấn dữ liệu tổng quan, doanh thu, hóa đơn gần đây và cảnh báo vận hành cho bảng điều khiển quản trị.
- * @author        : Codex
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================
@@ -65,7 +65,6 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
                 + "AND SessionDate = CAST(GETDATE() AS date)"));
         metric.setPendingAlerts(
                 queryInt("SELECT COUNT(*) FROM EquipmentIssues WHERE IsDeleted = 0 AND Status IN ('Pending', 'InProgress')")
-                + queryInt("SELECT COUNT(*) FROM PTRegistrations WHERE IsDeleted = 0 AND (Status = 'Pending' OR PaymentStatus = 'Unpaid')")
                 + queryInt("SELECT COUNT(*) FROM Invoices WHERE IsDeleted = 0 AND Status = 'Pending'")
                 + queryInt("SELECT COUNT(*) FROM MemberPackages WHERE IsDeleted = 0 AND Status = 'Active' AND EndDate BETWEEN CAST(GETDATE() AS date) AND DATEADD(day, 7, CAST(GETDATE() AS date))"));
         return metric;
@@ -157,13 +156,6 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
                 "danger",
                 "/staff/equipment-issues",
                 "SELECT COUNT(*) FROM EquipmentIssues WHERE IsDeleted = 0 AND Status IN ('Pending', 'InProgress')");
-        addCountAlert(alerts,
-                "PT Registration",
-                "Đăng ký huấn luyện viên đang chờ",
-                "đăng ký huấn luyện viên chưa hoàn tất thanh toán/xử lý",
-                "warning",
-                "/pt/list",
-                "SELECT COUNT(*) FROM PTRegistrations WHERE IsDeleted = 0 AND (Status = 'Pending' OR PaymentStatus = 'Unpaid')");
         addCountAlert(alerts,
                 "Package Expiration",
                 "Gói tập sắp hết hạn",

@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : DashboardMetric.java
  * @description   : DTO lưu các chỉ số tổng quan như hội viên hoạt động, doanh thu, huấn luyện viên và cảnh báo vận hành.
- * @author        : Codex
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

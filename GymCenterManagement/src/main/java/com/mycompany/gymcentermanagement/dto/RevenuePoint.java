@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : RevenuePoint.java
  * @description   : DTO lưu một điểm dữ liệu doanh thu theo ngày cho biểu đồ doanh thu.
- * @author        : Codex
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : DashboardInvoice.java
  * @description   : DTO lưu thông tin hóa đơn gần đây để hiển thị trên bảng điều khiển quản trị.
- * @author        : Codex
+ * @author        : Duongnd
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================
