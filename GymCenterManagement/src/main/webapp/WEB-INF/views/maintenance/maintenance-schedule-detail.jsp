@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">Thông tin kế hoạch, tiến độ và kết quả bảo trì.</p>
         </div>
         <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/maintenance-schedules">
+            <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}${not empty param.returnUrl ? param.returnUrl : '/staff/maintenance-schedules'}">
                 <i class="fa fa-arrow-left me-2"></i>Quay lại
             </a>
             <c:if test="${sessionScope.currentUser.role == 'Admin' && schedule.status == 'Scheduled'}">
