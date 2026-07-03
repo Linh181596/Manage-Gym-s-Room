@@ -37,6 +37,7 @@
                 
                 <form action="${pageContext.request.contextPath}/staff/package/transfer" method="post" id="transferForm" class="needs-validation" novalidate>
                     <input type="hidden" name="senderId" value="${sender.userId}">
+                    <input type="hidden" id="remainingDays" value="${remainingDays}">
                     
                     <!-- Sender Info Display -->
                     <div class="row g-3 mb-4">
@@ -185,7 +186,7 @@
 
         // Summary details update
         const summaryReceiver = document.getElementById("summaryReceiverContainer");
-        const remainingDays = ${remainingDays};
+        const remainingDays = parseInt(document.getElementById("remainingDays").value) || 0;
 
         receiverSelect.addEventListener("change", function() {
             const selectedOpt = receiverSelect.options[receiverSelect.selectedIndex];
