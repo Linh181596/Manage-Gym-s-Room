@@ -45,28 +45,36 @@
 
     <div class="row g-4 mb-4">
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm">
-                <i class="fa fa-calendar-alt fa-3x text-primary"></i>
-                <div class="ms-3 text-end"><p class="mb-2 text-muted">Tổng lịch</p><h5 class="mb-0">${statistics.total}</h5></div>
-            </div>
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=list#maintenance-table">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-calendar-alt fa-3x text-primary"></i>
+                    <div class="ms-3 text-end"><p class="mb-2 text-muted">Tổng lịch</p><h5 class="mb-0">${statistics.total}</h5></div>
+                </div>
+            </a>
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm">
-                <i class="fa fa-clock fa-3x text-primary"></i>
-                <div class="ms-3 text-end"><p class="mb-2 text-muted">Đã lên lịch</p><h5 class="mb-0">${statistics.scheduled}</h5></div>
-            </div>
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=list&status=Scheduled#maintenance-table">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-clock fa-3x text-primary"></i>
+                    <div class="ms-3 text-end"><p class="mb-2 text-muted">Đã lên lịch</p><h5 class="mb-0">${statistics.scheduled}</h5></div>
+                </div>
+            </a>
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm">
-                <i class="fa fa-tools fa-3x text-warning"></i>
-                <div class="ms-3 text-end"><p class="mb-2 text-muted">Đang bảo trì</p><h5 class="mb-0">${statistics.inProgress}</h5></div>
-            </div>
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=list&status=InProgress#maintenance-table">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-tools fa-3x text-warning"></i>
+                    <div class="ms-3 text-end"><p class="mb-2 text-muted">Đang bảo trì</p><h5 class="mb-0">${statistics.inProgress}</h5></div>
+                </div>
+            </a>
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm">
-                <i class="fa fa-check-double fa-3x text-success"></i>
-                <div class="ms-3 text-end"><p class="mb-2 text-muted">Đã hoàn thành</p><h5 class="mb-0">${statistics.completed}</h5></div>
-            </div>
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=list&status=Completed#maintenance-table">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-check-double fa-3x text-success"></i>
+                    <div class="ms-3 text-end"><p class="mb-2 text-muted">Đã hoàn thành</p><h5 class="mb-0">${statistics.completed}</h5></div>
+                </div>
+            </a>
         </div>
     </div>
 
@@ -112,7 +120,7 @@
         </form>
     </div>
 
-    <div class="bg-light rounded p-4 shadow-sm">
+    <div id="maintenance-table" class="bg-light rounded p-4 shadow-sm">
         <h5 class="mb-4 text-primary"><i class="fa fa-list me-2"></i>Danh sách lịch bảo trì</h5>
         <div class="table-responsive">
             <table class="table table-hover table-striped align-middle">
@@ -132,15 +140,22 @@
                         <tr>
                             <td><strong>#MT-${item.maintenanceScheduleId}</strong></td>
                             <td>
-                                <div class="fw-bold"><c:out value="${item.equipmentName}" /></div>
-                                <small class="text-muted">#<c:out value="${item.equipmentCode}" /></small>
+                                <a class="fw-bold text-decoration-none"
+                                   href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}&returnUrl=${encodedReturnUrl}">
+                                    <c:out value="${item.equipmentName}" />
+                                </a>
+                                <br>
+                                <a class="small text-muted text-decoration-none"
+                                   href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}&returnUrl=${encodedReturnUrl}">
+                                    #<c:out value="${item.equipmentCode}" />
+                                </a>
                             </td>
                             <td>${item.scheduledDateDisplay}</td>
                             <td><c:out value="${item.maintenanceTypeDisplay}" /></td>
                             <td>
                                 <c:choose>
                                     <c:when test="${not empty item.issueId}">
-                                        <a href="${pageContext.request.contextPath}/staff/equipment-issues?action=detail&id=${item.issueId}">
+                                        <a href="${pageContext.request.contextPath}/staff/equipment-issues?action=detail&id=${item.issueId}&returnUrl=${encodedReturnUrl}">
                                             #SC-${item.issueId}
                                         </a>
                                     </c:when>
@@ -158,11 +173,11 @@
                             <td class="text-center">
                                 <div class="d-inline-flex gap-1">
                                     <a class="btn btn-sm btn-outline-primary"
-                                       href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=detail&id=${item.maintenanceScheduleId}"
+                                       href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=detail&id=${item.maintenanceScheduleId}&returnUrl=${encodedReturnUrl}"
                                        title="Chi tiết"><i class="fa fa-eye"></i></a>
                                     <c:if test="${sessionScope.currentUser.role == 'Admin' && item.status == 'Scheduled'}">
                                         <a class="btn btn-sm btn-outline-warning"
-                                           href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=edit&id=${item.maintenanceScheduleId}"
+                                           href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=edit&id=${item.maintenanceScheduleId}&returnUrl=${encodedReturnUrl}"
                                            title="Cập nhật kế hoạch"><i class="fa fa-edit"></i></a>
                                         <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=cancel"
                                               onsubmit="return confirm('Bạn có chắc muốn hủy lịch #MT-${item.maintenanceScheduleId}?');">
@@ -174,7 +189,7 @@
                                     </c:if>
                                     <c:if test="${sessionScope.currentUser.role == 'Staff' && (item.status == 'Scheduled' || item.status == 'InProgress')}">
                                         <a class="btn btn-sm btn-outline-warning"
-                                           href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=edit&id=${item.maintenanceScheduleId}"
+                                           href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=edit&id=${item.maintenanceScheduleId}&returnUrl=${encodedReturnUrl}"
                                            title="Cập nhật tiến độ"><i class="fa fa-tasks"></i></a>
                                     </c:if>
                                 </div>
@@ -196,5 +211,16 @@
         <jsp:include page="../common/pagination.jsp" />
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.location.hash === '#maintenance-table') {
+            var target = document.getElementById('maintenance-table');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    });
+</script>
 
 <jsp:include page="../common/dashboard_footer.jsp" />

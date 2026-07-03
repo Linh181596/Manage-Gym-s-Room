@@ -200,6 +200,8 @@ public class MaintenanceScheduleDAO {
             sql.append("""
                      AND (
                          CAST(ms.MaintenanceScheduleID AS varchar(20)) LIKE ?
+                         OR CONCAT('MT-', ms.MaintenanceScheduleID) LIKE ?
+                         OR CONCAT('#MT-', ms.MaintenanceScheduleID) LIKE ?
                          OR e.EquipmentCode LIKE ?
                          OR e.EquipmentName LIKE ?
                          OR ms.Description LIKE ?
@@ -207,7 +209,7 @@ public class MaintenanceScheduleDAO {
                          OR i.Description LIKE ?
                      )
                     """);
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 8; i++) {
                 params.add(like);
             }
         }

@@ -62,7 +62,6 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Loại bảo trì <span class="text-danger">*</span></label>
                             <select class="form-select" id="maintenanceType" name="maintenanceType" required>
-                                <option value="">Chọn loại bảo trì</option>
                                 <option value="Preventive" <c:if test="${schedule.maintenanceType == 'Preventive'}">selected="selected"</c:if>>Bảo trì phòng ngừa</option>
                                 <option value="Corrective" <c:if test="${schedule.maintenanceType == 'Corrective'}">selected="selected"</c:if>>Bảo trì sửa chữa</option>
                             </select>
