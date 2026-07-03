@@ -10,9 +10,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.nio.charset.StandardCharsets;
 
 @WebServlet(name = "ManageMaintenanceScheduleController", urlPatterns = {"/staff/maintenance-schedules"})
 public class ManageMaintenanceScheduleController extends HttpServlet {
@@ -113,6 +115,7 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         request.setAttribute("status", status);
         request.setAttribute("type", type);
         request.setAttribute("equipmentId", equipmentId);
+        request.setAttribute("encodedReturnUrl", buildEncodedReturnUrl(request));
         exposeFlash(request);
         
         String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(
@@ -328,5 +331,14 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
 
     private String trim(String value) {
         return value == null ? null : value.trim();
+    }
+
+    private String buildEncodedReturnUrl(HttpServletRequest request) {
+        StringBuilder returnUrl = new StringBuilder(request.getRequestURI().substring(request.getContextPath().length()));
+        if (request.getQueryString() != null && !request.getQueryString().isBlank()) {
+            returnUrl.append("?").append(request.getQueryString());
+        }
+        returnUrl.append("#maintenance-table");
+        return URLEncoder.encode(returnUrl.toString(), StandardCharsets.UTF_8);
     }
 }

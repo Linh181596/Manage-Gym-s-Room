@@ -38,6 +38,11 @@
         </nav>
         <div class="d-flex gap-2">
             <c:choose>
+                <c:when test="${not empty param.returnUrl}">
+                    <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}${param.returnUrl}">
+                        <i class="fa fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </c:when>
                 <c:when test="${sessionScope.currentUser.role == 'Admin'}">
                     <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/admin/equipment-reports">
                         <i class="fa fa-arrow-left me-2"></i>Quay lại
