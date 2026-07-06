@@ -82,7 +82,7 @@
                                     <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe" value="true">
                                     <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
                                 </div>
-                                <a href="#">Quên mật khẩu?</a>
+                                <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a>
                             </div>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Đăng nhập</button>
                         </form>

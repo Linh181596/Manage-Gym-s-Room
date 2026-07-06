@@ -74,6 +74,12 @@ public interface UserDAO {
 
     boolean changePasswordAndRevokeTokens(int userId, String newPasswordHash, boolean mustChangePassword) throws SQLException;
 
+    boolean savePasswordResetToken(UserToken token) throws SQLException;
+
+    User getUserByPasswordResetToken(String tokenValue) throws SQLException;
+
+    boolean resetPasswordByToken(String tokenValue, String newPasswordHash) throws SQLException;
+
     // --- Profile Methods (UC-03) ---
     
     String getHighestPriorityRole(int userId) throws SQLException;
