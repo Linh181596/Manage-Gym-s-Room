@@ -91,7 +91,7 @@ public class ManageEquipmentIssueController extends HttpServlet {
             } else {
                 service.createIssue(readIssue(request, currentUser.getUserId(), currentUser.getFullName()));
             }
-            if ("Admin".equals(currentUser.getRole())) {
+            if (User.Role.Admin.equals(currentUser.getRole())) {
                 response.sendRedirect(request.getContextPath() + "/admin/equipment-reports");
             } else {
                 response.sendRedirect(request.getContextPath() + "/staff/equipment-issues?action=list");
@@ -254,13 +254,6 @@ public class ManageEquipmentIssueController extends HttpServlet {
         } catch (NumberFormatException ex) {
             return fallback;
         }
-    }
-
-    private int normalizePageSize(int pageSize) {
-        return switch (pageSize) {
-            case 5, 10, 20, 50 -> pageSize;
-            default -> DEFAULT_PAGE_SIZE;
-        };
     }
 
     private String trim(String value) {
