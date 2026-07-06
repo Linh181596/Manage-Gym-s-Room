@@ -14,6 +14,7 @@ import com.mycompany.gymcentermanagement.dao.DashboardDAO;
 import com.mycompany.gymcentermanagement.dto.DashboardAlert;
 import com.mycompany.gymcentermanagement.dto.DashboardInvoice;
 import com.mycompany.gymcentermanagement.dto.DashboardMetric;
+import com.mycompany.gymcentermanagement.dto.RevenueChartFilter;
 import com.mycompany.gymcentermanagement.dto.RevenuePoint;
 import com.mycompany.gymcentermanagement.utils.DBContext;
 import java.math.BigDecimal;
@@ -71,13 +72,15 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
     }
 
     @Override
-    public List<RevenuePoint> getRevenueTrend(int days) throws SQLException {
+    public List<RevenuePoint> getRevenueTrend(RevenueChartFilter filter) throws SQLException {
         List<RevenuePoint> points = new ArrayList<>();
-        String sql = "SELECT CAST(PaymentDate AS date) AS RevenueDate, COALESCE(SUM(Amount), 0) AS TotalAmount "
-                + "FROM Invoices "
-                + "WHERE IsDeleted = 0 AND Status = 'Paid' "
-                + "AND PaymentDate >= DATEADD(day, ?, CAST(GETDATE() AS date)) "
-                + "GROUP BY CAST(PaymentDate AS date) "
+        String bucketExpression = getRevenueBucketExpression(filter.getGroupBy());
+        String sql = "SELECT " + bucketExpression + " AS RevenueDate, COALESCE(SUM(i.Amount), 0) AS TotalAmount "
+                + "FROM Invoices i "
+                + "WHERE i.IsDeleted = 0 AND i.Status = 'Paid' "
+                + "AND i.PaymentDate >= ? AND i.PaymentDate < DATEADD(day, 1, ?) "
+                + getRevenueTypeCondition(filter.getRevenueType())
+                + "GROUP BY " + bucketExpression + " "
                 + "ORDER BY RevenueDate";
 
         Connection conn = null;
@@ -86,7 +89,8 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         try {
             conn = getActiveConnection();
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, -Math.max(days - 1, 0));
+            stmt.setDate(1, Date.valueOf(filter.getFromDate()));
+            stmt.setDate(2, Date.valueOf(filter.getToDate()));
             rs = stmt.executeQuery();
             while (rs.next()) {
                 Date date = rs.getDate("RevenueDate");
@@ -98,6 +102,26 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
             closeResource(conn, stmt, rs);
         }
         return points;
+    }
+
+    private String getRevenueBucketExpression(String groupBy) {
+        if (RevenueChartFilter.GROUP_WEEK.equals(groupBy)) {
+            return "DATEADD(day, -(DATEDIFF(day, '19000101', CAST(i.PaymentDate AS date)) % 7), CAST(i.PaymentDate AS date))";
+        }
+        if (RevenueChartFilter.GROUP_MONTH.equals(groupBy)) {
+            return "DATEFROMPARTS(YEAR(i.PaymentDate), MONTH(i.PaymentDate), 1)";
+        }
+        return "CAST(i.PaymentDate AS date)";
+    }
+
+    private String getRevenueTypeCondition(String revenueType) {
+        if (RevenueChartFilter.TYPE_GYM_PACKAGE.equals(revenueType)) {
+            return "AND i.MemberPackageID IS NOT NULL ";
+        }
+        if (RevenueChartFilter.TYPE_PT_SERVICE.equals(revenueType)) {
+            return "AND i.PTRegistrationID IS NOT NULL ";
+        }
+        return "";
     }
 
     @Override

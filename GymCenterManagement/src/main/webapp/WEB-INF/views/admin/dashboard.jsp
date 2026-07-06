@@ -14,6 +14,7 @@
 
 <c:set var="data" value="${dashboardData}" />
 <c:set var="metric" value="${data.metric}" />
+<c:set var="revenueFilter" value="${data.revenueFilter}" />
 
 <div class="container-fluid pt-4 px-4">
     <div class="d-flex align-items-center justify-content-between mb-4">
@@ -96,10 +97,44 @@
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <div>
                         <h6 class="mb-0 text-dark fw-bold">Biểu đồ doanh thu</h6>
-                        <small class="text-muted">Doanh thu đã thanh toán trong 7 ngày gần nhất</small>
+                        <small class="text-muted">Doanh thu đã thanh toán từ ${revenueFilter.fromDateValue} đến ${revenueFilter.toDateValue}</small>
                     </div>
                     <a href="${pageContext.request.contextPath}/staff/record-payment">Xem hóa đơn</a>
                 </div>
+                <form method="get" action="${pageContext.request.contextPath}/admin/dashboard" class="row g-2 align-items-end mb-4">
+                    <div class="col-sm-6 col-lg-3">
+                        <label class="form-label small fw-semibold text-secondary mb-1" for="revenueRange">Khoảng thời gian</label>
+                        <select id="revenueRange" name="revenueRange" class="form-select form-select-sm">
+                            <option value="last7" ${revenueFilter.range == 'last7' ? 'selected' : ''}>7 ngày gần nhất</option>
+                            <option value="last30" ${revenueFilter.range == 'last30' ? 'selected' : ''}>30 ngày gần nhất</option>
+                            <option value="this_month" ${revenueFilter.range == 'this_month' ? 'selected' : ''}>Tháng này</option>
+                            <option value="this_quarter" ${revenueFilter.range == 'this_quarter' ? 'selected' : ''}>Quý này</option>
+                            <option value="this_year" ${revenueFilter.range == 'this_year' ? 'selected' : ''}>Năm nay</option>
+                            <option value="custom" ${revenueFilter.range == 'custom' ? 'selected' : ''}>Tùy chọn</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label small fw-semibold text-secondary mb-1" for="fromDate">Từ ngày</label>
+                        <input id="fromDate" name="fromDate" type="date" class="form-control form-control-sm" value="${revenueFilter.fromDateValue}">
+                    </div>
+                    <div class="col-sm-6 col-lg-2">
+                        <label class="form-label small fw-semibold text-secondary mb-1" for="toDate">Đến ngày</label>
+                        <input id="toDate" name="toDate" type="date" class="form-control form-control-sm" value="${revenueFilter.toDateValue}">
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <label class="form-label small fw-semibold text-secondary mb-1" for="revenueType">Loại doanh thu</label>
+                        <select id="revenueType" name="revenueType" class="form-select form-select-sm">
+                            <option value="all" ${revenueFilter.revenueType == 'all' ? 'selected' : ''}>Tất cả</option>
+                            <option value="gym" ${revenueFilter.revenueType == 'gym' ? 'selected' : ''}>Gói tập thể hình</option>
+                            <option value="pt" ${revenueFilter.revenueType == 'pt' ? 'selected' : ''}>Dịch vụ huấn luyện viên cá nhân</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-12 col-lg-2">
+                        <button type="submit" class="btn btn-sm btn-primary w-100">
+                            <i class="fa fa-filter me-1"></i> Áp dụng
+                        </button>
+                    </div>
+                </form>
                 <div class="position-relative" style="height: 280px;">
                     <canvas id="admin-revenue-chart" 
                             data-labels='${empty data ? "[]" : data.revenueChartLabelsJson}' 
@@ -224,6 +259,17 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        const revenueRange = document.getElementById("revenueRange");
+        const fromDate = document.getElementById("fromDate");
+        const toDate = document.getElementById("toDate");
+        [fromDate, toDate].forEach(function(input) {
+            if (input && revenueRange) {
+                input.addEventListener("change", function() {
+                    revenueRange.value = "custom";
+                });
+            }
+        });
+
         const chartElement = document.getElementById("admin-revenue-chart");
         if (!chartElement || typeof Chart === "undefined") {
             return;
