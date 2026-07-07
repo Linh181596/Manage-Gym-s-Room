@@ -58,8 +58,8 @@ public class PTProfileController extends HttpServlet {
         Part part = request.getPart(partName);
 
         // NẾU PT KHÔNG UPLOAD ẢNH MỚI -> Trả về null
-        if (part == null || part.getSize() == 0) {
-            return new UploadedFile(null, null);
+        if (part == null || part.getSize() <= 0) {
+            return new UploadedFile(null);
         }
 
         long maxFileSize = 5 * 1024 * 1024; // 5MB
@@ -71,7 +71,7 @@ public class PTProfileController extends HttpServlet {
         String originalFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
 
         if (originalFileName == null || originalFileName.trim().isEmpty()) {
-            return new UploadedFile(null, null);
+            return new UploadedFile(null);
         }
 
         String extension = getFileExtension(originalFileName);
@@ -93,7 +93,7 @@ public class PTProfileController extends HttpServlet {
         part.write(realFilePath);
 
         String relativeFilePath = uploadDirectory + "/" + uniqueFileName;
-        return new UploadedFile(originalFileName, relativeFilePath);
+        return new UploadedFile(relativeFilePath);
     }
 
     private String getFileExtension(String fileName) {
@@ -110,11 +110,9 @@ public class PTProfileController extends HttpServlet {
     }
 
     private static class UploadedFile {
-        private final String originalFileName;
         private final String filePath;
 
-        private UploadedFile(String originalFileName, String filePath) {
-            this.originalFileName = originalFileName;
+        private UploadedFile(String filePath) {
             this.filePath = filePath;
         }
     }

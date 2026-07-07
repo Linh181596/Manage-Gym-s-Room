@@ -1,6 +1,5 @@
 package com.mycompany.gymcentermanagement.dao;
 
-import com.mycompany.gymcentermanagement.dto.PTDashboardData;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
