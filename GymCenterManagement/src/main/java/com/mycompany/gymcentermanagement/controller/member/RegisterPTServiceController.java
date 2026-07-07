@@ -163,9 +163,7 @@ public class RegisterPTServiceController extends HttpServlet {
         registration.setStartDate(startDate);
         registration.setEndDate(endDate);
         registration.setNote(note);
-        registration.setTotalAmount(servicePrice.getPrice());
         registration.setCreatedBy(currentUser.getFullName());
-        registration.setPurchasedSessions(servicePrice.getNumberOfSessions());
 
         boolean inserted = registrationService.registerPTService(registration);
 

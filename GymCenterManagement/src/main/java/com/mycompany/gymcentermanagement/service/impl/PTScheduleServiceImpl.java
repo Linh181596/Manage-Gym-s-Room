@@ -8,6 +8,10 @@ import com.mycompany.gymcentermanagement.service.PTScheduleService;
 
 import java.time.LocalDate;
 import java.util.List;
+import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
+import com.mycompany.gymcentermanagement.service.PTRegistrationService;
+import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
+import java.util.ArrayList;
 
 public class PTScheduleServiceImpl implements PTScheduleService {
     private PTScheduleDAO ptScheduleDAO = new PTScheduleDAOImpl();
@@ -64,5 +68,153 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     @Override
     public boolean cancelSession(int scheduleId, String reason, String updatedBy) {
         return ptScheduleDAO.cancelSession(scheduleId, reason, updatedBy);
+    }
+
+    @Override
+    public boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate) {
+        return ptScheduleDAO.insertSchedulesAndUpdateRegistration(schedules, createdByUserId, actualStartDate, actualEndDate);
+    }
+
+    @Override
+    public String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, List<String> daysOfWeekStr, String timeSlot, int createdByUserId) {
+        PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
+        
+        // 1. Validate actualStartDate is not in the past
+        if (actualStartDate.isBefore(LocalDate.now())) {
+            return "Ngày bắt đầu chính thức không được sớm hơn ngày hiện tại.";
+        }
+
+        // 2. Validate weekdays: non-empty, Monday-Saturday only, no duplicates
+        if (daysOfWeekStr == null || daysOfWeekStr.isEmpty()) {
+            return "Vui lòng chọn ít nhất một thứ trong tuần.";
+        }
+        java.util.Set<String> uniqueDays = new java.util.HashSet<>();
+        for (String day : daysOfWeekStr) {
+            if (day == null) continue;
+            String upperDay = day.trim().toUpperCase();
+            if (!upperDay.equals("MONDAY") && !upperDay.equals("TUESDAY") && !upperDay.equals("WEDNESDAY") &&
+                !upperDay.equals("THURSDAY") && !upperDay.equals("FRIDAY") && !upperDay.equals("SATURDAY")) {
+                return "Thứ trong tuần không hợp lệ (Chỉ chấp nhận từ Thứ 2 đến Thứ 7).";
+            }
+            if (!uniqueDays.add(upperDay)) {
+                return "Thứ trong tuần không được chọn trùng lặp.";
+            }
+        }
+
+        // 3. Validate timeSlot must be a fixed slot key mapped by server-side code
+        List<String> validSlots = java.util.Arrays.asList(
+            "06:00-07:30", "08:15-09:45", "10:00-11:30", "13:30-15:00", "15:45-17:15", "18:00-19:30", "19:45-21:15"
+        );
+        if (timeSlot == null || !validSlots.contains(timeSlot.trim())) {
+            return "Ca tập chọn không hợp lệ (Không thuộc khung giờ quy định).";
+        }
+
+        // 4. Get and validate registration detail
+        PTRegistrationDTO reg = ptRegistrationService.getRegistrationById(regId);
+        if (reg == null) {
+            return "Đơn đăng ký không tồn tại.";
+        }
+        
+        // 5. Validate ownership
+        if (reg.getPtId() != loggedInPtId) {
+            return "Bạn không có quyền xếp lịch cho đơn đăng ký này (Không phải PT của đơn).";
+        }
+        
+        // 6. Validate Active/Paid
+        if (!"Active".equalsIgnoreCase(reg.getStatus()) || !"Paid".equalsIgnoreCase(reg.getPaymentStatus())) {
+            return "Đơn đăng ký phải ở trạng thái Đang hoạt động (Active) và Đã thanh toán (Paid) mới được xếp lịch.";
+        }
+        
+        // 7. Validate chưa có schedule
+        int existingSchedulesCount = ptRegistrationService.countSchedulesByRegistration(regId);
+        if (existingSchedulesCount > 0) {
+            return "Đơn đăng ký này đã được xếp lịch trước đó.";
+        }
+        
+        // 8. Generate candidate sessions
+        int totalSessions = reg.getPurchasedSessions();
+        if (totalSessions <= 0) {
+            totalSessions = reg.getNumberOfSessions(); // fallback
+        }
+        
+        List<java.time.DayOfWeek> selectedDays = new ArrayList<>();
+        for (String day : daysOfWeekStr) {
+            selectedDays.add(java.time.DayOfWeek.valueOf(day.trim().toUpperCase()));
+        }
+        
+        String[] timeParts = timeSlot.split("-");
+        java.sql.Time startTime = java.sql.Time.valueOf(timeParts[0] + ":00");
+        java.sql.Time endTime = java.sql.Time.valueOf(timeParts[1] + ":00");
+        
+        LocalDate checkDate = actualStartDate;
+        int sessionsSimulated = 0;
+        int searchCounter = 0;
+        int maxDaysToSearch = 180;
+        List<String> conflictDetails = new ArrayList<>();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
+        List<PTSchedule> generatedSchedules = new ArrayList<>();
+        
+        while (sessionsSimulated < totalSessions && searchCounter < maxDaysToSearch) {
+            if (selectedDays.contains(checkDate.getDayOfWeek())) {
+                boolean isPtConflict = isScheduleConflict(loggedInPtId, checkDate, startTime, endTime);
+                boolean isMemberConflict = isMemberScheduleConflict(reg.getMemberId(), checkDate, startTime, endTime);
+                
+                if (isPtConflict || isMemberConflict) {
+                    String daysInWeekVietnam = checkDate.getDayOfWeek().getDisplayName(
+                            java.time.format.TextStyle.FULL,
+                            new java.util.Locale("vi", "VN")
+                    );
+                    String reason = isPtConflict && isMemberConflict ? "trùng lịch cả HLV & hội viên" :
+                                   (isPtConflict ? "HLV trùng lịch" : "hội viên trùng lịch");
+                    conflictDetails.add(checkDate.format(formatter) + " (" + daysInWeekVietnam + " - " + reason + ")");
+                }
+                
+                PTSchedule schedule = new PTSchedule();
+                schedule.setPtId(loggedInPtId);
+                schedule.setRegistrationId(regId);
+                schedule.setMemberId(reg.getMemberId());
+                schedule.setSessionDate(checkDate);
+                schedule.setStartTime(startTime);
+                schedule.setEndTime(endTime);
+                generatedSchedules.add(schedule);
+                
+                sessionsSimulated++;
+            }
+            checkDate = checkDate.plusDays(1);
+            searchCounter++;
+        }
+        
+        // 9. Check conflict
+        if (!conflictDetails.isEmpty()) {
+            StringBuilder errorMsg = new StringBuilder("Ca tập bị trùng vào các ngày: ");
+            for (int i = 0; i < conflictDetails.size(); i++) {
+                errorMsg.append(conflictDetails.get(i));
+                if (i < conflictDetails.size() - 1) {
+                    errorMsg.append(", ");
+                }
+            }
+            return errorMsg.toString();
+        }
+        
+        if (generatedSchedules.size() < totalSessions) {
+            return "Không tìm đủ ngày trống trong phạm vi 180 ngày để xếp lịch.";
+        }
+        
+        // Validate generated session count must equal PurchasedSessions
+        if (generatedSchedules.size() != totalSessions) {
+            return "Số lượng ca tập mô phỏng (" + generatedSchedules.size() + ") không khớp với số buổi đã mua (" + totalSessions + ").";
+        }
+        
+        // 10. Atomic transaction: Save schedules and update actual dates in a single transaction
+        LocalDate actualStart = generatedSchedules.get(0).getSessionDate();
+        LocalDate actualEnd = generatedSchedules.get(generatedSchedules.size() - 1).getSessionDate();
+        
+        boolean isSaved = insertSchedulesAndUpdateRegistration(generatedSchedules, createdByUserId, actualStart, actualEnd);
+        if (!isSaved) {
+            return "Lỗi hệ thống khi lưu lịch tập và cập nhật ngày bắt đầu/kết thúc gói tập.";
+        }
+        
+        return "SUCCESS";
     }
 }

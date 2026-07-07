@@ -21,4 +21,6 @@ public interface PTScheduleService {
     PTSchedule getScheduleById(int scheduleId);
     List<PTScheduleDetailDTO> getCompletedSessions(int ptId);
     boolean cancelSession(int scheduleId, String reason, String updatedBy);
+    String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, List<String> daysOfWeekStr, String timeSlot, int createdByUserId);
+    boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate);
 }

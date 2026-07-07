@@ -27,6 +27,47 @@
         <c:remove var="errorMessage" scope="session" />
     </c:if>
 
+    <!-- Pending Schedule Setup Registrations -->
+    <c:if test="${not empty pendingSchedules}">
+        <div class="card border-warning mb-4 shadow-sm border-2">
+            <div class="card-header bg-warning text-dark fw-bold d-flex align-items-center">
+                <i class="fa fa-exclamation-triangle me-2 text-danger fs-5"></i>
+                <span>Bạn có ${pendingSchedules.size()} gói tập mới đã thanh toán cần xếp lịch dạy!</span>
+            </div>
+            <div class="card-body bg-white p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Hội viên</th>
+                                <th>Gói tập</th>
+                                <th>Ngày mong muốn bắt đầu</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="reg" items="${pendingSchedules}">
+                                <tr>
+                                    <td class="fw-bold">#PT-${reg.ptRegistrationId}</td>
+                                    <td>${reg.memberName}<br><small class="text-muted">${reg.memberPhone}</small></td>
+                                    <td>${reg.packageName} (${reg.purchasedSessions} buổi)</td>
+                                    <td>${reg.preferredStartDate}</td>
+                                    <td>
+                                        <a href="${pageContext.request.contextPath}/admin/pt/schedule-setup?regId=${reg.ptRegistrationId}" 
+                                           class="btn btn-sm btn-warning fw-bold text-dark border border-warning shadow-sm">
+                                            <i class="fa fa-calendar-plus me-1"></i> Xếp lịch dạy ngay
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </c:if>
+
     <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
         <h4 class="mb-0 fw-bold text-dark">
             <i class="fa fa-calendar-alt text-primary me-2"></i> Lịch Dạy Của Tôi
@@ -127,6 +168,24 @@
         transform: translateY(-3px);
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<c:if test="${not empty sessionScope.toastMsg}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            Swal.fire({
+                icon: 'success',
+                title: 'Tuyệt vời!',
+                text: '${sessionScope.toastMsg}',
+                timer: 3000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        });
+    </script>
+    <c:remove var="toastMsg" scope="session"/>
+</c:if>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {

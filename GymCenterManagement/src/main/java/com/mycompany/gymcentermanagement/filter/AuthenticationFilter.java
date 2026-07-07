@@ -95,6 +95,11 @@ public class AuthenticationFilter extends HttpFilter {
                 relativePath.startsWith("/admin/pt/cancel")
             )) {
                 authorized = true;
+            } else if (role == User.Role.PT && (
+                relativePath.startsWith("/admin/pt/schedule-setup") ||
+                relativePath.startsWith("/admin/pt/cancel")
+            )) {
+                authorized = true;
             }
         } else if (relativePath.startsWith("/staff/") && (role == User.Role.Staff || role == User.Role.Admin)) {
             authorized = true;

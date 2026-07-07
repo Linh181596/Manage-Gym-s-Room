@@ -391,4 +391,126 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
             return false;
         }
     }
+
+    private boolean isScheduleConflictTx(Connection conn, int ptId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) throws SQLException {
+        String sql = """
+                    SELECT COUNT(*) FROM PTSchedules 
+                    WHERE PTID = ? 
+                      AND SessionDate = ? 
+                      AND SessionStatus != 'Cancelled' 
+                      AND IsDeleted = 0
+                      AND (
+                          (StartTime <= ? AND EndTime > ?) OR 
+                          (StartTime < ? AND EndTime >= ?) OR 
+                          (StartTime >= ? AND EndTime <= ?)
+                      )
+                """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ptId);
+            ps.setDate(2, java.sql.Date.valueOf(sessionDate));
+            ps.setTime(3, startTime);
+            ps.setTime(4, startTime);
+            ps.setTime(5, endTime);
+            ps.setTime(6, endTime);
+            ps.setTime(7, startTime);
+            ps.setTime(8, endTime);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isMemberScheduleConflictTx(Connection conn, int memberId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) throws SQLException {
+        String sql = """
+                    SELECT COUNT(*) FROM PTSchedules 
+                    WHERE MemberID = ? 
+                      AND SessionDate = ? 
+                      AND SessionStatus != 'Cancelled' 
+                      AND IsDeleted = 0
+                      AND (
+                          (StartTime <= ? AND EndTime > ?) OR 
+                          (StartTime < ? AND EndTime >= ?) OR 
+                          (StartTime >= ? AND EndTime <= ?)
+                      )
+                """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, memberId);
+            ps.setDate(2, java.sql.Date.valueOf(sessionDate));
+            ps.setTime(3, startTime);
+            ps.setTime(4, startTime);
+            ps.setTime(5, endTime);
+            ps.setTime(6, endTime);
+            ps.setTime(7, startTime);
+            ps.setTime(8, endTime);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate) {
+        if (schedules == null || schedules.isEmpty()) {
+            return false;
+        }
+        int regId = schedules.get(0).getRegistrationId();
+        
+        String insertSql = "INSERT INTO PTSchedules (PTID, PTRegistrationID, MemberID, SessionDate, StartTime, EndTime, SessionStatus, PTAttendanceResult, CreatedByUserID, CreatedDate, IsDeleted) "
+                + "VALUES (?, ?, ?, ?, ?, ?, 'Upcoming', 'Pending', ?, GETDATE(), 0)";
+                
+        String updateSql = "UPDATE PTRegistrations SET StartDate = ?, EndDate = ? WHERE PTRegistrationID = ?";
+        
+        try (Connection conn = DBContext.getConnection()) {
+            conn.setAutoCommit(false);
+            
+            // Re-check conflict for all schedules inside the same transaction
+            for (PTSchedule s : schedules) {
+                if (isScheduleConflictTx(conn, s.getPtId(), s.getSessionDate(), s.getStartTime(), s.getEndTime()) ||
+                    isMemberScheduleConflictTx(conn, s.getMemberId(), s.getSessionDate(), s.getStartTime(), s.getEndTime())) {
+                    conn.rollback();
+                    System.err.println("Xung đột lịch xảy ra trong phiên giao dịch đồng thời!");
+                    return false;
+                }
+            }
+            
+            try (PreparedStatement insertPs = conn.prepareStatement(insertSql);
+                 PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
+                
+                // 1. Insert schedules in batch
+                for (PTSchedule s : schedules) {
+                    insertPs.setInt(1, s.getPtId());
+                    insertPs.setInt(2, s.getRegistrationId());
+                    insertPs.setInt(3, s.getMemberId());
+                    insertPs.setDate(4, java.sql.Date.valueOf(s.getSessionDate()));
+                    insertPs.setTime(5, s.getStartTime());
+                    insertPs.setTime(6, s.getEndTime());
+                    insertPs.setInt(7, createdByUserId);
+                    insertPs.addBatch();
+                }
+                insertPs.executeBatch();
+                
+                // 2. Update registration actual dates
+                updatePs.setDate(1, java.sql.Date.valueOf(actualStartDate));
+                updatePs.setDate(2, java.sql.Date.valueOf(actualEndDate));
+                updatePs.setInt(3, regId);
+                updatePs.executeUpdate();
+                
+                conn.commit();
+                return true;
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex;
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi lưu lịch và cập nhật ngày đăng ký: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

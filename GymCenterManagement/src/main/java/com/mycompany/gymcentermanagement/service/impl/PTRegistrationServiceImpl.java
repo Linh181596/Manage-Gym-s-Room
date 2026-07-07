@@ -6,6 +6,7 @@ import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -27,6 +28,15 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
 
     @Override
     public boolean registerPTService(PTRegistration registration) {
+        PTServicePrice servicePrice = registrationDAO.findServicePriceById(registration.getPtServicePriceId());
+        if (servicePrice != null) {
+            if (servicePrice.getPrice() != null) {
+                registration.setTotalAmount(servicePrice.getPrice());
+            }
+            registration.setPurchasedSessions(servicePrice.getNumberOfSessions());
+        }
+        registration.setStatus("Pending");
+        registration.setPaymentStatus("Unpaid");
         return registrationDAO.insert(registration);
     }
 
@@ -44,7 +54,11 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
     public boolean processRegistration(int ptRegistrationId, String status,
                                        String paymentStatus, int processedByUserId,
                                        String updatedBy) {
-        return registrationDAO.processRegistration(ptRegistrationId, status, paymentStatus, processedByUserId, updatedBy);
+        boolean success = registrationDAO.processRegistration(ptRegistrationId, status, paymentStatus, processedByUserId, updatedBy);
+        if (!success) {
+            throw new IllegalStateException("Đơn đăng ký PT không còn ở trạng thái chờ duyệt hoặc chưa thanh toán.");
+        }
+        return true;
     }
 
     @Override
@@ -90,5 +104,20 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
     @Override
     public boolean deleteRegistrationPermanent(int regId) {
         return registrationDAO.deleteRegistrationPermanent(regId);
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getActivePaidRegistrationsWithoutScheduleByPT(int ptId) {
+        return registrationDAO.getActivePaidRegistrationsWithoutScheduleByPT(ptId);
+    }
+
+    @Override
+    public int countSchedulesByRegistration(int regId) {
+        return registrationDAO.countSchedulesByRegistration(regId);
+    }
+
+    @Override
+    public boolean updateActualDates(int regId, LocalDate startDate, LocalDate endDate) {
+        return registrationDAO.updateActualDates(regId, startDate, endDate);
     }
 }

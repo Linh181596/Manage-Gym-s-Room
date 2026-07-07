@@ -4,6 +4,7 @@ import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -35,4 +36,7 @@ public interface PTRegistrationService {
     List<PTRegistrationDTO> getProcessedRegistrations(int page, int pageSize);
     int getProcessedRegistrationsCount();
     boolean deleteRegistrationPermanent(int regId);
+    List<PTRegistrationDTO> getActivePaidRegistrationsWithoutScheduleByPT(int ptId);
+    int countSchedulesByRegistration(int regId);
+    boolean updateActualDates(int regId, LocalDate startDate, LocalDate endDate);
 }

@@ -18,4 +18,5 @@ public interface PTScheduleDAO {
     PTSchedule getScheduleById(int scheduleId);
     List<PTScheduleDetailDTO> getCompletedSessions(int ptId);
     boolean cancelSession(int scheduleId, String reason, String updatedBy);
+    boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate);
 }
