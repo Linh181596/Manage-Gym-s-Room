@@ -42,6 +42,7 @@ public class PTRegistration {
     private String updatedBy;
     private LocalDateTime updatedDate;
     private boolean deleted;
+    private int purchasedSessions;
 
     // Optional joined/display fields
     private String memberName;
@@ -257,6 +258,14 @@ public class PTRegistration {
 
     public void setPackageTypeName(String packageTypeName) {
         this.packageTypeName = packageTypeName;
+    }
+
+    public int getPurchasedSessions() {
+        return purchasedSessions;
+    }
+
+    public void setPurchasedSessions(int purchasedSessions) {
+        this.purchasedSessions = purchasedSessions;
     }
 
     public boolean isPending() {

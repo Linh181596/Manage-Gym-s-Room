@@ -20,6 +20,7 @@ public class PTRegistrationDTO {
     private java.time.LocalDateTime processedAt;
     private String paymentStatus;
     private LocalDate endDate;
+    private int purchasedSessions;
 
     public LocalDate getEndDate() {
         return endDate;
@@ -170,5 +171,13 @@ public class PTRegistrationDTO {
 
     public void setPtStatus(String ptStatus) {
         this.ptStatus = ptStatus;
+    }
+
+    public int getPurchasedSessions() {
+        return purchasedSessions;
+    }
+
+    public void setPurchasedSessions(int purchasedSessions) {
+        this.purchasedSessions = purchasedSessions;
     }
 }

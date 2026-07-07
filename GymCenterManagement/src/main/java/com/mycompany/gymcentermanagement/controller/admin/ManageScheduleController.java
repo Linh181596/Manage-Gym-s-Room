@@ -49,5 +49,34 @@ public class ManageScheduleController extends HttpServlet {
             resp.getWriter().println("Lỗi hệ thống: " + e.getMessage());
         }
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+
+        try {
+            String action = req.getParameter("action");
+            if ("approve".equals(action)) {
+                int regId = Integer.parseInt(req.getParameter("regId"));
+
+                com.mycompany.gymcentermanagement.model.entity.User currentUser =
+                        (com.mycompany.gymcentermanagement.model.entity.User) req.getSession().getAttribute("currentUser");
+                int adminId = (currentUser != null) ? currentUser.getUserId() : 1;
+                String adminName = (currentUser != null) ? currentUser.getFullName() : "Admin";
+
+                boolean success = ptRegistrationService.processRegistration(regId, "Active", "Paid", adminId, adminName);
+                if (success) {
+                    req.getSession().setAttribute("toastMsg", "Xác nhận thanh toán và phê duyệt đơn thành công!");
+                } else {
+                    req.getSession().setAttribute("errorMessage", "Không thể phê duyệt đơn này.");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.getSession().setAttribute("errorMessage", "Lỗi xử lý: " + e.getMessage());
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/schedule/manage");
+    }
 }
 
