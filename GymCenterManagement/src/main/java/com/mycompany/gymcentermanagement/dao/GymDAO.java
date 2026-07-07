@@ -410,10 +410,13 @@ public class GymDAO {
         List<Map<String, String>> list = new ArrayList<>();
         String role = getUserRole(userId);
         String sql = """
-                SELECT NotificationID, Title, Content, CreatedDate
+                SELECT NotificationID, Title, Content, CreatedDate, PublishDate, NotificationImageURL
                 FROM [dbo].[Notifications]
-                WHERE IsDeleted = 0 AND (TargetRole = ? OR TargetRole = 'All')
-                ORDER BY CreatedDate DESC
+                WHERE IsDeleted = 0
+                  AND PublishDate <= SYSDATETIME()
+                  AND (ExpiryDate IS NULL OR ExpiryDate > SYSDATETIME())
+                  AND (TargetRole = ? OR TargetRole = 'All')
+                ORDER BY PublishDate DESC
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -425,7 +428,8 @@ public class GymDAO {
                     map.put("title", safe(rs.getString("Title")));
                     map.put("content", safe(rs.getString("Content")));
                     map.put("isRead", "false");
-                    map.put("createdAt", String.valueOf(rs.getTimestamp("CreatedDate")));
+                    map.put("createdAt", String.valueOf(rs.getTimestamp("PublishDate")));
+                    map.put("imageUrl", safe(rs.getString("NotificationImageURL")));
                     list.add(map);
                 }
             }
@@ -436,21 +440,35 @@ public class GymDAO {
     }
 
     public Map<String, String> getNotificationById(int notificationId) {
+        return getNotificationById(notificationId, "Member");
+    }
+
+    public Map<String, String> getNotificationById(int notificationId, int userId) {
+        return getNotificationById(notificationId, getUserRole(userId));
+    }
+
+    private Map<String, String> getNotificationById(int notificationId, String targetRole) {
         String sql = """
-                SELECT NotificationID, Title, Content, CreatedDate
+                SELECT NotificationID, Title, Content, CreatedDate, PublishDate, NotificationImageURL
                 FROM [dbo].[Notifications]
-                WHERE NotificationID = ? AND IsDeleted = 0
+                WHERE NotificationID = ?
+                  AND IsDeleted = 0
+                  AND PublishDate <= SYSDATETIME()
+                  AND (ExpiryDate IS NULL OR ExpiryDate > SYSDATETIME())
+                  AND (TargetRole = ? OR TargetRole = 'All')
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, notificationId);
+            ps.setString(2, targetRole);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Map<String, String> map = new HashMap<>();
                     map.put("id", String.valueOf(rs.getInt("NotificationID")));
                     map.put("title", safe(rs.getString("Title")));
                     map.put("content", safe(rs.getString("Content")));
-                    map.put("createdAt", String.valueOf(rs.getTimestamp("CreatedDate")));
+                    map.put("createdAt", String.valueOf(rs.getTimestamp("PublishDate")));
+                    map.put("imageUrl", safe(rs.getString("NotificationImageURL")));
                     return map;
                 }
             }

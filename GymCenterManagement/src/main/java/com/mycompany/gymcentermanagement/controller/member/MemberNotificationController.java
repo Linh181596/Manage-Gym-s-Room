@@ -53,6 +53,11 @@ public class MemberNotificationController extends HttpServlet {
         }
         
         String servletPath = request.getServletPath();
+        request.setAttribute("mailboxTitle", "Hộp thư thông báo cá nhân");
+        request.setAttribute("mailboxSubtitle", "Xem tin tức, nhắc nhở lịch tập, ưu đãi gia hạn từ trung tâm");
+        request.setAttribute("dashboardUrl", request.getContextPath() + "/member/dashboard");
+        request.setAttribute("notificationBasePath", request.getContextPath() + "/member/notifications");
+
         List<Map<String, String>> notis = gymDAO.getNotifications(currentUser.getUserId());
         request.setAttribute("notis", notis);
         
@@ -60,7 +65,7 @@ public class MemberNotificationController extends HttpServlet {
             try {
                 int notiId = Integer.parseInt(request.getParameter("notiId"));
                 gymDAO.markAsRead(notiId);
-                Map<String, String> selectedNoti = gymDAO.getNotificationById(notiId);
+                Map<String, String> selectedNoti = gymDAO.getNotificationById(notiId, currentUser.getUserId());
                 
                 request.setAttribute("selectedNoti", selectedNoti);
                 request.setAttribute("selectedNotiId", notiId);
