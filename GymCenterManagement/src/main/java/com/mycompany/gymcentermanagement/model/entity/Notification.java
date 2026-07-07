@@ -16,6 +16,9 @@ public class Notification {
     private LocalDateTime publishDate;
     private LocalDateTime expiryDate;
     private String notificationImageUrl;
+    private Integer recipientUserId;
+    private String recipientDisplayName;
+    private String recipientEmail;
 
     public Notification() {
     }
@@ -132,6 +135,30 @@ public class Notification {
         this.notificationImageUrl = notificationImageUrl;
     }
 
+    public Integer getRecipientUserId() {
+        return recipientUserId;
+    }
+
+    public void setRecipientUserId(Integer recipientUserId) {
+        this.recipientUserId = recipientUserId;
+    }
+
+    public String getRecipientDisplayName() {
+        return recipientDisplayName;
+    }
+
+    public void setRecipientDisplayName(String recipientDisplayName) {
+        this.recipientDisplayName = recipientDisplayName;
+    }
+
+    public String getRecipientEmail() {
+        return recipientEmail;
+    }
+
+    public void setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
+    }
+
     public String getPublishDateInputValue() {
         return toDateTimeLocalValue(publishDate);
     }
@@ -149,6 +176,23 @@ public class Notification {
             return "Expired";
         }
         return "Active";
+    }
+
+    public boolean isSpecificRecipient() {
+        return "Specific".equalsIgnoreCase(targetRole);
+    }
+
+    public String getRecipientLabel() {
+        if (!isSpecificRecipient()) {
+            return targetRole;
+        }
+        if (recipientDisplayName != null && !recipientDisplayName.isBlank()) {
+            return recipientDisplayName;
+        }
+        if (recipientEmail != null && !recipientEmail.isBlank()) {
+            return recipientEmail;
+        }
+        return recipientUserId != null ? "User #" + recipientUserId : "Tài khoản cụ thể";
     }
 
     private String toDateTimeLocalValue(LocalDateTime value) {

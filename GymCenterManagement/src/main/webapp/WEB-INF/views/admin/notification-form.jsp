@@ -27,7 +27,7 @@
                 <c:if test="${not empty errorMessage}">
                     <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
                         <i class="fa fa-exclamation-circle me-2"></i> <c:out value="${errorMessage}" />
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                     </div>
                 </c:if>
 
@@ -50,11 +50,29 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="targetRole" class="form-label fw-bold text-dark">
-                            <i class="fa fa-users me-1 text-muted"></i> Vai trò nhận thông báo <span class="text-danger">*</span>
+                        <label class="form-label fw-bold text-dark">
+                            <i class="fa fa-paper-plane me-1 text-muted"></i> Kiểu gửi thông báo <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select form-select-lg border-2" id="targetRole" name="targetRole" required>
-                            <option value="" disabled ${empty notification.targetRole ? 'selected' : ''}>-- Chọn vai trò nhận --</option>
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="deliveryMode" id="modeRole"
+                                       value="role" ${notification.targetRole != 'Specific' ? 'checked' : ''}>
+                                <label class="form-check-label" for="modeRole">Gửi theo vai trò</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="deliveryMode" id="modeAccount"
+                                       value="account" ${notification.targetRole == 'Specific' ? 'checked' : ''}>
+                                <label class="form-check-label" for="modeAccount">Gửi đến một tài khoản cụ thể</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4" id="targetRoleGroup">
+                        <label for="targetRole" class="form-label fw-bold text-dark">
+                            <i class="fa fa-users me-1 text-muted"></i> Vai trò nhận thông báo
+                        </label>
+                        <select class="form-select form-select-lg border-2" id="targetRole" name="targetRole">
+                            <option value="" disabled ${empty notification.targetRole || notification.targetRole == 'Specific' ? 'selected' : ''}>-- Chọn vai trò nhận --</option>
                             <option value="All" ${notification.targetRole == 'All' ? 'selected' : ''}>Tất cả người dùng</option>
                             <option value="Admin" ${notification.targetRole == 'Admin' ? 'selected' : ''}>Quản trị viên</option>
                             <option value="Staff" ${notification.targetRole == 'Staff' ? 'selected' : ''}>Nhân viên</option>
@@ -62,6 +80,21 @@
                             <option value="PT" ${notification.targetRole == 'PT' ? 'selected' : ''}>Huấn luyện viên</option>
                         </select>
                         <div class="invalid-feedback">Vui lòng chọn vai trò nhận thông báo.</div>
+                    </div>
+
+                    <div class="mb-4" id="recipientUserGroup">
+                        <label for="recipientUserId" class="form-label fw-bold text-dark">
+                            <i class="fa fa-user me-1 text-muted"></i> Tài khoản nhận thông báo
+                        </label>
+                        <select class="form-select form-select-lg border-2" id="recipientUserId" name="recipientUserId">
+                            <option value="">-- Chọn tài khoản nhận --</option>
+                            <c:forEach var="recipientUser" items="${recipientUsers}">
+                                <option value="${recipientUser.userId}" ${notification.recipientUserId == recipientUser.userId ? 'selected' : ''}>
+                                    <c:out value="${recipientUser.fullName}" /> - <c:out value="${recipientUser.email}" /> (${recipientUser.role})
+                                </option>
+                            </c:forEach>
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn tài khoản nhận thông báo.</div>
                     </div>
 
                     <div class="row g-4 mb-4">
@@ -138,12 +171,27 @@
         const titleCount = document.getElementById("titleCount");
         const publishDate = document.getElementById("publishDate");
         const expiryDate = document.getElementById("expiryDate");
+        const modeRole = document.getElementById("modeRole");
+        const modeAccount = document.getElementById("modeAccount");
+        const targetRole = document.getElementById("targetRole");
+        const recipientUserId = document.getElementById("recipientUserId");
+        const targetRoleGroup = document.getElementById("targetRoleGroup");
+        const recipientUserGroup = document.getElementById("recipientUserGroup");
 
         function updateTitleCount() {
             titleCount.innerText = titleInput.value.length + "/255 ký tự";
         }
 
+        function updateDeliveryMode() {
+            const accountMode = modeAccount.checked;
+            targetRoleGroup.style.display = accountMode ? "none" : "";
+            recipientUserGroup.style.display = accountMode ? "" : "none";
+            targetRole.required = !accountMode;
+            recipientUserId.required = accountMode;
+        }
+
         form.addEventListener("submit", function (event) {
+            updateDeliveryMode();
             if (publishDate.value && expiryDate.value && expiryDate.value <= publishDate.value) {
                 expiryDate.setCustomValidity("Thời gian tự động ẩn phải sau thời gian lên thông báo");
             } else {
@@ -158,7 +206,10 @@
         }, false);
 
         titleInput.addEventListener("input", updateTitleCount);
+        modeRole.addEventListener("change", updateDeliveryMode);
+        modeAccount.addEventListener("change", updateDeliveryMode);
         updateTitleCount();
+        updateDeliveryMode();
     });
 </script>
 

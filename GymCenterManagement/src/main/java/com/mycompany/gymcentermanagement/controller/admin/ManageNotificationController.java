@@ -2,6 +2,8 @@ package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.model.entity.Notification;
 import com.mycompany.gymcentermanagement.model.entity.User;
+import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.service.NotificationService;
 import com.mycompany.gymcentermanagement.service.impl.NotificationServiceImpl;
 import com.mycompany.gymcentermanagement.utils.PaginationHelper;
@@ -35,6 +37,7 @@ public class ManageNotificationController extends HttpServlet {
     private static final String[] ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"};
 
     private final NotificationService notificationService = new NotificationServiceImpl();
+    private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -51,6 +54,7 @@ public class ManageNotificationController extends HttpServlet {
                     newNotification.setPublishDate(LocalDateTime.now());
                     request.setAttribute("notification", newNotification);
                     request.setAttribute("formTitle", "Thêm thông báo mới");
+                    loadFormData(request);
                     request.getRequestDispatcher("/WEB-INF/views/admin/notification-form.jsp").forward(request, response);
                     break;
                 case "edit":
@@ -87,7 +91,9 @@ public class ManageNotificationController extends HttpServlet {
         String idStr = request.getParameter("notificationId");
         String title = trim(request.getParameter("title"));
         String content = trim(request.getParameter("content"));
+        String deliveryMode = trim(request.getParameter("deliveryMode"));
         String targetRole = trim(request.getParameter("targetRole"));
+        Integer recipientUserId = parseInteger(request.getParameter("recipientUserId"));
         LocalDateTime publishDate = parseDateTime(request.getParameter("publishDate"));
         LocalDateTime expiryDate = parseDateTime(request.getParameter("expiryDate"));
         String currentImageUrl = trim(request.getParameter("currentImageUrl"));
@@ -96,7 +102,12 @@ public class ManageNotificationController extends HttpServlet {
         Notification formNotification = new Notification();
         formNotification.setTitle(title);
         formNotification.setContent(content);
-        formNotification.setTargetRole(targetRole);
+        if ("account".equals(deliveryMode)) {
+            formNotification.setTargetRole("Specific");
+            formNotification.setRecipientUserId(recipientUserId);
+        } else {
+            formNotification.setTargetRole(targetRole);
+        }
         formNotification.setPublishDate(publishDate);
         formNotification.setExpiryDate(expiryDate);
         formNotification.setNotificationImageUrl(removeImage ? null : currentImageUrl);
@@ -108,7 +119,8 @@ public class ManageNotificationController extends HttpServlet {
                 formNotification.setNotificationId(currentId);
             }
 
-            String validationError = validateForm(title, content, targetRole, publishDate, expiryDate);
+            String validationError = validateForm(title, content, deliveryMode, targetRole, recipientUserId,
+                    publishDate, expiryDate);
             if (validationError != null) {
                 forwardFormWithError(request, response, formNotification, validationError, currentId == 0);
                 return;
@@ -145,7 +157,8 @@ public class ManageNotificationController extends HttpServlet {
                 }
                 existing.setTitle(title);
                 existing.setContent(content);
-                existing.setTargetRole(targetRole);
+                existing.setTargetRole(formNotification.getTargetRole());
+                existing.setRecipientUserId(formNotification.getRecipientUserId());
                 existing.setUpdatedBy(actorName);
                 existing.setPublishDate(publishDate);
                 existing.setExpiryDate(expiryDate);
@@ -174,6 +187,7 @@ public class ManageNotificationController extends HttpServlet {
         }
         request.setAttribute("notification", notification);
         request.setAttribute("formTitle", "Chỉnh sửa thông báo");
+        loadFormData(request);
         request.getRequestDispatcher("/WEB-INF/views/admin/notification-form.jsp").forward(request, response);
     }
 
@@ -209,17 +223,32 @@ public class ManageNotificationController extends HttpServlet {
         PaginationHelper.setPaginationAttributes(request, page, pageSize, totalItems, queryBase, "thông báo");
     }
 
-    private String validateForm(String title, String content, String targetRole,
-            LocalDateTime publishDate, LocalDateTime expiryDate) {
-        if (title == null || title.isEmpty() || content == null || content.isEmpty()
-                || targetRole == null || targetRole.isEmpty()) {
-            return "Vui lòng nhập đầy đủ tiêu đề, nội dung và vai trò nhận thông báo.";
+    private String validateForm(String title, String content, String deliveryMode, String targetRole,
+            Integer recipientUserId, LocalDateTime publishDate, LocalDateTime expiryDate) {
+        if (title == null || title.isEmpty() || content == null || content.isEmpty()) {
+            return "Vui lòng nhập đầy đủ tiêu đề và nội dung thông báo.";
         }
         if (title.length() > 255) {
             return "Tiêu đề thông báo không được vượt quá 255 ký tự.";
         }
-        if (!notificationService.isValidTargetRole(targetRole)) {
-            return "Vai trò nhận thông báo không hợp lệ.";
+        if ("account".equals(deliveryMode)) {
+            if (recipientUserId == null || recipientUserId <= 0) {
+                return "Vui lòng chọn tài khoản nhận thông báo.";
+            }
+            try {
+                if (!notificationService.userExists(recipientUserId)) {
+                    return "Tài khoản nhận thông báo không tồn tại hoặc đã bị xóa.";
+                }
+            } catch (SQLException ex) {
+                return "Không thể kiểm tra tài khoản nhận thông báo: " + ex.getMessage();
+            }
+        } else {
+            if (targetRole == null || targetRole.isEmpty()) {
+                return "Vui lòng chọn vai trò nhận thông báo.";
+            }
+            if (!notificationService.isValidTargetRole(targetRole) || "Specific".equals(targetRole)) {
+                return "Vai trò nhận thông báo không hợp lệ.";
+            }
         }
         if (publishDate == null) {
             return "Vui lòng chọn thời gian lên thông báo.";
@@ -236,6 +265,10 @@ public class ManageNotificationController extends HttpServlet {
         request.setAttribute("notification", notification);
         request.setAttribute("errorMessage", errorMessage);
         request.setAttribute("formTitle", creating ? "Thêm thông báo mới" : "Chỉnh sửa thông báo");
+        try {
+            loadFormData(request);
+        } catch (SQLException ignored) {
+        }
         request.getRequestDispatcher("/WEB-INF/views/admin/notification-form.jsp").forward(request, response);
     }
 
@@ -253,6 +286,23 @@ public class ManageNotificationController extends HttpServlet {
         } catch (DateTimeParseException ex) {
             return null;
         }
+    }
+
+    private Integer parseInteger(String value) {
+        String trimmed = trim(value);
+        if (trimmed == null || trimmed.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(trimmed);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private void loadFormData(HttpServletRequest request) throws SQLException {
+        request.setAttribute("recipientUsers",
+                userDAO.searchAccounts(null, null, User.AccountStatus.Active, 0, 500));
     }
 
     private String saveUploadedImage(HttpServletRequest request) throws IOException, ServletException {

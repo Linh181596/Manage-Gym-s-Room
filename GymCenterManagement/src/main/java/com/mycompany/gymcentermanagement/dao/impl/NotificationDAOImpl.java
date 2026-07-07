@@ -58,9 +58,35 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         }
 
         notification.setNotificationImageUrl(rs.getString("NotificationImageURL"));
+        try {
+            int recipientUserId = rs.getInt("RecipientUserID");
+            if (!rs.wasNull()) {
+                notification.setRecipientUserId(recipientUserId);
+            }
+            notification.setRecipientDisplayName(rs.getString("RecipientDisplayName"));
+            notification.setRecipientEmail(rs.getString("RecipientEmail"));
+        } catch (SQLException ignored) {
+        }
 
         notification.setDeleted(rs.getBoolean("IsDeleted"));
         return notification;
+    }
+
+    private String selectWithRecipientSql(String whereClause) {
+        return """
+                SELECT n.*,
+                       nr.UserID AS RecipientUserID,
+                       u.DisplayName AS RecipientDisplayName,
+                       u.Email AS RecipientEmail
+                FROM Notifications n
+                OUTER APPLY (
+                    SELECT TOP 1 r.UserID
+                    FROM NotificationRecipients r
+                    WHERE r.NotificationID = n.NotificationID
+                    ORDER BY r.NotificationRecipientID
+                ) nr
+                LEFT JOIN Users u ON u.UserID = nr.UserID
+                """ + whereClause;
     }
 
     @Override
@@ -72,7 +98,7 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT * FROM Notifications WHERE IsDeleted = 0 ORDER BY PublishDate DESC, NotificationID DESC";
+            String sql = selectWithRecipientSql("WHERE n.IsDeleted = 0 ORDER BY n.PublishDate DESC, n.NotificationID DESC");
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
             while (rs.next()) {
@@ -93,8 +119,8 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT * FROM Notifications WHERE IsDeleted = 0 "
-                    + "ORDER BY PublishDate DESC, NotificationID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+            String sql = selectWithRecipientSql("WHERE n.IsDeleted = 0 "
+                    + "ORDER BY n.PublishDate DESC, n.NotificationID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, Math.max(0, offset));
             stmt.setInt(2, limit);
@@ -116,7 +142,7 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
 
         try {
             conn = getActiveConnection();
-            String sql = "SELECT * FROM Notifications WHERE NotificationID = ? AND IsDeleted = 0";
+            String sql = selectWithRecipientSql("WHERE n.NotificationID = ? AND n.IsDeleted = 0");
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, notificationId);
             rs = stmt.executeQuery();
@@ -137,6 +163,10 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
 
         try {
             conn = getActiveConnection();
+            boolean localTx = this.connection == null;
+            if (localTx) {
+                conn.setAutoCommit(false);
+            }
             String sql = "INSERT INTO Notifications "
                     + "(Title, Content, CreatedBy, TargetRole, CreatedByRole, CreatedDate, PublishDate, ExpiryDate, NotificationImageURL, IsDeleted) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
@@ -163,8 +193,21 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
                 if (generatedKeys.next()) {
                     notification.setNotificationId(generatedKeys.getInt(1));
                 }
+                syncRecipient(conn, notification);
+            }
+            if (localTx) {
+                conn.commit();
             }
             return success;
+        } catch (SQLException ex) {
+            if (conn != null && this.connection == null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    ex.addSuppressed(rollbackEx);
+                }
+            }
+            throw ex;
         } finally {
             closeResource(conn, stmt, generatedKeys);
         }
@@ -177,6 +220,10 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
 
         try {
             conn = getActiveConnection();
+            boolean localTx = this.connection == null;
+            if (localTx) {
+                conn.setAutoCommit(false);
+            }
             String sql = "UPDATE Notifications SET Title = ?, Content = ?, TargetRole = ?, UpdatedBy = ?, UpdatedDate = ?, "
                     + "PublishDate = ?, ExpiryDate = ?, NotificationImageURL = ? "
                     + "WHERE NotificationID = ? AND IsDeleted = 0";
@@ -196,7 +243,23 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
                     : null);
             stmt.setString(8, notification.getNotificationImageUrl());
             stmt.setInt(9, notification.getNotificationId());
-            return stmt.executeUpdate() > 0;
+            boolean success = stmt.executeUpdate() > 0;
+            if (success) {
+                syncRecipient(conn, notification);
+            }
+            if (localTx) {
+                conn.commit();
+            }
+            return success;
+        } catch (SQLException ex) {
+            if (conn != null && this.connection == null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException rollbackEx) {
+                    ex.addSuppressed(rollbackEx);
+                }
+            }
+            throw ex;
         } finally {
             closeResource(conn, stmt, null);
         }
@@ -236,5 +299,44 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
             closeResource(conn, stmt, rs);
         }
         return 0;
+    }
+
+    @Override
+    public boolean userExists(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT 1 FROM Users WHERE UserID = ? AND IsDeleted = 0";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    private void syncRecipient(Connection conn, Notification notification) throws SQLException {
+        try (PreparedStatement deleteStmt = conn.prepareStatement(
+                "DELETE FROM NotificationRecipients WHERE NotificationID = ?")) {
+            deleteStmt.setInt(1, notification.getNotificationId());
+            deleteStmt.executeUpdate();
+        }
+
+        if (!notification.isSpecificRecipient() || notification.getRecipientUserId() == null) {
+            return;
+        }
+
+        try (PreparedStatement insertStmt = conn.prepareStatement("""
+                INSERT INTO NotificationRecipients (NotificationID, UserID, IsRead, CreatedDate)
+                VALUES (?, ?, 0, SYSDATETIME())
+                """)) {
+            insertStmt.setInt(1, notification.getNotificationId());
+            insertStmt.setInt(2, notification.getRecipientUserId());
+            insertStmt.executeUpdate();
+        }
     }
 }

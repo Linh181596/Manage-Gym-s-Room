@@ -13,4 +13,5 @@ public interface NotificationService {
     boolean deleteNotification(int id) throws SQLException;
     int getNotificationsCount() throws SQLException;
     boolean isValidTargetRole(String targetRole);
+    boolean userExists(int userId) throws SQLException;
 }

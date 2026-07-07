@@ -50,6 +50,7 @@
                     <option value="Staff">Nhân viên</option>
                     <option value="Member">Hội viên</option>
                     <option value="PT">Huấn luyện viên</option>
+                    <option value="Specific">Tài khoản cụ thể</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -115,9 +116,15 @@
                                                 <c:when test="${notification.targetRole == 'Staff'}">Nhân viên</c:when>
                                                 <c:when test="${notification.targetRole == 'Member'}">Hội viên</c:when>
                                                 <c:when test="${notification.targetRole == 'PT'}">Huấn luyện viên</c:when>
+                                                <c:when test="${notification.targetRole == 'Specific'}">Tài khoản cụ thể</c:when>
                                                 <c:otherwise><c:out value="${notification.targetRole}" /></c:otherwise>
                                             </c:choose>
                                         </span>
+                                        <c:if test="${notification.targetRole == 'Specific'}">
+                                            <small class="text-muted d-block mt-1 text-truncate" style="max-width: 160px;">
+                                                <c:out value="${notification.recipientLabel}" />
+                                            </small>
+                                        </c:if>
                                     </td>
                                     <td class="text-center">
                                         <c:choose>

@@ -14,7 +14,7 @@ import java.util.Set;
 public class NotificationServiceImpl implements NotificationService {
 
     private static final Set<String> VALID_TARGET_ROLES = new HashSet<>(
-            Arrays.asList("All", "Admin", "Staff", "Member", "PT"));
+            Arrays.asList("All", "Admin", "Staff", "Member", "PT", "Specific"));
 
     private final NotificationDAO notificationDAO = new NotificationDAOImpl();
 
@@ -63,5 +63,10 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public boolean isValidTargetRole(String targetRole) {
         return targetRole != null && VALID_TARGET_ROLES.contains(targetRole.trim());
+    }
+
+    @Override
+    public boolean userExists(int userId) throws SQLException {
+        return notificationDAO.userExists(userId);
     }
 }

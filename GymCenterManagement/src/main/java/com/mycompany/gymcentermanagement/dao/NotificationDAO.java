@@ -12,4 +12,5 @@ public interface NotificationDAO {
     boolean update(Notification notification) throws SQLException;
     boolean delete(int notificationId) throws SQLException;
     int countAll() throws SQLException;
+    boolean userExists(int userId) throws SQLException;
 }

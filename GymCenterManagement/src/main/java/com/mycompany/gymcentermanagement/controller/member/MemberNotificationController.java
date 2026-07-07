@@ -58,13 +58,10 @@ public class MemberNotificationController extends HttpServlet {
         request.setAttribute("dashboardUrl", request.getContextPath() + "/member/dashboard");
         request.setAttribute("notificationBasePath", request.getContextPath() + "/member/notifications");
 
-        List<Map<String, String>> notis = gymDAO.getNotifications(currentUser.getUserId());
-        request.setAttribute("notis", notis);
-        
         if ("/member/notifications/detail".equals(servletPath)) {
             try {
                 int notiId = Integer.parseInt(request.getParameter("notiId"));
-                gymDAO.markAsRead(notiId);
+                gymDAO.markAsRead(notiId, currentUser.getUserId());
                 Map<String, String> selectedNoti = gymDAO.getNotificationById(notiId, currentUser.getUserId());
                 
                 request.setAttribute("selectedNoti", selectedNoti);
@@ -73,6 +70,9 @@ public class MemberNotificationController extends HttpServlet {
                 e.printStackTrace();
             }
         }
+
+        List<Map<String, String>> notis = gymDAO.getNotifications(currentUser.getUserId());
+        request.setAttribute("notis", notis);
         
         request.getRequestDispatcher("/WEB-INF/views/member/notifications.jsp").forward(request, response);
     }

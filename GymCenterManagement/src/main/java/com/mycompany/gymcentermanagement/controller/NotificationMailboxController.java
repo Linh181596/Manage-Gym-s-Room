@@ -46,13 +46,10 @@ public class NotificationMailboxController extends HttpServlet {
 
         configureView(request, currentUser.getRole());
 
-        List<Map<String, String>> notis = gymDAO.getNotifications(currentUser.getUserId());
-        request.setAttribute("notis", notis);
-
         if (servletPath.endsWith("/detail")) {
             try {
                 int notiId = Integer.parseInt(request.getParameter("notiId"));
-                gymDAO.markAsRead(notiId);
+                gymDAO.markAsRead(notiId, currentUser.getUserId());
                 Map<String, String> selectedNoti = gymDAO.getNotificationById(notiId, currentUser.getUserId());
                 request.setAttribute("selectedNoti", selectedNoti);
                 request.setAttribute("selectedNotiId", notiId);
@@ -60,6 +57,9 @@ public class NotificationMailboxController extends HttpServlet {
                 request.setAttribute("errorMessage", "Thông báo không hợp lệ.");
             }
         }
+
+        List<Map<String, String>> notis = gymDAO.getNotifications(currentUser.getUserId());
+        request.setAttribute("notis", notis);
 
         request.getRequestDispatcher("/WEB-INF/views/member/notifications.jsp").forward(request, response);
     }
