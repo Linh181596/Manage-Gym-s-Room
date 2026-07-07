@@ -10,8 +10,9 @@
 package com.mycompany.gymcentermanagement.service;
 
 import com.mycompany.gymcentermanagement.dto.AdminDashboardData;
+import com.mycompany.gymcentermanagement.dto.RevenueChartFilter;
 import java.sql.SQLException;
 
 public interface DashboardService {
-    AdminDashboardData getAdminDashboardData() throws SQLException;
+    AdminDashboardData getAdminDashboardData(RevenueChartFilter revenueFilter) throws SQLException;
 }
