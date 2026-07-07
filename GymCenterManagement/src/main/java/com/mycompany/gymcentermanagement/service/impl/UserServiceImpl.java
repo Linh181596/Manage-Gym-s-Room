@@ -27,6 +27,7 @@ import java.util.logging.Logger;
  */
 public class UserServiceImpl implements UserService {
     private static final Logger LOGGER = Logger.getLogger(UserServiceImpl.class.getName());
+    private static final String PT_BLOCKING_SCHEDULE_MESSAGE = "PT đang có lịch dạy, vui lòng xử lý lịch trước.";
     
     // In a clean JEE environment, this can be injected via CDI.
     // Here we instantiate manually for simplicity.
@@ -215,6 +216,11 @@ public class UserServiceImpl implements UserService {
                 return AccountOperationResult.failure("Không thể đổi trạng thái của chính tài khoản đang đăng nhập.");
             }
 
+            AccountOperationResult ptScheduleCheck = validatePTScheduleBeforeRestrictedStatus(existing, user.getAccountStatus());
+            if (!ptScheduleCheck.isSuccess()) {
+                return ptScheduleCheck;
+            }
+
             user.setRole(targetRole);
             AccountOperationResult validation = validateAccountData(user, user.getUserId());
             if (!validation.isSuccess()) {
@@ -298,6 +304,11 @@ public class UserServiceImpl implements UserService {
                 return AccountOperationResult.failure("Không thể đổi trạng thái của chính tài khoản đang đăng nhập.");
             }
 
+            AccountOperationResult ptScheduleCheck = validatePTScheduleBeforeRestrictedStatus(existing, status);
+            if (!ptScheduleCheck.isSuccess()) {
+                return ptScheduleCheck;
+            }
+
             boolean updated = userDAO.updateAccountStatus(targetUserId, status, normalizeActor(updatedBy));
             if (!updated) {
                 return AccountOperationResult.failure("Không thể cập nhật trạng thái tài khoản.");
@@ -362,6 +373,11 @@ public class UserServiceImpl implements UserService {
             User existing = userDAO.findById(targetUserId);
             if (existing == null) {
                 return AccountOperationResult.failure("Không tìm thấy tài khoản.");
+            }
+
+            AccountOperationResult ptScheduleCheck = validatePTScheduleBeforeRestrictedStatus(existing, User.AccountStatus.Inactive);
+            if (!ptScheduleCheck.isSuccess()) {
+                return ptScheduleCheck;
             }
 
             boolean deactivated = userDAO.deactivateAccount(targetUserId, normalizeActor(updatedBy));
@@ -447,6 +463,23 @@ public class UserServiceImpl implements UserService {
         return status == User.AccountStatus.Active
                 || status == User.AccountStatus.Inactive
                 || status == User.AccountStatus.Locked;
+    }
+
+    private AccountOperationResult validatePTScheduleBeforeRestrictedStatus(User account, User.AccountStatus targetStatus)
+            throws SQLException {
+        if (account.getRole() != User.Role.PT) {
+            return AccountOperationResult.success("OK");
+        }
+
+        if (targetStatus != User.AccountStatus.Locked && targetStatus != User.AccountStatus.Inactive) {
+            return AccountOperationResult.success("OK");
+        }
+
+        if (userDAO.hasBlockingPTSchedule(account.getUserId())) {
+            return AccountOperationResult.failure(PT_BLOCKING_SCHEDULE_MESSAGE);
+        }
+
+        return AccountOperationResult.success("OK");
     }
 
     private String normalizeBlank(String value) {

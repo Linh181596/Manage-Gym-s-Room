@@ -406,26 +406,123 @@ public class GymDAO {
         }
     }
 
+    public boolean createNotificationForUser(int createdByUserId, String title, String content, int recipientUserId) {
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+
+            if (!isActiveMemberUser(conn, recipientUserId)) {
+                conn.rollback();
+                return false;
+            }
+
+            String notificationSql = """
+                    INSERT INTO [dbo].[Notifications]
+                    (Title, Content, CreatedBy, TargetRole, CreatedByRole, IsDeleted)
+                    VALUES (?, ?, ?, 'Specific', 'Staff', 0)
+                    """;
+            int notificationId;
+            try (PreparedStatement ps = conn.prepareStatement(notificationSql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, title);
+                ps.setString(2, content);
+                ps.setInt(3, createdByUserId);
+                if (ps.executeUpdate() <= 0) {
+                    conn.rollback();
+                    return false;
+                }
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        return false;
+                    }
+                    notificationId = rs.getInt(1);
+                }
+            }
+
+            String recipientSql = """
+                    INSERT INTO [dbo].[NotificationRecipients]
+                    (NotificationID, UserID, IsRead, CreatedDate)
+                    VALUES (?, ?, 0, SYSDATETIME())
+                    """;
+            try (PreparedStatement ps = conn.prepareStatement(recipientSql)) {
+                ps.setInt(1, notificationId);
+                ps.setInt(2, recipientUserId);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private boolean isActiveMemberUser(Connection conn, int userId) throws SQLException {
+        String sql = """
+                SELECT 1
+                FROM [dbo].[Users] u
+                INNER JOIN [dbo].[Members] m ON m.UserID = u.UserID
+                WHERE u.UserID = ?
+                  AND u.IsDeleted = 0
+                  AND m.IsDeleted = 0
+                """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public List<Map<String, String>> getNotifications(int userId) {
         List<Map<String, String>> list = new ArrayList<>();
         String role = getUserRole(userId);
         String sql = """
-                SELECT NotificationID, Title, Content, CreatedDate
-                FROM [dbo].[Notifications]
-                WHERE IsDeleted = 0 AND (TargetRole = ? OR TargetRole = 'All')
-                ORDER BY CreatedDate DESC
+                SELECT DISTINCT n.NotificationID, n.Title, n.Content, n.CreatedDate, n.PublishDate, n.NotificationImageURL,
+                       COALESCE(nr.IsRead, 0) AS IsRead
+                FROM [dbo].[Notifications] n
+                LEFT JOIN [dbo].[NotificationRecipients] nr
+                    ON nr.NotificationID = n.NotificationID AND nr.UserID = ?
+                WHERE n.IsDeleted = 0
+                  AND n.PublishDate <= SYSDATETIME()
+                  AND (n.ExpiryDate IS NULL OR n.ExpiryDate > SYSDATETIME())
+                  AND (
+                      n.TargetRole = ?
+                      OR n.TargetRole = 'All'
+                      OR nr.UserID IS NOT NULL
+                  )
+                ORDER BY n.PublishDate DESC
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, role);
+            ps.setInt(1, userId);
+            ps.setString(2, role);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, String> map = new HashMap<>();
                     map.put("id", String.valueOf(rs.getInt("NotificationID")));
                     map.put("title", safe(rs.getString("Title")));
                     map.put("content", safe(rs.getString("Content")));
-                    map.put("isRead", "false");
-                    map.put("createdAt", String.valueOf(rs.getTimestamp("CreatedDate")));
+                    map.put("isRead", String.valueOf(rs.getBoolean("IsRead")));
+                    map.put("createdAt", String.valueOf(rs.getTimestamp("PublishDate")));
+                    map.put("imageUrl", safe(rs.getString("NotificationImageURL")));
                     list.add(map);
                 }
             }
@@ -436,21 +533,46 @@ public class GymDAO {
     }
 
     public Map<String, String> getNotificationById(int notificationId) {
+        return getNotificationById(notificationId, "Member");
+    }
+
+    public Map<String, String> getNotificationById(int notificationId, int userId) {
+        return getNotificationById(notificationId, userId, getUserRole(userId));
+    }
+
+    private Map<String, String> getNotificationById(int notificationId, String targetRole) {
+        return getNotificationById(notificationId, 0, targetRole);
+    }
+
+    private Map<String, String> getNotificationById(int notificationId, int userId, String targetRole) {
         String sql = """
-                SELECT NotificationID, Title, Content, CreatedDate
-                FROM [dbo].[Notifications]
-                WHERE NotificationID = ? AND IsDeleted = 0
+                SELECT n.NotificationID, n.Title, n.Content, n.CreatedDate, n.PublishDate, n.NotificationImageURL
+                FROM [dbo].[Notifications] n
+                LEFT JOIN [dbo].[NotificationRecipients] nr
+                    ON nr.NotificationID = n.NotificationID AND nr.UserID = ?
+                WHERE n.NotificationID = ?
+                  AND n.IsDeleted = 0
+                  AND n.PublishDate <= SYSDATETIME()
+                  AND (n.ExpiryDate IS NULL OR n.ExpiryDate > SYSDATETIME())
+                  AND (
+                      n.TargetRole = ?
+                      OR n.TargetRole = 'All'
+                      OR nr.UserID IS NOT NULL
+                  )
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, notificationId);
+            ps.setInt(1, userId);
+            ps.setInt(2, notificationId);
+            ps.setString(3, targetRole);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     Map<String, String> map = new HashMap<>();
                     map.put("id", String.valueOf(rs.getInt("NotificationID")));
                     map.put("title", safe(rs.getString("Title")));
                     map.put("content", safe(rs.getString("Content")));
-                    map.put("createdAt", String.valueOf(rs.getTimestamp("CreatedDate")));
+                    map.put("createdAt", String.valueOf(rs.getTimestamp("PublishDate")));
+                    map.put("imageUrl", safe(rs.getString("NotificationImageURL")));
                     return map;
                 }
             }
@@ -460,7 +582,28 @@ public class GymDAO {
         return null;
     }
 
-    public void markAsRead(int notificationId) {
+    public void markAsRead(int notificationId, int userId) {
+        String sql = """
+                MERGE [dbo].[NotificationRecipients] AS target
+                USING (
+                    SELECT ? AS NotificationID, ? AS UserID
+                ) AS source
+                ON target.NotificationID = source.NotificationID
+                   AND target.UserID = source.UserID
+                WHEN MATCHED THEN
+                    UPDATE SET IsRead = 1, ReadAt = SYSDATETIME()
+                WHEN NOT MATCHED THEN
+                    INSERT (NotificationID, UserID, IsRead, ReadAt, CreatedDate)
+                    VALUES (source.NotificationID, source.UserID, 1, SYSDATETIME(), SYSDATETIME());
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, notificationId);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private String getUserRole(int userId) {
