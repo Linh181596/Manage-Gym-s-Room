@@ -93,10 +93,13 @@
                                                 </c:when>
                                                 <c:otherwise>
                                                     <div class="d-flex gap-2">
-                                                        <a href="${pageContext.request.contextPath}/admin/pt/schedule-setup?regId=${reg.ptRegistrationId}"
-                                                           class="btn btn-sm btn-info text-white" title="Xem chi tiết & xếp lịch">
-                                                            <i class="fa fa-eye"></i>
-                                                        </a>
+                                                        <form action="${pageContext.request.contextPath}/admin/schedule/manage" method="POST" class="m-0" onsubmit="return confirm('Xác nhận đã thu tiền cho đơn #PT-${reg.ptRegistrationId}?');">
+                                                            <input type="hidden" name="action" value="approve">
+                                                            <input type="hidden" name="regId" value="${reg.ptRegistrationId}">
+                                                            <button type="submit" class="btn btn-sm btn-success text-white" title="Xác nhận thanh toán">
+                                                                <i class="fa fa-money-bill-wave me-1"></i> Thu tiền
+                                                            </button>
+                                                        </form>
                                                         <button type="button" 
                                                                 class="btn btn-sm btn-danger" 
                                                                 data-reg-id="${reg.ptRegistrationId}" 

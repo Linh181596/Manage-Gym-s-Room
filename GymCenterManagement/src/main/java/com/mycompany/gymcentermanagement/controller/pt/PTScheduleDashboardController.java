@@ -1,12 +1,15 @@
 package com.mycompany.gymcentermanagement.controller.pt;
 
 import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
+import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
 import com.mycompany.gymcentermanagement.service.PTScheduleService;
+import com.mycompany.gymcentermanagement.service.PTRegistrationService;
 import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
 import com.mycompany.gymcentermanagement.service.impl.PTScheduleServiceImpl;
+import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -66,6 +69,12 @@ public class PTScheduleDashboardController extends HttpServlet {
             return;
         }
         List<PTScheduleDetailDTO> weekSchedules = ptScheduleService.getPTScheduleDetailsForWeek(pt.getPtId(), monday, sunday);
+        List<PTScheduleDetailDTO> allUpcomingSchedules = ptScheduleService.getPTScheduleDetailsForWeek(pt.getPtId(), monday.minusWeeks(2), sunday.plusWeeks(6));
+        req.setAttribute("allUpcomingSchedules", allUpcomingSchedules);
+
+        PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
+        List<PTRegistrationDTO> pendingSchedules = ptRegistrationService.getActivePaidRegistrationsWithoutScheduleByPT(pt.getPtId());
+        req.setAttribute("pendingSchedules", pendingSchedules);
 
         // 5. Nhào nặn dữ liệu: Gom nhóm lịch theo từng ngày (Tạo 6 cột, bỏ Chủ Nhật)
         Map<String, List<PTScheduleDetailDTO>> scheduleMap = new LinkedHashMap<>();

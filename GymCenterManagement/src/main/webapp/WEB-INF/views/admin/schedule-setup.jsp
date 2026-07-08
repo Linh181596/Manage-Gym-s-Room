@@ -247,15 +247,17 @@
                         </select>
                     </div>
 
-                    <div class="form-check mb-4 bg-white p-3 rounded border border-success">
-                        <input class="form-check-input ms-1 mt-2" type="checkbox" name="confirmPayment" value="true"
-                               id="confirmPayment"
-                        ${submittedPayment ? 'checked' : ''} required>
-                        <label class="form-check-label ms-2 text-dark" for="confirmPayment">
-                            <span class="fw-bold">Xác nhận đã thu tiền</span> <br>
-                            <small class="text-muted">Đổi trạng thái hóa đơn sang Paid</small>
-                        </label>
-                    </div>
+                    <c:if test="${reg.paymentStatus != 'Paid'}">
+                        <div class="form-check mb-4 bg-white p-3 rounded border border-success">
+                            <input class="form-check-input ms-1 mt-2" type="checkbox" name="confirmPayment" value="true"
+                                   id="confirmPayment"
+                            ${submittedPayment || reg.paymentStatus == 'Paid' ? 'checked' : ''} required>
+                            <label class="form-check-label ms-2 text-dark" for="confirmPayment">
+                                <span class="fw-bold">Xác nhận đã thu tiền</span> <br>
+                                <small class="text-muted">Đổi trạng thái hóa đơn sang Paid</small>
+                            </label>
+                        </div>
+                    </c:if>
 
                     <button type="submit" class="btn btn-primary w-100 py-3 fw-bold fs-6 shadow-sm">
                         <i class="fa fa-magic me-2"></i>Tạo lịch tập & Hoàn tất
@@ -263,7 +265,14 @@
 
                     <div class="row mt-3">
                         <div class="col-6">
-                            <a href="${pageContext.request.contextPath}/admin/schedule/manage" class="btn btn-outline-secondary w-100">Quay lại danh sách</a>
+                            <c:choose>
+                                <c:when test="${sessionScope.currentUser.role == 'PT'}">
+                                    <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="btn btn-outline-secondary w-100">Quay lại danh sách</a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/admin/schedule/manage" class="btn btn-outline-secondary w-100">Quay lại danh sách</a>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="col-6">
                             <c:choose>

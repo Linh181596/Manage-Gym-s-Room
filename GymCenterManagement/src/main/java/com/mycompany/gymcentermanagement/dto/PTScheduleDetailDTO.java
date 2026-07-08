@@ -99,6 +99,20 @@ public class PTScheduleDetailDTO {
     }
 
     private String note;
+    private String cancellationReason;
+    private int ptId;
+    private int memberId;
+
+    // Reschedule request fields
+    private Integer rescheduleRequestId;
+    private String rescheduleStatus;
+    private LocalDate rescheduleProposedDate;
+    private Time rescheduleProposedStartTime;
+    private Time rescheduleProposedEndTime;
+    private String rescheduleReason;
+    private Integer rescheduleSenderUserId;
+    private String rescheduleResponseReason;
+    private String rescheduleEscalationReason;
 
     public String getNote() {
         return note;
@@ -106,5 +120,101 @@ public class PTScheduleDetailDTO {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public Integer getRescheduleRequestId() {
+        return rescheduleRequestId;
+    }
+
+    public void setRescheduleRequestId(Integer rescheduleRequestId) {
+        this.rescheduleRequestId = rescheduleRequestId;
+    }
+
+    public String getRescheduleStatus() {
+        return rescheduleStatus;
+    }
+
+    public void setRescheduleStatus(String rescheduleStatus) {
+        this.rescheduleStatus = rescheduleStatus;
+    }
+
+    public LocalDate getRescheduleProposedDate() {
+        return rescheduleProposedDate;
+    }
+
+    public void setRescheduleProposedDate(LocalDate rescheduleProposedDate) {
+        this.rescheduleProposedDate = rescheduleProposedDate;
+    }
+
+    public Time getRescheduleProposedStartTime() {
+        return rescheduleProposedStartTime;
+    }
+
+    public void setRescheduleProposedStartTime(Time rescheduleProposedStartTime) {
+        this.rescheduleProposedStartTime = rescheduleProposedStartTime;
+    }
+
+    public Time getRescheduleProposedEndTime() {
+        return rescheduleProposedEndTime;
+    }
+
+    public void setRescheduleProposedEndTime(Time rescheduleProposedEndTime) {
+        this.rescheduleProposedEndTime = rescheduleProposedEndTime;
+    }
+
+    public String getRescheduleReason() {
+        return rescheduleReason;
+    }
+
+    public void setRescheduleReason(String rescheduleReason) {
+        this.rescheduleReason = rescheduleReason;
+    }
+
+    public Integer getRescheduleSenderUserId() {
+        return rescheduleSenderUserId;
+    }
+
+    public void setRescheduleSenderUserId(Integer rescheduleSenderUserId) {
+        this.rescheduleSenderUserId = rescheduleSenderUserId;
+    }
+
+    public String getRescheduleResponseReason() {
+        return rescheduleResponseReason;
+    }
+
+    public void setRescheduleResponseReason(String rescheduleResponseReason) {
+        this.rescheduleResponseReason = rescheduleResponseReason;
+    }
+
+    public String getRescheduleEscalationReason() {
+        return rescheduleEscalationReason;
+    }
+
+    public void setRescheduleEscalationReason(String rescheduleEscalationReason) {
+        this.rescheduleEscalationReason = rescheduleEscalationReason;
+    }
+
+    public int getPtId() {
+        return ptId;
+    }
+
+    public void setPtId(int ptId) {
+        this.ptId = ptId;
+    }
+
+    public int getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(int memberId) {
+        this.memberId = memberId;
     }
 }

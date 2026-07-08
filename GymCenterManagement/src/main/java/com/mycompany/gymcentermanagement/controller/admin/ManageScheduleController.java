@@ -2,6 +2,7 @@ package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
+import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
 import com.mycompany.gymcentermanagement.service.PTScheduleService;
 import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
@@ -48,6 +49,33 @@ public class ManageScheduleController extends HttpServlet {
             e.printStackTrace();
             resp.getWriter().println("Lỗi hệ thống: " + e.getMessage());
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+
+        try {
+            String action = req.getParameter("action");
+            if ("approve".equals(action)) {
+                int regId = Integer.parseInt(req.getParameter("regId"));
+
+                User currentUser =
+                        (User) req.getSession().getAttribute("currentUser");
+                int adminId = (currentUser != null) ? currentUser.getUserId() : 1;
+                String adminName = (currentUser != null) ? currentUser.getFullName() : "Admin";
+
+                ptRegistrationService.processRegistration(regId, "Active", "Paid", adminId, adminName);
+                req.getSession().setAttribute("toastMsg", "Xác nhận thanh toán và phê duyệt đơn thành công!");
+            }
+        } catch (IllegalStateException e) {
+            req.getSession().setAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.getSession().setAttribute("errorMessage", "Lỗi xử lý: " + e.getMessage());
+        }
+        resp.sendRedirect(req.getContextPath() + "/admin/schedule/manage");
     }
 }
 
