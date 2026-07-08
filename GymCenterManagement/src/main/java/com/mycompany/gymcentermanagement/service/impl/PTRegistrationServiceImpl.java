@@ -1,11 +1,20 @@
 package com.mycompany.gymcentermanagement.service.impl;
 
+import com.mycompany.gymcentermanagement.dao.MemberPackageDAO;
 import com.mycompany.gymcentermanagement.dao.PTRegistrationDAO;
+import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
+import com.mycompany.gymcentermanagement.dao.impl.MemberPackageDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.PTRegistrationDAOImpl;
+import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
 import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
+import com.mycompany.gymcentermanagement.model.entity.MemberPackage;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
+import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -27,6 +36,47 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
 
     @Override
     public boolean registerPTService(PTRegistration registration) {
+        PTServicePrice servicePrice = registrationDAO.findServicePriceById(registration.getPtServicePriceId());
+        if (servicePrice == null) {
+            return false;
+        }
+
+        // Validate status is active
+        if (!"Active".equalsIgnoreCase(servicePrice.getStatus())) {
+            return false;
+        }
+
+        // Validate PT is active
+        PersonalTrainerDAO ptDAO = new PersonalTrainerDAOImpl();
+        PersonalTrainer pt = ptDAO.findById(servicePrice.getPtId());
+        if (pt == null || !"Active".equalsIgnoreCase(pt.getStatus())) {
+            return false;
+        }
+
+        // Validate price and sessions
+        if (servicePrice.getPrice() == null || servicePrice.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+        if (servicePrice.getNumberOfSessions() <= 0) {
+            return false;
+        }
+
+        // Validate member has active gym membership package
+        try {
+            MemberPackageDAO memberPackageDAO = new MemberPackageDAOImpl();
+            MemberPackage activePackage = memberPackageDAO.findActiveByMemberId(registration.getMemberId());
+            if (activePackage == null) {
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        registration.setTotalAmount(servicePrice.getPrice());
+        registration.setPurchasedSessions(servicePrice.getNumberOfSessions());
+        registration.setStatus("Pending");
+        registration.setPaymentStatus("Unpaid");
         return registrationDAO.insert(registration);
     }
 
@@ -44,7 +94,11 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
     public boolean processRegistration(int ptRegistrationId, String status,
                                        String paymentStatus, int processedByUserId,
                                        String updatedBy) {
-        return registrationDAO.processRegistration(ptRegistrationId, status, paymentStatus, processedByUserId, updatedBy);
+        boolean success = registrationDAO.processRegistration(ptRegistrationId, status, paymentStatus, processedByUserId, updatedBy);
+        if (!success) {
+            throw new IllegalStateException("Đơn đăng ký PT không còn ở trạng thái chờ duyệt hoặc chưa thanh toán.");
+        }
+        return true;
     }
 
     @Override
@@ -90,5 +144,25 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
     @Override
     public boolean deleteRegistrationPermanent(int regId) {
         return registrationDAO.deleteRegistrationPermanent(regId);
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getActivePaidRegistrationsWithoutScheduleByPT(int ptId) {
+        return registrationDAO.getActivePaidRegistrationsWithoutScheduleByPT(ptId);
+    }
+
+    @Override
+    public int countSchedulesByRegistration(int regId) {
+        return registrationDAO.countSchedulesByRegistration(regId);
+    }
+
+    @Override
+    public boolean updateActualDates(int regId, LocalDate startDate, LocalDate endDate) {
+        return registrationDAO.updateActualDates(regId, startDate, endDate);
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getPTRegistrationsWithProgress(int ptId) {
+        return registrationDAO.getPTRegistrationsWithProgress(ptId);
     }
 }

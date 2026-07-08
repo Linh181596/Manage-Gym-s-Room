@@ -152,7 +152,7 @@ public class PTDashboardDAOImpl extends BaseDAO implements PTDashboardDAO {
     @Override
     public List<Map<String, Object>> getTodaySchedule(int ptId) throws SQLException {
         String sql = """
-                SELECT s.PTScheduleID, s.StartTime, s.EndTime, u.DisplayName AS MemberName, p.PackageName, s.SessionStatus, s.PTAttendanceResult, s.Note
+                SELECT s.PTScheduleID, s.StartTime, s.EndTime, u.DisplayName AS MemberName, p.PackageName, s.SessionStatus, s.PTAttendanceResult, s.Note, s.CancellationReason
                 FROM PTSchedules s
                 INNER JOIN Members m ON s.MemberID = m.MemberID
                 INNER JOIN Users u ON m.UserID = u.UserID
@@ -183,6 +183,7 @@ public class PTDashboardDAOImpl extends BaseDAO implements PTDashboardDAO {
                 map.put("sessionStatus", rs.getString("SessionStatus"));
                 map.put("attendanceStatus", rs.getString("PTAttendanceResult"));
                 map.put("note", rs.getString("Note"));
+                map.put("cancellationReason", rs.getString("CancellationReason"));
                 list.add(map);
             }
         } finally {

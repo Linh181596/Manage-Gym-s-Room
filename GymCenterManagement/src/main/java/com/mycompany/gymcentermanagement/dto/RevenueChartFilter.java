@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : RevenueChartFilter.java
  * @description   : DTO lưu điều kiện lọc biểu đồ doanh thu trên bảng điều khiển quản trị.
- * @author        : Duongnd
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-07-06
  * @last_modified : 2026-07-06 bởi Codex
  * =========================================================================

@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : ForgotPasswordController.java
  * @description   : Controller xử lý yêu cầu gửi email đặt lại mật khẩu cho tài khoản đang hoạt động.
- * @author        : Duongnd
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-07-06
  * @last_modified : 2026-07-06
  * =========================================================================

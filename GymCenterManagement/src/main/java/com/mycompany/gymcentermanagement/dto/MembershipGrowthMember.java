@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : MembershipGrowthMember.java
+ * @description   : DTO for member data in growth report
+ * @author        : Nguyễn Trí Linh (linhnt)
+ * @created       : 2026-07-08
+ * @last_modified : 2026-07-08 bởi Nguyễn Trí Linh (linhnt)
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.dto;
 
 import java.time.LocalDate;

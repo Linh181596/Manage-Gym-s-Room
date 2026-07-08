@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%-- 
+  =========================================================================
+  Document    : membership-growth-report.jsp
+  Created on  : 2026-07-08
+  Author      : Nguyễn Trí Linh (linhnt)
+  Description : View for Membership Growth Report
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 

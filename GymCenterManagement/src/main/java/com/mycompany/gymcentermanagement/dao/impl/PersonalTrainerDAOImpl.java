@@ -912,7 +912,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                     p.PackageName,
                     r.StartDate,
                     r.EndDate,
-                    p.NumberOfSessions AS TotalSessions,
+                    r.PurchasedSessions AS TotalSessions,
                     (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Completed' AND IsDeleted = 0) AS CompletedSessions,
                     (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Cancelled' AND IsDeleted = 0) AS CancelledSessions,
                     (SELECT STRING_AGG(
@@ -1005,7 +1005,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                     p.PackageName,
                     r.StartDate,
                     r.EndDate,
-                    p.NumberOfSessions AS TotalSessions,
+                    r.PurchasedSessions AS TotalSessions,
                     (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Completed' AND IsDeleted = 0) AS CompletedSessions,
                     (SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND SessionStatus = 'Cancelled' AND IsDeleted = 0) AS CancelledSessions,
                     (SELECT STRING_AGG(

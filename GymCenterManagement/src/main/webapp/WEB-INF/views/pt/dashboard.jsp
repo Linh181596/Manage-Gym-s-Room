@@ -19,6 +19,22 @@
         </a>
     </div>
 
+    <!-- Alert: New Paid Registrations needing schedule -->
+    <c:if test="${not empty pendingSchedulesCount && pendingSchedulesCount > 0}">
+        <div class="alert alert-warning border-warning border-2 shadow-sm d-flex align-items-center justify-content-between fade show p-3 mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa fa-exclamation-triangle text-danger me-3 fs-4"></i>
+                <div>
+                    <h6 class="mb-0 fw-bold text-dark">Bạn có ${pendingSchedulesCount} gói tập mới đã thanh toán cần xếp lịch dạy!</h6>
+                    <small class="text-muted">Vui lòng xếp lịch để hội viên có thể bắt đầu tập luyện.</small>
+                </div>
+            </div>
+            <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="btn btn-warning fw-bold text-dark shadow-sm">
+                <i class="fa fa-calendar-alt me-1"></i> Đến trang xếp lịch dạy
+            </a>
+        </div>
+    </c:if>
+
     <!-- Row 1: KPI Cards -->
     <div class="row g-4">
         <!-- Card 1: Hội viên của tôi -->
@@ -91,7 +107,7 @@
                                     <th>Hội viên</th>
                                     <th>Gói đăng ký</th>
                                     <th>Số buổi tập</th>
-                                    <th>Thời hạn hợp đồng</th>
+                                    <th>Thời gian tập thực tế</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -149,16 +165,22 @@
                                                 <td><span class="fw-bold text-dark">${s.sessionDate}</span></td>
                                                 <td>
                                                     <span class="badge bg-light text-dark border">
-                                                        ${s.startTime.toString().substring(0,5)} - ${s.endTime.toString().substring(0,5)}
+                                                        <fmt:formatDate value="${s.startTime}" pattern="HH:mm"/> - <fmt:formatDate value="${s.endTime}" pattern="HH:mm"/>
                                                     </span>
                                                 </td>
                                                 <td>${s.memberName}</td>
                                                 <td>${s.packageName}</td>
-                                                <td>
-                                                    <span class="badge bg-${s.sessionStatus == 'Completed' ? 'success' : (s.sessionStatus == 'Cancelled' ? 'danger' : 'warning text-dark')}">
-                                                        ${s.sessionStatus}
-                                                    </span>
-                                                </td>
+                                                 <td>
+                                                     <span class="badge bg-${s.sessionStatus == 'Completed' ? 'success' : (s.sessionStatus == 'Cancelled' ? 'danger' : 'warning text-dark')}">
+                                                         ${s.sessionStatus}
+                                                     </span>
+                                                     <c:if test="${s.sessionStatus == 'Cancelled' and not empty s.cancellationReason}">
+                                                         <i class="fa fa-info-circle text-danger ms-1" 
+                                                            data-bs-toggle="tooltip" 
+                                                            data-bs-placement="top" 
+                                                            title="Lý do hủy: ${s.cancellationReason}"></i>
+                                                     </c:if>
+                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </c:otherwise>
@@ -192,7 +214,7 @@
                                                 <td><span class="fw-bold text-dark">${s.sessionDate}</span></td>
                                                 <td>
                                                     <span class="badge bg-light text-dark border">
-                                                        ${s.startTime.toString().substring(0,5)} - ${s.endTime.toString().substring(0,5)}
+                                                        <fmt:formatDate value="${s.startTime}" pattern="HH:mm"/> - <fmt:formatDate value="${s.endTime}" pattern="HH:mm"/>
                                                     </span>
                                                 </td>
                                                 <td>${s.memberName}</td>
@@ -254,6 +276,84 @@
 </div>
 
 <div class="container-fluid pt-4 px-4">
+    <!-- Row 1.5: PT Packages & Progress -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="bg-light rounded p-4 shadow-sm">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="mb-0 text-dark fw-bold"><i class="fa fa-tasks text-primary me-2"></i>Gói tập & Tiến độ huấn luyện</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Hội viên</th>
+                                <th>Gói tập</th>
+                                <th>Đã dạy</th>
+                                <th>Sắp diễn ra</th>
+                                <th>Đã hủy</th>
+                                <th>Buổi đã mua</th>
+                                <th>Tiến độ</th>
+                                <th>Thời gian tập thực tế</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:choose>
+                                <c:when test="${empty registrationsWithProgress}">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4 text-muted">
+                                            Không có gói tập nào đang hoạt động.
+                                        </td>
+                                    </tr>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach var="reg" items="${registrationsWithProgress}">
+                                        <tr>
+                                            <td class="fw-bold">#PT-${reg.ptRegistrationId}</td>
+                                            <td>
+                                                <strong>${reg.memberName}</strong><br>
+                                                <small class="text-muted"><i class="fa fa-phone me-1"></i>${reg.memberPhone}</small>
+                                            </td>
+                                            <td>${reg.packageName}</td>
+                                            <td><span class="badge bg-success">${reg.completedCount} buổi</span></td>
+                                            <td><span class="badge bg-warning text-dark">${reg.upcomingCount} buổi</span></td>
+                                            <td><span class="badge bg-danger">${reg.cancelledCount} buổi</span></td>
+                                            <td class="fw-bold">${reg.purchasedSessions} buổi</td>
+                                            <td style="width: 20%;">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" 
+                                                             style="width: ${reg.progressPercentage}%;" 
+                                                             aria-valuenow="${reg.progressPercentage}" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="100"></div>
+                                                    </div>
+                                                    <span class="ms-2 small fw-bold text-dark">${reg.progressPercentage}%</span>
+                                                </div>
+                                            </td>
+                                            <td class="small text-muted">
+                                                <c:choose>
+                                                    <c:when test="${not empty reg.startDate && not empty reg.endDate}">
+                                                        Từ: <span class="text-dark fw-semibold">${reg.formattedStartDate}</span><br>
+                                                        Đến: <span class="text-dark fw-semibold">${reg.formattedEndDate}</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-warning"><i class="fa fa-exclamation-circle me-1"></i>Chưa xếp lịch</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Row 2: Today's PT Sessions Schedule -->
     <div class="row g-4">
         <div class="col-12 col-xl-8">
@@ -301,11 +401,11 @@
                                                     </c:when>
                                                     <c:when test="${s.sessionStatus == 'Cancelled'}">
                                                         <span class="badge bg-danger">Đã hủy</span>
-                                                        <c:if test="${not empty s.note}">
+                                                        <c:if test="${not empty s.cancellationReason}">
                                                             <i class="fa fa-info-circle text-danger ms-1" 
                                                                data-bs-toggle="tooltip" 
                                                                data-bs-placement="top" 
-                                                               title="Lý do hủy: ${s.note}"></i>
+                                                               title="Lý do hủy: ${s.cancellationReason}"></i>
                                                         </c:if>
                                                     </c:when>
                                                     <c:otherwise>
@@ -319,7 +419,7 @@
                                                 </c:if>
                                             </td>
                                             <td>
-                                                <a class="btn btn-sm btn-primary" href="${pageContext.request.contextPath}/pt/schedule-dashboard">Chi tiết & Điểm danh</a>
+                                                <a class="btn btn-sm btn-primary" href="${pageContext.request.contextPath}/pt/schedule-dashboard">Chi tiết lịch</a>
                                             </td>
                                         </tr>
                                     </c:forEach>

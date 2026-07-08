@@ -1,13 +1,13 @@
 /**
  * =========================================================================
- * @file          : MembershipGrowthReportDAO.java
- * @description   : DAO interface for Membership Growth Report
+ * @file          : MembershipGrowthReportService.java
+ * @description   : Service interface for Membership Growth Report business logic
  * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-07-08
  * @last_modified : 2026-07-08 bởi Nguyễn Trí Linh (linhnt)
  * =========================================================================
  */
-package com.mycompany.gymcentermanagement.dao;
+package com.mycompany.gymcentermanagement.service;
 
 import com.mycompany.gymcentermanagement.dto.MembershipGrowthChartPoint;
 import com.mycompany.gymcentermanagement.dto.MembershipGrowthMember;
@@ -15,7 +15,7 @@ import com.mycompany.gymcentermanagement.dto.MembershipGrowthSummary;
 import java.sql.SQLException;
 import java.util.List;
 
-public interface MembershipGrowthReportDAO {
+public interface MembershipGrowthReportService {
     List<Integer> getAvailableYears() throws SQLException;
 
     MembershipGrowthSummary getSummary(int year, Integer month) throws SQLException;
