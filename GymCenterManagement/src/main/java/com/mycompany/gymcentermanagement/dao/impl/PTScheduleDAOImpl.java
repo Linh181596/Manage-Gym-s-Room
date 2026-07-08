@@ -220,6 +220,8 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     SELECT 
                         s.PTScheduleID, s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus, s.PTAttendanceResult,
                         u_pt.DisplayName AS PTName,
+                        pt.PTID,
+                        pt.Specialization AS PTSpecialization,
                         u_mem.DisplayName AS MemberName,
                         p.PackageName,
                         s.Note
@@ -252,6 +254,8 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     dto.setMemberName(rs.getString("MemberName"));
                     dto.setPackageName(rs.getString("PackageName"));
                     dto.setPtName(rs.getString("PTName"));
+                    dto.setPtId(rs.getInt("PTID"));
+                    dto.setPtSpecialization(rs.getString("PTSpecialization"));
                     dto.setNote(rs.getString("Note"));
                     list.add(dto);
                 }
@@ -697,6 +701,117 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                         dto.setRescheduleResponseReason(rs.getString("RescheduleResponseReason"));
                         dto.setRescheduleEscalationReason(rs.getString("RescheduleEscalationReason"));
                     }
+                    list.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public boolean substitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId, String updatedBy) {
+        String updateSchedSql = """
+                UPDATE PTSchedules 
+                SET PTID = ?, 
+                    OriginalPTID = COALESCE(OriginalPTID, PTID), 
+                    SubstituteReason = ?, 
+                    SubstituteByUserID = ?, 
+                    SubstituteAt = GETDATE(), 
+                    UpdatedBy = ?, 
+                    UpdatedDate = GETDATE() 
+                WHERE PTScheduleID = ? AND IsDeleted = 0
+                """;
+        String cancelRequestsSql = """
+                UPDATE RescheduleRequests 
+                SET Status = 'Rejected', 
+                    ResponseReason = N'Đã phân công HLV thay thế mới', 
+                    RespondedByUserID = ?, 
+                    RespondedAt = SYSDATETIME(), 
+                    UpdatedDate = SYSDATETIME() 
+                WHERE PTScheduleID = ? AND Status IN ('Pending', 'Escalated')
+                """;
+        
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+            
+            try (PreparedStatement psSched = conn.prepareStatement(updateSchedSql);
+                 PreparedStatement psReq = conn.prepareStatement(cancelRequestsSql)) {
+                
+                psSched.setInt(1, substitutePtId);
+                psSched.setString(2, reason);
+                psSched.setInt(3, substituteByUserId);
+                psSched.setString(4, updatedBy);
+                psSched.setInt(5, scheduleId);
+                int schedRows = psSched.executeUpdate();
+                
+                if (schedRows > 0) {
+                    psReq.setInt(1, substituteByUserId);
+                    psReq.setInt(2, scheduleId);
+                    psReq.executeUpdate();
+                    
+                    conn.commit();
+                    return true;
+                } else {
+                    conn.rollback();
+                    return false;
+                }
+            } catch (SQLException ex) {
+                if (conn != null) {
+                    conn.rollback();
+                }
+                throw ex;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId) {
+        List<PTScheduleDetailDTO> list = new ArrayList<>();
+        String sql = """
+                SELECT 
+                    s.PTScheduleID, s.SessionDate, s.StartTime, s.EndTime, s.SessionStatus,
+                    u_opt.DisplayName AS OriginalPTName,
+                    u_mem.DisplayName AS MemberName,
+                    p.PackageName,
+                    s.SubstituteReason
+                FROM PTSchedules s
+                INNER JOIN PersonalTrainers opt ON s.OriginalPTID = opt.PTID
+                INNER JOIN Users u_opt ON opt.UserID = u_opt.UserID
+                INNER JOIN Members m ON s.MemberID = m.MemberID
+                INNER JOIN Users u_mem ON m.UserID = u_mem.UserID
+                INNER JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
+                INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                WHERE s.PTID = ? 
+                  AND s.OriginalPTID IS NOT NULL
+                  AND s.SessionStatus = 'Upcoming'
+                  AND (s.SessionDate > CAST(GETDATE() AS DATE) 
+                       OR (s.SessionDate = CAST(GETDATE() AS DATE) AND s.StartTime >= CAST(GETDATE() AS TIME)))
+                  AND s.IsDeleted = 0
+                ORDER BY s.SessionDate ASC, s.StartTime ASC
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTScheduleDetailDTO dto = new PTScheduleDetailDTO();
+                    dto.setScheduleId(rs.getInt("PTScheduleID"));
+                    dto.setSessionDate(rs.getDate("SessionDate").toLocalDate());
+                    dto.setStartTime(rs.getTime("StartTime"));
+                    dto.setEndTime(rs.getTime("EndTime"));
+                    dto.setSessionStatus(rs.getString("SessionStatus"));
+                    dto.setOriginalPtName(rs.getString("OriginalPTName"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    dto.setNote(rs.getString("SubstituteReason"));
                     list.add(dto);
                 }
             }

@@ -12,6 +12,8 @@ public class PTScheduleDetailDTO {
     private String memberName;
     private String packageName;
     private String ptName; // Thêm tên PT để hiển thị ở trang quản lý lịch của Admin/Staff
+    private String ptSpecialization; // Chuyên môn của PT
+    private String originalPtName; // Tên HLV cũ trước khi bị thay thế
     private String attendanceStatus; // Thêm trường này để chứa kết quả điểm danh
 
     public PTScheduleDetailDTO() {
@@ -216,5 +218,21 @@ public class PTScheduleDetailDTO {
 
     public void setMemberId(int memberId) {
         this.memberId = memberId;
+    }
+
+    public String getPtSpecialization() {
+        return ptSpecialization;
+    }
+
+    public void setPtSpecialization(String ptSpecialization) {
+        this.ptSpecialization = ptSpecialization;
+    }
+
+    public String getOriginalPtName() {
+        return originalPtName;
+    }
+
+    public void setOriginalPtName(String originalPtName) {
+        this.originalPtName = originalPtName;
     }
 }

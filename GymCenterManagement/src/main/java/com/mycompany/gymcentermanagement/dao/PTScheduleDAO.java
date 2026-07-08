@@ -21,4 +21,6 @@ public interface PTScheduleDAO {
     boolean cancelSession(int scheduleId, String reason, int cancelledByUserId, String updatedBy);
     boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate);
     List<PTScheduleDetailDTO> getMemberScheduleDetailsForWeek(int memberId, LocalDate startDate, LocalDate endDate);
+    boolean substitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId, String updatedBy);
+    List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId);
 }

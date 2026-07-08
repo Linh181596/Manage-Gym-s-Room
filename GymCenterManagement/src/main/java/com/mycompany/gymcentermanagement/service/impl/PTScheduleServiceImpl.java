@@ -5,9 +5,20 @@ import com.mycompany.gymcentermanagement.dao.impl.PTScheduleDAOImpl;
 import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
+import com.mycompany.gymcentermanagement.dao.PersonalTrainerDAO;
+import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
+import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
 import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
 import com.mycompany.gymcentermanagement.service.PTScheduleService;
+import com.mycompany.gymcentermanagement.dao.MemberDAO;
+import com.mycompany.gymcentermanagement.dao.impl.MemberDAOImpl;
+import com.mycompany.gymcentermanagement.dao.NotificationDAO;
+import com.mycompany.gymcentermanagement.dao.impl.NotificationDAOImpl;
+import com.mycompany.gymcentermanagement.model.entity.Member;
+import com.mycompany.gymcentermanagement.model.entity.Notification;
+import com.mycompany.gymcentermanagement.model.entity.User;
+import java.time.LocalDateTime;
 
 import java.sql.Time;
 import java.time.DayOfWeek;
@@ -24,6 +35,9 @@ import java.util.Set;
 
 public class PTScheduleServiceImpl implements PTScheduleService {
     private PTScheduleDAO ptScheduleDAO = new PTScheduleDAOImpl();
+    private final PersonalTrainerDAO personalTrainerDAO = new PersonalTrainerDAOImpl();
+    private final MemberDAO memberDAO = new MemberDAOImpl();
+    private final NotificationDAO notificationDAO = new NotificationDAOImpl();
 
     @Override
     public boolean isScheduleConflict(int ptId, LocalDate sessionDate, Time startTime, Time endTime) {
@@ -231,5 +245,73 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     @Override
     public List<PTScheduleDetailDTO> getMemberScheduleDetailsForWeek(int memberId, LocalDate startDate, LocalDate endDate) {
         return ptScheduleDAO.getMemberScheduleDetailsForWeek(memberId, startDate, endDate);
+    }
+
+    @Override
+    public String assignSubstitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId, String updatedBy) {
+        PTSchedule schedule = ptScheduleDAO.getScheduleById(scheduleId);
+        if (schedule == null) {
+            return "Ca dạy không tồn tại.";
+        }
+
+        if (!"Upcoming".equalsIgnoreCase(schedule.getSessionStatus())) {
+            return "Chỉ có thể thay thế PT cho ca dạy ở trạng thái Upcoming.";
+        }
+
+        if (schedule.getPtId() == substitutePtId) {
+            return "PT thay thế phải khác PT hiện tại.";
+        }
+
+        PersonalTrainer pt = personalTrainerDAO.findById(substitutePtId);
+        if (pt == null || !"Active".equalsIgnoreCase(pt.getStatus())) {
+            return "PT thay thế không hoạt động hoặc không tồn tại.";
+        }
+
+        boolean conflict = ptScheduleDAO.isScheduleConflictExcluding(
+                substitutePtId, 
+                schedule.getSessionDate(), 
+                schedule.getStartTime(), 
+                schedule.getEndTime(), 
+                scheduleId
+        );
+        if (conflict) {
+            return "PT thay thế bị trùng lịch vào khung giờ này.";
+        }
+
+        boolean success = ptScheduleDAO.substitutePT(scheduleId, substitutePtId, reason, substituteByUserId, updatedBy);
+        if (success) {
+            try {
+                PersonalTrainer originalPt = personalTrainerDAO.findById(schedule.getPtId());
+                Member member = memberDAO.findById(schedule.getMemberId());
+                String originalPtName = (originalPt != null) ? originalPt.getDisplayName() : "HLV cũ";
+                String memberName = (member != null && member.getUserDetails() != null) ? member.getUserDetails().getFullName() : "Hội viên";
+
+                Notification notif = new Notification();
+                notif.setTitle("Thông báo nhận ca dạy mới (Lịch thay thế)");
+                notif.setContent("Bạn đã được phân công dạy thay cho HLV " + originalPtName 
+                        + " vào ngày " + schedule.getSessionDate() 
+                        + " khung giờ " + schedule.getStartTime().toString().substring(0, 5) 
+                        + " - " + schedule.getEndTime().toString().substring(0, 5) 
+                        + " phụ trách hội viên " + memberName 
+                        + ". Lý do: " + reason);
+                notif.setCreatedBy(substituteByUserId);
+                notif.setTargetRole("Specific");
+                notif.setCreatedByRole("Staff");
+                notif.setCreatedDate(LocalDateTime.now());
+                notif.setPublishDate(LocalDateTime.now());
+                notif.setRecipientUserId(pt.getUserId());
+                notificationDAO.insert(notif);
+            } catch (Exception e) {
+                System.err.println("Không thể gửi thông báo cho HLV thay thế: " + e.getMessage());
+                e.printStackTrace();
+            }
+            return "SUCCESS";
+        }
+        return "Lỗi hệ thống khi cập nhật PT thay thế.";
+    }
+
+    @Override
+    public List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId) {
+        return ptScheduleDAO.getUpcomingSubstituteSessions(ptId);
     }
 }

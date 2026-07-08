@@ -74,6 +74,11 @@ public class PtDashboardController extends HttpServlet {
             List<PTRegistrationDTO> pendingSchedules = ptRegistrationService.getActivePaidRegistrationsWithoutScheduleByPT(pt.getPtId());
             request.setAttribute("pendingSchedulesCount", pendingSchedules != null ? pendingSchedules.size() : 0);
 
+            // Lấy danh sách ca dạy thay thế sắp tới được phân công
+            List<PTScheduleDetailDTO> substituteSessions = ptScheduleService.getUpcomingSubstituteSessions(pt.getPtId());
+            request.setAttribute("substituteSessions", substituteSessions);
+            request.setAttribute("substituteSessionsCount", substituteSessions != null ? substituteSessions.size() : 0);
+
             // Lấy danh sách hội viên của PT
             List<PTMemberDTO> membersList = personalTrainerService
                     .getActiveMembersForPT(pt.getPtId());

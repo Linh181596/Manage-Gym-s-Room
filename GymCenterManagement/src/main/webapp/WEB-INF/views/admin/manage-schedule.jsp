@@ -24,20 +24,25 @@
         <c:remove var="errorMessage" scope="session" />
     </c:if>
 
+    <c:set var="activeTabParam" value="${param.activeTab}" />
+    <c:if test="${empty activeTabParam}">
+        <c:set var="activeTabParam" value="pending" />
+    </c:if>
+
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs border-bottom-0 mb-3" id="scheduleTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-bold text-dark" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+            <button class="nav-link ${activeTabParam == 'pending' ? 'active' : ''} fw-bold text-dark" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="${activeTabParam == 'pending'}">
                 <i class="fa fa-list-ul me-2 text-primary"></i>Yêu cầu chờ duyệt
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold text-dark" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab" aria-controls="attendance" aria-selected="false">
+            <button class="nav-link ${activeTabParam == 'attendance' ? 'active' : ''} fw-bold text-dark" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab" aria-controls="attendance" aria-selected="${activeTabParam == 'attendance'}">
                 <i class="fa fa-clipboard-check me-2 text-primary"></i>Điểm danh ca dạy HLV
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold text-dark" id="reschedules-tab" data-bs-toggle="tab" data-bs-target="#reschedules" type="button" role="tab" aria-controls="reschedules" aria-selected="false">
+            <button class="nav-link ${activeTabParam == 'reschedules' ? 'active' : ''} fw-bold text-dark" id="reschedules-tab" data-bs-toggle="tab" data-bs-target="#reschedules" type="button" role="tab" aria-controls="reschedules" aria-selected="${activeTabParam == 'reschedules'}">
                 <i class="fa fa-handshake me-2 text-primary"></i>Hỗ trợ đổi lịch
                 <c:if test="${not empty escalatedRequests && fn:length(escalatedRequests) > 0}">
                     <span class="badge bg-danger ms-1">${fn:length(escalatedRequests)}</span>
@@ -48,7 +53,7 @@
 
     <div class="tab-content" id="scheduleTabsContent">
         <!-- Tab 1: Pending Requests -->
-        <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+        <div class="tab-pane fade ${activeTabParam == 'pending' ? 'show active' : ''}" id="pending" role="tabpanel" aria-labelledby="pending-tab">
             <div class="card border-0 shadow-sm p-4">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h5 class="text-dark fw-bold m-0">
@@ -131,7 +136,7 @@
         </div>
 
         <!-- Tab 2: PT Session Attendance -->
-        <div class="tab-pane fade" id="attendance" role="tabpanel" aria-labelledby="attendance-tab">
+        <div class="tab-pane fade ${activeTabParam == 'attendance' ? 'show active' : ''}" id="attendance" role="tabpanel" aria-labelledby="attendance-tab">
             <div class="card border-0 shadow-sm p-4">
                 <h5 class="text-dark fw-bold mb-3">
                     <i class="fa fa-user-check text-primary me-2"></i>Điểm danh ca dạy Huấn luyện viên
@@ -165,6 +170,7 @@
                                     <tr>
                                         <th>Giờ tập</th>
                                         <th>Huấn luyện viên</th>
+                                        <th>Chuyên môn</th>
                                         <th>Hội viên</th>
                                         <th>Gói dịch vụ</th>
                                         <th>Trạng thái ca tập</th>
@@ -182,6 +188,11 @@
                                                 </span>
                                             </td>
                                             <td class="fw-bold text-dark">${s.ptName}</td>
+                                            <td>
+                                                <span class="badge px-2 py-1" style="font-size: 0.8rem; background-color: #e0f7fa; color: #00838f;">
+                                                    ${s.ptSpecialization}
+                                                </span>
+                                            </td>
                                             <td>${s.memberName}</td>
                                             <td>${s.packageName}</td>
                                             <td>
@@ -217,6 +228,17 @@
                                                     </c:when>
                                                     <c:otherwise>
                                                         <div class="d-flex justify-content-center gap-1">
+                                                            <c:if test="${s.sessionStatus == 'Upcoming'}">
+                                                                <button type="button" class="btn btn-xs btn-outline-primary py-1 px-2 fw-bold btn-substitute-pt" 
+                                                                        data-id="${s.scheduleId}" 
+                                                                        data-time="<fmt:formatDate value="${s.startTime}" pattern="HH:mm"/>" 
+                                                                        data-member="${s.memberName}" 
+                                                                        data-pt-id="${s.ptId}"
+                                                                        data-pt-name="${s.ptName}"
+                                                                        style="font-size: 0.75rem;">
+                                                                    <i class="fa fa-user-edit me-1"></i>Thay PT
+                                                                </button>
+                                                            </c:if>
                                                             <c:choose>
                                                                 <c:when test="${isFutureDate}">
                                                                     <c:choose>
@@ -281,7 +303,7 @@
         </div>
 
         <!-- Tab 3: Escalated Reschedule Requests -->
-        <div class="tab-pane fade" id="reschedules" role="tabpanel" aria-labelledby="reschedules-tab">
+        <div class="tab-pane fade ${activeTabParam == 'reschedules' ? 'show active' : ''}" id="reschedules" role="tabpanel" aria-labelledby="reschedules-tab">
             <div class="card border-0 shadow-sm p-4">
                 <h5 class="text-dark fw-bold mb-3">
                     <i class="fa fa-handshake text-primary me-2"></i>Danh sách yêu cầu hỗ trợ đổi lịch tập
@@ -440,6 +462,51 @@
     </div>
 </div>
 
+<%-- MODAL PHÂN CÔNG PT THAY THẾ --%>
+<div class="modal fade" id="substitutePTModal" tabindex="-1" aria-labelledby="substitutePTModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="${pageContext.request.contextPath}/admin/schedule/manage" method="POST" id="substitutePTForm">
+            <input type="hidden" name="action" value="substitute">
+            <input type="hidden" name="scheduleId" id="substituteScheduleId" value="">
+            <input type="hidden" name="date" value="${selectedDate}">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="substitutePTModalLabel">
+                        <i class="fa fa-user-edit me-2"></i>Phân công PT thay thế
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 bg-light p-3 rounded text-dark">
+                        <div><span class="fw-semibold text-secondary">Hội viên:</span> <strong id="substituteMemberName"></strong></div>
+                        <div class="mt-1"><span class="fw-semibold text-secondary">Thời gian ca học:</span> <strong id="substituteSessionTime"></strong></div>
+                        <div class="mt-1"><span class="fw-semibold text-secondary">PT hiện tại:</span> <strong id="substituteCurrentPTName" class="text-danger"></strong></div>
+                    </div>
+                    
+                    <div class="mb-3 text-dark">
+                        <label for="substitutePtId" class="form-label fw-bold">Chọn PT thay thế:</label>
+                        <select name="substitutePtId" id="substitutePtId" class="form-select" required>
+                            <option value="">-- Chọn Huấn luyện viên --</option>
+                            <c:forEach var="pt" items="${activeTrainers}">
+                                <option value="${pt.ptId}">${pt.displayName} (${pt.specialization})</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3 text-dark">
+                        <label for="substituteReason" class="form-label fw-bold">Lý do thay thế:</label>
+                        <textarea name="reason" id="substituteReason" class="form-control" rows="3" placeholder="Nhập lý do thay thế huấn luyện viên..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Xác nhận thay PT</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const cancelModal = document.getElementById('cancelModal');
@@ -455,22 +522,7 @@
             });
         }
 
-        // Active tab on page reload
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('activeTab');
-        if (activeTab === 'attendance') {
-            const attendanceTabButton = document.getElementById('attendance-tab');
-            if (attendanceTabButton) {
-                const triggerEl = new bootstrap.Tab(attendanceTabButton);
-                triggerEl.show();
-            }
-        } else if (activeTab === 'reschedules') {
-            const reschedulesTabButton = document.getElementById('reschedules-tab');
-            if (reschedulesTabButton) {
-                const triggerEl = new bootstrap.Tab(reschedulesTabButton);
-                triggerEl.show();
-            }
-        }
+        // JSTL handles active tab server-side via activeTabParam
 
         // Handle Admin/Staff Action on Reschedule Requests
         const rescheduleButtons = document.querySelectorAll(".btn-action-reschedule");
@@ -556,6 +608,38 @@
                         document.getElementById("cancelSessionForm").submit();
                     }
                 });
+            });
+        });
+
+        // Substitute PT click handler
+        const substituteButtons = document.querySelectorAll(".btn-substitute-pt");
+        const substitutePTModal = new bootstrap.Modal(document.getElementById('substitutePTModal'));
+        substituteButtons.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                const scheduleId = btn.getAttribute("data-id");
+                const time = btn.getAttribute("data-time");
+                const memberName = btn.getAttribute("data-member");
+                const currentPtId = btn.getAttribute("data-pt-id");
+                const currentPtName = btn.getAttribute("data-pt-name");
+
+                document.getElementById("substituteScheduleId").value = scheduleId;
+                document.getElementById("substituteMemberName").textContent = memberName;
+                document.getElementById("substituteSessionTime").textContent = time;
+                document.getElementById("substituteCurrentPTName").textContent = currentPtName;
+
+                // Reset dropdown and hide current PT option
+                const selectEl = document.getElementById("substitutePtId");
+                selectEl.value = "";
+                Array.from(selectEl.options).forEach(function(option) {
+                    if (option.value === currentPtId) {
+                        option.style.display = "none";
+                    } else {
+                        option.style.display = "";
+                    }
+                });
+
+                document.getElementById("substituteReason").value = "";
+                substitutePTModal.show();
             });
         });
     });

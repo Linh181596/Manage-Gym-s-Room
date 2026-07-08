@@ -26,4 +26,6 @@ public interface PTScheduleService {
     String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, Map<String, String> dayTimeSlots, int createdByUserId);
     boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate);
     List<PTScheduleDetailDTO> getMemberScheduleDetailsForWeek(int memberId, LocalDate startDate, LocalDate endDate);
+    String assignSubstitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId, String updatedBy);
+    List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId);
 }
