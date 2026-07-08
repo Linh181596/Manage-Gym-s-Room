@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : ResetPasswordController.java
  * @description   : Controller xác thực token email và cập nhật mật khẩu mới cho luồng quên mật khẩu.
- * @author        : Duongnd
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-07-06
  * @last_modified : 2026-07-06
  * =========================================================================

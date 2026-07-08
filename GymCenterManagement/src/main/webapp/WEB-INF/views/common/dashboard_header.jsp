@@ -1,4 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%-- 
+  =========================================================================
+  Document    : dashboard_header.jsp
+  Created on  : 2026-07-08
+  Author      : Nguyễn Trí Linh (linhnt)
+  Description : Common dashboard header
+  =========================================================================
+--%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>

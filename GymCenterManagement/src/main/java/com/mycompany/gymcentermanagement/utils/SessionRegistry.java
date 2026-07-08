@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : SessionRegistry.java
  * @description   : Tiện ích theo dõi session đăng nhập để thu hồi các phiên khác của cùng tài khoản sau khi đổi mật khẩu.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

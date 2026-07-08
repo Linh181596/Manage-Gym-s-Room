@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : HomeController.java
  * @description   : Controller xử lý trang chủ công cộng, nạp danh sách gói tập động.
- * @author        : Nguyen Dai Duong (duongnd)
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-26
  * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
