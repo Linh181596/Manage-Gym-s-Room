@@ -500,6 +500,212 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    public boolean savePasswordResetToken(UserToken token) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmtRevokeOld = null;
+        PreparedStatement stmtInsert = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String revokeOldSql = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'RESET_PASSWORD'
+                          AND IsUsed = 0
+                    """;
+            stmtRevokeOld = conn.prepareStatement(revokeOldSql);
+            stmtRevokeOld.setInt(1, token.getUserID());
+            stmtRevokeOld.executeUpdate();
+
+            String insertSql = """
+                        INSERT INTO User_Tokens (
+                            UserID,
+                            TokenValue,
+                            TokenType,
+                            ExpiresAt,
+                            IsUsed,
+                            CreatedAt
+                        )
+                        VALUES (?, ?, ?, ?, 0, SYSDATETIME())
+                    """;
+            stmtInsert = conn.prepareStatement(insertSql);
+            stmtInsert.setInt(1, token.getUserID());
+            stmtInsert.setString(2, token.getTokenValue());
+            stmtInsert.setString(3, token.getTokenType());
+
+            if (token.getExpiresAt() != null) {
+                stmtInsert.setTimestamp(4, Timestamp.valueOf(token.getExpiresAt()));
+            } else {
+                stmtInsert.setNull(4, Types.TIMESTAMP);
+            }
+
+            boolean success = stmtInsert.executeUpdate() > 0;
+            if (!success) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (stmtInsert != null) stmtInsert.close();
+            closeResource(conn, stmtRevokeOld, null);
+        }
+    }
+
+    @Override
+    public User getUserByPasswordResetToken(String tokenValue) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        User user = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = """
+                        SELECT u.*, r.RoleName, pt.AvatarPath
+                        FROM User_Tokens t
+                        INNER JOIN Users u ON t.UserID = u.UserID
+                        LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
+                        LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID
+                        WHERE t.TokenValue = ?
+                          AND t.TokenType = 'RESET_PASSWORD'
+                          AND t.IsUsed = 0
+                          AND t.ExpiresAt > SYSDATETIME()
+                          AND u.Status = 'Active'
+                          AND u.IsDeleted = 0
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, tokenValue);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                user = mapResultSetToUser(rs);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+
+        return user;
+    }
+
+    @Override
+    public boolean resetPasswordByToken(String tokenValue, String newPasswordHash) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmtFind = null;
+        PreparedStatement stmtPassword = null;
+        PreparedStatement stmtResetTokens = null;
+        PreparedStatement stmtRememberTokens = null;
+        ResultSet rs = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String findSql = """
+                        SELECT u.UserID
+                        FROM User_Tokens t
+                        INNER JOIN Users u ON t.UserID = u.UserID
+                        WHERE t.TokenValue = ?
+                          AND t.TokenType = 'RESET_PASSWORD'
+                          AND t.IsUsed = 0
+                          AND t.ExpiresAt > SYSDATETIME()
+                          AND u.Status = 'Active'
+                          AND u.IsDeleted = 0
+                    """;
+            stmtFind = conn.prepareStatement(findSql);
+            stmtFind.setString(1, tokenValue);
+            rs = stmtFind.executeQuery();
+
+            if (!rs.next()) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            int userId = rs.getInt("UserID");
+
+            String passwordSql = """
+                        UPDATE Users
+                        SET PasswordHash = ?,
+                            MustChangePassword = 0,
+                            UpdatedBy = 'PasswordReset',
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                          AND Status = 'Active'
+                          AND IsDeleted = 0
+                    """;
+            stmtPassword = conn.prepareStatement(passwordSql);
+            stmtPassword.setString(1, newPasswordHash);
+            stmtPassword.setInt(2, userId);
+
+            if (stmtPassword.executeUpdate() <= 0) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            String resetTokenSql = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'RESET_PASSWORD'
+                          AND IsUsed = 0
+                    """;
+            stmtResetTokens = conn.prepareStatement(resetTokenSql);
+            stmtResetTokens.setInt(1, userId);
+            stmtResetTokens.executeUpdate();
+
+            String rememberTokenSql = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'REMEMBER_ME'
+                          AND IsUsed = 0
+                    """;
+            stmtRememberTokens = conn.prepareStatement(rememberTokenSql);
+            stmtRememberTokens.setInt(1, userId);
+            stmtRememberTokens.executeUpdate();
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (stmtRememberTokens != null) stmtRememberTokens.close();
+            if (stmtResetTokens != null) stmtResetTokens.close();
+            if (stmtPassword != null) stmtPassword.close();
+            closeResource(conn, stmtFind, rs);
+        }
+    }
+
+    @Override
     public boolean checkEmailExists(String email) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -1435,6 +1641,36 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     @Override
     public boolean deactivateAccount(int userId, String updatedBy) throws SQLException {
         return updateAccountStatus(userId, User.AccountStatus.Inactive, updatedBy);
+    }
+
+    @Override
+    public boolean hasBlockingPTSchedule(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = """
+                        SELECT 1
+                        FROM PersonalTrainers pt
+                        INNER JOIN PTSchedules s ON pt.PTID = s.PTID
+                        WHERE pt.UserID = ?
+                          AND pt.IsDeleted = 0
+                          AND s.IsDeleted = 0
+                          AND s.SessionStatus <> 'Cancelled'
+                          AND (
+                              s.SessionDate >= CAST(GETDATE() AS date)
+                              OR s.SessionStatus <> 'Completed'
+                          )
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
     }
 
     @Override

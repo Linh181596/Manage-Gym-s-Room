@@ -17,6 +17,7 @@ public class AdminDashboardData {
     private List<RevenuePoint> revenueTrend = new ArrayList<>();
     private List<DashboardInvoice> recentInvoices = new ArrayList<>();
     private List<DashboardAlert> alerts = new ArrayList<>();
+    private RevenueChartFilter revenueFilter;
     private String revenueChartLabelsJson = "[]";
     private String revenueChartValuesJson = "[]";
 
@@ -50,6 +51,14 @@ public class AdminDashboardData {
 
     public void setAlerts(List<DashboardAlert> alerts) {
         this.alerts = alerts;
+    }
+
+    public RevenueChartFilter getRevenueFilter() {
+        return revenueFilter;
+    }
+
+    public void setRevenueFilter(RevenueChartFilter revenueFilter) {
+        this.revenueFilter = revenueFilter;
     }
 
     public String getRevenueChartLabelsJson() {
