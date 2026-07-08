@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: phuga
-  Date: 6/25/2026
-  Time: 9:38 PM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="../common/dashboard_header.jsp"/>
@@ -27,67 +20,26 @@
         <c:remove var="errorMessage" scope="session" />
     </c:if>
 
-    <!-- Pending Schedule Setup Registrations -->
-    <c:if test="${not empty pendingSchedules}">
-        <div class="card border-warning mb-4 shadow-sm border-2">
-            <div class="card-header bg-warning text-dark fw-bold d-flex align-items-center">
-                <i class="fa fa-exclamation-triangle me-2 text-danger fs-5"></i>
-                <span>Bạn có ${pendingSchedules.size()} gói tập mới đã thanh toán cần xếp lịch dạy!</span>
-            </div>
-            <div class="card-body bg-white p-3">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Mã đơn</th>
-                                <th>Hội viên</th>
-                                <th>Gói tập</th>
-                                <th>Ngày mong muốn bắt đầu</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="reg" items="${pendingSchedules}">
-                                <tr>
-                                    <td class="fw-bold">#PT-${reg.ptRegistrationId}</td>
-                                    <td>${reg.memberName}<br><small class="text-muted">${reg.memberPhone}</small></td>
-                                    <td>${reg.packageName} (${reg.purchasedSessions} buổi)</td>
-                                    <td>${reg.preferredStartDate}</td>
-                                    <td>
-                                        <a href="${pageContext.request.contextPath}/admin/pt/schedule-setup?regId=${reg.ptRegistrationId}"
-                                           class="btn btn-sm btn-warning fw-bold text-dark border border-warning shadow-sm">
-                                            <i class="fa fa-calendar-plus me-1"></i> Xếp lịch dạy ngay
-                                        </a>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </c:if>
-
     <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
         <h4 class="mb-0 fw-bold text-dark">
-            <i class="fa fa-calendar-alt text-primary me-2"></i> Lịch Dạy Của Tôi
+            <i class="fa fa-calendar-alt text-primary me-2"></i> Lịch Tập Của Tôi
         </h4>
         <div class="btn-group shadow-sm">
-            <a href="${pageContext.request.contextPath}/pt/schedule-dashboard?refDate=${prevWeekDate}"
+            <a href="${pageContext.request.contextPath}/member/schedule-dashboard?refDate=${prevWeekDate}"
                class="btn btn-outline-primary fw-bold">
                 <i class="fa fa-chevron-left"></i> Tuần trước
             </a>
             <button class="btn btn-primary fw-bold px-4" disabled>
                 Tuần này: ${weekStartStr} - ${weekEndStr}
             </button>
-            <a href="${pageContext.request.contextPath}/pt/schedule-dashboard?refDate=${nextWeekDate}"
+            <a href="${pageContext.request.contextPath}/member/schedule-dashboard?refDate=${nextWeekDate}"
                class="btn btn-outline-primary fw-bold">
                 Tuần sau <i class="fa fa-chevron-right"></i>
             </a>
         </div>
     </div>
 
-    <div class="row flex-nowrap overflow-auto pb-4" style="min-height: 650px;">
+    <div class="row flex-nowrap overflow-auto pb-4" style="min-height: 600px;">
         <c:forEach var="entry" items="${scheduleMap}">
             <div class="col" style="min-width: 260px;">
                 <div class="card h-100 shadow-sm border-0 bg-secondary bg-opacity-10">
@@ -98,7 +50,7 @@
                     <div class="card-body p-2">
                         <c:if test="${empty entry.value}">
                             <div class="text-center text-muted mt-4" style="font-size: 0.9rem;">
-                                <i class="fa fa-mug-hot fs-3 mb-2 opacity-50 text-secondary"></i><br>Không có ca dạy
+                                <i class="fa fa-calendar-minus fs-3 mb-2 opacity-50 text-secondary"></i><br>Không có lịch tập
                             </div>
                         </c:if>
 
@@ -129,14 +81,14 @@
                                                     <span class="badge bg-danger ms-1">Vắng mặt</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="badge bg-secondary ms-1">Chờ điểm danh</span>
+                                                    <span class="badge bg-secondary ms-1">Chờ tập</span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </div>
                                     </div>
 
                                     <h6 class="fw-bold text-dark mb-1">
-                                        <i class="fa fa-user text-secondary me-1"></i> ${s.memberName}
+                                        <i class="fa fa-user-tie text-secondary me-1"></i> PT: ${s.ptName}
                                     </h6>
 
                                     <div class="text-muted small">
@@ -149,8 +101,8 @@
                                                 <button type="button"
                                                         class="btn btn-sm btn-outline-primary mt-3 w-100 fw-bold"
                                                         data-bs-toggle="modal"
-                                                        data-bs-target="#rescheduleModalPt_${s.scheduleId}">
-                                                    <i class="fa fa-calendar-alt me-1"></i> Gửi yêu cầu đổi lịch
+                                                        data-bs-target="#rescheduleModalMember_${s.scheduleId}">
+                                                    <i class="fa fa-calendar-alt me-1"></i> Yêu cầu đổi lịch
                                                 </button>
                                             </c:if>
                                         </c:when>
@@ -180,7 +132,7 @@
                                                          <button type="button"
                                                                  class="btn btn-sm btn-outline-primary w-100 fw-bold"
                                                                  data-bs-toggle="modal"
-                                                                 data-bs-target="#rescheduleModalPt_${s.scheduleId}">
+                                                                 data-bs-target="#rescheduleModalMember_${s.scheduleId}">
                                                              <i class="fa fa-calendar-alt me-1"></i> Yêu cầu đổi tiếp
                                                          </button>
                                                      </c:if>
@@ -222,17 +174,17 @@
 <c:forEach var="entry" items="${scheduleMap}">
     <c:forEach var="s" items="${entry.value}">
         <c:if test="${(empty s.rescheduleRequestId || s.rescheduleStatus == 'Approved') && s.sessionStatus == 'Upcoming'}">
-            <div class="modal fade" id="rescheduleModalPt_${s.scheduleId}" tabindex="-1" aria-hidden="true">
+            <div class="modal fade" id="rescheduleModalMember_${s.scheduleId}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="post" action="${pageContext.request.contextPath}/reschedule-request/create">
                             <div class="modal-header">
-                                <h5 class="modal-title fw-bold">Gửi yêu cầu đổi lịch</h5>
+                                <h5 class="modal-title fw-bold">Gửi yêu cầu đổi lịch tập</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <input type="hidden" name="scheduleId" value="${s.scheduleId}">
-                                <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/pt/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
+                                <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/member/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
 
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Ngày đề xuất mới</label>
@@ -242,7 +194,7 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Khung giờ cố định mới</label>
+                                    <label class="form-label fw-semibold">Khung giờ tập mới</label>
                                     <select name="proposedSlot" id="rescheduleProposedSlot_first_${s.scheduleId}" class="form-select reschedule-slot-select" required>
                                         <option value="">Chọn khung giờ</option>
                                         <option value="08:15-09:45">08:15 - 09:45</option>
@@ -255,13 +207,13 @@
                                 </div>
 
                                 <div class="mb-0">
-                                    <label class="form-label fw-semibold">Lý do</label>
+                                    <label class="form-label fw-semibold">Lý do xin đổi lịch</label>
                                     <textarea name="reason" class="form-control" rows="3" maxlength="255" required placeholder="Nhập lý do đổi lịch..."></textarea>
                                 </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
-                                <button type="submit" class="btn btn-primary fw-bold">Gửi request</button>
+                                <button type="submit" class="btn btn-primary fw-bold">Gửi yêu cầu</button>
                             </div>
                         </form>
                     </div>
@@ -280,7 +232,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="p-3 bg-light rounded border mb-3">
-                                <div class="fw-bold text-secondary mb-1">Lịch học gốc:</div>
+                                <div class="fw-bold text-secondary mb-1">Lịch tập gốc:</div>
                                 <div><i class="fa fa-calendar-day me-1"></i> Ngày: ${s.sessionDate}</div>
                                 <div><i class="fa fa-clock me-1"></i> Giờ: ${s.startTime.toString().substring(0,5)} - ${s.endTime.toString().substring(0,5)}</div>
                             </div>
@@ -328,7 +280,7 @@
                                 <div class="fw-bold text-dark mb-2"><i class="fa fa-redo me-1"></i> Gửi lại yêu cầu đổi lịch mới:</div>
                                 <form method="post" action="${pageContext.request.contextPath}/reschedule-request/create">
                                     <input type="hidden" name="scheduleId" value="${s.scheduleId}">
-                                    <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/pt/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
+                                    <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/member/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
                                     <div class="mb-2">
                                         <label class="form-label small fw-semibold">Ngày đề xuất mới</label>
                                         <input type="date" name="proposedDate" class="form-control form-control-sm reschedule-date-input" 
@@ -381,7 +333,7 @@
                         <div class="modal-body">
                             <div class="p-3 bg-light rounded border mb-3">
                                 <div class="fw-bold text-secondary mb-2" style="font-size: 1rem;">
-                                    <i class="fa fa-calendar-day me-1"></i> Lịch học gốc hiện tại:
+                                    <i class="fa fa-calendar-day me-1"></i> Lịch tập gốc hiện tại:
                                 </div>
                                 <div class="text-dark">
                                     <span class="text-secondary fw-semibold">Ngày tập:</span> 
@@ -416,7 +368,7 @@
 
                             <form method="post" action="${pageContext.request.contextPath}/reschedule-request/respond" class="w-100">
                                 <input type="hidden" name="requestId" value="${s.rescheduleRequestId}">
-                                <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/pt/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
+                                <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/member/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
 
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold text-dark">Ý kiến phản hồi / Lý do khiếu nại (nếu từ chối/khiếu nại)</label>
@@ -470,7 +422,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             Swal.fire({
                 icon: "success",
-                title: "Tuyệt vời!",
+                title: "Thành công!",
                 text: "${sessionScope.toastMsg}",
                 timer: 3000,
                 showConfirmButton: false,
@@ -487,7 +439,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             Swal.fire({
                 icon: "error",
-                title: "Chưa thể gửi request",
+                title: "Thất bại",
                 text: "${sessionScope.errorMessage}",
                 timer: 3500,
                 showConfirmButton: false,

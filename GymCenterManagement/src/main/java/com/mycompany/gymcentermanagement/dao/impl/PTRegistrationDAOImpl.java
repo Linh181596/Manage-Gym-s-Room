@@ -898,7 +898,7 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                     INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
                     WHERE r.Status = 'Active' 
                       AND r.PaymentStatus = 'Paid' 
-                      AND r.PTID = ? 
+                      AND sp.PTID = ? 
                       AND r.IsDeleted = 0
                       AND NOT EXISTS (
                           SELECT 1 FROM PTSchedules s 
@@ -969,5 +969,68 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getPTRegistrationsWithProgress(int ptId) {
+        List<PTRegistrationDTO> list = new ArrayList<>();
+        String sql = """
+                    SELECT r.PTRegistrationID, 
+                           u.DisplayName AS MemberName, 
+                           u.Phone AS MemberPhone,
+                           pkg.PackageName, 
+                           r.PurchasedSessions,
+                           r.StartDate, 
+                           r.EndDate,
+                           (SELECT COUNT(*) FROM PTSchedules s WHERE s.PTRegistrationID = r.PTRegistrationID AND s.SessionStatus = 'Upcoming' AND s.IsDeleted = 0) AS UpcomingCount,
+                           (SELECT COUNT(*) FROM PTSchedules s WHERE s.PTRegistrationID = r.PTRegistrationID AND s.SessionStatus = 'Completed' AND s.IsDeleted = 0) AS CompletedCount,
+                           (SELECT COUNT(*) FROM PTSchedules s WHERE s.PTRegistrationID = r.PTRegistrationID AND s.SessionStatus = 'Cancelled' AND s.IsDeleted = 0) AS CancelledCount
+                    FROM PTRegistrations r
+                    INNER JOIN Members m ON r.MemberID = m.MemberID
+                    INNER JOIN Users u ON m.UserID = u.UserID
+                    INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE sp.PTID = ? 
+                      AND r.Status = 'Active' 
+                      AND r.PaymentStatus = 'Paid'
+                      AND r.IsDeleted = 0
+                      AND EXISTS (
+                          SELECT 1 FROM PTSchedules s 
+                          WHERE s.PTRegistrationID = r.PTRegistrationID 
+                            AND s.IsDeleted = 0
+                      )
+                    ORDER BY r.CreatedDate DESC
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTRegistrationDTO dto = new PTRegistrationDTO();
+                    dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setMemberPhone(rs.getString("MemberPhone"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    dto.setPurchasedSessions(rs.getInt("PurchasedSessions"));
+                    
+                    if (rs.getDate("StartDate") != null) {
+                        dto.setStartDate(rs.getDate("StartDate").toLocalDate());
+                    }
+                    if (rs.getDate("EndDate") != null) {
+                        dto.setEndDate(rs.getDate("EndDate").toLocalDate());
+                    }
+                    
+                    dto.setUpcomingCount(rs.getInt("UpcomingCount"));
+                    dto.setCompletedCount(rs.getInt("CompletedCount"));
+                    dto.setCancelledCount(rs.getInt("CancelledCount"));
+                    
+                    list.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

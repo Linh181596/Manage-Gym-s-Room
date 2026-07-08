@@ -2,27 +2,37 @@ package com.mycompany.gymcentermanagement.service.impl;
 
 import com.mycompany.gymcentermanagement.dao.PTScheduleDAO;
 import com.mycompany.gymcentermanagement.dao.impl.PTScheduleDAOImpl;
+import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
-import com.mycompany.gymcentermanagement.service.PTScheduleService;
-
-import java.time.LocalDate;
-import java.util.List;
-import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
 import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
+import com.mycompany.gymcentermanagement.service.PTScheduleService;
+
+import java.sql.Time;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class PTScheduleServiceImpl implements PTScheduleService {
     private PTScheduleDAO ptScheduleDAO = new PTScheduleDAOImpl();
+
     @Override
-    public boolean isScheduleConflict(int ptId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) {
+    public boolean isScheduleConflict(int ptId, LocalDate sessionDate, Time startTime, Time endTime) {
         return ptScheduleDAO.isScheduleConflict(ptId, sessionDate, startTime, endTime);
     }
 
     @Override
     public boolean insertSchedules(List<PTSchedule> schedules, int createdByUserId) {
-        return ptScheduleDAO.insertSchedules(schedules,  createdByUserId);
+        return ptScheduleDAO.insertSchedules(schedules, createdByUserId);
     }
 
     @Override
@@ -32,7 +42,7 @@ public class PTScheduleServiceImpl implements PTScheduleService {
 
     @Override
     public List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate) {
-        return  ptScheduleDAO.getPTScheduleDetailsForWeek(ptId, startDate, endDate);
+        return ptScheduleDAO.getPTScheduleDetailsForWeek(ptId, startDate, endDate);
     }
 
     @Override
@@ -41,7 +51,7 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     }
 
     @Override
-    public boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) {
+    public boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, Time startTime, Time endTime) {
         return ptScheduleDAO.isMemberScheduleConflict(memberId, sessionDate, startTime, endTime);
     }
 
@@ -66,8 +76,8 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     }
 
     @Override
-    public boolean cancelSession(int scheduleId, String reason, String updatedBy) {
-        return ptScheduleDAO.cancelSession(scheduleId, reason, updatedBy);
+    public boolean cancelSession(int scheduleId, String reason, int cancelledByUserId, String updatedBy) {
+        return ptScheduleDAO.cancelSession(scheduleId, reason, cancelledByUserId, updatedBy);
     }
 
     @Override
@@ -76,7 +86,7 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     }
 
     @Override
-    public String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, List<String> daysOfWeekStr, String timeSlot, int createdByUserId) {
+    public String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, Map<String, String> dayTimeSlots, int createdByUserId) {
         PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
         
         // 1. Validate actualStartDate is not in the past
@@ -84,29 +94,31 @@ public class PTScheduleServiceImpl implements PTScheduleService {
             return "Ngày bắt đầu chính thức không được sớm hơn ngày hiện tại.";
         }
 
-        // 2. Validate weekdays: non-empty, Monday-Saturday only, no duplicates
-        if (daysOfWeekStr == null || daysOfWeekStr.isEmpty()) {
+        // 2. Validate weekdays: non-empty, Monday-Saturday only
+        if (dayTimeSlots == null || dayTimeSlots.isEmpty()) {
             return "Vui lòng chọn ít nhất một thứ trong tuần.";
         }
-        java.util.Set<String> uniqueDays = new java.util.HashSet<>();
-        for (String day : daysOfWeekStr) {
-            if (day == null) continue;
+        
+        List<String> validSlots = Arrays.asList(
+            "08:15-09:45", "10:00-11:30", "13:30-15:00", "15:15-16:45", "17:00-18:30", "18:45-20:15"
+        );
+        
+        Set<DayOfWeek> selectedDays = new HashSet<>();
+        for (Map.Entry<String, String> entry : dayTimeSlots.entrySet()) {
+            String day = entry.getKey();
+            String slot = entry.getValue();
+            if (day == null || slot == null || slot.trim().isEmpty()) {
+                return "Khung giờ cho ngày " + day + " không được để trống.";
+            }
             String upperDay = day.trim().toUpperCase();
             if (!upperDay.equals("MONDAY") && !upperDay.equals("TUESDAY") && !upperDay.equals("WEDNESDAY") &&
                 !upperDay.equals("THURSDAY") && !upperDay.equals("FRIDAY") && !upperDay.equals("SATURDAY")) {
                 return "Thứ trong tuần không hợp lệ (Chỉ chấp nhận từ Thứ 2 đến Thứ 7).";
             }
-            if (!uniqueDays.add(upperDay)) {
-                return "Thứ trong tuần không được chọn trùng lặp.";
+            if (!validSlots.contains(slot.trim())) {
+                return "Ca tập cho " + day + " không hợp lệ (Không thuộc khung giờ quy định).";
             }
-        }
-
-        // 3. Validate timeSlot must be a fixed slot key mapped by server-side code
-        List<String> validSlots = java.util.Arrays.asList(
-            "06:00-07:30", "08:15-09:45", "10:00-11:30", "13:30-15:00", "15:45-17:15", "18:00-19:30", "19:45-21:15"
-        );
-        if (timeSlot == null || !validSlots.contains(timeSlot.trim())) {
-            return "Ca tập chọn không hợp lệ (Không thuộc khung giờ quy định).";
+            selectedDays.add(DayOfWeek.valueOf(upperDay));
         }
 
         // 4. Get and validate registration detail
@@ -137,37 +149,35 @@ public class PTScheduleServiceImpl implements PTScheduleService {
             totalSessions = reg.getNumberOfSessions(); // fallback
         }
         
-        List<java.time.DayOfWeek> selectedDays = new ArrayList<>();
-        for (String day : daysOfWeekStr) {
-            selectedDays.add(java.time.DayOfWeek.valueOf(day.trim().toUpperCase()));
-        }
-        
-        String[] timeParts = timeSlot.split("-");
-        java.sql.Time startTime = java.sql.Time.valueOf(timeParts[0] + ":00");
-        java.sql.Time endTime = java.sql.Time.valueOf(timeParts[1] + ":00");
-        
         LocalDate checkDate = actualStartDate;
         int sessionsSimulated = 0;
         int searchCounter = 0;
         int maxDaysToSearch = 180;
         List<String> conflictDetails = new ArrayList<>();
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         
         List<PTSchedule> generatedSchedules = new ArrayList<>();
         
         while (sessionsSimulated < totalSessions && searchCounter < maxDaysToSearch) {
-            if (selectedDays.contains(checkDate.getDayOfWeek())) {
+            DayOfWeek dayOfWeek = checkDate.getDayOfWeek();
+            if (selectedDays.contains(dayOfWeek)) {
+                String dayKey = dayOfWeek.name();
+                String timeSlot = dayTimeSlots.get(dayKey);
+                String[] timeParts = timeSlot.split("-");
+                Time startTime = Time.valueOf(timeParts[0] + ":00");
+                Time endTime = Time.valueOf(timeParts[1] + ":00");
+
                 boolean isPtConflict = isScheduleConflict(loggedInPtId, checkDate, startTime, endTime);
                 boolean isMemberConflict = isMemberScheduleConflict(reg.getMemberId(), checkDate, startTime, endTime);
                 
                 if (isPtConflict || isMemberConflict) {
                     String daysInWeekVietnam = checkDate.getDayOfWeek().getDisplayName(
-                            java.time.format.TextStyle.FULL,
-                            new java.util.Locale("vi", "VN")
+                            TextStyle.FULL,
+                            new Locale("vi", "VN")
                     );
                     String reason = isPtConflict && isMemberConflict ? "trùng lịch cả HLV & hội viên" :
                                    (isPtConflict ? "HLV trùng lịch" : "hội viên trùng lịch");
-                    conflictDetails.add(checkDate.format(formatter) + " (" + daysInWeekVietnam + " - " + reason + ")");
+                    conflictDetails.add(checkDate.format(formatter) + " (" + daysInWeekVietnam + " " + timeSlot + " - " + reason + ")");
                 }
                 
                 PTSchedule schedule = new PTSchedule();
@@ -216,5 +226,10 @@ public class PTScheduleServiceImpl implements PTScheduleService {
         }
         
         return "SUCCESS";
+    }
+
+    @Override
+    public List<PTScheduleDetailDTO> getMemberScheduleDetailsForWeek(int memberId, LocalDate startDate, LocalDate endDate) {
+        return ptScheduleDAO.getMemberScheduleDetailsForWeek(memberId, startDate, endDate);
     }
 }

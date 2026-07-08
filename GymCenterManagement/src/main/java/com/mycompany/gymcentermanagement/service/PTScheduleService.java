@@ -3,12 +3,14 @@ package com.mycompany.gymcentermanagement.service;
 import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
 
+import java.sql.Time;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface PTScheduleService {
-    boolean isScheduleConflict(int ptId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime);
-    boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime);
+    boolean isScheduleConflict(int ptId, LocalDate sessionDate, Time startTime, Time endTime);
+    boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, Time startTime, Time endTime);
 
     boolean insertSchedules(List<PTSchedule> schedules, int createdByUserId);
 
@@ -20,7 +22,8 @@ public interface PTScheduleService {
     boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus);
     PTSchedule getScheduleById(int scheduleId);
     List<PTScheduleDetailDTO> getCompletedSessions(int ptId);
-    boolean cancelSession(int scheduleId, String reason, String updatedBy);
-    String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, List<String> daysOfWeekStr, String timeSlot, int createdByUserId);
+    boolean cancelSession(int scheduleId, String reason, int cancelledByUserId, String updatedBy);
+    String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, Map<String, String> dayTimeSlots, int createdByUserId);
     boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate);
+    List<PTScheduleDetailDTO> getMemberScheduleDetailsForWeek(int memberId, LocalDate startDate, LocalDate endDate);
 }

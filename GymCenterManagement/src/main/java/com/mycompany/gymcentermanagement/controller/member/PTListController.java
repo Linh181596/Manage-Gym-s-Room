@@ -11,6 +11,7 @@
 package com.mycompany.gymcentermanagement.controller.member;
 
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
+import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.PersonalTrainerService;
 import com.mycompany.gymcentermanagement.service.impl.PersonalTrainerServiceImpl;
 import jakarta.servlet.ServletException;
@@ -18,6 +19,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,12 +69,12 @@ public class PTListController extends HttpServlet {
             }
         }
 
-        jakarta.servlet.http.HttpSession session = request.getSession(false);
-        com.mycompany.gymcentermanagement.model.entity.User currentUser = 
-            (session != null) ? (com.mycompany.gymcentermanagement.model.entity.User) session.getAttribute("currentUser") : null;
+        HttpSession session = request.getSession(false);
+            User currentUser =
+            (session != null) ? (User) session.getAttribute("currentUser") : null;
         boolean isManagement = (currentUser != null && 
-            (currentUser.getRole() == com.mycompany.gymcentermanagement.model.entity.User.Role.Admin 
-            || currentUser.getRole() == com.mycompany.gymcentermanagement.model.entity.User.Role.Staff));
+            (currentUser.getRole() == User.Role.Admin
+            || currentUser.getRole() == User.Role.Staff));
 
         String status = request.getParameter("status");
         if (status == null || status.trim().isEmpty()) {

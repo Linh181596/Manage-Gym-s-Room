@@ -2,6 +2,7 @@ package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
+import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
 import com.mycompany.gymcentermanagement.service.PTScheduleService;
 import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
@@ -60,8 +61,8 @@ public class ManageScheduleController extends HttpServlet {
             if ("approve".equals(action)) {
                 int regId = Integer.parseInt(req.getParameter("regId"));
 
-                com.mycompany.gymcentermanagement.model.entity.User currentUser =
-                        (com.mycompany.gymcentermanagement.model.entity.User) req.getSession().getAttribute("currentUser");
+                User currentUser =
+                        (User) req.getSession().getAttribute("currentUser");
                 int adminId = (currentUser != null) ? currentUser.getUserId() : 1;
                 String adminName = (currentUser != null) ? currentUser.getFullName() : "Admin";
 

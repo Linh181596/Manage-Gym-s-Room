@@ -66,4 +66,5 @@ public interface PTRegistrationDAO {
     List<PTRegistrationDTO> getActivePaidRegistrationsWithoutScheduleByPT(int ptId);
     int countSchedulesByRegistration(int regId);
     boolean updateActualDates(int regId, LocalDate startDate, LocalDate endDate);
+    List<PTRegistrationDTO> getPTRegistrationsWithProgress(int ptId);
 }

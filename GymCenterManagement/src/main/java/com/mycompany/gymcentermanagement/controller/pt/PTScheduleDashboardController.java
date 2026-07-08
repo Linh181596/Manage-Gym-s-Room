@@ -69,6 +69,8 @@ public class PTScheduleDashboardController extends HttpServlet {
             return;
         }
         List<PTScheduleDetailDTO> weekSchedules = ptScheduleService.getPTScheduleDetailsForWeek(pt.getPtId(), monday, sunday);
+        List<PTScheduleDetailDTO> allUpcomingSchedules = ptScheduleService.getPTScheduleDetailsForWeek(pt.getPtId(), monday.minusWeeks(2), sunday.plusWeeks(6));
+        req.setAttribute("allUpcomingSchedules", allUpcomingSchedules);
 
         PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
         List<PTRegistrationDTO> pendingSchedules = ptRegistrationService.getActivePaidRegistrationsWithoutScheduleByPT(pt.getPtId());

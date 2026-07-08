@@ -9,6 +9,8 @@
  */
 package com.mycompany.gymcentermanagement.filter;
 
+import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -51,7 +53,7 @@ public class AuthenticationFilter extends HttpFilter {
                     if ("remember_me_token".equals(cookie.getName())) {
                         String tokenValue = cookie.getValue();
                         try {
-                            com.mycompany.gymcentermanagement.dao.UserDAO userDAO = new com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl();
+                            UserDAO userDAO = new UserDAOImpl();
                             User autoUser = userDAO.getUserByRememberMeToken(tokenValue);
                             if (autoUser != null && autoUser.getAccountStatus() == User.AccountStatus.Active) {
                                 HttpSession newSession = request.getSession(true);
