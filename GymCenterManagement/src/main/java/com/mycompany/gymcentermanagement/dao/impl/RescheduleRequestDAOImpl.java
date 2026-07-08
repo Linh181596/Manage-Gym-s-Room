@@ -124,24 +124,72 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
 
     @Override
     public boolean approveAndUpdateSchedule(int requestId, int scheduleId, LocalDate newDate, Time newStart, Time newEnd, int responderUserId) {
+        String selectSql = "SELECT SessionStatus, PTID, PTRegistrationID, MemberID, OriginalPTID, SessionDate FROM PTSchedules WHERE PTScheduleID = ?";
         String updateReqSql = "UPDATE RescheduleRequests SET Status = 'Approved', RespondedByUserID = ?, RespondedAt = SYSDATETIME(), UpdatedDate = SYSDATETIME() WHERE RequestID = ?";
         String updateSchedSql = "UPDATE PTSchedules SET SessionDate = ?, StartTime = ?, EndTime = ?, UpdatedDate = GETDATE(), UpdatedBy = 'System (Reschedule)' WHERE PTScheduleID = ?";
-        
+        String insertSchedSql = """
+                INSERT INTO PTSchedules (PTID, PTRegistrationID, MemberID, SessionDate, StartTime, EndTime, SessionStatus, PTAttendanceResult, CreatedByUserID, CreatedDate, IsDeleted, OriginalPTID, Note) 
+                VALUES (?, ?, ?, ?, ?, ?, 'Upcoming', 'Pending', ?, GETDATE(), 0, ?, ?)
+                """;
+
         try (Connection conn = DBContext.getConnection()) {
             conn.setAutoCommit(false);
-            try (PreparedStatement psReq = conn.prepareStatement(updateReqSql);
-                 PreparedStatement psSched = conn.prepareStatement(updateSchedSql)) {
+            try (PreparedStatement psSelect = conn.prepareStatement(selectSql);
+                 PreparedStatement psReq = conn.prepareStatement(updateReqSql)) {
                 
+                psSelect.setInt(1, scheduleId);
+                String status = "Upcoming";
+                int ptId = 0, regId = 0, memberId = 0;
+                Integer originalPtId = null;
+                Date oldDate = null;
+                try (ResultSet rs = psSelect.executeQuery()) {
+                    if (rs.next()) {
+                        status = rs.getString("SessionStatus");
+                        ptId = rs.getInt("PTID");
+                        regId = rs.getInt("PTRegistrationID");
+                        memberId = rs.getInt("MemberID");
+                        originalPtId = rs.getObject("OriginalPTID") != null ? rs.getInt("OriginalPTID") : null;
+                        oldDate = rs.getDate("SessionDate");
+                    } else {
+                        return false;
+                    }
+                }
+
+                // Update request
                 psReq.setInt(1, responderUserId);
                 psReq.setInt(2, requestId);
                 psReq.executeUpdate();
-                
-                psSched.setDate(1, Date.valueOf(newDate));
-                psSched.setTime(2, newStart);
-                psSched.setTime(3, newEnd);
-                psSched.setInt(4, scheduleId);
-                psSched.executeUpdate();
-                
+
+                if ("Cancelled".equalsIgnoreCase(status)) {
+                    // Trạng thái cũ là Cancelled -> Tạo record học bù mới, không sửa record cũ
+                    try (PreparedStatement psInsert = conn.prepareStatement(insertSchedSql)) {
+                        psInsert.setInt(1, ptId);
+                        psInsert.setInt(2, regId);
+                        psInsert.setInt(3, memberId);
+                        psInsert.setDate(4, Date.valueOf(newDate));
+                        psInsert.setTime(5, newStart);
+                        psInsert.setTime(6, newEnd);
+                        psInsert.setInt(7, responderUserId);
+                        if (originalPtId != null) {
+                            psInsert.setInt(8, originalPtId);
+                        } else {
+                            psInsert.setNull(8, Types.INTEGER);
+                        }
+                        String note = "Học bù cho ca bị hủy ngày " + (oldDate != null ? oldDate.toString() : "");
+                        psInsert.setString(9, note);
+                        psInsert.executeUpdate();
+                    }
+                } else {
+                    // Trạng thái cũ là Upcoming -> Cập nhật trực tiếp trên record cũ
+                    try (PreparedStatement psSched = conn.prepareStatement(updateSchedSql)) {
+                        psSched.setDate(1, Date.valueOf(newDate));
+                        psSched.setTime(2, newStart);
+                        psSched.setTime(3, newEnd);
+                        psSched.setInt(4, scheduleId);
+                        psSched.executeUpdate();
+                    }
+                }
+
                 conn.commit();
                 return true;
             } catch (SQLException ex) {

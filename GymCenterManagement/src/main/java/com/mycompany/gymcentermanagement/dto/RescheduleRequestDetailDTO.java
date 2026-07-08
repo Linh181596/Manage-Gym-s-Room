@@ -27,6 +27,24 @@ public class RescheduleRequestDetailDTO {
     private String escalationReason;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private boolean ptConflict;
+    private boolean memberConflict;
+
+    public boolean isPtConflict() {
+        return ptConflict;
+    }
+
+    public void setPtConflict(boolean ptConflict) {
+        this.ptConflict = ptConflict;
+    }
+
+    public boolean isMemberConflict() {
+        return memberConflict;
+    }
+
+    public void setMemberConflict(boolean memberConflict) {
+        this.memberConflict = memberConflict;
+    }
 
     public int getRequestId() {
         return requestId;

@@ -185,8 +185,18 @@
                                                     </span>
                                                 </td>
                                                 <td>${s.memberName}</td>
-                                                <td>${s.packageName}</td>
                                                  <td>
+                                                     ${s.packageName}
+                                                     <c:choose>
+                                                         <c:when test="${not empty s.originalPtId and s.ptId == pt.ptId}">
+                                                             <span class="badge bg-info text-white ms-1">Dạy thay</span>
+                                                         </c:when>
+                                                         <c:when test="${not empty s.originalPtId and s.originalPtId == pt.ptId}">
+                                                             <span class="badge bg-warning text-dark ms-1" data-bs-toggle="tooltip" title="Ca này bạn đã nhờ dạy hộ">Dạy thay bởi: ${s.ptName}</span>
+                                                         </c:when>
+                                                     </c:choose>
+                                                 </td>
+                                                  <td>
                                                      <span class="badge bg-${s.sessionStatus == 'Completed' ? 'success' : (s.sessionStatus == 'Cancelled' ? 'danger' : 'warning text-dark')}">
                                                          ${s.sessionStatus}
                                                      </span>
@@ -409,7 +419,17 @@
                                                 </span>
                                             </td>
                                             <td class="fw-bold">${s.memberName}</td>
-                                            <td>${s.packageName}</td>
+                                            <td>
+                                                ${s.packageName}
+                                                <c:choose>
+                                                    <c:when test="${not empty s.originalPtId and s.ptId == pt.ptId}">
+                                                        <span class="badge bg-info text-white ms-1">Dạy thay</span>
+                                                    </c:when>
+                                                    <c:when test="${not empty s.originalPtId and s.originalPtId == pt.ptId}">
+                                                        <span class="badge bg-warning text-dark ms-1" data-bs-toggle="tooltip" title="Ca này bạn đã nhờ dạy hộ">Dạy thay bởi: ${s.currentPtName}</span>
+                                                    </c:when>
+                                                </c:choose>
+                                            </td>
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${s.sessionStatus == 'Completed'}">

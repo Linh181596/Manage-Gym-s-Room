@@ -142,19 +142,30 @@
                     <i class="fa fa-user-check text-primary me-2"></i>Điểm danh ca dạy Huấn luyện viên
                 </h5>
                 
-                <!-- Date Filter Form -->
-                <form method="get" action="${pageContext.request.contextPath}/admin/schedule/manage" class="row g-3 align-items-end mb-4">
-                    <input type="hidden" name="activeTab" value="attendance">
-                    <div class="col-md-3 col-sm-6">
-                        <label class="form-label fw-semibold">Chọn ngày xem lịch:</label>
-                        <input type="date" name="date" class="form-control" value="${selectedDate}">
+                <!-- Date Filter Form & Mass Cancel -->
+                <div class="row g-3 align-items-end mb-4">
+                    <div class="col-md-6 col-sm-12">
+                        <form method="get" action="${pageContext.request.contextPath}/admin/schedule/manage" class="row g-2 align-items-end m-0">
+                            <input type="hidden" name="activeTab" value="attendance">
+                            <div class="col-8">
+                                <label class="form-label fw-semibold">Chọn ngày xem lịch:</label>
+                                <input type="date" name="date" class="form-control" value="${selectedDate}">
+                            </div>
+                            <div class="col-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fa fa-search me-1"></i>Xem lịch
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="col-md-2 col-sm-6">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fa fa-search me-1"></i>Xem lịch
-                        </button>
-                    </div>
-                </form>
+                    <c:if test="${sessionScope.currentUser.role == 'Admin'}">
+                        <div class="col-md-3 col-sm-12 ms-auto">
+                            <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#massCancelModal">
+                                <i class="fa fa-calendar-times me-1"></i>Hủy ca hàng loạt
+                            </button>
+                        </div>
+                    </c:if>
+                </div>
 
                 <c:choose>
                     <c:when test="${empty schedulesList}">
@@ -187,7 +198,14 @@
                                                     <fmt:formatDate value="${s.endTime}" pattern="HH:mm"/>
                                                 </span>
                                             </td>
-                                            <td class="fw-bold text-dark">${s.ptName}</td>
+                                            <td class="text-dark">
+                                                <span class="fw-bold">${s.ptName}</span>
+                                                <c:if test="${not empty s.originalPtName}">
+                                                    <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                                        (Dạy thay cho: <span class="text-decoration-line-through">${s.originalPtName}</span>)
+                                                    </div>
+                                                </c:if>
+                                            </td>
                                             <td>
                                                 <span class="badge px-2 py-1" style="font-size: 0.8rem; background-color: #e0f7fa; color: #00838f;">
                                                     ${s.ptSpecialization}
@@ -350,6 +368,14 @@
                                                     Ngày: ${r.formattedProposedDate}<br>
                                                     Giờ: ${r.formattedProposedStartTime} - ${r.formattedProposedEndTime}
                                                 </small>
+                                                <c:if test="${r.ptConflict || r.memberConflict}">
+                                                    <div class="mt-1">
+                                                        <span class="badge bg-danger text-white p-1" style="font-size: 0.75rem;" data-bs-toggle="tooltip" 
+                                                              title="<c:if test='${r.ptConflict}'>HLV bị trùng lịch! </c:if><c:if test='${r.memberConflict}'>Hội viên bị trùng lịch!</c:if>">
+                                                            <i class="fa fa-exclamation-triangle me-1"></i> Trùng lịch ❌
+                                                        </span>
+                                                    </div>
+                                                </c:if>
                                             </td>
                                             <td>
                                                 <div><span class="fw-semibold small text-secondary">Đề xuất:</span> <span class="fst-italic">"${r.reason}"</span></div>
@@ -644,5 +670,55 @@
         });
     });
 </script>
+
+    <c:if test="${sessionScope.currentUser.role == 'Admin'}">
+        <!-- Modal: Hủy ca hàng loạt -->
+        <div class="modal fade" id="massCancelModal" tabindex="-1" aria-labelledby="massCancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="${pageContext.request.contextPath}/admin/schedule/mass-cancel" onsubmit="return confirm('Bạn có chắc chắn muốn HỦY HÀNG LOẠT tất cả các ca tập sắp diễn ra trong ngày đã chọn? Thao tác này không thể hoàn tác!');">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title fw-bold" id="massCancelModalLabel">
+                                <i class="fa fa-exclamation-triangle me-2"></i>Hủy Ca Dạy Hàng Loạt
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning small">
+                                <i class="fa fa-info-circle me-1"></i> Chức năng này sẽ chuyển tất cả các ca dạy đang ở trạng thái <strong>Upcoming</strong> trong ngày được chọn sang trạng thái <strong>Cancelled</strong>. Các ca đã Hoàn thành hoặc đã Hủy sẽ không bị ảnh hưởng.
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Chọn ngày hủy:</label>
+                                <input type="date" name="cancelDate" class="form-control" value="${selectedDate}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Chọn ca tập (Khung giờ):</label>
+                                <select name="cancelSlot" class="form-select">
+                                    <option value="All">Tất cả các ca trong ngày</option>
+                                    <option value="08:15-09:45">08:15 - 09:45</option>
+                                    <option value="10:00-11:30">10:00 - 11:30</option>
+                                    <option value="13:30-15:00">13:30 - 15:00</option>
+                                    <option value="15:15-16:45">15:15 - 16:45</option>
+                                    <option value="17:00-18:30">17:00 - 18:30</option>
+                                    <option value="18:45-20:15">18:45 - 20:15</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Lý do hủy hàng loạt:</label>
+                                <textarea name="reason" class="form-control" rows="3" placeholder="Ví dụ: Phòng gym đóng cửa bảo trì thiết bị, nghỉ lễ đột xuất..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-danger fw-bold">Xác nhận Hủy</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </c:if>
 
 <jsp:include page="../common/dashboard_footer.jsp"/>

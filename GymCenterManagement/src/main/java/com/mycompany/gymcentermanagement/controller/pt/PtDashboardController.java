@@ -64,6 +64,7 @@ public class PtDashboardController extends HttpServlet {
 
             PTDashboardData dashboardData = ptDashboardService.getPTDashboardData(pt.getPtId());
             request.setAttribute("dashboardData", dashboardData);
+            request.setAttribute("pt", pt);
 
             // Lấy danh sách hợp đồng PT hoạt động kèm tiến độ tập
             PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();

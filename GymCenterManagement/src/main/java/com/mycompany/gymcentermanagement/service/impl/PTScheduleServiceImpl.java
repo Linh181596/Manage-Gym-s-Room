@@ -75,8 +75,8 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     }
 
     @Override
-    public boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus) {
-        return ptScheduleDAO.updateAttendance(scheduleId, attendanceStatus, sessionStatus);
+    public boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus, String updatedBy) {
+        return ptScheduleDAO.updateAttendance(scheduleId, attendanceStatus, sessionStatus, updatedBy);
     }
 
     @Override
@@ -286,6 +286,7 @@ public class PTScheduleServiceImpl implements PTScheduleService {
                 String originalPtName = (originalPt != null) ? originalPt.getDisplayName() : "HLV cũ";
                 String memberName = (member != null && member.getUserDetails() != null) ? member.getUserDetails().getFullName() : "Hội viên";
 
+                // Gửi thông báo cho HLV dạy thay
                 Notification notif = new Notification();
                 notif.setTitle("Thông báo nhận ca dạy mới (Lịch thay thế)");
                 notif.setContent("Bạn đã được phân công dạy thay cho HLV " + originalPtName 
@@ -301,8 +302,28 @@ public class PTScheduleServiceImpl implements PTScheduleService {
                 notif.setPublishDate(LocalDateTime.now());
                 notif.setRecipientUserId(pt.getUserId());
                 notificationDAO.insert(notif);
+
+                // Gửi thông báo cho HLV gốc (HLV nhờ dạy hộ)
+                if (originalPt != null) {
+                    Notification origNotif = new Notification();
+                    origNotif.setTitle("Thông báo chuyển giao ca dạy");
+                    origNotif.setContent("Ca dạy của bạn với hội viên " + memberName 
+                            + " vào ngày " + schedule.getSessionDate() 
+                            + " khung giờ " + schedule.getStartTime().toString().substring(0, 5) 
+                            + " - " + schedule.getEndTime().toString().substring(0, 5) 
+                            + " đã được chuyển giao cho HLV " + pt.getDisplayName() 
+                            + " dạy thay thế. Lý do: " + reason);
+                    origNotif.setCreatedBy(substituteByUserId);
+                    origNotif.setTargetRole("Specific");
+                    origNotif.setCreatedByRole("Staff");
+                    origNotif.setCreatedDate(LocalDateTime.now());
+                    origNotif.setPublishDate(LocalDateTime.now());
+                    origNotif.setRecipientUserId(originalPt.getUserId());
+                    notificationDAO.insert(origNotif);
+                }
+
             } catch (Exception e) {
-                System.err.println("Không thể gửi thông báo cho HLV thay thế: " + e.getMessage());
+                System.err.println("Không thể gửi thông báo chuyển giao ca dạy: " + e.getMessage());
                 e.printStackTrace();
             }
             return "SUCCESS";
@@ -313,5 +334,10 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     @Override
     public List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId) {
         return ptScheduleDAO.getUpcomingSubstituteSessions(ptId);
+    }
+
+    @Override
+    public int massCancelSessions(LocalDate cancelDate, Time startTime, Time endTime, String reason, int cancelledByUserId, String updatedBy) {
+        return ptScheduleDAO.massCancelSessions(cancelDate, startTime, endTime, reason, cancelledByUserId, updatedBy);
     }
 }

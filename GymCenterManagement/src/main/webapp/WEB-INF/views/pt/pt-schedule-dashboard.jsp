@@ -103,6 +103,7 @@
                         </c:if>
 
                         <c:forEach var="s" items="${entry.value}">
+                            <c:set var="isOriginalPt" value="${not empty s.originalPtId and s.originalPtId == pt.ptId}" />
                             <c:set var="borderColor"
                                    value="${s.sessionStatus == 'Completed' ? 'success' : (s.sessionStatus == 'Cancelled' ? 'danger' : 'primary')}"/>
 
@@ -144,70 +145,144 @@
                                     </div>
 
                                     <c:choose>
-                                        <c:when test="${empty s.rescheduleRequestId}">
-                                            <c:if test="${s.sessionStatus == 'Upcoming'}">
-                                                <button type="button"
-                                                        class="btn btn-sm btn-outline-primary mt-3 w-100 fw-bold"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#rescheduleModalPt_${s.scheduleId}">
-                                                    <i class="fa fa-calendar-alt me-1"></i> Gửi yêu cầu đổi lịch
-                                                </button>
+                                        <c:when test="${not empty s.originalPtId and s.ptId == pt.ptId}">
+                                            <div class="mt-2">
+                                                <span class="badge bg-info text-white"><i class="fa fa-exchange-alt me-1"></i> Dạy thay</span>
+                                            </div>
+                                        </c:when>
+                                        <c:when test="${not empty s.originalPtId and s.originalPtId == pt.ptId}">
+                                            <div class="mt-2">
+                                                <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" title="Ca này bạn đã nhờ dạy hộ"><i class="fa fa-user-friends me-1"></i> Dạy thay bởi: ${s.ptName}</span>
+                                            </div>
+                                        </c:when>
+                                    </c:choose>
+
+                                    <c:choose>
+                                        <c:when test="${isOriginalPt}">
+                                            <c:if test="${not empty s.rescheduleStatus}">
+                                                <c:choose>
+                                                    <c:when test="${s.rescheduleStatus == 'Pending'}">
+                                                        <div class="text-info small fw-bold text-center mt-3">
+                                                            <i class="fa fa-clock me-1"></i> Có yêu cầu đổi lịch (Chờ xử lý)
+                                                        </div>
+                                                    </c:when>
+                                                    <c:when test="${s.rescheduleStatus == 'Approved'}">
+                                                        <div class="text-success small fw-bold text-center mt-3">
+                                                            <i class="fa fa-check-circle me-1"></i> Đã đổi lịch
+                                                        </div>
+                                                    </c:when>
+                                                    <c:when test="${s.rescheduleStatus == 'Rejected'}">
+                                                        <div class="text-muted small fw-bold text-center mt-3">
+                                                            <i class="fa fa-times-circle me-1"></i> Đổi lịch bị từ chối
+                                                        </div>
+                                                    </c:when>
+                                                    <c:when test="${s.rescheduleStatus == 'Escalated'}">
+                                                        <div class="text-warning small fw-bold text-center mt-3">
+                                                            <i class="fa fa-balance-scale me-1"></i> Đang nhờ Admin can thiệp
+                                                        </div>
+                                                    </c:when>
+                                                </c:choose>
                                             </c:if>
                                         </c:when>
                                         <c:otherwise>
                                             <c:choose>
-                                                <c:when test="${s.rescheduleStatus == 'Pending'}">
+                                                <c:when test="${empty s.rescheduleRequestId}">
                                                     <c:choose>
-                                                        <c:when test="${s.rescheduleSenderUserId == sessionScope.currentUser.userId}">
-                                                            <button type="button" class="btn btn-sm btn-info text-white mt-3 w-100 fw-bold"
+                                                        <c:when test="${s.sessionStatus == 'Upcoming'}">
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-primary mt-3 w-100 fw-bold"
                                                                     data-bs-toggle="modal"
-                                                                    data-bs-target="#viewRescheduleModal_${s.scheduleId}">
-                                                                <i class="fa fa-clock me-1"></i> Đang chờ phản hồi
+                                                                    data-bs-target="#rescheduleModalPt_${s.scheduleId}">
+                                                                <i class="fa fa-calendar-alt me-1"></i> Gửi yêu cầu đổi lịch
                                                             </button>
                                                         </c:when>
-                                                        <c:otherwise>
-                                                            <button type="button" class="btn btn-sm btn-danger mt-3 w-100 fw-bold position-relative blink-btn"
+                                                        <c:when test="${s.sessionStatus == 'Cancelled'}">
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-danger mt-3 w-100 fw-bold"
                                                                     data-bs-toggle="modal"
-                                                                    data-bs-target="#respondRescheduleModal_${s.scheduleId}">
-                                                                <i class="fa fa-exclamation-circle me-1"></i> Có yêu cầu đổi lịch! 🔴
+                                                                    data-bs-target="#rescheduleModalPt_${s.scheduleId}">
+                                                                <i class="fa fa-redo me-1"></i> Yêu cầu xếp bù
                                                             </button>
-                                                        </c:otherwise>
+                                                        </c:when>
                                                     </c:choose>
                                                 </c:when>
-                                                <c:when test="${s.rescheduleStatus == 'Approved'}">
-                                                     <div class="text-success small fw-bold text-center mt-2 mb-1"><i class="fa fa-check me-1"></i> Đã đổi lịch</div>
-                                                     <c:if test="${s.sessionStatus == 'Upcoming'}">
-                                                         <button type="button"
-                                                                 class="btn btn-sm btn-outline-primary w-100 fw-bold"
-                                                                 data-bs-toggle="modal"
-                                                                 data-bs-target="#rescheduleModalPt_${s.scheduleId}">
-                                                             <i class="fa fa-calendar-alt me-1"></i> Yêu cầu đổi tiếp
-                                                         </button>
-                                                     </c:if>
-                                                 </c:when>
-                                                <c:when test="${s.rescheduleStatus == 'Rejected'}">
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary mt-3 w-100 fw-bold"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#viewRescheduleModal_${s.scheduleId}">
-                                                        <i class="fa fa-times-circle me-1"></i> Đổi lịch bị từ chối
-                                                    </button>
-                                                </c:when>
-                                                 <c:when test="${s.rescheduleStatus == 'Escalated'}">
-                                                     <button type="button" class="btn btn-sm btn-warning text-dark mt-3 w-100 fw-bold"
-                                                             data-bs-toggle="modal"
-                                                             data-bs-target="#viewRescheduleModal_${s.scheduleId}">
-                                                          <i class="fa fa-balance-scale me-1"></i> Chờ Admin hỗ trợ
-                                                     </button>
-                                                 </c:when>
+                                                <c:otherwise>
+                                                    <c:choose>
+                                                        <c:when test="${s.rescheduleStatus == 'Pending'}">
+                                                            <c:choose>
+                                                                <c:when test="${s.rescheduleSenderUserId == sessionScope.currentUser.userId}">
+                                                                    <button type="button" class="btn btn-sm btn-info text-white mt-3 w-100 fw-bold"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#viewRescheduleModal_${s.scheduleId}">
+                                                                        <i class="fa fa-clock me-1"></i> Đang chờ phản hồi
+                                                                    </button>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <button type="button" class="btn btn-sm btn-danger mt-3 w-100 fw-bold position-relative blink-btn"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#respondRescheduleModal_${s.scheduleId}">
+                                                                        <i class="fa fa-exclamation-circle me-1"></i> Có yêu cầu đổi lịch! 🔴
+                                                                    </button>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </c:when>
+                                                        <c:when test="${s.rescheduleStatus == 'Approved'}">
+                                                             <c:choose>
+                                                                 <c:when test="${s.sessionStatus == 'Cancelled'}">
+                                                                      <div class="text-success small fw-bold text-center mt-3"><i class="fa fa-check-circle me-1"></i> Đã xếp lịch bù</div>
+                                                                 </c:when>
+                                                                 <c:otherwise>
+                                                                      <div class="text-success small fw-bold text-center mt-2 mb-1"><i class="fa fa-check me-1"></i> Đã đổi lịch</div>
+                                                                      <c:if test="${s.sessionStatus == 'Upcoming'}">
+                                                                          <button type="button"
+                                                                                  class="btn btn-sm btn-outline-primary w-100 fw-bold"
+                                                                                  data-bs-toggle="modal"
+                                                                                  data-bs-target="#rescheduleModalPt_${s.scheduleId}">
+                                                                              <i class="fa fa-calendar-alt me-1"></i> Yêu cầu đổi tiếp
+                                                                          </button>
+                                                                      </c:if>
+                                                                 </c:otherwise>
+                                                             </c:choose>
+                                                         </c:when>
+                                                        <c:when test="${s.rescheduleStatus == 'Rejected'}">
+                                                             <c:choose>
+                                                                 <c:when test="${s.sessionStatus == 'Cancelled'}">
+                                                                     <button type="button" class="btn btn-sm btn-outline-secondary mt-3 w-100 fw-bold"
+                                                                             data-bs-toggle="modal"
+                                                                             data-bs-target="#viewRescheduleModal_${s.scheduleId}">
+                                                                         <i class="fa fa-times-circle me-1"></i> Xếp bù bị từ chối
+                                                                     </button>
+                                                                 </c:when>
+                                                                 <c:otherwise>
+                                                                     <button type="button" class="btn btn-sm btn-outline-secondary mt-3 w-100 fw-bold"
+                                                                             data-bs-toggle="modal"
+                                                                             data-bs-target="#viewRescheduleModal_${s.scheduleId}">
+                                                                         <i class="fa fa-times-circle me-1"></i> Đổi lịch bị từ chối
+                                                                     </button>
+                                                                 </c:otherwise>
+                                                             </c:choose>
+                                                        </c:when>
+                                                         <c:when test="${s.rescheduleStatus == 'Escalated'}">
+                                                             <button type="button" class="btn btn-sm btn-warning text-dark mt-3 w-100 fw-bold"
+                                                                     data-bs-toggle="modal"
+                                                                     data-bs-target="#viewRescheduleModal_${s.scheduleId}">
+                                                                  <i class="fa fa-balance-scale me-1"></i> Chờ Admin hỗ trợ
+                                                             </button>
+                                                         </c:when>
+                                                    </c:choose>
+                                                </c:otherwise>
                                             </c:choose>
                                         </c:otherwise>
                                     </c:choose>
 
-                                    <c:if test="${s.sessionStatus == 'Cancelled' && not empty s.note}">
-                                        <div class="text-danger small mt-2" data-bs-toggle="tooltip" title="Lý do hủy: ${s.note}">
-                                            <i class="fa fa-times-circle me-1"></i>
-                                            <strong>Lý do hủy:</strong> ${s.note}
-                                        </div>
+                                    <c:if test="${s.sessionStatus == 'Cancelled'}">
+                                        <c:set var="cancelReasonToShow" value="${not empty s.cancellationReason ? s.cancellationReason : s.note}" />
+                                        <c:if test="${not empty cancelReasonToShow}">
+                                            <div class="text-danger small mt-2" data-bs-toggle="tooltip" title="Lý do hủy: ${cancelReasonToShow}">
+                                                <i class="fa fa-times-circle me-1"></i>
+                                                <strong>Lý do hủy:</strong> ${cancelReasonToShow}
+                                            </div>
+                                        </c:if>
                                     </c:if>
                                 </div>
                             </div>
@@ -221,13 +296,13 @@
 
 <c:forEach var="entry" items="${scheduleMap}">
     <c:forEach var="s" items="${entry.value}">
-        <c:if test="${(empty s.rescheduleRequestId || s.rescheduleStatus == 'Approved') && s.sessionStatus == 'Upcoming'}">
+        <c:if test="${not isOriginalPt && (empty s.rescheduleRequestId || (s.rescheduleStatus == 'Approved' && s.sessionStatus == 'Upcoming')) && (s.sessionStatus == 'Upcoming' || s.sessionStatus == 'Cancelled')}">
             <div class="modal fade" id="rescheduleModalPt_${s.scheduleId}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <form method="post" action="${pageContext.request.contextPath}/reschedule-request/create">
                             <div class="modal-header">
-                                <h5 class="modal-title fw-bold">Gửi yêu cầu đổi lịch</h5>
+                                <h5 class="modal-title fw-bold">${s.sessionStatus == 'Cancelled' ? 'Gửi yêu cầu xếp lịch bù' : 'Gửi yêu cầu đổi lịch'}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -238,6 +313,8 @@
                                     <label class="form-label fw-semibold">Ngày đề xuất mới</label>
                                     <input type="date" name="proposedDate" class="form-control reschedule-date-input" 
                                            data-schedule-id="${s.scheduleId}" 
+                                           data-pt-id="${s.ptId}" 
+                                           data-member-id="${s.memberId}" 
                                            required>
                                 </div>
 
@@ -323,9 +400,9 @@
                                 </span>
                             </div>
 
-                            <c:if test="${s.rescheduleStatus == 'Rejected' && s.sessionStatus == 'Upcoming'}">
+                            <c:if test="${not isOriginalPt && s.rescheduleStatus == 'Rejected' && (s.sessionStatus == 'Upcoming' || s.sessionStatus == 'Cancelled')}">
                                 <hr>
-                                <div class="fw-bold text-dark mb-2"><i class="fa fa-redo me-1"></i> Gửi lại yêu cầu đổi lịch mới:</div>
+                                <div class="fw-bold text-dark mb-2"><i class="fa fa-redo me-1"></i> ${s.sessionStatus == 'Cancelled' ? 'Gửi lại yêu cầu xếp bù mới:' : 'Gửi lại yêu cầu đổi lịch mới:'}</div>
                                 <form method="post" action="${pageContext.request.contextPath}/reschedule-request/create">
                                     <input type="hidden" name="scheduleId" value="${s.scheduleId}">
                                     <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/pt/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
@@ -333,6 +410,8 @@
                                         <label class="form-label small fw-semibold">Ngày đề xuất mới</label>
                                         <input type="date" name="proposedDate" class="form-control form-control-sm reschedule-date-input" 
                                                data-schedule-id="${s.scheduleId}" 
+                                               data-pt-id="${s.ptId}" 
+                                               data-member-id="${s.memberId}" 
                                                required>
                                     </div>
                                     <div class="mb-2">

@@ -68,6 +68,7 @@ public class PTScheduleDashboardController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/pt/dashboard");
             return;
         }
+        req.setAttribute("pt", pt);
         List<PTScheduleDetailDTO> weekSchedules = ptScheduleService.getPTScheduleDetailsForWeek(pt.getPtId(), monday, sunday);
         List<PTScheduleDetailDTO> allUpcomingSchedules = ptScheduleService.getPTScheduleDetailsForWeek(pt.getPtId(), monday.minusWeeks(2), sunday.plusWeeks(6));
         req.setAttribute("allUpcomingSchedules", allUpcomingSchedules);

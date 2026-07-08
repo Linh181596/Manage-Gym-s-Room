@@ -15,7 +15,7 @@ public interface PTScheduleDAO {
     List<PTSchedule> getMemberSchedulesForWeek(int memberId, LocalDate startDate, LocalDate endDate);
     List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate);
     List<PTScheduleDetailDTO> getAllSchedulesByDate(LocalDate date);
-    boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus);
+    boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus, String updatedBy);
     PTSchedule getScheduleById(int scheduleId);
     List<PTScheduleDetailDTO> getCompletedSessions(int ptId);
     boolean cancelSession(int scheduleId, String reason, int cancelledByUserId, String updatedBy);
@@ -23,4 +23,6 @@ public interface PTScheduleDAO {
     List<PTScheduleDetailDTO> getMemberScheduleDetailsForWeek(int memberId, LocalDate startDate, LocalDate endDate);
     boolean substitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId, String updatedBy);
     List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId);
+    int massCancelSessions(LocalDate cancelDate, java.sql.Time startTime, java.sql.Time endTime, String reason, int cancelledByUserId, String updatedBy);
+    boolean isSlotMassCancelled(LocalDate date, java.sql.Time startTime, java.sql.Time endTime);
 }

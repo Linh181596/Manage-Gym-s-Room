@@ -59,8 +59,8 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             return "Không tìm thấy buổi tập cần đổi lịch.";
         }
 
-        if (!"Upcoming".equalsIgnoreCase(schedule.getSessionStatus())) {
-            return "Chỉ được tạo yêu cầu đổi lịch cho buổi tập Upcoming.";
+        if (!"Upcoming".equalsIgnoreCase(schedule.getSessionStatus()) && !"Cancelled".equalsIgnoreCase(schedule.getSessionStatus())) {
+            return "Chỉ được tạo yêu cầu đổi lịch/xếp bù cho buổi tập Upcoming hoặc Cancelled.";
         }
 
         PersonalTrainer pt = personalTrainerDAO.findById(schedule.getPtId());
@@ -111,6 +111,10 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 && proposedEndTime.equals(schedule.getEndTime());
         if (sameAsOriginal) {
             return "Khung giờ mới phải khác lịch gốc hiện tại.";
+        }
+
+        if (ptScheduleDAO.isSlotMassCancelled(proposedDate, proposedStartTime, proposedEndTime)) {
+            return "Khung giờ này đã bị hủy hàng loạt bởi Admin (Ví dụ: sự cố vận hành, bảo trì...). Vui lòng đề xuất ngày hoặc khung giờ khác.";
         }
 
         boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
@@ -187,6 +191,10 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 return "Không tìm thấy buổi tập liên quan.";
             }
 
+            if (ptScheduleDAO.isSlotMassCancelled(req.getProposedDate(), req.getProposedStartTime(), req.getProposedEndTime())) {
+                return "Không thể duyệt do khung giờ đề xuất mới đã bị hủy hàng loạt bởi Admin (Ví dụ: sự cố vận hành, bảo trì...).";
+            }
+
             boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
                     schedule.getPtId(),
                     req.getProposedDate(),
@@ -235,6 +243,28 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
 
     @Override
     public List<RescheduleRequestDetailDTO> getEscalatedRequests() {
-        return rescheduleRequestDAO.getEscalatedRequests();
+        List<RescheduleRequestDetailDTO> list = rescheduleRequestDAO.getEscalatedRequests();
+        for (RescheduleRequestDetailDTO req : list) {
+            PTSchedule schedule = ptScheduleDAO.getScheduleById(req.getScheduleId());
+            if (schedule != null) {
+                boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
+                        schedule.getPtId(),
+                        req.getProposedDate(),
+                        req.getProposedStartTime(),
+                        req.getProposedEndTime(),
+                        req.getScheduleId()
+                );
+                boolean memberConflict = ptScheduleDAO.isMemberScheduleConflictExcluding(
+                        schedule.getMemberId(),
+                        req.getProposedDate(),
+                        req.getProposedStartTime(),
+                        req.getProposedEndTime(),
+                        req.getScheduleId()
+                );
+                req.setPtConflict(ptConflict);
+                req.setMemberConflict(memberConflict);
+            }
+        }
+        return list;
     }
 }

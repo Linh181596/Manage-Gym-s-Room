@@ -104,6 +104,7 @@ public class PTScheduleDetailDTO {
     private String cancellationReason;
     private int ptId;
     private int memberId;
+    private Integer originalPtId;
 
     // Reschedule request fields
     private Integer rescheduleRequestId;
@@ -234,5 +235,13 @@ public class PTScheduleDetailDTO {
 
     public void setOriginalPtName(String originalPtName) {
         this.originalPtName = originalPtName;
+    }
+
+    public Integer getOriginalPtId() {
+        return originalPtId;
+    }
+
+    public void setOriginalPtId(Integer originalPtId) {
+        this.originalPtId = originalPtId;
     }
 }

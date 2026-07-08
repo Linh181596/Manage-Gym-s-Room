@@ -120,6 +120,10 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                          u.DisplayName AS MemberName,
                          p.PackageName,
                          s.Note,
+                         s.OriginalPTID,
+                         u_opt.DisplayName AS OriginalPTName,
+                         u_curr.DisplayName AS CurrentPTName,
+                         s.CancellationReason,
                          req.RequestID AS RescheduleRequestID,
                          req.Status AS RescheduleStatus,
                          req.ProposedDate AS RescheduleProposedDate,
@@ -135,13 +139,17 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     JOIN Users u ON m.UserID = u.UserID
                     JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
                     JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                    LEFT JOIN PersonalTrainers opt ON s.OriginalPTID = opt.PTID
+                    LEFT JOIN Users u_opt ON opt.UserID = u_opt.UserID
+                    LEFT JOIN PersonalTrainers pt_curr ON s.PTID = pt_curr.PTID
+                    LEFT JOIN Users u_curr ON pt_curr.UserID = u_curr.UserID
                     LEFT JOIN RescheduleRequests req ON s.PTScheduleID = req.PTScheduleID 
                       AND req.RequestID = (
                           SELECT MAX(RequestID) 
                           FROM RescheduleRequests 
                           WHERE PTScheduleID = s.PTScheduleID
                       )
-                    WHERE s.PTID = ?
+                    WHERE (s.PTID = ? OR s.OriginalPTID = ?)
                       AND s.SessionDate >= ?
                       AND s.SessionDate <= ?
                       AND s.IsDeleted = 0
@@ -152,8 +160,9 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, ptId);
-            ps.setDate(2, java.sql.Date.valueOf(startDate));
-            ps.setDate(3, java.sql.Date.valueOf(endDate));
+            ps.setInt(2, ptId);
+            ps.setDate(3, java.sql.Date.valueOf(startDate));
+            ps.setDate(4, java.sql.Date.valueOf(endDate));
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -167,8 +176,15 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     dto.setMemberName(rs.getString("MemberName"));
                     dto.setPackageName(rs.getString("PackageName"));
                     dto.setNote(rs.getString("Note"));
+                    dto.setCancellationReason(rs.getString("CancellationReason"));
                     dto.setPtId(rs.getInt("PTID"));
+                    dto.setPtName(rs.getString("CurrentPTName"));
                     dto.setMemberId(rs.getInt("MemberID"));
+                    dto.setOriginalPtName(rs.getString("OriginalPTName"));
+                    int origPtId = rs.getInt("OriginalPTID");
+                    if (!rs.wasNull()) {
+                        dto.setOriginalPtId(origPtId);
+                    }
                     
                     int reqId = rs.getInt("RescheduleRequestID");
                     if (!rs.wasNull()) {
@@ -195,17 +211,18 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
     }
 
     @Override
-    public boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus) {
+    public boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus, String updatedBy) {
         String sql = """
                 UPDATE PTSchedules 
-                SET PTAttendanceResult = ?, SessionStatus = ?, UpdatedDate = GETDATE()
+                SET PTAttendanceResult = ?, SessionStatus = ?, UpdatedBy = ?, UpdatedDate = GETDATE()
                 WHERE PTScheduleID = ? AND IsDeleted = 0
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, attendanceStatus);
             ps.setString(2, sessionStatus);
-            ps.setInt(3, scheduleId);
+            ps.setString(3, updatedBy);
+            ps.setInt(4, scheduleId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -224,7 +241,9 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                         pt.Specialization AS PTSpecialization,
                         u_mem.DisplayName AS MemberName,
                         p.PackageName,
-                        s.Note
+                        s.Note,
+                        s.OriginalPTID,
+                        u_opt.DisplayName AS OriginalPTName
                     FROM PTSchedules s
                     INNER JOIN PersonalTrainers pt ON s.PTID = pt.PTID
                     INNER JOIN Users u_pt ON pt.UserID = u_pt.UserID
@@ -233,6 +252,8 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     INNER JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
                     INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
                     INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
+                    LEFT JOIN PersonalTrainers opt ON s.OriginalPTID = opt.PTID
+                    LEFT JOIN Users u_opt ON opt.UserID = u_opt.UserID
                     WHERE s.SessionDate = ? AND s.IsDeleted = 0
                     ORDER BY s.StartTime ASC
                 """;
@@ -257,6 +278,11 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     dto.setPtId(rs.getInt("PTID"));
                     dto.setPtSpecialization(rs.getString("PTSpecialization"));
                     dto.setNote(rs.getString("Note"));
+                    dto.setOriginalPtName(rs.getString("OriginalPTName"));
+                    int origPtId = rs.getInt("OriginalPTID");
+                    if (!rs.wasNull()) {
+                        dto.setOriginalPtId(origPtId);
+                    }
                     list.add(dto);
                 }
             }
@@ -636,6 +662,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                          u.DisplayName AS PTName,
                          p.PackageName,
                          s.Note,
+                         s.CancellationReason,
                          req.RequestID AS RescheduleRequestID,
                          req.Status AS RescheduleStatus,
                          req.ProposedDate AS RescheduleProposedDate,
@@ -683,6 +710,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     dto.setPtName(rs.getString("PTName"));
                     dto.setPackageName(rs.getString("PackageName"));
                     dto.setNote(rs.getString("Note"));
+                    dto.setCancellationReason(rs.getString("CancellationReason"));
                     dto.setPtId(rs.getInt("PTID"));
                     dto.setMemberId(rs.getInt("MemberID"));
 
@@ -819,5 +847,77 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    @Override
+    public int massCancelSessions(LocalDate cancelDate, java.sql.Time startTime, java.sql.Time endTime, String reason, int cancelledByUserId, String updatedBy) {
+        String sql = """
+                UPDATE PTSchedules
+                SET SessionStatus = 'Cancelled',
+                    PTAttendanceResult = 'Pending',
+                    CancelledByUserID = ?,
+                    CancelledAt = GETDATE(),
+                    CancellationReason = ?,
+                    UpdatedBy = ?,
+                    UpdatedDate = GETDATE()
+                WHERE SessionDate = ?
+                  AND (? IS NULL OR StartTime = ?)
+                  AND (? IS NULL OR EndTime = ?)
+                  AND SessionStatus = 'Upcoming'
+                  AND IsDeleted = 0
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, cancelledByUserId);
+            ps.setString(2, reason);
+            ps.setString(3, updatedBy);
+            ps.setDate(4, java.sql.Date.valueOf(cancelDate));
+            if (startTime != null) {
+                ps.setTime(5, startTime);
+                ps.setTime(6, startTime);
+            } else {
+                ps.setNull(5, java.sql.Types.TIME);
+                ps.setNull(6, java.sql.Types.TIME);
+            }
+            if (endTime != null) {
+                ps.setTime(7, endTime);
+                ps.setTime(8, endTime);
+            } else {
+                ps.setNull(7, java.sql.Types.TIME);
+                ps.setNull(8, java.sql.Types.TIME);
+            }
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    @Override
+    public boolean isSlotMassCancelled(LocalDate date, java.sql.Time startTime, java.sql.Time endTime) {
+        String sql = """
+                SELECT COUNT(*) FROM PTSchedules
+                WHERE SessionDate = ?
+                  AND SessionStatus = 'Cancelled'
+                  AND IsDeleted = 0
+                  AND (
+                      UpdatedBy LIKE '%Hủy hàng loạt Tất cả các ca%'
+                      OR (StartTime = ? AND EndTime = ? AND UpdatedBy LIKE '%Hủy hàng loạt%')
+                  )
+                """;
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, java.sql.Date.valueOf(date));
+            ps.setTime(2, startTime);
+            ps.setTime(3, endTime);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
