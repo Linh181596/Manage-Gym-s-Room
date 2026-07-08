@@ -85,9 +85,14 @@
                             <a href="${pageContext.request.contextPath}/staff/maintenance-schedules" class="nav-item nav-link ${fn:contains(reqUri, '/staff/maintenance-schedules') ? 'active' : ''}"><i class="fa fa-tools me-2"></i>Lịch bảo trì</a>
                             <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/staff/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Đội ngũ HLV (PT)</a>
                             <a href="${pageContext.request.contextPath}/admin/schedule/manage" class="nav-item nav-link ${fn:contains(reqUri, '/admin/schedule/manage') || fn:contains(reqUri, '/admin/pt/schedule-setup') ? 'active' : ''}"><i class="fa fa-calendar-alt me-2"></i>Lớp học & Lịch trình</a>
-                            <a href="${pageContext.request.contextPath}/admin/equipment-reports" class="nav-item nav-link ${(fn:contains(reqUri, '/admin/equipment-reports') || fn:contains(reqUri, '/staff/equipment-issues') || param.from == 'report') ? 'active' : ''}"><i class="fa fa-chart-bar me-2"></i>Báo cáo thiết bị</a>
                             <a href="${pageContext.request.contextPath}/admin/payment-history" class="nav-item nav-link ${fn:contains(reqUri, '/admin/payment-history') ? 'active' : ''}"><i class="fa fa-history me-2"></i>Lịch sử thanh toán</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-chart-line me-2"></i>Báo cáo thống kê</a>
+                            <div class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle ${(fn:contains(reqUri, '/admin/membership-growth-report') || fn:contains(reqUri, '/admin/equipment-reports') || fn:contains(reqUri, '/staff/equipment-issues') || param.from == 'report') ? 'active' : ''}" data-bs-toggle="dropdown"><i class="fa fa-chart-line me-2"></i>Báo cáo</a>
+                                <div class="dropdown-menu bg-transparent border-0 ${(fn:contains(reqUri, '/admin/membership-growth-report') || fn:contains(reqUri, '/admin/equipment-reports') || fn:contains(reqUri, '/staff/equipment-issues') || param.from == 'report') ? 'show' : ''}">
+                                    <a href="${pageContext.request.contextPath}/admin/membership-growth-report" class="dropdown-item ${fn:contains(reqUri, '/admin/membership-growth-report') ? 'active' : ''}">Tăng trưởng thành viên</a>
+                                     <a href="${pageContext.request.contextPath}/admin/equipment-reports" class="dropdown-item ${(fn:contains(reqUri, '/admin/equipment-reports') || fn:contains(reqUri, '/staff/equipment-issues') || param.from == 'report') ? 'active' : ''}">Thiết bị</a>
+                                </div>
+                            </div>
                         </c:when>
                         <c:when test="${role == 'Staff'}">
                             <a href="${pageContext.request.contextPath}/staff/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/staff/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
