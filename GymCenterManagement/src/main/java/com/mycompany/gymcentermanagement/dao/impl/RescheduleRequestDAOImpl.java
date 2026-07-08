@@ -1,12 +1,14 @@
 package com.mycompany.gymcentermanagement.dao.impl;
 
 import com.mycompany.gymcentermanagement.dao.RescheduleRequestDAO;
+import com.mycompany.gymcentermanagement.dto.RescheduleRequestDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.RescheduleRequest;
 import com.mycompany.gymcentermanagement.utils.DBContext;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
 
@@ -35,10 +37,10 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
             ps.setInt(1, request.getScheduleId());
             ps.setInt(2, request.getSenderUserId());
             ps.setInt(3, request.getReceiverUserId());
-            ps.setDate(4, java.sql.Date.valueOf(request.getOriginalDate()));
+            ps.setDate(4, Date.valueOf(request.getOriginalDate()));
             ps.setTime(5, request.getOriginalStartTime());
             ps.setTime(6, request.getOriginalEndTime());
-            ps.setDate(7, java.sql.Date.valueOf(request.getProposedDate()));
+            ps.setDate(7, Date.valueOf(request.getProposedDate()));
             ps.setTime(8, request.getProposedStartTime());
             ps.setTime(9, request.getProposedEndTime());
             ps.setString(10, request.getReason());
@@ -121,7 +123,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
     }
 
     @Override
-    public boolean approveAndUpdateSchedule(int requestId, int scheduleId, java.time.LocalDate newDate, java.sql.Time newStart, java.sql.Time newEnd, int responderUserId) {
+    public boolean approveAndUpdateSchedule(int requestId, int scheduleId, LocalDate newDate, Time newStart, Time newEnd, int responderUserId) {
         String updateReqSql = "UPDATE RescheduleRequests SET Status = 'Approved', RespondedByUserID = ?, RespondedAt = SYSDATETIME(), UpdatedDate = SYSDATETIME() WHERE RequestID = ?";
         String updateSchedSql = "UPDATE PTSchedules SET SessionDate = ?, StartTime = ?, EndTime = ?, UpdatedDate = GETDATE(), UpdatedBy = 'System (Reschedule)' WHERE PTScheduleID = ?";
         
@@ -134,7 +136,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                 psReq.setInt(2, requestId);
                 psReq.executeUpdate();
                 
-                psSched.setDate(1, java.sql.Date.valueOf(newDate));
+                psSched.setDate(1, Date.valueOf(newDate));
                 psSched.setTime(2, newStart);
                 psSched.setTime(3, newEnd);
                 psSched.setInt(4, scheduleId);
@@ -159,7 +161,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, responderUserId);
             if (responseReason == null) {
-                ps.setNull(2, java.sql.Types.NVARCHAR);
+                ps.setNull(2, Types.NVARCHAR);
             } else {
                 ps.setString(2, responseReason);
             }
@@ -178,7 +180,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, escalatorUserId);
             if (escalationReason == null) {
-                ps.setNull(2, java.sql.Types.NVARCHAR);
+                ps.setNull(2, Types.NVARCHAR);
             } else {
                 ps.setString(2, escalationReason);
             }
@@ -188,5 +190,95 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public List<RescheduleRequestDetailDTO> getEscalatedRequests() {
+        List<RescheduleRequestDetailDTO> list = new ArrayList<>();
+        String sql = "SELECT "
+                + "  r.RequestID, "
+                + "  r.PTScheduleID, "
+                + "  r.SenderUserID, "
+                + "  r.ReceiverUserID, "
+                + "  r.OriginalDate, "
+                + "  r.OriginalStartTime, "
+                + "  r.OriginalEndTime, "
+                + "  r.ProposedDate, "
+                + "  r.ProposedStartTime, "
+                + "  r.ProposedEndTime, "
+                + "  r.Status, "
+                + "  r.Reason, "
+                + "  r.ResponseReason, "
+                + "  r.EscalationReason, "
+                + "  r.CreatedDate, "
+                + "  r.UpdatedDate, "
+                + "  u_send.DisplayName AS SenderName, "
+                + "  u_recv.DisplayName AS ReceiverName, "
+                + "  u_pt.DisplayName AS PTName, "
+                + "  u_memb.DisplayName AS MemberName, "
+                + "  p.PackageName "
+                + "FROM RescheduleRequests r "
+                + "INNER JOIN Users u_send ON r.SenderUserID = u_send.UserID "
+                + "INNER JOIN Users u_recv ON r.ReceiverUserID = u_recv.UserID "
+                + "INNER JOIN PTSchedules s ON r.PTScheduleID = s.PTScheduleID "
+                + "INNER JOIN PersonalTrainers pt ON s.PTID = pt.PTID "
+                + "INNER JOIN Users u_pt ON pt.UserID = u_pt.UserID "
+                + "INNER JOIN PTRegistrations reg ON s.PTRegistrationID = reg.PTRegistrationID "
+                + "INNER JOIN Members m ON reg.MemberID = m.MemberID "
+                + "INNER JOIN Users u_memb ON m.UserID = u_memb.UserID "
+                + "INNER JOIN PTServicePrices sp ON reg.PTServicePriceID = sp.PTServicePriceID "
+                + "INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID "
+                + "WHERE r.Status = 'Escalated' "
+                + "ORDER BY r.CreatedDate DESC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                RescheduleRequestDetailDTO dto = new RescheduleRequestDetailDTO();
+                dto.setRequestId(rs.getInt("RequestID"));
+                dto.setScheduleId(rs.getInt("PTScheduleID"));
+                dto.setSenderUserId(rs.getInt("SenderUserID"));
+                dto.setReceiverUserId(rs.getInt("ReceiverUserID"));
+                
+                Date origDateVal = rs.getDate("OriginalDate");
+                if (origDateVal != null) {
+                    dto.setOriginalDate(origDateVal.toLocalDate());
+                }
+                dto.setOriginalStartTime(rs.getTime("OriginalStartTime"));
+                dto.setOriginalEndTime(rs.getTime("OriginalEndTime"));
+                
+                Date propDateVal = rs.getDate("ProposedDate");
+                if (propDateVal != null) {
+                    dto.setProposedDate(propDateVal.toLocalDate());
+                }
+                dto.setProposedStartTime(rs.getTime("ProposedStartTime"));
+                dto.setProposedEndTime(rs.getTime("ProposedEndTime"));
+                
+                dto.setStatus(rs.getString("Status"));
+                dto.setReason(rs.getString("Reason"));
+                dto.setResponseReason(rs.getString("ResponseReason"));
+                dto.setEscalationReason(rs.getString("EscalationReason"));
+                
+                Timestamp createdVal = rs.getTimestamp("CreatedDate");
+                if (createdVal != null) {
+                    dto.setCreatedDate(createdVal.toLocalDateTime());
+                }
+                Timestamp updatedVal = rs.getTimestamp("UpdatedDate");
+                if (updatedVal != null) {
+                    dto.setUpdatedDate(updatedVal.toLocalDateTime());
+                }
+                
+                dto.setSenderName(rs.getString("SenderName"));
+                dto.setReceiverName(rs.getString("ReceiverName"));
+                dto.setPtName(rs.getString("PTName"));
+                dto.setMemberName(rs.getString("MemberName"));
+                dto.setPackageName(rs.getString("PackageName"));
+                
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

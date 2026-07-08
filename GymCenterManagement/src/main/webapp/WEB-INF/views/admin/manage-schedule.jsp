@@ -36,6 +36,14 @@
                 <i class="fa fa-clipboard-check me-2 text-primary"></i>Điểm danh ca dạy HLV
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold text-dark" id="reschedules-tab" data-bs-toggle="tab" data-bs-target="#reschedules" type="button" role="tab" aria-controls="reschedules" aria-selected="false">
+                <i class="fa fa-handshake me-2 text-primary"></i>Hỗ trợ đổi lịch
+                <c:if test="${not empty escalatedRequests && fn:length(escalatedRequests) > 0}">
+                    <span class="badge bg-danger ms-1">${fn:length(escalatedRequests)}</span>
+                </c:if>
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content" id="scheduleTabsContent">
@@ -271,8 +279,97 @@
                 </c:choose>
             </div>
         </div>
+
+        <!-- Tab 3: Escalated Reschedule Requests -->
+        <div class="tab-pane fade" id="reschedules" role="tabpanel" aria-labelledby="reschedules-tab">
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="text-dark fw-bold mb-3">
+                    <i class="fa fa-handshake text-primary me-2"></i>Danh sách yêu cầu hỗ trợ đổi lịch tập
+                </h5>
+
+                <c:choose>
+                    <c:when test="${empty escalatedRequests}">
+                        <div class="text-center py-5">
+                            <p class="text-muted">Hiện tại không có yêu cầu hỗ trợ đổi lịch nào cần xử lý.</p>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Thời gian gửi</th>
+                                        <th>Hội viên</th>
+                                        <th>Huấn luyện viên</th>
+                                        <th>Gói tập</th>
+                                        <th>Lịch gốc</th>
+                                        <th>Lịch đề xuất mới</th>
+                                        <th>Lý do đề xuất & hỗ trợ</th>
+                                        <th class="text-center" style="width: 220px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="r" items="${escalatedRequests}">
+                                        <tr>
+                                            <td class="fw-bold">#RQ-${r.requestId}</td>
+                                            <td><small class="fw-semibold text-secondary">${r.formattedCreatedDate}</small></td>
+                                            <td>${r.memberName}</td>
+                                            <td>${r.ptName}</td>
+                                            <td><span class="badge bg-info text-dark">${r.packageName}</span></td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    Ngày: ${r.formattedOriginalDate}<br>
+                                                    Giờ: ${r.formattedOriginalStartTime} - ${r.formattedOriginalEndTime}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <small class="text-danger fw-bold">
+                                                    Ngày: ${r.formattedProposedDate}<br>
+                                                    Giờ: ${r.formattedProposedStartTime} - ${r.formattedProposedEndTime}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div><span class="fw-semibold small text-secondary">Đề xuất:</span> <span class="fst-italic">"${r.reason}"</span></div>
+                                                <div class="mt-1"><span class="fw-semibold small text-warning">Yêu cầu hỗ trợ:</span> <strong class="text-dark fst-italic">"${r.escalationReason}"</strong></div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-2 justify-content-center">
+                                                    <!-- Nút Đồng ý đổi lịch -->
+                                                    <button type="button" class="btn btn-sm btn-success text-white btn-action-reschedule"
+                                                            data-request-id="${r.requestId}"
+                                                            data-action="approve"
+                                                            title="Đồng ý cập nhật lịch mới">
+                                                        <i class="fa fa-check me-1"></i> Duyệt đổi
+                                                    </button>
+                                                    <!-- Nút Từ chối hỗ trợ -->
+                                                    <button type="button" class="btn btn-sm btn-danger btn-action-reschedule"
+                                                            data-request-id="${r.requestId}"
+                                                            data-action="reject"
+                                                            title="Từ chối hỗ trợ và giữ lịch gốc">
+                                                        <i class="fa fa-times me-1"></i> Từ chối
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
     </div>
 </div>
+
+<%-- FORM ẨN ĐỂ XỬ LÝ HỖ TRỢ ĐỔI LỊCH --%>
+<form id="respondRescheduleForm" action="${pageContext.request.contextPath}/reschedule-request/respond" method="POST" style="display:none;">
+    <input type="hidden" name="requestId" id="rescheduleRequestId">
+    <input type="hidden" name="action" id="rescheduleAction">
+    <input type="hidden" name="responseReason" id="rescheduleResponseReason">
+    <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/admin/schedule/manage?activeTab=reschedules">
+</form>
 
 <%-- KHU VỰC CHỨA SCRIPT THÔNG BÁO --%>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -367,7 +464,66 @@
                 const triggerEl = new bootstrap.Tab(attendanceTabButton);
                 triggerEl.show();
             }
+        } else if (activeTab === 'reschedules') {
+            const reschedulesTabButton = document.getElementById('reschedules-tab');
+            if (reschedulesTabButton) {
+                const triggerEl = new bootstrap.Tab(reschedulesTabButton);
+                triggerEl.show();
+            }
         }
+
+        // Handle Admin/Staff Action on Reschedule Requests
+        const rescheduleButtons = document.querySelectorAll(".btn-action-reschedule");
+        rescheduleButtons.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                const requestId = btn.getAttribute("data-request-id");
+                const action = btn.getAttribute("data-action");
+                const actionText = action === "approve" ? "phê duyệt lịch mới" : "từ chối hỗ trợ";
+                const confirmColor = action === "approve" ? "#28a745" : "#dc3545";
+
+                if (action === "approve") {
+                    Swal.fire({
+                        title: 'Xác nhận duyệt đổi lịch?',
+                        text: 'Lịch học sẽ được cập nhật sang ngày giờ đề xuất mới.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Đồng ý',
+                        cancelButtonText: 'Hủy bỏ',
+                        confirmButtonColor: confirmColor,
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById("rescheduleRequestId").value = requestId;
+                            document.getElementById("rescheduleAction").value = action;
+                            document.getElementById("rescheduleResponseReason").value = "Admin/Staff phê duyệt hỗ trợ.";
+                            document.getElementById("respondRescheduleForm").submit();
+                        }
+                    });
+                } else {
+                    // Reject needs a reason
+                    Swal.fire({
+                        title: 'Lý do từ chối hỗ trợ?',
+                        input: 'text',
+                        inputPlaceholder: 'Nhập lý do từ chối hỗ trợ...',
+                        showCancelButton: true,
+                        confirmButtonText: 'Từ chối',
+                        cancelButtonText: 'Hủy bỏ',
+                        confirmButtonColor: confirmColor,
+                        inputValidator: (value) => {
+                            if (!value || value.trim() === "") {
+                                return 'Vui lòng nhập lý do từ chối!';
+                            }
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById("rescheduleRequestId").value = requestId;
+                            document.getElementById("rescheduleAction").value = action;
+                            document.getElementById("rescheduleResponseReason").value = result.value;
+                            document.getElementById("respondRescheduleForm").submit();
+                        }
+                    });
+                }
+            });
+        });
 
         // Cancel session click handler
         const cancelSessionButtons = document.querySelectorAll(".btn-cancel-session");

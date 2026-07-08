@@ -148,7 +148,7 @@
                                                      <button type="button" class="btn btn-sm btn-warning text-dark mt-3 w-100 fw-bold"
                                                              data-bs-toggle="modal"
                                                              data-bs-target="#viewRescheduleModal_${s.scheduleId}">
-                                                         <i class="fa fa-gavel me-1"></i> Đang khiếu nại (Staff/Admin)
+                                                         <i class="fa fa-balance-scale me-1"></i> Chờ Admin hỗ trợ
                                                      </button>
                                                  </c:when>
                                             </c:choose>
@@ -261,7 +261,7 @@
 
                             <c:if test="${not empty s.rescheduleEscalationReason}">
                                 <div class="mb-3 p-3 bg-light border-start border-3 border-warning rounded">
-                                    <div class="fw-semibold text-warning small">Lý do khiếu nại (Staff/Admin):</div>
+                                    <div class="fw-semibold text-warning small">Lý do yêu cầu hỗ trợ đổi lịch:</div>
                                     <div class="text-dark italic mt-1" style="font-style: italic;">
                                         "${s.rescheduleEscalationReason}"
                                     </div>
@@ -324,7 +324,7 @@
                             <h5 class="modal-title fw-bold">
                                 <i class="fa fa-bell me-1"></i> 
                                 <c:choose>
-                                    <c:when test="${s.rescheduleStatus == 'Escalated'}">Staff/Admin Xử lý khiếu nại đổi lịch</c:when>
+                                    <c:when test="${s.rescheduleStatus == 'Escalated'}">Staff/Admin Xử lý hỗ trợ đổi lịch</c:when>
                                     <c:otherwise>Xử lý yêu cầu đổi lịch tập</c:otherwise>
                                 </c:choose>
                             </h5>
@@ -371,19 +371,19 @@
                                 <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/member/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
 
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold text-dark">Ý kiến phản hồi / Lý do khiếu nại (nếu từ chối/khiếu nại)</label>
-                                    <textarea name="responseReason" class="form-control" rows="2" placeholder="Nhập ý kiến hoặc lý do từ chối/khiếu nại..."></textarea>
+                                    <label class="form-label fw-semibold text-dark">Ý kiến phản hồi / Lý do yêu cầu hỗ trợ (nếu từ chối/yêu cầu hỗ trợ)</label>
+                                    <textarea name="responseReason" class="form-control" rows="2" placeholder="Nhập ý kiến hoặc lý do từ chối/yêu cầu hỗ trợ..."></textarea>
                                 </div>
 
                                 <div class="modal-footer bg-light px-0 pb-0">
                                     <div class="d-flex justify-content-between align-items-center w-100">
                                         <c:choose>
                                             <c:when test="${s.rescheduleStatus == 'Escalated'}">
-                                                <span class="badge bg-warning text-dark"><i class="fa fa-gavel me-1"></i> Đang khiếu nại (Admin)</span>
+                                                <span class="badge bg-warning text-dark"><i class="fa fa-balance-scale me-1"></i> Chờ Admin hỗ trợ</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <button type="submit" name="action" value="escalate" class="btn btn-warning fw-bold text-dark">
-                                                    <i class="fa fa-gavel me-1"></i> Khiếu nại (Staff/Admin)
+                                                    <i class="fa fa-balance-scale me-1"></i> Yêu cầu hỗ trợ đổi lịch
                                                 </button>
                                             </c:otherwise>
                                         </c:choose>
@@ -456,6 +456,25 @@
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Validation for reschedule response form (Từ chối / Yêu cầu hỗ trợ)
+        document.querySelectorAll('form[action$="/reschedule-request/respond"]').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                const actionBtn = e.submitter;
+                if (actionBtn && (actionBtn.value === 'escalate' || actionBtn.value === 'reject')) {
+                    const textarea = form.querySelector('textarea[name="responseReason"]');
+                    if (textarea && textarea.value.trim() === '') {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Lưu ý!',
+                            text: 'Vui lòng nhập lý do phản hồi hoặc lý do yêu cầu hỗ trợ đổi lịch!',
+                            confirmButtonText: 'Đồng ý'
+                        });
+                    }
+                }
+            });
         });
     });
 

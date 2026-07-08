@@ -2,6 +2,7 @@ package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.dto.PTRegistrationDTO;
 import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
+import com.mycompany.gymcentermanagement.dto.RescheduleRequestDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
 import com.mycompany.gymcentermanagement.service.PTScheduleService;
@@ -12,6 +13,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.mycompany.gymcentermanagement.service.RescheduleRequestService;
+import com.mycompany.gymcentermanagement.service.impl.RescheduleRequestServiceImpl;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.List;
 public class ManageScheduleController extends HttpServlet {
     private final PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
     private final PTScheduleService ptScheduleService = new PTScheduleServiceImpl();
+    private final RescheduleRequestService rescheduleRequestService = new RescheduleRequestServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -28,6 +32,10 @@ public class ManageScheduleController extends HttpServlet {
             // 1. Get Pending registrations (Tab 1)
             List<PTRegistrationDTO> pendingRegistrations = ptRegistrationService.getPendingRegistrations();
             req.setAttribute("pendingRegistrations", pendingRegistrations);
+
+            // Escalated reschedule requests (Tab 3)
+            List<RescheduleRequestDetailDTO> escalatedRequests = rescheduleRequestService.getEscalatedRequests();
+            req.setAttribute("escalatedRequests", escalatedRequests);
 
             // 2. Get PT workout schedules for selected date (Tab 2)
             String selectedDateStr = req.getParameter("date");
