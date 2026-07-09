@@ -11,6 +11,7 @@
 package com.mycompany.gymcentermanagement.controller;
 
 import com.mycompany.gymcentermanagement.model.entity.ChatMessageModel;
+import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.ChatBotService;
 import com.mycompany.gymcentermanagement.service.impl.ChatBotServiceImpl;
 import com.mycompany.gymcentermanagement.utils.ChatBotConstant;
@@ -33,6 +34,12 @@ public class ChatBotController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        if (!isAllowedToUseChatBot(request)) {
+            writeForbiddenResponse(response);
+            return;
+        }
+        
         if ("/chatbot/history".equals(request.getServletPath())) {
             writeHistoryResponse(response, chatBotService.getChatHistory(request.getSession(true)));
             return;
@@ -44,6 +51,12 @@ public class ChatBotController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        if (!isAllowedToUseChatBot(request)) {
+            writeForbiddenResponse(response);
+            return;
+        }
+        
         String servletPath = request.getServletPath();
 
         if ("/chatbot/send".equals(servletPath)) {
@@ -68,6 +81,26 @@ public class ChatBotController extends HttpServlet {
     private void handleClearHistory(HttpServletRequest request, HttpServletResponse response) throws IOException {
         List<ChatMessageModel> history = chatBotService.clearChatHistory(request.getSession(true));
         writeHistoryResponse(response, history);
+    }
+    
+    private boolean isAllowedToUseChatBot(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        Object currentUser = session == null ? null : session.getAttribute("currentUser");
+
+        if (currentUser == null) {
+            return true;
+        }
+
+        if (currentUser instanceof User user) {
+            return user.getRole() == User.Role.Member;
+        }
+
+        return false;
+    }
+
+    private void writeForbiddenResponse(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        writeJson(response, "{\"thanhCong\":false,\"thongBao\":\"Bạn không có quyền sử dụng chatbot.\"}");
     }
 
     private void writeMessageResponse(HttpServletResponse response, ChatMessageModel botMessage) throws IOException {
