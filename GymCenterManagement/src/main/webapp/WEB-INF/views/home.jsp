@@ -884,6 +884,7 @@
             </div>
         </div>
     </footer>
+    <jsp:include page="common/chatbot.jsp" />
     <script>
         (function () {
             const form = document.getElementById("bmiForm");
