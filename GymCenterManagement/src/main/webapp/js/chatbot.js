@@ -28,18 +28,24 @@
         const chatForm = document.getElementById("chatBotForm");
         const input = document.getElementById("chatBotInput");
         const sendButton = document.getElementById("chatBotSend");
+        const chatHeader = chatWindow ? chatWindow.querySelector(".chatbot__header") : null;
 
         if (!toggleButton || !closeButton || !chatWindow || !messagesContainer || !chatForm || !input || !sendButton) {
             return;
         }
 
+        const positionStorageKey = "gymFAQChatBotPosition";
+        const dragDistance = 5;
         let historyLoaded = false;
         let loading = false;
         let typingElement = null;
+        let dragState = null;
+        let ignoreNextToggleClick = false;
 
         function openChat() {
             root.classList.add("is-open");
             chatWindow.setAttribute("aria-hidden", "false");
+            updateWindowPlacement();
             loadHistory();
             setTimeout(function () {
                 input.focus();
@@ -49,6 +55,144 @@
         function closeChat() {
             root.classList.remove("is-open");
             chatWindow.setAttribute("aria-hidden", "true");
+        }
+        
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function getViewportSize() {
+            return {
+                width: window.innerWidth || document.documentElement.clientWidth,
+                height: window.innerHeight || document.documentElement.clientHeight
+            };
+        }
+
+        function setChatPosition(left, top, shouldSave) {
+            const viewport = getViewportSize();
+            const rect = root.getBoundingClientRect();
+            const margin = 8;
+            const width = rect.width || 64;
+            const height = rect.height || 64;
+            const maxLeft = Math.max(margin, viewport.width - width - margin);
+            const maxTop = Math.max(margin, viewport.height - height - margin);
+            const nextLeft = clamp(left, margin, maxLeft);
+            const nextTop = clamp(top, margin, maxTop);
+
+            root.style.left = nextLeft + "px";
+            root.style.top = nextTop + "px";
+            root.style.right = "auto";
+            root.style.bottom = "auto";
+            root.classList.add("is-custom-position");
+            updateWindowPlacement();
+
+            if (shouldSave) {
+                saveChatPosition(nextLeft, nextTop);
+            }
+        }
+
+        function saveChatPosition(left, top) {
+            try {
+                localStorage.setItem(positionStorageKey, JSON.stringify({
+                    left: Math.round(left),
+                    top: Math.round(top)
+                }));
+            } catch (error) {
+                // Browser storage can be disabled; dragging should still work in the current page.
+            }
+        }
+
+        function restoreChatPosition() {
+            try {
+                const savedPosition = JSON.parse(localStorage.getItem(positionStorageKey) || "null");
+                if (!savedPosition || typeof savedPosition.left !== "number" || typeof savedPosition.top !== "number") {
+                    updateWindowPlacement();
+                    return;
+                }
+                setChatPosition(savedPosition.left, savedPosition.top, false);
+            } catch (error) {
+                updateWindowPlacement();
+            }
+        }
+
+        function updateWindowPlacement() {
+            const viewport = getViewportSize();
+            const rootRect = root.getBoundingClientRect();
+            const windowWidth = Math.min(380, viewport.width - 32);
+            const windowHeight = Math.min(560, viewport.height - 120);
+            const windowOffset = 82;
+            const edgeMargin = 16;
+            const spaceAbove = rootRect.top - windowOffset - edgeMargin;
+            const spaceBelow = viewport.height - rootRect.bottom - windowOffset - edgeMargin;
+            const spaceLeft = rootRect.right - edgeMargin;
+            const spaceRight = viewport.width - rootRect.left - edgeMargin;
+            const shouldOpenBelow = spaceAbove < windowHeight && spaceBelow > spaceAbove;
+            const shouldAlignLeft = spaceLeft < windowWidth && spaceRight > spaceLeft;
+
+            root.classList.toggle("is-window-below", shouldOpenBelow);
+            root.classList.toggle("is-window-left", shouldAlignLeft);
+        }
+
+        function beginDrag(event, fromToggle) {
+            if (event.button !== undefined && event.button !== 0) {
+                return;
+            }
+            if (!fromToggle && event.target.closest("button, textarea, input, a")) {
+                return;
+            }
+
+            const rect = root.getBoundingClientRect();
+            dragState = {
+                startX: event.clientX,
+                startY: event.clientY,
+                startLeft: rect.left,
+                startTop: rect.top,
+                moved: false,
+                fromToggle: fromToggle
+            };
+
+            root.classList.add("is-dragging");
+            document.addEventListener("pointermove", moveDrag);
+            document.addEventListener("pointerup", endDrag);
+            document.addEventListener("pointercancel", endDrag);
+        }
+
+        function moveDrag(event) {
+            if (!dragState) {
+                return;
+            }
+
+            const deltaX = event.clientX - dragState.startX;
+            const deltaY = event.clientY - dragState.startY;
+            if (!dragState.moved && Math.hypot(deltaX, deltaY) > dragDistance) {
+                dragState.moved = true;
+            }
+
+            if (dragState.moved) {
+                event.preventDefault();
+                setChatPosition(dragState.startLeft + deltaX, dragState.startTop + deltaY, false);
+            }
+        }
+
+        function endDrag() {
+            if (!dragState) {
+                return;
+            }
+
+            const endedState = dragState;
+            const rect = root.getBoundingClientRect();
+            dragState = null;
+            root.classList.remove("is-dragging");
+            document.removeEventListener("pointermove", moveDrag);
+            document.removeEventListener("pointerup", endDrag);
+            document.removeEventListener("pointercancel", endDrag);
+
+            if (endedState.moved) {
+                saveChatPosition(rect.left, rect.top);
+                if (endedState.fromToggle) {
+                    ignoreNextToggleClick = true;
+                }
+            }
         }
 
         function scrollToBottom() {
@@ -290,13 +434,28 @@
         }
 
         toggleButton.addEventListener("click", function () {
+            if (ignoreNextToggleClick) {
+                ignoreNextToggleClick = false;
+                return;
+            }
+            
             if (root.classList.contains("is-open")) {
                 closeChat();
             } else {
                 openChat();
             }
         });
+        
+        toggleButton.addEventListener("pointerdown", function (event) {
+            beginDrag(event, true);
+        });
 
+        if (chatHeader) {
+            chatHeader.addEventListener("pointerdown", function (event) {
+                beginDrag(event, false);
+            });
+        }
+        
         closeButton.addEventListener("click", closeChat);
 
         if (clearButton) {
@@ -316,5 +475,16 @@
         });
 
         input.addEventListener("input", adjustInputHeight);
+        
+        window.addEventListener("resize", function () {
+            if (root.classList.contains("is-custom-position")) {
+                const rect = root.getBoundingClientRect();
+                setChatPosition(rect.left, rect.top, true);
+                return;
+            }
+            updateWindowPlacement();
+        });
+
+        restoreChatPosition();
     });
 })();
