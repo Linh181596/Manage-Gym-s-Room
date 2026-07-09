@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : AdminDashboardController.java
  * @description   : Controller tải dữ liệu tổng quan vận hành cho màn hình bảng điều khiển quản trị.
- * @author        : Duongnd
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-25
  * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
@@ -10,6 +10,7 @@
 package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.dto.AdminDashboardData;
+import com.mycompany.gymcentermanagement.dto.RevenueChartFilter;
 import com.mycompany.gymcentermanagement.service.DashboardService;
 import com.mycompany.gymcentermanagement.service.impl.DashboardServiceImpl;
 import jakarta.servlet.ServletException;
@@ -32,7 +33,12 @@ public class AdminDashboardController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            AdminDashboardData dashboardData = dashboardService.getAdminDashboardData();
+            RevenueChartFilter revenueFilter = RevenueChartFilter.fromRequest(
+                    request.getParameter("revenueRange"),
+                    request.getParameter("fromDate"),
+                    request.getParameter("toDate"),
+                    request.getParameter("revenueType"));
+            AdminDashboardData dashboardData = dashboardService.getAdminDashboardData(revenueFilter);
             request.setAttribute("dashboardData", dashboardData);
         } catch (SQLException ex) {
             request.setAttribute("dashboardLoadError", "Không thể tải dữ liệu bảng điều khiển. Vui lòng thử lại.");

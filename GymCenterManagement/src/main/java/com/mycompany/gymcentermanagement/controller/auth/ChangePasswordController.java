@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : ChangePasswordController.java
  * @description   : Controller xử lý UC-04 đổi mật khẩu, xác thực mật khẩu hiện tại, cập nhật mật khẩu mới và thu hồi phiên/token cũ.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

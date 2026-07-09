@@ -8,6 +8,7 @@ import com.mycompany.gymcentermanagement.utils.DBContext;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -237,7 +238,8 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                         CreatedDate,
                         UpdatedBy,
                         UpdatedDate,
-                        IsDeleted
+                        IsDeleted,
+                        PurchasedSessions
                     )
                     VALUES (
                         ?, ?, ?, ?, ?, ?,
@@ -250,7 +252,8 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                         SYSDATETIME(),
                         NULL,
                         NULL,
-                        0
+                        0,
+                        ?
                     )
                 """;
 
@@ -280,6 +283,7 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
             ps.setBigDecimal(6, totalAmount);
             ps.setString(7, registration.getNote());
             ps.setString(8, createdBy);
+            ps.setInt(9, registration.getPurchasedSessions());
 
             return ps.executeUpdate() > 0;
 
@@ -487,6 +491,8 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                         UpdatedBy = ?,
                         UpdatedDate = SYSDATETIME()
                     WHERE PTRegistrationID = ?
+                      AND Status = 'Pending'
+                      AND PaymentStatus = 'Unpaid'
                       AND IsDeleted = 0
                 """;
 
@@ -519,7 +525,11 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            pkg.PackageName, 
                            pkg.NumberOfSessions, 
                            r.PreferredStartDate, 
-                           r.TotalAmount
+                           r.TotalAmount,
+                           r.PurchasedSessions,
+                           r.PaymentStatus,
+                           pt.PTID,
+                           r.MemberID
                     FROM PTRegistrations r
                     INNER JOIN Members m ON r.MemberID = m.MemberID
                     INNER JOIN Users u ON m.UserID = u.UserID
@@ -542,6 +552,10 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                 dto.setPtDisplayName(rs.getString("PTDisplayName"));
                 dto.setPackageName(rs.getString("PackageName"));
                 dto.setNumberOfSessions(rs.getInt("NumberOfSessions"));
+                dto.setPurchasedSessions(rs.getInt("PurchasedSessions"));
+                dto.setPaymentStatus(rs.getString("PaymentStatus"));
+                dto.setPtId(rs.getInt("PTID"));
+                dto.setMemberId(rs.getInt("MemberID"));
 
                 if (rs.getDate("PreferredStartDate") != null) {
                     dto.setPreferredStartDate(rs.getDate("PreferredStartDate").toLocalDate());
@@ -554,9 +568,7 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
             e.printStackTrace();
         }
         return list;
-    }
-
-    @Override
+    }    @Override
     public PTRegistrationDTO getRegistrationById(int regId) {
         String sql = """
                     SELECT r.PTRegistrationID, 
@@ -572,10 +584,12 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.Note,
                            pt.Status AS PTStatus,
                            CASE 
-                               WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
-                               ELSE r.Status
+                                WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                                ELSE r.Status
                            END AS Status,
-                           r.EndDate
+                           r.PaymentStatus,
+                           r.EndDate,
+                           r.PurchasedSessions
                     FROM PTRegistrations r
                     INNER JOIN Members m ON r.MemberID = m.MemberID
                     INNER JOIN Users u ON m.UserID = u.UserID
@@ -608,6 +622,8 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                     dto.setNote(rs.getString("Note"));
                     dto.setPtStatus(rs.getString("PTStatus"));
                     dto.setStatus(rs.getString("Status"));
+                    dto.setPaymentStatus(rs.getString("PaymentStatus"));
+                    dto.setPurchasedSessions(rs.getInt("PurchasedSessions"));
                     if (rs.getDate("EndDate") != null) {
                         dto.setEndDate(rs.getDate("EndDate").toLocalDate());
                     }
@@ -770,14 +786,15 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.PreferredStartDate, 
                            r.TotalAmount,
                            CASE 
-                               WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
-                               ELSE r.Status
-                           END AS Status,
+                                WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                                ELSE r.Status
+                            END AS Status,
                            r.PaymentStatus,
                            r.Note,
                            r.ProcessedAt,
                            u_proc.DisplayName AS ProcessedByUserName,
-                           r.EndDate
+                           r.EndDate,
+                           r.PurchasedSessions
                     FROM PTRegistrations r
                     INNER JOIN Members m ON r.MemberID = m.MemberID
                     INNER JOIN Users u ON m.UserID = u.UserID
@@ -805,6 +822,7 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                     dto.setPtDisplayName(rs.getString("PTDisplayName"));
                     dto.setPackageName(rs.getString("PackageName"));
                     dto.setNumberOfSessions(rs.getInt("NumberOfSessions"));
+                    dto.setPurchasedSessions(rs.getInt("PurchasedSessions"));
                     if (rs.getDate("PreferredStartDate") != null) {
                         dto.setPreferredStartDate(rs.getDate("PreferredStartDate").toLocalDate());
                     }
@@ -854,5 +872,165 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getActivePaidRegistrationsWithoutScheduleByPT(int ptId) {
+        List<PTRegistrationDTO> list = new ArrayList<>();
+        String sql = """
+                    SELECT r.PTRegistrationID, 
+                           u.DisplayName AS MemberName, 
+                           u.Phone AS MemberPhone,
+                           COALESCE(pt.DisplayName, pt.FullName) AS PTDisplayName, 
+                           pkg.PackageName, 
+                           pkg.NumberOfSessions, 
+                           r.PreferredStartDate, 
+                           r.TotalAmount,
+                           r.PurchasedSessions,
+                           r.PaymentStatus,
+                           pt.PTID,
+                           r.MemberID
+                    FROM PTRegistrations r
+                    INNER JOIN Members m ON r.MemberID = m.MemberID
+                    INNER JOIN Users u ON m.UserID = u.UserID
+                    INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PersonalTrainers pt ON sp.PTID = pt.PTID
+                    INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE r.Status = 'Active' 
+                      AND r.PaymentStatus = 'Paid' 
+                      AND sp.PTID = ? 
+                      AND r.IsDeleted = 0
+                      AND NOT EXISTS (
+                          SELECT 1 FROM PTSchedules s 
+                          WHERE s.PTRegistrationID = r.PTRegistrationID 
+                            AND s.IsDeleted = 0
+                      )
+                    ORDER BY r.CreatedDate ASC
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTRegistrationDTO dto = new PTRegistrationDTO();
+                    dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setMemberPhone(rs.getString("MemberPhone"));
+                    dto.setPtDisplayName(rs.getString("PTDisplayName"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    dto.setNumberOfSessions(rs.getInt("NumberOfSessions"));
+                    dto.setPurchasedSessions(rs.getInt("PurchasedSessions"));
+                    dto.setPaymentStatus(rs.getString("PaymentStatus"));
+                    dto.setPtId(rs.getInt("PTID"));
+                    dto.setMemberId(rs.getInt("MemberID"));
+
+                    if (rs.getDate("PreferredStartDate") != null) {
+                        dto.setPreferredStartDate(rs.getDate("PreferredStartDate").toLocalDate());
+                    }
+
+                    dto.setTotalAmount(rs.getDouble("TotalAmount"));
+                    list.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    @Override
+    public int countSchedulesByRegistration(int regId) {
+        String sql = "SELECT COUNT(*) FROM PTSchedules WHERE PTRegistrationID = ? AND IsDeleted = 0";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, regId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public boolean updateActualDates(int regId, LocalDate startDate, LocalDate endDate) {
+        String sql = "UPDATE PTRegistrations SET StartDate = ?, EndDate = ? WHERE PTRegistrationID = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, java.sql.Date.valueOf(startDate));
+            ps.setDate(2, java.sql.Date.valueOf(endDate));
+            ps.setInt(3, regId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public List<PTRegistrationDTO> getPTRegistrationsWithProgress(int ptId) {
+        List<PTRegistrationDTO> list = new ArrayList<>();
+        String sql = """
+                    SELECT r.PTRegistrationID, 
+                           u.DisplayName AS MemberName, 
+                           u.Phone AS MemberPhone,
+                           pkg.PackageName, 
+                           r.PurchasedSessions,
+                           r.StartDate, 
+                           r.EndDate,
+                           (SELECT COUNT(*) FROM PTSchedules s WHERE s.PTRegistrationID = r.PTRegistrationID AND s.SessionStatus = 'Upcoming' AND s.IsDeleted = 0) AS UpcomingCount,
+                           (SELECT COUNT(*) FROM PTSchedules s WHERE s.PTRegistrationID = r.PTRegistrationID AND s.SessionStatus = 'Completed' AND s.IsDeleted = 0) AS CompletedCount,
+                           (SELECT COUNT(*) FROM PTSchedules s WHERE s.PTRegistrationID = r.PTRegistrationID AND s.SessionStatus = 'Cancelled' AND s.IsDeleted = 0) AS CancelledCount
+                    FROM PTRegistrations r
+                    INNER JOIN Members m ON r.MemberID = m.MemberID
+                    INNER JOIN Users u ON m.UserID = u.UserID
+                    INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
+                    INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
+                    WHERE sp.PTID = ? 
+                      AND r.Status = 'Active' 
+                      AND r.PaymentStatus = 'Paid'
+                      AND r.IsDeleted = 0
+                      AND EXISTS (
+                          SELECT 1 FROM PTSchedules s 
+                          WHERE s.PTRegistrationID = r.PTRegistrationID 
+                            AND s.IsDeleted = 0
+                      )
+                    ORDER BY r.CreatedDate DESC
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PTRegistrationDTO dto = new PTRegistrationDTO();
+                    dto.setPtRegistrationId(rs.getInt("PTRegistrationID"));
+                    dto.setMemberName(rs.getString("MemberName"));
+                    dto.setMemberPhone(rs.getString("MemberPhone"));
+                    dto.setPackageName(rs.getString("PackageName"));
+                    dto.setPurchasedSessions(rs.getInt("PurchasedSessions"));
+                    
+                    if (rs.getDate("StartDate") != null) {
+                        dto.setStartDate(rs.getDate("StartDate").toLocalDate());
+                    }
+                    if (rs.getDate("EndDate") != null) {
+                        dto.setEndDate(rs.getDate("EndDate").toLocalDate());
+                    }
+                    
+                    dto.setUpcomingCount(rs.getInt("UpcomingCount"));
+                    dto.setCompletedCount(rs.getInt("CompletedCount"));
+                    dto.setCancelledCount(rs.getInt("CancelledCount"));
+                    
+                    list.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

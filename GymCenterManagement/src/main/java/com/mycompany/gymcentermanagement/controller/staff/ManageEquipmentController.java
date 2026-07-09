@@ -278,13 +278,6 @@ public class ManageEquipmentController extends HttpServlet {
         }
     }
 
-    private int normalizePageSize(int pageSize) {
-        return switch (pageSize) {
-            case 5, 10, 20, 50 -> pageSize;
-            default -> DEFAULT_PAGE_SIZE;
-        };
-    }
-
     private String trim(String value) {
         return value == null ? null : value.trim();
     }

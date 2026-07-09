@@ -30,72 +30,104 @@ public class PTAttendanceController extends HttpServlet {
 
         String scheduleIdStr = request.getParameter("scheduleId");
         String status = request.getParameter("status"); // "Attended", "Absent", or "Pending"
+        String referer = request.getHeader("Referer");
+        String redirectUrl = referer != null && !referer.isEmpty() ? referer : request.getContextPath() + "/admin/schedule/manage";
 
-        if (scheduleIdStr != null && !scheduleIdStr.isEmpty() && status != null && !status.isEmpty()) {
-            try {
-                int scheduleId = Integer.parseInt(scheduleIdStr);
-                if ("Attended".equals(status) || "Absent".equals(status) || "Pending".equals(status)) {
-                    // Check if session is in the future
-                    com.mycompany.gymcentermanagement.model.entity.PTSchedule schedule = ptScheduleService.getScheduleById(scheduleId);
-                    if (schedule != null) {
-                        java.time.LocalDate today = java.time.LocalDate.now();
-                        java.time.LocalTime nowTime = java.time.LocalTime.now();
-                        java.time.LocalDate sessionDate = schedule.getSessionDate();
-                        java.time.LocalTime sessionStartTime = schedule.getStartTime().toLocalTime();
-                        
-                        boolean isInFuture = sessionDate.isAfter(today) || 
-                            (sessionDate.isEqual(today) && sessionStartTime.isAfter(nowTime));
-                        
-                        if (isInFuture && ("Attended".equals(status) || "Absent".equals(status))) {
-                            if (session != null) {
-                                session.setAttribute("errorMessage", "Không thể điểm danh cho ca dạy trong tương lai.");
-                            }
-                            String referer = request.getHeader("Referer");
-                            response.sendRedirect(referer != null && !referer.isEmpty() ? referer : request.getContextPath() + "/admin/schedule/manage");
-                            return;
-                        }
+        if (scheduleIdStr == null || scheduleIdStr.isEmpty() || status == null || status.isEmpty()) {
+            if (session != null) {
+                session.setAttribute("errorMessage", "Yêu cầu không hợp lệ.");
+            }
+            response.sendRedirect(redirectUrl);
+            return;
+        }
 
-                        boolean isInPast = sessionDate.isBefore(today);
-                        if (isInPast) {
-                            if (session != null) {
-                                session.setAttribute("errorMessage", "Không thể chỉnh sửa điểm danh của các ca dạy trong quá khứ.");
-                            }
-                            String referer = request.getHeader("Referer");
-                            response.sendRedirect(referer != null && !referer.isEmpty() ? referer : request.getContextPath() + "/admin/schedule/manage");
-                            return;
-                        }
-                    }
+        if (!"Attended".equals(status) && !"Absent".equals(status) && !"Pending".equals(status)) {
+            if (session != null) {
+                session.setAttribute("errorMessage", "Trạng thái điểm danh không hợp lệ.");
+            }
+            response.sendRedirect(redirectUrl);
+            return;
+        }
 
-                    // Update attendance status
-                    // If marked Attended or Absent, we can mark the session as Completed
-                    // If marked Pending, we mark the session back to Upcoming
-                    String sessionStatus = "Completed";
-                    if ("Pending".equals(status)) {
-                        sessionStatus = "Upcoming";
-                    }
-                    
-                    boolean success = ptScheduleService.updateAttendance(scheduleId, status, sessionStatus);
-                    if (success) {
-                        if (session != null) {
-                            session.setAttribute("successMessage", "Cập nhật điểm danh ca dạy thành công!");
-                        }
-                    } else {
-                        if (session != null) {
-                            session.setAttribute("errorMessage", "Không thể cập nhật trạng thái điểm danh.");
-                        }
-                    }
+        try {
+            int scheduleId = Integer.parseInt(scheduleIdStr);
+            com.mycompany.gymcentermanagement.model.entity.PTSchedule schedule = ptScheduleService.getScheduleById(scheduleId);
+            
+            if (schedule == null) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Ca dạy không tồn tại.");
                 }
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
+                response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            // Check 1: Không được là lịch tương lai
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalTime nowTime = java.time.LocalTime.now();
+            java.time.LocalDate sessionDate = schedule.getSessionDate();
+            java.time.LocalTime sessionStartTime = schedule.getStartTime().toLocalTime();
+            
+            boolean isInFuture = sessionDate.isAfter(today) || 
+                (sessionDate.isEqual(today) && sessionStartTime.isAfter(nowTime));
+            
+            if (isInFuture) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Không thể điểm danh cho ca dạy trong tương lai.");
+                }
+                response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            // Check 2: Không được là ca học đã hủy
+            if ("Cancelled".equalsIgnoreCase(schedule.getSessionStatus())) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Không thể điểm danh cho ca dạy đã bị hủy.");
+                }
+                response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            // Check 3: Chưa bị khóa xử lý (Gói đăng ký PT phải còn hoạt động/Active)
+            com.mycompany.gymcentermanagement.service.PTRegistrationService ptRegistrationService = 
+                new com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl();
+            com.mycompany.gymcentermanagement.dto.PTRegistrationDTO registration = 
+                ptRegistrationService.getRegistrationById(schedule.getRegistrationId());
+                
+            if (registration == null || !"Active".equalsIgnoreCase(registration.getStatus())) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Không thể điểm danh do gói tập của hội viên đã bị khóa xử lý hoặc đã kết thúc.");
+                }
+                response.sendRedirect(redirectUrl);
+                return;
+            }
+
+            // Xác định trạng thái buổi tập (SessionStatus)
+            String sessionStatus = "Completed";
+            if ("Pending".equals(status)) {
+                sessionStatus = "Upcoming";
+            }
+
+            // Cập nhật điểm danh kèm audit log (UpdatedBy)
+            String actorName = currentUser.getFullName();
+            boolean success = ptScheduleService.updateAttendance(scheduleId, status, sessionStatus, actorName);
+            
+            if (success) {
+                if (session != null) {
+                    session.setAttribute("successMessage", "Cập nhật kết quả buổi học thành công!");
+                }
+            } else {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Lỗi hệ thống khi cập nhật điểm danh.");
+                }
+            }
+
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            if (session != null) {
+                session.setAttribute("errorMessage", "Mã ca dạy không hợp lệ.");
             }
         }
 
-        // Redirect back to the calling page
-        String referer = request.getHeader("Referer");
-        if (referer != null && !referer.isEmpty()) {
-            response.sendRedirect(referer);
-        } else {
-            response.sendRedirect(request.getContextPath() + "/admin/schedule/manage");
-        }
+        response.sendRedirect(redirectUrl);
     }
 }

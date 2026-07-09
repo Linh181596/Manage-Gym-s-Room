@@ -17,7 +17,6 @@ import com.mycompany.gymcentermanagement.utils.DBContext;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,9 +125,15 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
                 ORDER BY r.RoleLevel DESC
                 """;
         String notiSql = """
-                SELECT COUNT(*) FROM Notifications 
-                WHERE IsDeleted = 0 
-                  AND (TargetRole = ? OR TargetRole = 'All')
+                SELECT COUNT(DISTINCT n.NotificationID)
+                FROM Notifications n
+                LEFT JOIN NotificationRecipients nr
+                    ON nr.NotificationID = n.NotificationID AND nr.UserID = ?
+                WHERE n.IsDeleted = 0
+                  AND n.PublishDate <= SYSDATETIME()
+                  AND (n.ExpiryDate IS NULL OR n.ExpiryDate > SYSDATETIME())
+                  AND (n.TargetRole = ? OR n.TargetRole = 'All' OR nr.UserID IS NOT NULL)
+                  AND (nr.UserID IS NULL OR nr.IsRead = 0)
                 """;
         Connection conn = null;
         PreparedStatement psRole = null;
@@ -146,7 +151,8 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
             }
 
             psNoti = conn.prepareStatement(notiSql);
-            psNoti.setString(1, role);
+            psNoti.setInt(1, userId);
+            psNoti.setString(2, role);
             rsNoti = psNoti.executeQuery();
             return rsNoti.next() ? rsNoti.getInt(1) : 0;
         } finally {

@@ -184,8 +184,8 @@ public class ManageMemberController extends HttpServlet {
             try {
                 int targetUserId = Integer.parseInt(request.getParameter("userId"));
                 String title = "Nhắc gia hạn gói tập";
-                String content = "Hội viên #" + targetUserId + " vui lòng kiểm tra và gia hạn gói tập nếu sắp hết hạn.";
-                gymDAO.createNotification(currentUser.getUserId(), title, content, "Member");
+                String content = "Hội viên vui lòng kiểm tra và gia hạn gói tập nếu sắp hết hạn.";
+                gymDAO.createNotificationForUser(currentUser.getUserId(), title, content, targetUserId);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }

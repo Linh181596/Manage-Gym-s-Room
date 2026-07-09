@@ -20,7 +20,11 @@ public class CancelPTSessionController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
+
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         HttpSession session = request.getSession(false);
         User currentUser = (session != null) ? (User) session.getAttribute("currentUser") : null;
         
@@ -48,7 +52,7 @@ public class CancelPTSessionController extends HttpServlet {
             
             // Perform cancel session in DB
             String updatedBy = currentUser.getFullName() != null ? currentUser.getFullName() : currentUser.getEmail();
-            boolean success = ptScheduleService.cancelSession(scheduleId, cancelReason.trim(), updatedBy);
+            boolean success = ptScheduleService.cancelSession(scheduleId, cancelReason.trim(), currentUser.getUserId(), updatedBy);
             
             if (success) {
                 if (session != null) {

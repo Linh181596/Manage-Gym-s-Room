@@ -62,7 +62,7 @@ public class LogoutController extends HttpServlet {
         
         // BƯỚC 3: Điều hướng (Redirect) người dùng về trang Đăng nhập qua Endpoint /login
         // Đính kèm tham số toast bằng tiếng Việt để giao diện Login hiển thị thông báo trực quan
-        response.sendRedirect(request.getContextPath() + "/login?toast=logout_success");
+        response.sendRedirect(request.getContextPath() + "/home");
     }
 }
 

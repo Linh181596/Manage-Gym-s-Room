@@ -79,6 +79,34 @@
         .home-nav a:focus {
             color: var(--home-primary);
         }
+        
+        .home-user-pill {
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--home-ink);
+            background: #ffffff;
+            border: 1px solid var(--home-line);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 700;
+            max-width: 220px;
+        }
+        
+        .home-user-pill img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex: 0 0 auto;
+        }
+        
+        .home-user-pill span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
         .hero-section {
             min-height: calc(100vh - 78px);
@@ -194,7 +222,9 @@
         .feature-card,
         .trainer-card,
         .package-card,
-        .path-card {
+        .path-card,
+        .bmi-card,
+        .blog-card {
             height: 100%;
             border: 1px solid var(--home-line);
             border-radius: 8px;
@@ -205,7 +235,8 @@
         .feature-card:hover,
         .trainer-card:hover,
         .package-card:hover,
-        .path-card:hover {
+        .path-card:hover,
+        .blog-card:hover {
             transform: translateY(-4px);
             border-color: rgba(0, 156, 255, 0.35);
             box-shadow: 0 16px 34px rgba(25, 28, 36, 0.1);
@@ -287,7 +318,77 @@
             border-top: 1px solid var(--home-line);
             border-bottom: 1px solid var(--home-line);
         }
-
+        
+        .bmi-card {
+            box-shadow: 0 16px 34px rgba(25, 28, 36, 0.08);
+        }
+        
+        .bmi-card label {
+            color: var(--home-ink);
+            font-weight: 700;
+        }
+        
+        .bmi-card .form-control {
+            min-height: 48px;
+            border-radius: 8px;
+            border-color: var(--home-line);
+        }
+        
+        .bmi-result {
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: rgba(0, 156, 255, 0.08);
+            border: 1px solid rgba(0, 156, 255, 0.18);
+            border-radius: 8px;
+            padding: 22px;
+        }
+        
+        .bmi-result strong {
+            color: var(--home-primary);
+            font-size: 3rem;
+            line-height: 1;
+            font-weight: 800;
+        }
+        
+        .bmi-range {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .bmi-range-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: #ffffff;
+            border: 1px solid var(--home-line);
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+        
+        .bmi-range-row strong {
+            color: var(--home-ink);
+        }
+        
+        .blog-card {
+            overflow: hidden;
+        }
+        
+        .blog-card img {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            background: var(--home-soft);
+        }
+        
+        .blog-meta {
+            color: var(--home-muted);
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+        
         .join-band {
             color: #ffffff;
             background:
@@ -360,17 +461,35 @@
                     <a href="#gioi-thieu">Giới thiệu</a>
                     <a href="${pageContext.request.contextPath}/pt/list">Danh sách PT</a>
                     <a href="#goi-tap">Gói tập</a>
+                    <a href="#bmi">Tính BMI</a>
+                    <a href="#blog">Blog</a>
                     <a href="#tien-ich">Tiện ích</a>
                     <a href="#lien-he">Liên hệ</a>
                 </div>
 
                 <div class="home-actions d-flex align-items-center gap-2 flex-wrap justify-content-end">
-                    <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-primary">
-                        <i class="fa fa-sign-in-alt me-1"></i>Đăng nhập
-                    </a>
-                    <a href="${pageContext.request.contextPath}/register" class="btn btn-primary">
-                        <i class="fa fa-user-plus me-1"></i>Đăng ký thành viên
-                    </a>
+                    <c:choose>
+                        <c:when test="${not empty homeUser}">
+                            <span class="home-user-pill">
+                                <img src="${pageContext.request.contextPath}/${not empty homeUser.avatarPath ? homeUser.avatarPath : 'img/user.jpg'}" alt="${homeUser.fullName}">
+                                <span>${homeUser.fullName}</span>
+                            </span>
+                            <a href="${pageContext.request.contextPath}${dashboardPath}" class="btn btn-primary">
+                                <i class="fa fa-tachometer-alt me-1"></i>Bảng điều khiển
+                            </a>
+                            <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger">
+                                <i class="fa fa-sign-out-alt me-1"></i>Đăng xuất
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-primary">
+                                <i class="fa fa-sign-in-alt me-1"></i>Đăng nhập
+                            </a>
+                            <a href="${pageContext.request.contextPath}/register" class="btn btn-primary">
+                                <i class="fa fa-user-plus me-1"></i>Đăng ký thành viên
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </nav>
@@ -388,9 +507,18 @@
                                 Khám phá đội ngũ huấn luyện viên cá nhân, lựa chọn gói tập phù hợp và bắt đầu hành trình rèn luyện với trải nghiệm rõ ràng, nhanh gọn, dễ theo dõi.
                             </p>
                             <div class="d-flex flex-wrap gap-3">
-                                <a href="${pageContext.request.contextPath}/register" class="btn btn-primary btn-lg px-4">
-                                    Bắt đầu đăng ký
-                                </a>
+                                <c:choose>
+                                    <c:when test="${not empty homeUser}">
+                                        <a href="${pageContext.request.contextPath}${dashboardPath}" class="btn btn-primary btn-lg px-4">
+                                            Vào bảng điều khiển
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <a href="${pageContext.request.contextPath}/register" class="btn btn-primary btn-lg px-4">
+                                            Bắt đầu đăng ký
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
                                 <a href="#goi-tap" class="btn btn-outline-dark btn-lg px-4">
                                     Xem gói tập
                                 </a>
@@ -545,9 +673,18 @@
                                                 <li><i class="fa fa-check"></i><span>Theo dõi tiến độ định kỳ</span></li>
                                             </c:if>
                                         </ul>
-                                        <a href="${pageContext.request.contextPath}/register" class="btn ${pkg.durationMonths == 3 ? 'btn-primary' : 'btn-outline-primary'} mt-auto w-100 py-2">
-                                            Đăng ký ngay
-                                        </a>
+                                        <c:choose>
+                                            <c:when test="${not empty homeUser}">
+                                                <a href="${pageContext.request.contextPath}${dashboardPath}" class="btn ${pkg.durationMonths == 3 ? 'btn-primary' : 'btn-outline-primary'} mt-auto w-100 py-2">
+                                                    Vào tài khoản
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="${pageContext.request.contextPath}/register" class="btn ${pkg.durationMonths == 3 ? 'btn-primary' : 'btn-outline-primary'} mt-auto w-100 py-2">
+                                                    Đăng ký ngay
+                                                </a>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -556,7 +693,107 @@
                 </div>
             </div>
         </section>
-
+        
+        <section id="bmi" class="section-space soft-band">
+            <div class="container">
+                <div class="row g-4 align-items-stretch">
+                    <div class="col-lg-5">
+                        <div class="section-heading mb-4">
+                            <span class="badge-soft">Tính BMI</span>
+                            <h2 class="mt-3 mb-3">Kiểm tra nhanh chỉ số cơ thể trước buổi tập</h2>
+                            <p>BMI giúp bạn có điểm tham chiếu ban đầu để chọn mục tiêu tăng cơ, giảm mỡ hoặc duy trì thể trạng cùng PT.</p>
+                        </div>
+                        <div class="bmi-range">
+                            <div class="bmi-range-row">
+                                <strong>Dưới 18.5</strong>
+                                <span class="muted-copy">Thiếu cân</span>
+                            </div>
+                            <div class="bmi-range-row">
+                                <strong>18.5 - 24.9</strong>
+                                <span class="muted-copy">Cân đối</span>
+                            </div>
+                            <div class="bmi-range-row">
+                                <strong>25 - 29.9</strong>
+                                <span class="muted-copy">Thừa cân</span>
+                            </div>
+                            <div class="bmi-range-row">
+                                <strong>Từ 30</strong>
+                                <span class="muted-copy">Béo phì</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="bmi-card p-4 p-lg-5">
+                            <form id="bmiForm" novalidate>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="bmiHeight" class="form-label">Chiều cao (cm)</label>
+                                        <input id="bmiHeight" class="form-control" type="number" min="80" max="230" step="0.1" placeholder="Ví dụ: 170">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="bmiWeight" class="form-label">Cân nặng (kg)</label>
+                                        <input id="bmiWeight" class="form-control" type="number" min="25" max="250" step="0.1" placeholder="Ví dụ: 65">
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="fa fa-calculator me-2"></i>Tính BMI
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="bmi-result mt-4" aria-live="polite">
+                                <span class="blog-meta mb-2">Chỉ số BMI của bạn</span>
+                                <strong id="bmiValue">--</strong>
+                                <p id="bmiMessage" class="muted-copy mb-0 mt-3">Nhập chiều cao và cân nặng để xem kết quả.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+                                
+        <section id="blog" class="section-space">
+            <div class="container">
+                <div class="section-heading">
+                    <span class="badge-soft">Blog luyện tập</span>
+                    <h2 class="mt-3 mb-3">Góc kiến thức cho hành trình khỏe hơn mỗi ngày</h2>
+                    <p>Các bài viết ngắn giúp hội viên chuẩn bị tốt hơn trước khi chọn gói tập, PT và mục tiêu cá nhân.</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <article class="blog-card">
+                            <img src="${pageContext.request.contextPath}/img/testimonial-1.jpg" alt="Khởi động trước buổi tập">
+                            <div class="p-4">
+                                <div class="blog-meta mb-2">Khởi động • 5 phút đọc</div>
+                                <h5 class="fw-bold">Vì sao 10 phút khởi động giúp buổi tập hiệu quả hơn?</h5>
+                                <p class="muted-copy mb-0">Làm nóng khớp, tăng nhịp tim vừa đủ và giảm nguy cơ đau mỏi sau tập.</p>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <article class="blog-card">
+                            <img src="${pageContext.request.contextPath}/assets/uploads/pt-avatar/Nguyen_Thi_Nga_Yoga.jpg" alt="Phục hồi sau tập">
+                            <div class="p-4">
+                                <div class="blog-meta mb-2">Phục hồi • 4 phút đọc</div>
+                                <h5 class="fw-bold">Phục hồi đúng cách để duy trì lịch tập đều đặn</h5>
+                                <p class="muted-copy mb-0">Ngủ đủ, giãn cơ và phân bổ cường độ là nền tảng cho tiến bộ bền vững.</p>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <article class="blog-card">
+                            <img src="${pageContext.request.contextPath}/img/testimonial-2.jpg" alt="Dinh dưỡng cho người tập gym">
+                            <div class="p-4">
+                                <div class="blog-meta mb-2">Dinh dưỡng • 6 phút đọc</div>
+                                <h5 class="fw-bold">Bữa ăn trước và sau tập nên ưu tiên điều gì?</h5>
+                                <p class="muted-copy mb-0">Cân bằng đạm, tinh bột và nước giúp cơ thể có năng lượng và hồi phục tốt hơn.</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+                            
         <section id="tien-ich" class="section-space soft-band">
             <div class="container">
                 <div class="section-heading">
@@ -614,13 +851,24 @@
                         <a href="#gioi-thieu" class="text-muted text-decoration-none small">Giới thiệu</a>
                         <a href="${pageContext.request.contextPath}/pt/list" class="text-muted text-decoration-none small">Danh sách PT</a>
                         <a href="#goi-tap" class="text-muted text-decoration-none small">Gói tập</a>
+                        <a href="#bmi" class="text-muted text-decoration-none small">Tính BMI</a>
+                        <a href="#blog" class="text-muted text-decoration-none small">Blog</a>
                     </div>
                 </div>
                 <div class="col-6 col-lg-2">
                     <h6 class="text-white fw-bold">Tài khoản</h6>
                     <div class="d-grid gap-2">
-                        <a href="${pageContext.request.contextPath}/login" class="text-muted text-decoration-none small">Đăng nhập</a>
-                        <a href="${pageContext.request.contextPath}/register" class="text-muted text-decoration-none small">Đăng ký thành viên</a>
+                        <c:choose>
+                            <c:when test="${not empty homeUser}">
+                                <a href="${pageContext.request.contextPath}${dashboardPath}" class="text-muted text-decoration-none small">Bảng điều khiển</a>
+                                <a href="${pageContext.request.contextPath}${profilePath}" class="text-muted text-decoration-none small">Hồ sơ cá nhân</a>
+                                <a href="${pageContext.request.contextPath}/logout" class="text-muted text-decoration-none small">Đăng xuất</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/login" class="text-muted text-decoration-none small">Đăng nhập</a>
+                                <a href="${pageContext.request.contextPath}/register" class="text-muted text-decoration-none small">Đăng ký thành viên</a>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
                 <div class="col-lg-3">
@@ -636,5 +884,64 @@
             </div>
         </div>
     </footer>
+    <jsp:include page="common/chatbot.jsp" />
+    <script>
+        (function () {
+            const form = document.getElementById("bmiForm");
+            const heightInput = document.getElementById("bmiHeight");
+            const weightInput = document.getElementById("bmiWeight");
+            const bmiValue = document.getElementById("bmiValue");
+            const bmiMessage = document.getElementById("bmiMessage");
+            
+            if (!form || !heightInput || !weightInput || !bmiValue || !bmiMessage) {
+                return;
+            }
+            
+            function getBmiStatus(bmi) {
+                if (bmi < 18.5) {
+                    return "Bạn đang ở nhóm thiếu cân. Hãy ưu tiên dinh dưỡng đầy đủ và lịch tập tăng sức mạnh.";
+                }
+                
+                if (bmi < 25) {
+                    return "Bạn đang ở nhóm cân đối. Duy trì lịch tập đều và theo dõi tiến độ định kỳ.";
+                }
+                
+                if (bmi < 30) {
+                    return "Bạn đang ở nhóm thừa cân. Cardio vừa sức kết hợp tập kháng lực sẽ là hướng phù hợp.";
+                }
+                
+                return "Bạn đang ở nhóm béo phì. Nên bắt đầu với cường độ an toàn và trao đổi thêm với PT.";
+            }
+            
+            function calculateBmi() {
+                const height = Number.parseFloat(heightInput.value);
+                const weight = Number.parseFloat(weightInput.value);
+                
+                if (!Number.isFinite(height) || !Number.isFinite(weight)) {
+                    bmiValue.textContent = "--";
+                    bmiMessage.textContent = "Nhập chiều cao và cân nặng để xem kết quả.";
+                    return;
+                }
+                
+                if (height <= 0 || weight <= 0) {
+                    bmiValue.textContent = "--";
+                    bmiMessage.textContent = "Chiều cao và cân nặng cần lớn hơn 0.";
+                    return;
+                }
+                
+                const heightInMeters = height / 100;
+                const bmi = weight / (heightInMeters * heightInMeters);
+                bmiValue.textContent = bmi.toFixed(1);
+                bmiMessage.textContent = getBmiStatus(bmi);
+            }
+            
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                calculateBmi();
+            });
+            heightInput.addEventListener("input", calculateBmi);
+            weightInput.addEventListener("input", calculateBmi);
+        })();
+    </script>
 </body>
 </html>

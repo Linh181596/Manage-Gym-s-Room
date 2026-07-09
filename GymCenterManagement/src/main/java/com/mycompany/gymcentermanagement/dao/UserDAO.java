@@ -50,6 +50,8 @@ public interface UserDAO {
 
     boolean deactivateAccount(int userId, String updatedBy) throws SQLException;
 
+    boolean hasBlockingPTSchedule(int userId) throws SQLException;
+
     boolean resetPassword(int userId, String newPasswordHash, String updatedBy) throws SQLException;
 
     // --- New Auth & Verification Methods ---
@@ -73,6 +75,12 @@ public interface UserDAO {
     boolean updatePassword(int userId, String newPasswordHash, boolean mustChangePassword) throws SQLException;
 
     boolean changePasswordAndRevokeTokens(int userId, String newPasswordHash, boolean mustChangePassword) throws SQLException;
+
+    boolean savePasswordResetToken(UserToken token) throws SQLException;
+
+    User getUserByPasswordResetToken(String tokenValue) throws SQLException;
+
+    boolean resetPasswordByToken(String tokenValue, String newPasswordHash) throws SQLException;
 
     // --- Profile Methods (UC-03) ---
     

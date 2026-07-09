@@ -12,6 +12,8 @@ public class PTScheduleDetailDTO {
     private String memberName;
     private String packageName;
     private String ptName; // Thêm tên PT để hiển thị ở trang quản lý lịch của Admin/Staff
+    private String ptSpecialization; // Chuyên môn của PT
+    private String originalPtName; // Tên HLV cũ trước khi bị thay thế
     private String attendanceStatus; // Thêm trường này để chứa kết quả điểm danh
 
     public PTScheduleDetailDTO() {
@@ -99,6 +101,21 @@ public class PTScheduleDetailDTO {
     }
 
     private String note;
+    private String cancellationReason;
+    private int ptId;
+    private int memberId;
+    private Integer originalPtId;
+
+    // Reschedule request fields
+    private Integer rescheduleRequestId;
+    private String rescheduleStatus;
+    private LocalDate rescheduleProposedDate;
+    private Time rescheduleProposedStartTime;
+    private Time rescheduleProposedEndTime;
+    private String rescheduleReason;
+    private Integer rescheduleSenderUserId;
+    private String rescheduleResponseReason;
+    private String rescheduleEscalationReason;
 
     public String getNote() {
         return note;
@@ -106,5 +123,125 @@ public class PTScheduleDetailDTO {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public Integer getRescheduleRequestId() {
+        return rescheduleRequestId;
+    }
+
+    public void setRescheduleRequestId(Integer rescheduleRequestId) {
+        this.rescheduleRequestId = rescheduleRequestId;
+    }
+
+    public String getRescheduleStatus() {
+        return rescheduleStatus;
+    }
+
+    public void setRescheduleStatus(String rescheduleStatus) {
+        this.rescheduleStatus = rescheduleStatus;
+    }
+
+    public LocalDate getRescheduleProposedDate() {
+        return rescheduleProposedDate;
+    }
+
+    public void setRescheduleProposedDate(LocalDate rescheduleProposedDate) {
+        this.rescheduleProposedDate = rescheduleProposedDate;
+    }
+
+    public Time getRescheduleProposedStartTime() {
+        return rescheduleProposedStartTime;
+    }
+
+    public void setRescheduleProposedStartTime(Time rescheduleProposedStartTime) {
+        this.rescheduleProposedStartTime = rescheduleProposedStartTime;
+    }
+
+    public Time getRescheduleProposedEndTime() {
+        return rescheduleProposedEndTime;
+    }
+
+    public void setRescheduleProposedEndTime(Time rescheduleProposedEndTime) {
+        this.rescheduleProposedEndTime = rescheduleProposedEndTime;
+    }
+
+    public String getRescheduleReason() {
+        return rescheduleReason;
+    }
+
+    public void setRescheduleReason(String rescheduleReason) {
+        this.rescheduleReason = rescheduleReason;
+    }
+
+    public Integer getRescheduleSenderUserId() {
+        return rescheduleSenderUserId;
+    }
+
+    public void setRescheduleSenderUserId(Integer rescheduleSenderUserId) {
+        this.rescheduleSenderUserId = rescheduleSenderUserId;
+    }
+
+    public String getRescheduleResponseReason() {
+        return rescheduleResponseReason;
+    }
+
+    public void setRescheduleResponseReason(String rescheduleResponseReason) {
+        this.rescheduleResponseReason = rescheduleResponseReason;
+    }
+
+    public String getRescheduleEscalationReason() {
+        return rescheduleEscalationReason;
+    }
+
+    public void setRescheduleEscalationReason(String rescheduleEscalationReason) {
+        this.rescheduleEscalationReason = rescheduleEscalationReason;
+    }
+
+    public int getPtId() {
+        return ptId;
+    }
+
+    public void setPtId(int ptId) {
+        this.ptId = ptId;
+    }
+
+    public int getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(int memberId) {
+        this.memberId = memberId;
+    }
+
+    public String getPtSpecialization() {
+        return ptSpecialization;
+    }
+
+    public void setPtSpecialization(String ptSpecialization) {
+        this.ptSpecialization = ptSpecialization;
+    }
+
+    public String getOriginalPtName() {
+        return originalPtName;
+    }
+
+    public void setOriginalPtName(String originalPtName) {
+        this.originalPtName = originalPtName;
+    }
+
+    public Integer getOriginalPtId() {
+        return originalPtId;
+    }
+
+    public void setOriginalPtId(Integer originalPtId) {
+        this.originalPtId = originalPtId;
     }
 }

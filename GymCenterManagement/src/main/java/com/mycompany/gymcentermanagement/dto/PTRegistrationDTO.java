@@ -20,6 +20,7 @@ public class PTRegistrationDTO {
     private java.time.LocalDateTime processedAt;
     private String paymentStatus;
     private LocalDate endDate;
+    private int purchasedSessions;
 
     public LocalDate getEndDate() {
         return endDate;
@@ -170,5 +171,63 @@ public class PTRegistrationDTO {
 
     public void setPtStatus(String ptStatus) {
         this.ptStatus = ptStatus;
+    }
+
+    public int getPurchasedSessions() {
+        return purchasedSessions;
+    }
+
+    public void setPurchasedSessions(int purchasedSessions) {
+        this.purchasedSessions = purchasedSessions;
+    }
+
+    private LocalDate startDate;
+    private int upcomingCount;
+    private int completedCount;
+    private int cancelledCount;
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getFormattedStartDate() {
+        if (startDate == null) return "";
+        return startDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    public int getUpcomingCount() {
+        return upcomingCount;
+    }
+
+    public void setUpcomingCount(int upcomingCount) {
+        this.upcomingCount = upcomingCount;
+    }
+
+    public int getCompletedCount() {
+        return completedCount;
+    }
+
+    public void setCompletedCount(int completedCount) {
+        this.completedCount = completedCount;
+    }
+
+    public int getCancelledCount() {
+        return cancelledCount;
+    }
+
+    public void setCancelledCount(int cancelledCount) {
+        this.cancelledCount = cancelledCount;
+    }
+
+    public int getProgressPercentage() {
+        if (purchasedSessions <= 0) {
+            return 0;
+        }
+        int pct = (completedCount * 100) / purchasedSessions;
+        return pct > 100 ? 100 : pct;
     }
 }

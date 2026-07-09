@@ -12,10 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "PTMembersController", urlPatterns = {"/pt/members"})
+@WebServlet(name = "PTMembersController", urlPatterns = { "/pt/members" })
 public class PTMembersController extends HttpServlet {
 
     private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
@@ -46,16 +45,19 @@ public class PTMembersController extends HttpServlet {
             }
 
             // Pagination using PaginationHelper
-            int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
+            int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"),
+                    1);
             int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
-                    com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
-            
+                    com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"),
+                            10));
+
             int totalItems = personalTrainerService.getActiveMembersForPTCount(pt.getPtId());
             int totalPages = com.mycompany.gymcentermanagement.utils.PaginationHelper.totalPages(totalItems, pageSize);
             page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
             int offset = (page - 1) * pageSize;
 
-            List<PTMemberDTO> membersList = personalTrainerService.getActiveMembersForPTPaginated(pt.getPtId(), offset, pageSize);
+            List<PTMemberDTO> membersList = personalTrainerService.getActiveMembersForPTPaginated(pt.getPtId(), offset,
+                    pageSize);
             request.setAttribute("membersList", membersList);
 
             String queryBase = com.mycompany.gymcentermanagement.utils.PaginationHelper.buildQueryBase(

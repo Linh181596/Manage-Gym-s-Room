@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : UserDAOImpl.java
  * @description   : Lớp triển khai truy vấn JDBC cho Users, token xác thực, đổi mật khẩu và hồ sơ người dùng. Lớp triển khai các phương thức truy vấn và tương tác cơ sở dữ liệu cho Users và Profiles.
- * @author        : Nguyễn Đại Dương
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-05
  * @last_modified : 2026-06-25 (Cập nhật bởi Antigravity: 2026-06-11)
  * =========================================================================
@@ -280,7 +280,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             stmtUser.setString(4, user.getPhoneNumber());
             stmtUser.setString(5, user.getAccountStatus().name());
             stmtUser.setString(6, user.getUpdatedBy());
-            stmtUser.setTimestamp(7, user.getUpdatedDate() != null ? Timestamp.valueOf(user.getUpdatedDate()) : new Timestamp(System.currentTimeMillis()));
+            stmtUser.setTimestamp(7, user.getUpdatedDate() != null ? Timestamp.valueOf(user.getUpdatedDate())
+                    : new Timestamp(System.currentTimeMillis()));
             stmtUser.setInt(8, user.getUserId());
 
             int rowsUser = stmtUser.executeUpdate();
@@ -494,8 +495,219 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (stmtTokens != null) stmtTokens.close();
+            if (stmtTokens != null)
+                stmtTokens.close();
             closeResource(conn, stmtPassword, null);
+        }
+    }
+
+    @Override
+    public boolean savePasswordResetToken(UserToken token) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmtRevokeOld = null;
+        PreparedStatement stmtInsert = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String revokeOldSql = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'RESET_PASSWORD'
+                          AND IsUsed = 0
+                    """;
+            stmtRevokeOld = conn.prepareStatement(revokeOldSql);
+            stmtRevokeOld.setInt(1, token.getUserID());
+            stmtRevokeOld.executeUpdate();
+
+            String insertSql = """
+                        INSERT INTO User_Tokens (
+                            UserID,
+                            TokenValue,
+                            TokenType,
+                            ExpiresAt,
+                            IsUsed,
+                            CreatedAt
+                        )
+                        VALUES (?, ?, ?, ?, 0, SYSDATETIME())
+                    """;
+            stmtInsert = conn.prepareStatement(insertSql);
+            stmtInsert.setInt(1, token.getUserID());
+            stmtInsert.setString(2, token.getTokenValue());
+            stmtInsert.setString(3, token.getTokenType());
+
+            if (token.getExpiresAt() != null) {
+                stmtInsert.setTimestamp(4, Timestamp.valueOf(token.getExpiresAt()));
+            } else {
+                stmtInsert.setNull(4, Types.TIMESTAMP);
+            }
+
+            boolean success = stmtInsert.executeUpdate() > 0;
+            if (!success) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (stmtInsert != null)
+                stmtInsert.close();
+            closeResource(conn, stmtRevokeOld, null);
+        }
+    }
+
+    @Override
+    public User getUserByPasswordResetToken(String tokenValue) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        User user = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = """
+                        SELECT u.*, r.RoleName, pt.AvatarPath
+                        FROM User_Tokens t
+                        INNER JOIN Users u ON t.UserID = u.UserID
+                        LEFT JOIN UserRoles ur ON u.UserID = ur.UserID
+                        LEFT JOIN Roles r ON ur.RoleID = r.RoleID
+                        LEFT JOIN PersonalTrainers pt ON u.UserID = pt.UserID
+                        WHERE t.TokenValue = ?
+                          AND t.TokenType = 'RESET_PASSWORD'
+                          AND t.IsUsed = 0
+                          AND t.ExpiresAt > SYSDATETIME()
+                          AND u.Status = 'Active'
+                          AND u.IsDeleted = 0
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, tokenValue);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                user = mapResultSetToUser(rs);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+
+        return user;
+    }
+
+    @Override
+    public boolean resetPasswordByToken(String tokenValue, String newPasswordHash) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmtFind = null;
+        PreparedStatement stmtPassword = null;
+        PreparedStatement stmtResetTokens = null;
+        PreparedStatement stmtRememberTokens = null;
+        ResultSet rs = null;
+        boolean isLocalTx = (this.connection == null);
+
+        try {
+            conn = getActiveConnection();
+            if (isLocalTx) {
+                conn.setAutoCommit(false);
+            }
+
+            String findSql = """
+                        SELECT u.UserID
+                        FROM User_Tokens t
+                        INNER JOIN Users u ON t.UserID = u.UserID
+                        WHERE t.TokenValue = ?
+                          AND t.TokenType = 'RESET_PASSWORD'
+                          AND t.IsUsed = 0
+                          AND t.ExpiresAt > SYSDATETIME()
+                          AND u.Status = 'Active'
+                          AND u.IsDeleted = 0
+                    """;
+            stmtFind = conn.prepareStatement(findSql);
+            stmtFind.setString(1, tokenValue);
+            rs = stmtFind.executeQuery();
+
+            if (!rs.next()) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            int userId = rs.getInt("UserID");
+
+            String passwordSql = """
+                        UPDATE Users
+                        SET PasswordHash = ?,
+                            MustChangePassword = 0,
+                            UpdatedBy = 'PasswordReset',
+                            UpdatedDate = SYSDATETIME()
+                        WHERE UserID = ?
+                          AND Status = 'Active'
+                          AND IsDeleted = 0
+                    """;
+            stmtPassword = conn.prepareStatement(passwordSql);
+            stmtPassword.setString(1, newPasswordHash);
+            stmtPassword.setInt(2, userId);
+
+            if (stmtPassword.executeUpdate() <= 0) {
+                if (isLocalTx) {
+                    conn.rollback();
+                }
+                return false;
+            }
+
+            String resetTokenSql = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'RESET_PASSWORD'
+                          AND IsUsed = 0
+                    """;
+            stmtResetTokens = conn.prepareStatement(resetTokenSql);
+            stmtResetTokens.setInt(1, userId);
+            stmtResetTokens.executeUpdate();
+
+            String rememberTokenSql = """
+                        UPDATE User_Tokens
+                        SET IsUsed = 1
+                        WHERE UserID = ?
+                          AND TokenType = 'REMEMBER_ME'
+                          AND IsUsed = 0
+                    """;
+            stmtRememberTokens = conn.prepareStatement(rememberTokenSql);
+            stmtRememberTokens.setInt(1, userId);
+            stmtRememberTokens.executeUpdate();
+
+            if (isLocalTx) {
+                conn.commit();
+            }
+            return true;
+        } catch (SQLException e) {
+            if (isLocalTx && conn != null) {
+                conn.rollback();
+            }
+            throw e;
+        } finally {
+            if (stmtRememberTokens != null)
+                stmtRememberTokens.close();
+            if (stmtResetTokens != null)
+                stmtResetTokens.close();
+            if (stmtPassword != null)
+                stmtPassword.close();
+            closeResource(conn, stmtFind, rs);
         }
     }
 
@@ -544,20 +756,24 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw e; // Bắt buộc ném lỗi ra ngoài để Controller có thể hiển thị thông báo thay vì nuốt lỗi
+            throw e; // Bắt buộc ném lỗi ra ngoài để Controller có thể hiển thị thông báo thay vì
+                     // nuốt lỗi
         } finally {
-            if (rs != null) try {
-                rs.close();
-            } catch (SQLException e) {
-            }
-            if (stmt != null) try {
-                stmt.close();
-            } catch (SQLException e) {
-            }
-            if (conn != null) try {
-                conn.close();
-            } catch (SQLException e) {
-            }
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            if (stmt != null)
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                }
+            if (conn != null)
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                }
         }
     }
 
@@ -1025,7 +1241,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
-    public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit) throws SQLException {
+    public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit)
+            throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -1152,7 +1369,6 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return 0;
     }
 
-
     @Override
     public boolean checkEmailExistsForOtherUser(String email, int excludedUserId) throws SQLException {
         Connection conn = null;
@@ -1250,7 +1466,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
             user.setUserId(generatedKeys.getInt(1));
             setUserRole(conn, user.getUserId(), user.getRole());
-            ensureManagedProfile(conn, user.getUserId(), user.getRole(), user.getAccountStatus().name(), user.getCreatedBy());
+            ensureManagedProfile(conn, user.getUserId(), user.getRole(), user.getAccountStatus().name(),
+                    user.getCreatedBy());
 
             if (isLocalTx) {
                 conn.commit();
@@ -1262,7 +1479,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (generatedKeys != null) generatedKeys.close();
+            if (generatedKeys != null)
+                generatedKeys.close();
             closeResource(conn, stmtUser, null);
         }
     }
@@ -1311,10 +1529,12 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             User.Role requestedRole = user.getRole() != null ? user.getRole() : currentRole;
             if (isStaffOrMember(currentRole) && isStaffOrMember(requestedRole) && currentRole != requestedRole) {
                 setUserRole(conn, user.getUserId(), requestedRole);
-                ensureManagedProfile(conn, user.getUserId(), requestedRole, user.getAccountStatus().name(), user.getUpdatedBy());
+                ensureManagedProfile(conn, user.getUserId(), requestedRole, user.getAccountStatus().name(),
+                        user.getUpdatedBy());
                 disableManagedProfile(conn, user.getUserId(), currentRole, user.getUpdatedBy());
             } else if (isStaffOrMember(currentRole)) {
-                ensureManagedProfile(conn, user.getUserId(), currentRole, user.getAccountStatus().name(), user.getUpdatedBy());
+                ensureManagedProfile(conn, user.getUserId(), currentRole, user.getAccountStatus().name(),
+                        user.getUpdatedBy());
             }
 
             if (isLocalTx) {
@@ -1438,6 +1658,36 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    public boolean hasBlockingPTSchedule(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = """
+                        SELECT 1
+                        FROM PersonalTrainers pt
+                        INNER JOIN PTSchedules s ON pt.PTID = s.PTID
+                        WHERE pt.UserID = ?
+                          AND pt.IsDeleted = 0
+                          AND s.IsDeleted = 0
+                          AND s.SessionStatus <> 'Cancelled'
+                          AND (
+                              s.SessionDate >= CAST(GETDATE() AS date)
+                              OR s.SessionStatus <> 'Completed'
+                          )
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    @Override
     public boolean resetPassword(int userId, String newPasswordHash, String updatedBy) throws SQLException {
         Connection conn = null;
         PreparedStatement stmtPassword = null;
@@ -1492,7 +1742,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
             throw e;
         } finally {
-            if (stmtTokens != null) stmtTokens.close();
+            if (stmtTokens != null)
+                stmtTokens.close();
             closeResource(conn, stmtPassword, null);
         }
     }
@@ -1566,18 +1817,19 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
-    private void ensureManagedProfile(Connection conn, int userId, User.Role role, String status, String actor) throws SQLException {
+    private void ensureManagedProfile(Connection conn, int userId, User.Role role, String status, String actor)
+            throws SQLException {
         String profileStatus = profileStatusForRole(role, status);
         if (role == User.Role.Member) {
             if (profileExists(conn, "Members", userId)) {
                 String sql = """
-                            UPDATE Members
-                            SET MembershipStatus = ?,
-                                IsDeleted = 0,
-                                UpdatedBy = ?,
-                                UpdatedDate = SYSDATETIME()
-                            WHERE UserID = ?
-                """;
+                                    UPDATE Members
+                                    SET MembershipStatus = ?,
+                                        IsDeleted = 0,
+                                        UpdatedBy = ?,
+                                        UpdatedDate = SYSDATETIME()
+                                    WHERE UserID = ?
+                        """;
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, profileStatus);
                     stmt.setString(2, actor);
@@ -1586,9 +1838,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 }
             } else {
                 String sql = """
-                            INSERT INTO Members (UserID, MembershipStatus, CreatedBy, CreatedDate, IsDeleted)
-                            VALUES (?, ?, ?, SYSDATETIME(), 0)
-                """;
+                                    INSERT INTO Members (UserID, MembershipStatus, CreatedBy, CreatedDate, IsDeleted)
+                                    VALUES (?, ?, ?, SYSDATETIME(), 0)
+                        """;
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setInt(1, userId);
                     stmt.setString(2, profileStatus);
@@ -1599,13 +1851,13 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         } else if (role == User.Role.Staff) {
             if (profileExists(conn, "Staffs", userId)) {
                 String sql = """
-                            UPDATE Staffs
-                            SET Status = ?,
-                                IsDeleted = 0,
-                                UpdatedBy = ?,
-                                UpdatedDate = SYSDATETIME()
-                            WHERE UserID = ?
-                """;
+                                    UPDATE Staffs
+                                    SET Status = ?,
+                                        IsDeleted = 0,
+                                        UpdatedBy = ?,
+                                        UpdatedDate = SYSDATETIME()
+                                    WHERE UserID = ?
+                        """;
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, profileStatus);
                     stmt.setString(2, actor);
@@ -1614,9 +1866,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 }
             } else {
                 String sql = """
-                            INSERT INTO Staffs (UserID, Position, Status, CreatedBy, CreatedDate, IsDeleted)
-                            VALUES (?, ?, ?, ?, SYSDATETIME(), 0)
-                """;
+                                    INSERT INTO Staffs (UserID, Position, Status, CreatedBy, CreatedDate, IsDeleted)
+                                    VALUES (?, ?, ?, ?, SYSDATETIME(), 0)
+                        """;
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setInt(1, userId);
                     stmt.setString(2, "Staff");
@@ -1832,9 +2084,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             psUser.setInt(3, profileDto.getUserId());
             int userRows = psUser.executeUpdate();
 
-            int subRows = 1; // Máº·c Ä‘á»‹nh há»£p lá»‡ cho trÆ°á»ng há»£p Admin hoáº·c Staff (khÃ´ng cÃ³ báº£ng phá»¥ cáº§n cáº­p nháº­t qua trang profile cá»§a DÆ°Æ¡ng)
+            int subRows = 1; // Máº·c Ä‘á»‹nh há»£p lá»‡ cho trÆ°á»ng há»£p Admin hoáº·c Staff (khÃ´ng cÃ³
+                             // báº£ng phá»¥ cáº§n cáº­p nháº­t qua trang profile cá»§a DÆ°Æ¡ng)
 
-            // 2. Ráº½ nhÃ¡nh cáº­p nháº­t dá»¯ liá»‡u Ä‘áº·c thÃ¹ phá»¥ thuá»™c theo vai trÃ²
+            // 2. Ráº½ nhÃ¡nh cáº­p nháº­t dá»¯ liá»‡u Ä‘áº·c thÃ¹ phá»¥ thuá»™c theo vai
+            // trÃ²
             if ("Member".equalsIgnoreCase(roleName) && profileDto instanceof MemberProfileDTO) {
                 MemberProfileDTO memberDto = (MemberProfileDTO) profileDto;
                 String sqlMember = "UPDATE Members SET Gender = ?, DateOfBirth = ?, Address = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
@@ -1858,7 +2112,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 subRows = psSub.executeUpdate();
             }
 
-            // 3. XÃ¡c nháº­n lÆ°u dá»¯ liá»‡u thÃ nh cÃ´ng náº¿u cáº£ 2 khá»‘i lá»‡nh thá»±c thi trÆ¡n tru
+            // 3. XÃ¡c nháº­n lÆ°u dá»¯ liá»‡u thÃ nh cÃ´ng náº¿u cáº£ 2 khá»‘i lá»‡nh
+            // thá»±c thi trÆ¡n tru
             if (userRows > 0 && subRows > 0) {
                 success = true;
             }
@@ -1888,13 +2143,13 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     @Override
     public boolean updateBasicUserInfo(User user) {
         String sql = """
-                UPDATE Users 
-                SET Phone = ? 
-                WHERE UserID = ? 
+                UPDATE Users
+                SET Phone = ?
+                WHERE UserID = ?
                   AND IsDeleted = 0
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement stm = conn.prepareStatement(sql)) {
+                PreparedStatement stm = conn.prepareStatement(sql)) {
             stm.setString(1, user.getPhoneNumber());
             stm.setInt(2, user.getUserId());
 

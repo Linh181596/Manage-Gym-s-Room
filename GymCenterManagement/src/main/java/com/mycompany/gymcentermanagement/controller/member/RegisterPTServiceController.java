@@ -10,10 +10,13 @@
 package com.mycompany.gymcentermanagement.controller.member;
 
 import com.mycompany.gymcentermanagement.dao.MemberDAO;
+import com.mycompany.gymcentermanagement.dao.MemberPackageDAO;
 import com.mycompany.gymcentermanagement.dao.impl.MemberDAOImpl;
+import com.mycompany.gymcentermanagement.dao.impl.MemberPackageDAOImpl;
 import com.mycompany.gymcentermanagement.model.entity.PTRegistration;
 import com.mycompany.gymcentermanagement.model.entity.PTServicePrice;
 import com.mycompany.gymcentermanagement.model.entity.Member;
+import com.mycompany.gymcentermanagement.model.entity.MemberPackage;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.PTRegistrationService;
 import com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl;
@@ -156,6 +159,20 @@ public class RegisterPTServiceController extends HttpServlet {
             return;
         }
 
+        // Kiểm tra xem hội viên có gói tập gym nào còn hiệu lực hay không
+        try {
+            MemberPackageDAO memberPackageDAO = new MemberPackageDAOImpl();
+            MemberPackage activePackage = memberPackageDAO.findActiveByMemberId(member.getMemberId());
+            if (activePackage == null) {
+                request.setAttribute("error", "Bạn phải có gói hội viên phòng tập (Gym Membership) đang còn hiệu lực để đăng ký thuê PT.");
+                request.setAttribute("servicePrice", servicePrice);
+                request.getRequestDispatcher("/WEB-INF/views/pt/register-pt-service.jsp").forward(request, response);
+                return;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         PTRegistration registration = new PTRegistration();
         registration.setMemberId(member.getMemberId());
         registration.setPtServicePriceId(priceId);
@@ -163,7 +180,6 @@ public class RegisterPTServiceController extends HttpServlet {
         registration.setStartDate(startDate);
         registration.setEndDate(endDate);
         registration.setNote(note);
-        registration.setTotalAmount(servicePrice.getPrice());
         registration.setCreatedBy(currentUser.getFullName());
 
         boolean inserted = registrationService.registerPTService(registration);
