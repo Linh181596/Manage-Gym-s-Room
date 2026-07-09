@@ -2,7 +2,22 @@ USE [GymCenterManagement]
 
 GO
 
+IF OBJECT_ID(N'dbo.FAQ', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.FAQ (
+        faq_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        question NVARCHAR(500) NOT NULL,
+        answer NVARCHAR(MAX) NOT NULL,
+        category NVARCHAR(100) NULL,
+        keywords NVARCHAR(1000) NULL,
+        status NVARCHAR(20) NOT NULL CONSTRAINT DF_FAQ_Status DEFAULT N'Active',
+        created_at DATETIME2 NOT NULL CONSTRAINT DF_FAQ_CreatedAt DEFAULT SYSDATETIME(),
+        updated_at DATETIME2 NULL
+    );
 
+    CREATE INDEX IX_FAQ_Status ON dbo.FAQ(status);
+END;
+GO
 
 IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Xin chào')
 BEGIN
