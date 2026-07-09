@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : MembershipGrowthReportDAOImpl.java
+ * @description   : Implementation of MembershipGrowthReportDAO
+ * @author        : Nguyễn Trí Linh (linhnt)
+ * @created       : 2026-07-08
+ * @last_modified : 2026-07-08 bởi Nguyễn Trí Linh (linhnt)
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.dao.impl;
 
 import com.mycompany.gymcentermanagement.dao.BaseDAO;

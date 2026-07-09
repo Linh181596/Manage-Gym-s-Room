@@ -3,7 +3,7 @@
   =========================================================================
   Document    : dashboard.jsp
   Created on  : 2026-06-26
-  Author      : Nguyen Dai Duong (duongnd)
+  Author      : Nguyễn Đại Dương (duongnd)
   Description : Giao diện bảng điều khiển động hiển thị hoạt động và chi tiêu cho Hội viên (Member).
   =========================================================================
 --%>

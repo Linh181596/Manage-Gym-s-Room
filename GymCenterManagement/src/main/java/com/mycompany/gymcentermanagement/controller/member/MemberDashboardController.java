@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : MemberDashboardController.java
  * @description   : Controller xử lý trang tổng quan/dashboard của hội viên.
- * @author        : Nguyen Dai Duong (duongnd)
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-26
  * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================

@@ -2,7 +2,7 @@
  * =========================================================================
  * @file          : CurrentUserSessionListener.java
  * @description   : Listener đồng bộ thuộc tính currentUser trong session với SessionRegistry.
- * @author        : duongnd
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-25
  * @last_modified : 2026-06-25
  * =========================================================================

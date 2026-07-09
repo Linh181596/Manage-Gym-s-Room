@@ -1,7 +1,16 @@
+/**
+ * =========================================================================
+ * @file          : MembershipGrowthReportController.java
+ * @description   : Controller for viewing membership growth report (Admin only)
+ * @author        : Nguyễn Trí Linh (linhnt)
+ * @created       : 2026-07-08
+ * @last_modified : 2026-07-08 bởi Nguyễn Trí Linh (linhnt)
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.controller.admin;
 
-import com.mycompany.gymcentermanagement.dao.MembershipGrowthReportDAO;
-import com.mycompany.gymcentermanagement.dao.impl.MembershipGrowthReportDAOImpl;
+import com.mycompany.gymcentermanagement.service.MembershipGrowthReportService;
+import com.mycompany.gymcentermanagement.service.impl.MembershipGrowthReportServiceImpl;
 import com.mycompany.gymcentermanagement.dto.MembershipGrowthChartPoint;
 import com.mycompany.gymcentermanagement.dto.MembershipGrowthMember;
 import com.mycompany.gymcentermanagement.dto.MembershipGrowthSummary;
@@ -28,7 +37,7 @@ public class MembershipGrowthReportController extends HttpServlet {
     private static final String STATUS_ACTIVE = "active";
     private static final String STATUS_EXPIRED = "expired";
 
-    private final MembershipGrowthReportDAO reportDAO = new MembershipGrowthReportDAOImpl();
+    private final MembershipGrowthReportService reportService = new MembershipGrowthReportServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,23 +47,23 @@ public class MembershipGrowthReportController extends HttpServlet {
         }
 
         try {
-            List<Integer> availableYears = buildYearOptions(reportDAO.getAvailableYears());
+            List<Integer> availableYears = buildYearOptions(reportService.getAvailableYears());
 
             int selectedYear = resolveYear(request.getParameter("year"), availableYears);
             Integer selectedMonth = resolveMonth(request.getParameter("month"));
             String tableStatus = normalizeStatus(request.getParameter("status"));
             String searchKeyword = normalizeBlank(request.getParameter("searchKeyword"));
 
-            MembershipGrowthSummary summary = reportDAO.getSummary(selectedYear, selectedMonth);
-            List<MembershipGrowthChartPoint> chartPoints = reportDAO.getGrowthChart(selectedYear, selectedMonth);
+            MembershipGrowthSummary summary = reportService.getSummary(selectedYear, selectedMonth);
+            List<MembershipGrowthChartPoint> chartPoints = reportService.getGrowthChart(selectedYear, selectedMonth);
 
             int page = PaginationHelper.parseInt(request.getParameter("page"), 1);
-            int totalItems = reportDAO.countMembers(selectedYear, selectedMonth, tableStatus, searchKeyword);
+            int totalItems = reportService.countMembers(selectedYear, selectedMonth, tableStatus, searchKeyword);
             int totalPages = PaginationHelper.totalPages(totalItems, PAGE_SIZE);
             page = PaginationHelper.normalizePage(page, totalPages);
             int offset = (page - 1) * PAGE_SIZE;
 
-            List<MembershipGrowthMember> members = reportDAO.getMemberGrowthList(
+            List<MembershipGrowthMember> members = reportService.getMemberGrowthList(
                     selectedYear, selectedMonth, tableStatus, searchKeyword, offset, PAGE_SIZE);
 
             setReportAttributes(request, availableYears, selectedYear, selectedMonth, tableStatus,
