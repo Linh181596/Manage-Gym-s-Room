@@ -10,6 +10,7 @@ import com.mycompany.gymcentermanagement.dao.impl.PTScheduleDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.RescheduleRequestDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
+import com.mycompany.gymcentermanagement.dto.RescheduleRequestDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.Member;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
@@ -17,8 +18,11 @@ import com.mycompany.gymcentermanagement.model.entity.RescheduleRequest;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.RescheduleRequestService;
 import com.mycompany.gymcentermanagement.utils.PTFixedSlotHelper;
+
+import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalDate;
+import java.util.List;
 
 public class RescheduleRequestServiceImpl implements RescheduleRequestService {
 
@@ -55,8 +59,8 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             return "Không tìm thấy buổi tập cần đổi lịch.";
         }
 
-        if (!"Upcoming".equalsIgnoreCase(schedule.getSessionStatus())) {
-            return "Chỉ được tạo yêu cầu đổi lịch cho buổi tập Upcoming.";
+        if (!"Upcoming".equalsIgnoreCase(schedule.getSessionStatus()) && !"Cancelled".equalsIgnoreCase(schedule.getSessionStatus())) {
+            return "Chỉ được tạo yêu cầu đổi lịch/xếp bù cho buổi tập Upcoming hoặc Cancelled.";
         }
 
         PersonalTrainer pt = personalTrainerDAO.findById(schedule.getPtId());
@@ -107,6 +111,10 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 && proposedEndTime.equals(schedule.getEndTime());
         if (sameAsOriginal) {
             return "Khung giờ mới phải khác lịch gốc hiện tại.";
+        }
+
+        if (ptScheduleDAO.isSlotMassCancelled(proposedDate, proposedStartTime, proposedEndTime)) {
+            return "Khung giờ này đã bị hủy hàng loạt bởi Admin (Ví dụ: sự cố vận hành, bảo trì...). Vui lòng đề xuất ngày hoặc khung giờ khác.";
         }
 
         boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
@@ -164,7 +172,7 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
         User responder = null;
         try {
             responder = userDAO.findById(responderUserId);
-        } catch (java.sql.SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -181,6 +189,10 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             PTSchedule schedule = ptScheduleDAO.getScheduleById(req.getScheduleId());
             if (schedule == null) {
                 return "Không tìm thấy buổi tập liên quan.";
+            }
+
+            if (ptScheduleDAO.isSlotMassCancelled(req.getProposedDate(), req.getProposedStartTime(), req.getProposedEndTime())) {
+                return "Không thể duyệt do khung giờ đề xuất mới đã bị hủy hàng loạt bởi Admin (Ví dụ: sự cố vận hành, bảo trì...).";
             }
 
             boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
@@ -213,13 +225,46 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             );
             return success ? "SUCCESS" : "Lỗi hệ thống khi cập nhật lịch mới.";
         } else if ("reject".equalsIgnoreCase(action)) {
+            if (responseReason == null || responseReason.trim().isEmpty()) {
+                return "Vui lòng nhập lý do từ chối.";
+            }
             boolean success = rescheduleRequestDAO.rejectRequest(requestId, responderUserId, responseReason);
             return success ? "SUCCESS" : "Lỗi hệ thống khi từ chối yêu cầu.";
         } else if ("escalate".equalsIgnoreCase(action)) {
+            if (responseReason == null || responseReason.trim().isEmpty()) {
+                return "Vui lòng nhập lý do yêu cầu hỗ trợ.";
+            }
             boolean success = rescheduleRequestDAO.escalateRequest(requestId, responderUserId, responseReason);
-            return success ? "SUCCESS" : "Lỗi hệ thống khi khiếu nại yêu cầu.";
+            return success ? "SUCCESS" : "Lỗi hệ thống khi gửi yêu cầu hỗ trợ.";
         }
 
         return "Hành động không hợp lệ.";
+    }
+
+    @Override
+    public List<RescheduleRequestDetailDTO> getEscalatedRequests() {
+        List<RescheduleRequestDetailDTO> list = rescheduleRequestDAO.getEscalatedRequests();
+        for (RescheduleRequestDetailDTO req : list) {
+            PTSchedule schedule = ptScheduleDAO.getScheduleById(req.getScheduleId());
+            if (schedule != null) {
+                boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
+                        schedule.getPtId(),
+                        req.getProposedDate(),
+                        req.getProposedStartTime(),
+                        req.getProposedEndTime(),
+                        req.getScheduleId()
+                );
+                boolean memberConflict = ptScheduleDAO.isMemberScheduleConflictExcluding(
+                        schedule.getMemberId(),
+                        req.getProposedDate(),
+                        req.getProposedStartTime(),
+                        req.getProposedEndTime(),
+                        req.getScheduleId()
+                );
+                req.setPtConflict(ptConflict);
+                req.setMemberConflict(memberConflict);
+            }
+        }
+        return list;
     }
 }

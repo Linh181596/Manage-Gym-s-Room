@@ -152,14 +152,18 @@ public class PTDashboardDAOImpl extends BaseDAO implements PTDashboardDAO {
     @Override
     public List<Map<String, Object>> getTodaySchedule(int ptId) throws SQLException {
         String sql = """
-                SELECT s.PTScheduleID, s.StartTime, s.EndTime, u.DisplayName AS MemberName, p.PackageName, s.SessionStatus, s.PTAttendanceResult, s.Note, s.CancellationReason
+                SELECT s.PTScheduleID, s.StartTime, s.EndTime, u.DisplayName AS MemberName, p.PackageName, s.SessionStatus, s.PTAttendanceResult, s.Note, s.CancellationReason, s.OriginalPTID, s.PTID, u_curr.DisplayName AS CurrentPTName, u_opt.DisplayName AS OriginalPTName
                 FROM PTSchedules s
                 INNER JOIN Members m ON s.MemberID = m.MemberID
                 INNER JOIN Users u ON m.UserID = u.UserID
                 INNER JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
                 INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
                 INNER JOIN PTPackageTypes p ON sp.PTPackageTypeID = p.PTPackageTypeID
-                WHERE s.PTID = ? 
+                LEFT JOIN PersonalTrainers opt ON s.OriginalPTID = opt.PTID
+                LEFT JOIN Users u_opt ON opt.UserID = u_opt.UserID
+                LEFT JOIN PersonalTrainers pt_curr ON s.PTID = pt_curr.PTID
+                LEFT JOIN Users u_curr ON pt_curr.UserID = u_curr.UserID
+                WHERE (s.PTID = ? OR s.OriginalPTID = ?) 
                   AND s.SessionDate = CAST(GETDATE() AS Date) 
                   AND s.IsDeleted = 0
                 ORDER BY s.StartTime ASC
@@ -172,6 +176,7 @@ public class PTDashboardDAOImpl extends BaseDAO implements PTDashboardDAO {
             conn = getActiveConnection();
             ps = conn.prepareStatement(sql);
             ps.setInt(1, ptId);
+            ps.setInt(2, ptId);
             rs = ps.executeQuery();
             while (rs.next()) {
                 Map<String, Object> map = new HashMap<>();
@@ -184,6 +189,10 @@ public class PTDashboardDAOImpl extends BaseDAO implements PTDashboardDAO {
                 map.put("attendanceStatus", rs.getString("PTAttendanceResult"));
                 map.put("note", rs.getString("Note"));
                 map.put("cancellationReason", rs.getString("CancellationReason"));
+                map.put("originalPtId", rs.getObject("OriginalPTID") != null ? rs.getInt("OriginalPTID") : null);
+                map.put("ptId", rs.getInt("PTID"));
+                map.put("currentPtName", rs.getString("CurrentPTName"));
+                map.put("originalPtName", rs.getString("OriginalPTName"));
                 list.add(map);
             }
         } finally {

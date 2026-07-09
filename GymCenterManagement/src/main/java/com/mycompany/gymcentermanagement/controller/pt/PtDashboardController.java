@@ -64,6 +64,7 @@ public class PtDashboardController extends HttpServlet {
 
             PTDashboardData dashboardData = ptDashboardService.getPTDashboardData(pt.getPtId());
             request.setAttribute("dashboardData", dashboardData);
+            request.setAttribute("pt", pt);
 
             // Lấy danh sách hợp đồng PT hoạt động kèm tiến độ tập
             PTRegistrationService ptRegistrationService = new PTRegistrationServiceImpl();
@@ -73,6 +74,11 @@ public class PtDashboardController extends HttpServlet {
             // Lấy số lượng đơn mới đã thanh toán cần xếp lịch dạy
             List<PTRegistrationDTO> pendingSchedules = ptRegistrationService.getActivePaidRegistrationsWithoutScheduleByPT(pt.getPtId());
             request.setAttribute("pendingSchedulesCount", pendingSchedules != null ? pendingSchedules.size() : 0);
+
+            // Lấy danh sách ca dạy thay thế sắp tới được phân công
+            List<PTScheduleDetailDTO> substituteSessions = ptScheduleService.getUpcomingSubstituteSessions(pt.getPtId());
+            request.setAttribute("substituteSessions", substituteSessions);
+            request.setAttribute("substituteSessionsCount", substituteSessions != null ? substituteSessions.size() : 0);
 
             // Lấy danh sách hội viên của PT
             List<PTMemberDTO> membersList = personalTrainerService

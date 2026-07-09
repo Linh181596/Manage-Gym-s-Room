@@ -919,10 +919,14 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         CASE wd
                             WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
                             WHEN 5 THEN N'T5' WHEN 6 THEN N'T6' WHEN 7 THEN N'T7' WHEN 1 THEN N'CN'
-                        END, ', ') 
+                        END, ', ') WITHIN GROUP (ORDER BY wd ASC)
                      FROM (SELECT DISTINCT DATEPART(weekday, SessionDate) AS wd FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS sub) AS DaysOfWeek,
-                    (SELECT TOP 1 CONVERT(varchar(5), StartTime, 108) + ' - ' + CONVERT(varchar(5), EndTime, 108)
-                     FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS TimeSlot
+                    (SELECT STRING_AGG(
+                        CASE wd
+                            WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
+                            WHEN 5 THEN N'T5' WHEN 6 THEN N'T6' WHEN 7 THEN N'T7' WHEN 1 THEN N'CN'
+                        END + ': ' + CONVERT(varchar(5), StartTime, 108) + '-' + CONVERT(varchar(5), EndTime, 108), ', ') WITHIN GROUP (ORDER BY wd ASC)
+                     FROM (SELECT DISTINCT DATEPART(weekday, SessionDate) AS wd, StartTime, EndTime FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS sub) AS TimeSlot
                 FROM PTRegistrations r
                 INNER JOIN Members m ON r.MemberID = m.MemberID
                 INNER JOIN Users u ON m.UserID = u.UserID
@@ -1012,10 +1016,14 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         CASE wd
                             WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
                             WHEN 5 THEN N'T5' WHEN 6 THEN N'T6' WHEN 7 THEN N'T7' WHEN 1 THEN N'CN'
-                        END, ', ') 
+                        END, ', ') WITHIN GROUP (ORDER BY wd ASC)
                      FROM (SELECT DISTINCT DATEPART(weekday, SessionDate) AS wd FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS sub) AS DaysOfWeek,
-                    (SELECT TOP 1 CONVERT(varchar(5), StartTime, 108) + ' - ' + CONVERT(varchar(5), EndTime, 108)
-                     FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS TimeSlot
+                    (SELECT STRING_AGG(
+                        CASE wd
+                            WHEN 2 THEN N'T2' WHEN 3 THEN N'T3' WHEN 4 THEN N'T4'
+                            WHEN 5 THEN N'T5' WHEN 6 THEN N'T6' WHEN 7 THEN N'T7' WHEN 1 THEN N'CN'
+                        END + ': ' + CONVERT(varchar(5), StartTime, 108) + '-' + CONVERT(varchar(5), EndTime, 108), ', ') WITHIN GROUP (ORDER BY wd ASC)
+                     FROM (SELECT DISTINCT DATEPART(weekday, SessionDate) AS wd, StartTime, EndTime FROM PTSchedules WHERE PTRegistrationID = r.PTRegistrationID AND IsDeleted = 0) AS sub) AS TimeSlot
                 FROM PTRegistrations r
                 INNER JOIN Members m ON r.MemberID = m.MemberID
                 INNER JOIN Users u ON m.UserID = u.UserID

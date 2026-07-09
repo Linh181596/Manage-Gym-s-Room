@@ -35,6 +35,22 @@
         </div>
     </c:if>
 
+    <!-- Alert: Assigned Substitute PT Sessions -->
+    <c:if test="${not empty substituteSessionsCount && substituteSessionsCount > 0}">
+        <div class="alert alert-info border-info border-2 shadow-sm d-flex align-items-center justify-content-between fade show p-3 mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa fa-info-circle text-info me-3 fs-4"></i>
+                <div>
+                    <h6 class="mb-0 fw-bold text-dark">Bạn có ${substituteSessionsCount} ca dạy thay thế mới được phân công!</h6>
+                    <small class="text-muted">Bạn được phân công dạy thay cho HLV khác. Vui lòng kiểm tra lịch để chuẩn bị giảng dạy.</small>
+                </div>
+            </div>
+            <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="btn btn-info fw-bold text-white shadow-sm">
+                <i class="fa fa-calendar-check me-1"></i> Xem lịch dạy của tôi
+            </a>
+        </div>
+    </c:if>
+
     <!-- Row 1: KPI Cards -->
     <div class="row g-4">
         <!-- Card 1: Hội viên của tôi -->
@@ -169,8 +185,18 @@
                                                     </span>
                                                 </td>
                                                 <td>${s.memberName}</td>
-                                                <td>${s.packageName}</td>
                                                  <td>
+                                                     ${s.packageName}
+                                                     <c:choose>
+                                                         <c:when test="${not empty s.originalPtId and s.ptId == pt.ptId}">
+                                                             <span class="badge bg-info text-white ms-1">Dạy thay</span>
+                                                         </c:when>
+                                                         <c:when test="${not empty s.originalPtId and s.originalPtId == pt.ptId}">
+                                                             <span class="badge bg-warning text-dark ms-1" data-bs-toggle="tooltip" title="Ca này bạn đã nhờ dạy hộ">Dạy thay bởi: ${s.ptName}</span>
+                                                         </c:when>
+                                                     </c:choose>
+                                                 </td>
+                                                  <td>
                                                      <span class="badge bg-${s.sessionStatus == 'Completed' ? 'success' : (s.sessionStatus == 'Cancelled' ? 'danger' : 'warning text-dark')}">
                                                          ${s.sessionStatus}
                                                      </span>
@@ -393,7 +419,17 @@
                                                 </span>
                                             </td>
                                             <td class="fw-bold">${s.memberName}</td>
-                                            <td>${s.packageName}</td>
+                                            <td>
+                                                ${s.packageName}
+                                                <c:choose>
+                                                    <c:when test="${not empty s.originalPtId and s.ptId == pt.ptId}">
+                                                        <span class="badge bg-info text-white ms-1">Dạy thay</span>
+                                                    </c:when>
+                                                    <c:when test="${not empty s.originalPtId and s.originalPtId == pt.ptId}">
+                                                        <span class="badge bg-warning text-dark ms-1" data-bs-toggle="tooltip" title="Ca này bạn đã nhờ dạy hộ">Dạy thay bởi: ${s.currentPtName}</span>
+                                                    </c:when>
+                                                </c:choose>
+                                            </td>
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${s.sessionStatus == 'Completed'}">
