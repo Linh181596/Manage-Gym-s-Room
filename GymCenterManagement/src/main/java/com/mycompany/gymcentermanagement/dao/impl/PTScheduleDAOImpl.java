@@ -20,10 +20,13 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     SELECT COUNT(*) FROM PTSchedules 
                     WHERE PTID = ? 
                       AND SessionDate = ? 
-                      AND StartTime = CAST(? AS TIME)
-                      AND EndTime = CAST(? AS TIME)
                       AND SessionStatus != 'Cancelled' 
                       AND IsDeleted = 0
+                      AND (
+                          (CAST(StartTime AS TIME) <= CAST(? AS TIME) AND CAST(EndTime AS TIME) > CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) < CAST(? AS TIME) AND CAST(EndTime AS TIME) >= CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) >= CAST(? AS TIME) AND CAST(EndTime AS TIME) <= CAST(? AS TIME))
+                      )
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -31,7 +34,11 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
             ps.setInt(1, ptId);
             ps.setDate(2, java.sql.Date.valueOf(sessionDate));
             ps.setTime(3, startTime);
-            ps.setTime(4, endTime);
+            ps.setTime(4, startTime);
+            ps.setTime(5, endTime);
+            ps.setTime(6, endTime);
+            ps.setTime(7, startTime);
+            ps.setTime(8, endTime);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -298,10 +305,13 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     SELECT COUNT(*) FROM PTSchedules 
                     WHERE MemberID = ? 
                       AND SessionDate = ? 
-                      AND StartTime = CAST(? AS TIME)
-                      AND EndTime = CAST(? AS TIME)
                       AND SessionStatus != 'Cancelled' 
                       AND IsDeleted = 0
+                      AND (
+                          (CAST(StartTime AS TIME) <= CAST(? AS TIME) AND CAST(EndTime AS TIME) > CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) < CAST(? AS TIME) AND CAST(EndTime AS TIME) >= CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) >= CAST(? AS TIME) AND CAST(EndTime AS TIME) <= CAST(? AS TIME))
+                      )
                 """;
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -309,7 +319,11 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
             ps.setInt(1, memberId);
             ps.setDate(2, java.sql.Date.valueOf(sessionDate));
             ps.setTime(3, startTime);
-            ps.setTime(4, endTime);
+            ps.setTime(4, startTime);
+            ps.setTime(5, endTime);
+            ps.setTime(6, endTime);
+            ps.setTime(7, startTime);
+            ps.setTime(8, endTime);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -464,9 +478,9 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                       AND SessionStatus != 'Cancelled' 
                       AND IsDeleted = 0
                       AND (
-                          (StartTime <= ? AND EndTime > ?) OR 
-                          (StartTime < ? AND EndTime >= ?) OR 
-                          (StartTime >= ? AND EndTime <= ?)
+                          (CAST(StartTime AS TIME) <= CAST(? AS TIME) AND CAST(EndTime AS TIME) > CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) < CAST(? AS TIME) AND CAST(EndTime AS TIME) >= CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) >= CAST(? AS TIME) AND CAST(EndTime AS TIME) <= CAST(? AS TIME))
                       )
                 """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -495,9 +509,9 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                       AND SessionStatus != 'Cancelled' 
                       AND IsDeleted = 0
                       AND (
-                          (StartTime <= ? AND EndTime > ?) OR 
-                          (StartTime < ? AND EndTime >= ?) OR 
-                          (StartTime >= ? AND EndTime <= ?)
+                          (CAST(StartTime AS TIME) <= CAST(? AS TIME) AND CAST(EndTime AS TIME) > CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) < CAST(? AS TIME) AND CAST(EndTime AS TIME) >= CAST(? AS TIME)) OR 
+                          (CAST(StartTime AS TIME) >= CAST(? AS TIME) AND CAST(EndTime AS TIME) <= CAST(? AS TIME))
                       )
                 """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
