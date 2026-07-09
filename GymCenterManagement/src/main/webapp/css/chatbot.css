@@ -6,6 +6,11 @@
     font-family: "Heebo", Arial, sans-serif;
 }
 
+.chatbot.is-custom-position {
+    right: auto;
+    bottom: auto;
+}
+
 .chatbot *,
 .chatbot *::before,
 .chatbot *::after {
@@ -26,6 +31,7 @@
     justify-content: center;
     font-size: 1.55rem;
     cursor: pointer;
+    touch-action: none;
     transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
@@ -78,6 +84,23 @@
     transition: transform 0.22s ease, opacity 0.22s ease;
 }
 
+.chatbot.is-window-left .chatbot__window {
+    right: auto;
+    left: 0;
+    transform-origin: bottom left;
+}
+
+.chatbot.is-window-below .chatbot__window {
+    top: 82px;
+    bottom: auto;
+    transform: translateY(-18px) scale(0.96);
+    transform-origin: top right;
+}
+
+.chatbot.is-window-below.is-window-left .chatbot__window {
+    transform-origin: top left;
+}
+
 .chatbot.is-open .chatbot__window {
     transform: translateY(0) scale(1);
     opacity: 1;
@@ -93,6 +116,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
 }
 
 .chatbot__assistant {
@@ -306,6 +332,17 @@
     opacity: 0.65;
     cursor: not-allowed;
     transform: none;
+}
+
+.chatbot.is-dragging,
+.chatbot.is-dragging .chatbot__header,
+.chatbot.is-dragging .chatbot__toggle {
+    cursor: grabbing;
+}
+
+.chatbot.is-dragging .chatbot__window,
+.chatbot.is-dragging .chatbot__toggle {
+    transition: none;
 }
 
 @keyframes chatbotTyping {
