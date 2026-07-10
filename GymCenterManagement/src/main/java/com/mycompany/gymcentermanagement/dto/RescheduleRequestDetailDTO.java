@@ -29,6 +29,7 @@ public class RescheduleRequestDetailDTO {
     private LocalDateTime updatedDate;
     private boolean ptConflict;
     private boolean memberConflict;
+    private String originalSessionStatus;
 
     public boolean isPtConflict() {
         return ptConflict;
@@ -252,5 +253,13 @@ public class RescheduleRequestDetailDTO {
     public String getFormattedCreatedDate() {
         if (createdDate == null) return "";
         return createdDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    public String getOriginalSessionStatus() {
+        return originalSessionStatus;
+    }
+
+    public void setOriginalSessionStatus(String originalSessionStatus) {
+        this.originalSessionStatus = originalSessionStatus;
     }
 }

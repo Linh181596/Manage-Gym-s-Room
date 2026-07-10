@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
 <%--
 =========================================================================
 Document    : chatbot.jsp
@@ -8,6 +10,7 @@ Description : Reusable chatbot widget for gym-related customer support
 =========================================================================
 --%>
 
+<c:if test="${empty sessionScope.currentUser || sessionScope.currentUser.role == 'Member'}">
 <link href="${pageContext.request.contextPath}/css/chatbot.css" rel="stylesheet">
 
 <div id="chatBot" class="chatbot" data-context-path="${pageContext.request.contextPath}">
@@ -55,3 +58,4 @@ Description : Reusable chatbot widget for gym-related customer support
 </div>
 
 <script src="${pageContext.request.contextPath}/js/chatbot.js"></script>
+</c:if>

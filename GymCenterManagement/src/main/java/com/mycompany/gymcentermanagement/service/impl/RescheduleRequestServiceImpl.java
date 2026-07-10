@@ -110,7 +110,7 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 && proposedStartTime.equals(schedule.getStartTime())
                 && proposedEndTime.equals(schedule.getEndTime());
         if (sameAsOriginal) {
-            return "Khung giờ mới phải khác lịch gốc hiện tại.";
+            return "Khung giờ đề xuất mới phải khác với khung giờ gốc của ca tập đã bị hủy/đổi.";
         }
 
         if (ptScheduleDAO.isSlotMassCancelled(proposedDate, proposedStartTime, proposedEndTime)) {
@@ -151,7 +151,12 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
         request.setProposedDate(proposedDate);
         request.setProposedStartTime(proposedStartTime);
         request.setProposedEndTime(proposedEndTime);
-        request.setStatus("Pending");
+        if ("Cancelled".equalsIgnoreCase(schedule.getSessionStatus())) {
+            request.setStatus("Escalated");
+            request.setEscalationReason("Yêu cầu xếp lịch bù cho ca tập bị hủy bởi Admin/Hệ thống.");
+        } else {
+            request.setStatus("Pending");
+        }
         request.setReason(reason.trim());
 
         boolean created = rescheduleRequestDAO.create(request);

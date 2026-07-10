@@ -2,7 +2,22 @@ USE [GymCenterManagement]
 
 GO
 
+IF OBJECT_ID(N'dbo.FAQ', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.FAQ (
+        faq_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        question NVARCHAR(500) NOT NULL,
+        answer NVARCHAR(MAX) NOT NULL,
+        category NVARCHAR(100) NULL,
+        keywords NVARCHAR(1000) NULL,
+        status NVARCHAR(20) NOT NULL CONSTRAINT DF_FAQ_Status DEFAULT N'Active',
+        created_at DATETIME2 NOT NULL CONSTRAINT DF_FAQ_CreatedAt DEFAULT SYSDATETIME(),
+        updated_at DATETIME2 NULL
+    );
 
+    CREATE INDEX IX_FAQ_Status ON dbo.FAQ(status);
+END;
+GO
 
 IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Xin chào')
 BEGIN
@@ -6274,7 +6289,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT nào tốt?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6297,7 +6312,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Nên chọn PT nào?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6320,7 +6335,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT nào phù hợp với tôi?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6343,7 +6358,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT giảm cân là ai?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6366,7 +6381,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT tăng cơ là ai?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6389,7 +6404,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT cardio là ai?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6412,7 +6427,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT yoga là ai?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6435,7 +6450,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT boxing là ai?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6458,7 +6473,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT dinh dưỡng là ai?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6481,7 +6496,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Có PT phục hồi thể lực không?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6504,7 +6519,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT cho người mới là ai?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6527,7 +6542,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT cho nữ có không?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6550,7 +6565,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT nam có không?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6573,7 +6588,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Có thể đổi PT không?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6596,7 +6611,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Tôi muốn đổi huấn luyện viên',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
@@ -6619,7 +6634,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Không hợp PT thì đổi được không?',
-    N'Bạn có thể chọn PT theo mục tiêu: Trần Minh Quân hỗ trợ quản lý cân nặng, Nguyễn Hoàng Nam hỗ trợ tăng cơ, Anh Khoa Cardio hỗ trợ cardio, Nga Yoga hỗ trợ yoga, Vũ Đức Long hỗ trợ boxing, Coach Huy DD hỗ trợ dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
+    N'Bạn có thể chọn PT theo mục tiêu: Quản lý cân nặng, Tăng cơ, Cardio, Yoga, Boxing, Dinh dưỡng. Nếu muốn đổi PT, vui lòng liên hệ quầy lễ tân để được kiểm tra lịch và chính sách.',
     N'Personal Trainer',
     N'pt nào tốt, pt nao tot, chọn pt, chon pt, giảm cân, giam can, tăng cơ, tang co, cardio, yoga, boxing, dinh dưỡng, dinh duong, đổi pt, doi pt, hồ sơ pt',
     N'Active'
