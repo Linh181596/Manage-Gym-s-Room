@@ -60,6 +60,9 @@ public class MemberScheduleController extends HttpServlet {
             List<PTScheduleDetailDTO> weekSchedules = ptScheduleService.getMemberScheduleDetailsForWeek(member.getMemberId(), monday, sunday);
             List<PTScheduleDetailDTO> allUpcomingSchedules = ptScheduleService.getMemberScheduleDetailsForWeek(member.getMemberId(), monday.minusWeeks(2), sunday.plusWeeks(6));
             req.setAttribute("allUpcomingSchedules", allUpcomingSchedules);
+            
+            List<Map<String, Object>> massCancelledSlots = ptScheduleService.getMassCancelledSlots();
+            req.setAttribute("massCancelledSlots", massCancelledSlots);
 
             Map<String, List<PTScheduleDetailDTO>> scheduleMap = new LinkedHashMap<>();
             DateTimeFormatter uiFmt = DateTimeFormatter.ofPattern("dd/MM");

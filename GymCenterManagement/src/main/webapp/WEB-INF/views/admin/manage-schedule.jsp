@@ -216,13 +216,13 @@
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${s.sessionStatus == 'Completed'}">
-                                                        <span class="badge bg-success">Completed</span>
+                                                        <span class="badge bg-success">Đã hoàn thành</span>
                                                     </c:when>
                                                     <c:when test="${s.sessionStatus == 'Cancelled'}">
-                                                        <span class="badge bg-danger">Cancelled</span>
+                                                        <span class="badge bg-danger">Đã hủy</span>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <span class="badge bg-warning text-dark">Upcoming</span>
+                                                        <span class="badge bg-warning text-dark">Sắp diễn ra</span>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
@@ -242,7 +242,31 @@
                                             <td class="text-center">
                                                 <c:choose>
                                                     <c:when test="${s.sessionStatus == 'Cancelled'}">
-                                                        <span class="text-muted small">Ca tập đã bị hủy</span>
+                                                         <div class="text-muted small mb-1">Ca tập đã bị hủy</div>
+                                                         <c:choose>
+                                                             <c:when test="${s.rescheduleStatus == 'Pending'}">
+                                                                 <span class="badge bg-warning text-dark" style="font-size: 0.75rem;"><i class="fa fa-redo me-1"></i>Xếp bù: Đang chờ</span>
+                                                             </c:when>
+                                                             <c:when test="${s.rescheduleStatus == 'Approved'}">
+                                                                 <div class="mt-1">
+                                                                     <span class="badge bg-success" style="font-size: 0.75rem;" data-bs-toggle="tooltip" 
+                                                                           title="Ca học bù đã được xếp vào ngày ${s.rescheduleProposedDate}">
+                                                                         <i class="fa fa-check-circle me-1"></i>Đã xếp lịch lại
+                                                                     </span>
+                                                                     <div class="small text-success fw-bold mt-1" style="font-size: 0.75rem;">
+                                                                         <i class="fa fa-calendar-alt me-1"></i>${s.rescheduleProposedDate}
+                                                                         <br>
+                                                                         <fmt:formatDate value="${s.rescheduleProposedStartTime}" pattern="HH:mm"/> - <fmt:formatDate value="${s.rescheduleProposedEndTime}" pattern="HH:mm"/>
+                                                                     </div>
+                                                                 </div>
+                                                             </c:when>
+                                                             <c:when test="${s.rescheduleStatus == 'Rejected'}">
+                                                                 <span class="badge bg-secondary" style="font-size: 0.75rem;"><i class="fa fa-times me-1"></i>Xếp bù: Bị từ chối</span>
+                                                             </c:when>
+                                                             <c:otherwise>
+                                                                 <span class="text-muted small" style="font-size: 0.75rem;">Chưa có yêu cầu xếp bù</span>
+                                                             </c:otherwise>
+                                                         </c:choose>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <div class="d-flex justify-content-center gap-1">
@@ -339,6 +363,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Mã đơn</th>
+                                        <th>Loại yêu cầu</th>
                                         <th>Thời gian gửi</th>
                                         <th>Hội viên</th>
                                         <th>Huấn luyện viên</th>
@@ -353,6 +378,16 @@
                                     <c:forEach var="r" items="${escalatedRequests}">
                                         <tr>
                                             <td class="fw-bold">#RQ-${r.requestId}</td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${r.originalSessionStatus == 'Cancelled'}">
+                                                        <span class="badge bg-danger">Bù lịch</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge bg-primary">Đổi lịch</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
                                             <td><small class="fw-semibold text-secondary">${r.formattedCreatedDate}</small></td>
                                             <td>${r.memberName}</td>
                                             <td>${r.ptName}</td>

@@ -68,9 +68,9 @@
                                         <div>
                                             <span class="badge bg-${borderColor}">
                                                 <c:choose>
-                                                    <c:when test="${s.sessionStatus == 'Completed'}">Completed</c:when>
-                                                    <c:when test="${s.sessionStatus == 'Cancelled'}">Cancelled</c:when>
-                                                    <c:otherwise>Upcoming</c:otherwise>
+                                                    <c:when test="${s.sessionStatus == 'Completed'}">Đã hoàn thành</c:when>
+                                                    <c:when test="${s.sessionStatus == 'Cancelled'}">Đã hủy</c:when>
+                                                    <c:otherwise>Sắp diễn ra</c:otherwise>
                                                 </c:choose>
                                             </span>
                                             <c:choose>
@@ -223,6 +223,8 @@
                                            data-schedule-id="${s.scheduleId}" 
                                            data-pt-id="${s.ptId}" 
                                            data-member-id="${s.memberId}" 
+                                           data-original-date="${s.sessionDate}"
+                                           data-original-slot="${s.startTime.toString().substring(0,5)}-${s.endTime.toString().substring(0,5)}"
                                            required>
                                 </div>
 
@@ -304,7 +306,13 @@
                             <div class="d-flex align-items-center mb-3">
                                 <div class="fw-semibold me-2">Trạng thái:</div>
                                 <span class="badge bg-${s.rescheduleStatus == 'Pending' ? 'info' : (s.rescheduleStatus == 'Approved' ? 'success' : (s.rescheduleStatus == 'Rejected' ? 'danger' : 'warning'))} px-3 py-2 fs-7">
-                                    ${s.rescheduleStatus}
+                                    <c:choose>
+                                        <c:when test="${s.rescheduleStatus == 'Pending'}">Đang chờ</c:when>
+                                        <c:when test="${s.rescheduleStatus == 'Approved'}">Đã duyệt</c:when>
+                                        <c:when test="${s.rescheduleStatus == 'Rejected'}">Bị từ chối</c:when>
+                                        <c:when test="${s.rescheduleStatus == 'Escalated'}">Yêu cầu hỗ trợ (Gửi lên Admin)</c:when>
+                                        <c:otherwise>${s.rescheduleStatus}</c:otherwise>
+                                    </c:choose>
                                 </span>
                             </div>
 
@@ -320,6 +328,8 @@
                                                data-schedule-id="${s.scheduleId}" 
                                                data-pt-id="${s.ptId}" 
                                                data-member-id="${s.memberId}" 
+                                               data-original-date="${s.sessionDate}"
+                                               data-original-slot="${s.startTime.toString().substring(0,5)}-${s.endTime.toString().substring(0,5)}"
                                                required>
                                     </div>
                                     <div class="mb-2">
@@ -524,11 +534,23 @@
         </c:forEach>
     ];
 
+    const massCancelledSlots = [
+        <c:forEach var="mc" items="${massCancelledSlots}">
+        {
+            date: "${mc.date}",
+            slot: "${mc.slot}",
+            isAllDay: ${mc.isAllDay}
+        },
+        </c:forEach>
+    ];
+
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll('.reschedule-date-input').forEach(function (input) {
             input.addEventListener('change', function () {
                 const date = this.value;
                 const scheduleId = this.getAttribute('data-schedule-id');
+                const originalDate = this.getAttribute('data-original-date');
+                const originalSlot = this.getAttribute('data-original-slot');
 
                 const selects = document.querySelectorAll(
                     '#rescheduleProposedSlot_' + scheduleId + 
@@ -549,6 +571,12 @@
                     .filter(item => item.date === date)
                     .map(item => item.slot);
 
+                // Check mass cancellations
+                const activeMcSlots = massCancelledSlots
+                    .filter(item => item.date === date);
+                const isAllDayMc = activeMcSlots.some(item => item.isAllDay);
+                const mcSlotsList = activeMcSlots.map(item => item.slot);
+
                 selects.forEach(function (select) {
                     Array.from(select.options).forEach(function (opt) {
                         if (!opt.value) return;
@@ -559,11 +587,21 @@
                             opt.setAttribute('data-original-text', originalText);
                         }
 
-                        let isBusy = activeBusySlots.includes(opt.value);
+                        let isOriginalSlot = (date === originalDate && opt.value === originalSlot);
+                        let isBusy = activeBusySlots.includes(opt.value) || isOriginalSlot;
+                        let isMc = isAllDayMc || mcSlotsList.includes(opt.value);
 
-                        if (isBusy) {
+                        if (isBusy || isMc) {
                             opt.disabled = true;
-                            opt.text = originalText + ' (Trùng lịch ❌)';
+                            if (isAllDayMc) {
+                                opt.text = originalText + ' (Phòng tập đóng cửa/Hủy cả ngày ❌)';
+                            } else if (isMc) {
+                                opt.text = originalText + ' (Lịch đã bị Admin hủy ❌)';
+                            } else if (isOriginalSlot) {
+                                opt.text = originalText + ' (Trùng lịch gốc đã bị hủy ❌)';
+                            } else {
+                                opt.text = originalText + ' (Trùng lịch ❌)';
+                            }
                         } else {
                             opt.disabled = false;
                             opt.text = originalText;

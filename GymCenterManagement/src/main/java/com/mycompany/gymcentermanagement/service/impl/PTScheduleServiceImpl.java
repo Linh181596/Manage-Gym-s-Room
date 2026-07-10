@@ -340,4 +340,9 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     public int massCancelSessions(LocalDate cancelDate, Time startTime, Time endTime, String reason, int cancelledByUserId, String updatedBy) {
         return ptScheduleDAO.massCancelSessions(cancelDate, startTime, endTime, reason, cancelledByUserId, updatedBy);
     }
+
+    @Override
+    public List<java.util.Map<String, Object>> getMassCancelledSlots() {
+        return ptScheduleDAO.getMassCancelledSlots();
+    }
 }

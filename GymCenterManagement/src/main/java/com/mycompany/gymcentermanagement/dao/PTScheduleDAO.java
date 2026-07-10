@@ -25,4 +25,5 @@ public interface PTScheduleDAO {
     List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId);
     int massCancelSessions(LocalDate cancelDate, java.sql.Time startTime, java.sql.Time endTime, String reason, int cancelledByUserId, String updatedBy);
     boolean isSlotMassCancelled(LocalDate date, java.sql.Time startTime, java.sql.Time endTime);
+    List<java.util.Map<String, Object>> getMassCancelledSlots();
 }

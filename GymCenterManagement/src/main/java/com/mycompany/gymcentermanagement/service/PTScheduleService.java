@@ -29,4 +29,5 @@ public interface PTScheduleService {
     String assignSubstitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId, String updatedBy);
     List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId);
     int massCancelSessions(LocalDate cancelDate, Time startTime, Time endTime, String reason, int cancelledByUserId, String updatedBy);
+    List<java.util.Map<String, Object>> getMassCancelledSlots();
 }
