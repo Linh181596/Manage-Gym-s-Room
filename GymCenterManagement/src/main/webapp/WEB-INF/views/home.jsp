@@ -462,7 +462,8 @@
                     <a href="${pageContext.request.contextPath}/pt/list">Danh sách PT</a>
                     <a href="#goi-tap">Gói tập</a>
                     <a href="#bmi">Tính BMI</a>
-                    <a href="#blog">Blog</a>
+                    <a href="${pageContext.request.contextPath}/blogs">Blog</a>
+                    <a href="${pageContext.request.contextPath}/policies">Chính sách</a>
                     <a href="#tien-ich">Tiện ích</a>
                     <a href="#lien-he">Liên hệ</a>
                 </div>
@@ -751,49 +752,6 @@
                 </div>
             </div>
         </section>
-                                
-        <section id="blog" class="section-space">
-            <div class="container">
-                <div class="section-heading">
-                    <span class="badge-soft">Blog luyện tập</span>
-                    <h2 class="mt-3 mb-3">Góc kiến thức cho hành trình khỏe hơn mỗi ngày</h2>
-                    <p>Các bài viết ngắn giúp hội viên chuẩn bị tốt hơn trước khi chọn gói tập, PT và mục tiêu cá nhân.</p>
-                </div>
-                <div class="row g-4">
-                    <div class="col-md-6 col-lg-4">
-                        <article class="blog-card">
-                            <img src="${pageContext.request.contextPath}/img/testimonial-1.jpg" alt="Khởi động trước buổi tập">
-                            <div class="p-4">
-                                <div class="blog-meta mb-2">Khởi động • 5 phút đọc</div>
-                                <h5 class="fw-bold">Vì sao 10 phút khởi động giúp buổi tập hiệu quả hơn?</h5>
-                                <p class="muted-copy mb-0">Làm nóng khớp, tăng nhịp tim vừa đủ và giảm nguy cơ đau mỏi sau tập.</p>
-                            </div>
-                        </article>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <article class="blog-card">
-                            <img src="${pageContext.request.contextPath}/assets/uploads/pt-avatar/Nguyen_Thi_Nga_Yoga.jpg" alt="Phục hồi sau tập">
-                            <div class="p-4">
-                                <div class="blog-meta mb-2">Phục hồi • 4 phút đọc</div>
-                                <h5 class="fw-bold">Phục hồi đúng cách để duy trì lịch tập đều đặn</h5>
-                                <p class="muted-copy mb-0">Ngủ đủ, giãn cơ và phân bổ cường độ là nền tảng cho tiến bộ bền vững.</p>
-                            </div>
-                        </article>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
-                        <article class="blog-card">
-                            <img src="${pageContext.request.contextPath}/img/testimonial-2.jpg" alt="Dinh dưỡng cho người tập gym">
-                            <div class="p-4">
-                                <div class="blog-meta mb-2">Dinh dưỡng • 6 phút đọc</div>
-                                <h5 class="fw-bold">Bữa ăn trước và sau tập nên ưu tiên điều gì?</h5>
-                                <p class="muted-copy mb-0">Cân bằng đạm, tinh bột và nước giúp cơ thể có năng lượng và hồi phục tốt hơn.</p>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </div>
-        </section>
-                            
         <section id="tien-ich" class="section-space soft-band">
             <div class="container">
                 <div class="section-heading">
@@ -852,7 +810,8 @@
                         <a href="${pageContext.request.contextPath}/pt/list" class="text-muted text-decoration-none small">Danh sách PT</a>
                         <a href="#goi-tap" class="text-muted text-decoration-none small">Gói tập</a>
                         <a href="#bmi" class="text-muted text-decoration-none small">Tính BMI</a>
-                        <a href="#blog" class="text-muted text-decoration-none small">Blog</a>
+                        <a href="#goi-tap" class="text-muted text-decoration-none small">Danh mục</a>
+                        <a href="${pageContext.request.contextPath}/policies" class="text-muted text-decoration-none small">Chính sách</a>
                     </div>
                 </div>
                 <div class="col-6 col-lg-2">
