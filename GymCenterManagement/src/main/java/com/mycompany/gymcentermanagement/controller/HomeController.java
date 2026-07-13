@@ -116,3 +116,4 @@ public class HomeController extends HttpServlet {
         return user.getRole() == User.Role.PT ? "/pt/profile" : "/profile";
     }
 }
+

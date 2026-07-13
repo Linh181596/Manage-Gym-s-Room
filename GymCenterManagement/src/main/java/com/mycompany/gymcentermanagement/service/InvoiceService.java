@@ -19,5 +19,6 @@ public interface InvoiceService {
     int getInvoicesCount() throws SQLException;
     List<Invoice> getInvoicesPaginated(int offset, int limit) throws SQLException;
     boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException;
+    boolean recordOnlinePayment(int invoiceId) throws SQLException;
     boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException;
 }
