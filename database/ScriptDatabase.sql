@@ -197,6 +197,13 @@ CREATE TABLE [dbo].[MaintenanceSchedules](
 	[Status] [varchar](20) NOT NULL,
 	[CompletionDate] [datetime2](7) NULL,
 	[CompletionNote] [nvarchar](max) NULL,
+	[CompletionImageURL] [varchar](255) NULL,
+	[SubmittedForApprovalAt] [datetime2](7) NULL,
+	[SubmittedBy] [nvarchar](50) NULL,
+	[RequestedIssueResolution] [bit] NOT NULL,
+	[ApprovedBy] [nvarchar](50) NULL,
+	[ApprovedAt] [datetime2](7) NULL,
+	[ApprovalNote] [nvarchar](max) NULL,
 	[CreatedBy] [nvarchar](50) NULL,
 	[CreatedDate] [datetime2](7) NOT NULL,
 	[UpdatedBy] [nvarchar](50) NULL,
@@ -1202,6 +1209,8 @@ ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedule
 GO
 ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedules_IsDeleted]  DEFAULT ((0)) FOR [IsDeleted]
 GO
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedules_RequestedIssueResolution]  DEFAULT ((0)) FOR [RequestedIssueResolution]
+GO
 ALTER TABLE [dbo].[MemberPackages] ADD  DEFAULT (sysdatetime()) FOR [CreatedDate]
 GO
 ALTER TABLE [dbo].[MemberPackages] ADD  DEFAULT ((0)) FOR [IsDeleted]
@@ -1493,7 +1502,7 @@ ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Status] CH
 GO
 ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Status]
 GO
-ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='Completed' OR [Status]='Cancelled'))
+ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='PendingApproval' OR [Status]='Completed' OR [Status]='Cancelled'))
 GO
 ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Status]
 GO
