@@ -18,6 +18,7 @@ import java.util.Map;
 public class MaintenanceScheduleService {
     public static final String STATUS_SCHEDULED = "Scheduled";
     public static final String STATUS_IN_PROGRESS = "InProgress";
+    public static final String STATUS_PENDING_APPROVAL = "PendingApproval";
     public static final String STATUS_COMPLETED = "Completed";
     public static final String STATUS_CANCELLED = "Cancelled";
     public static final String TYPE_PREVENTIVE = "Preventive";
@@ -135,14 +136,102 @@ public class MaintenanceScheduleService {
                 if (!updated) {
                     throw new SQLException("Maintenance progress could not be updated.");
                 }
-                if (STATUS_COMPLETED.equals(nextStatus)
-                        && resolveRelatedIssue
-                        && current.getIssueId() != null) {
+                equipmentDAO.recalculateStatus(connection, current.getEquipmentId(), actor);
+                connection.commit();
+                return true;
+            } catch (SQLException | IllegalArgumentException ex) {
+                connection.rollback();
+                throw ex;
+            } finally {
+                connection.setAutoCommit(oldAutoCommit);
+            }
+        }
+    }
+
+    public boolean submitForApproval(int id, String completionNote, String completionImageUrl,
+            boolean resolveRelatedIssue, String actor) throws SQLException {
+        requireActor(actor);
+        validateCompletionSubmission(completionNote, completionImageUrl);
+        try (Connection connection = DBContext.getConnection()) {
+            boolean oldAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try {
+                MaintenanceSchedule current = requireSchedule(connection, id);
+                if (!STATUS_IN_PROGRESS.equals(current.getStatus())) {
+                    throw new IllegalArgumentException("Only in-progress maintenance can be submitted for approval.");
+                }
+                boolean updated = scheduleDAO.submitForApproval(
+                        connection, id, normalizeBlank(completionNote), normalizeBlank(completionImageUrl),
+                        resolveRelatedIssue, actor
+                );
+                if (!updated) {
+                    throw new SQLException("Maintenance completion could not be submitted for approval.");
+                }
+                equipmentDAO.recalculateStatus(connection, current.getEquipmentId(), actor);
+                connection.commit();
+                return true;
+            } catch (SQLException | IllegalArgumentException ex) {
+                connection.rollback();
+                throw ex;
+            } finally {
+                connection.setAutoCommit(oldAutoCommit);
+            }
+        }
+    }
+
+    public boolean approveCompletion(int id, String approvalNote, String actor) throws SQLException {
+        requireActor(actor);
+        try (Connection connection = DBContext.getConnection()) {
+            boolean oldAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try {
+                MaintenanceSchedule current = requireSchedule(connection, id);
+                if (!STATUS_PENDING_APPROVAL.equals(current.getStatus())) {
+                    throw new IllegalArgumentException("Only pending approval maintenance can be approved.");
+                }
+                boolean approved = scheduleDAO.approveCompletion(
+                        connection, id, normalizeBlank(approvalNote), actor
+                );
+                if (!approved) {
+                    throw new SQLException("Maintenance completion could not be approved.");
+                }
+                if (current.isRequestedIssueResolution() && current.getIssueId() != null) {
                     EquipmentIssue issue = issueDAO.findById(connection, current.getIssueId());
                     if (issue == null || issue.getEquipmentId() != current.getEquipmentId()) {
                         throw new IllegalArgumentException("Related equipment issue is invalid.");
                     }
                     issueDAO.updateStatus(connection, issue.getIssueId(), EquipmentService.ISSUE_RESOLVED, actor);
+                }
+                equipmentDAO.recalculateStatus(connection, current.getEquipmentId(), actor);
+                connection.commit();
+                return true;
+            } catch (SQLException | IllegalArgumentException ex) {
+                connection.rollback();
+                throw ex;
+            } finally {
+                connection.setAutoCommit(oldAutoCommit);
+            }
+        }
+    }
+
+    public boolean rejectCompletion(int id, String rejectionNote, String actor) throws SQLException {
+        requireActor(actor);
+        if (rejectionNote == null || rejectionNote.isBlank()) {
+            throw new IllegalArgumentException("Rejection reason is required.");
+        }
+        try (Connection connection = DBContext.getConnection()) {
+            boolean oldAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try {
+                MaintenanceSchedule current = requireSchedule(connection, id);
+                if (!STATUS_PENDING_APPROVAL.equals(current.getStatus())) {
+                    throw new IllegalArgumentException("Only pending approval maintenance can be rejected.");
+                }
+                boolean rejected = scheduleDAO.rejectCompletion(
+                        connection, id, normalizeBlank(rejectionNote), actor
+                );
+                if (!rejected) {
+                    throw new SQLException("Maintenance completion could not be rejected.");
                 }
                 equipmentDAO.recalculateStatus(connection, current.getEquipmentId(), actor);
                 connection.commit();
@@ -201,16 +290,22 @@ public class MaintenanceScheduleService {
     }
 
     static void validateProgressTransition(String currentStatus, String nextStatus, String completionNote) {
-        if (STATUS_COMPLETED.equals(currentStatus) || STATUS_CANCELLED.equals(currentStatus)) {
+        if (STATUS_COMPLETED.equals(currentStatus) || STATUS_CANCELLED.equals(currentStatus)
+                || STATUS_PENDING_APPROVAL.equals(currentStatus)) {
             throw new IllegalArgumentException("Completed or cancelled schedules cannot be edited.");
         }
         boolean start = STATUS_SCHEDULED.equals(currentStatus) && STATUS_IN_PROGRESS.equals(nextStatus);
-        boolean complete = STATUS_IN_PROGRESS.equals(currentStatus) && STATUS_COMPLETED.equals(nextStatus);
-        if (!start && !complete) {
+        if (!start) {
             throw new IllegalArgumentException("Maintenance status transition is invalid.");
         }
-        if (complete && (completionNote == null || completionNote.isBlank())) {
+    }
+
+    private void validateCompletionSubmission(String completionNote, String completionImageUrl) {
+        if (completionNote == null || completionNote.isBlank()) {
             throw new IllegalArgumentException("Completion note is required.");
+        }
+        if (completionImageUrl == null || completionImageUrl.isBlank()) {
+            throw new IllegalArgumentException("Completion image is required.");
         }
     }
 
@@ -258,6 +353,7 @@ public class MaintenanceScheduleService {
         if (status != null && !status.isBlank()
                 && !STATUS_SCHEDULED.equals(status)
                 && !STATUS_IN_PROGRESS.equals(status)
+                && !STATUS_PENDING_APPROVAL.equals(status)
                 && !STATUS_COMPLETED.equals(status)
                 && !STATUS_CANCELLED.equals(status)) {
             throw new IllegalArgumentException("Maintenance status is invalid.");
@@ -287,7 +383,7 @@ public class MaintenanceScheduleService {
         }
 
         public int getTotal() {
-            return getScheduled() + getInProgress() + getCompleted() + getCancelled();
+            return getScheduled() + getInProgress() + getPendingApproval() + getCompleted() + getCancelled();
         }
 
         public int getScheduled() {
@@ -296,6 +392,10 @@ public class MaintenanceScheduleService {
 
         public int getInProgress() {
             return counts.getOrDefault(STATUS_IN_PROGRESS, 0);
+        }
+
+        public int getPendingApproval() {
+            return counts.getOrDefault(STATUS_PENDING_APPROVAL, 0);
         }
 
         public int getCompleted() {
