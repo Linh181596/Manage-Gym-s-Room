@@ -99,7 +99,7 @@
                     <div class="col-md-6"><small class="text-muted d-block">Loại bảo trì</small><strong><c:out value="${schedule.maintenanceTypeDisplay}" /></strong></div>
                     <div class="col-12"><small class="text-muted d-block">Mô tả công việc</small><div class="border rounded p-3 bg-white"><c:out value="${schedule.description}" /></div></div>
                 </div>
-                <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=update">
+                <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=update" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="${schedule.maintenanceScheduleId}">
                     <c:choose>
                         <c:when test="${schedule.status == 'Scheduled'}">
@@ -111,11 +111,22 @@
                             </div>
                         </c:when>
                         <c:when test="${schedule.status == 'InProgress'}">
-                            <input type="hidden" name="status" value="Completed">
+                            <input type="hidden" name="status" value="PendingApproval">
+                            <c:if test="${not empty schedule.approvalNote}">
+                                <div class="alert alert-warning">
+                                    <strong>Lý do từ chối gần nhất:</strong>
+                                    <div><c:out value="${schedule.approvalNote}" /></div>
+                                </div>
+                            </c:if>
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Kết quả hoàn thành <span class="text-danger">*</span></label>
                                 <textarea class="form-control" name="completionNote" rows="5" required
                                           placeholder="Ghi lại công việc đã thực hiện và kết quả kiểm tra..."><c:out value="${schedule.completionNote}" /></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Ảnh minh chứng sau bảo trì <span class="text-danger">*</span></label>
+                                <input class="form-control" type="file" name="completionImageFile" accept="image/*" required>
+                                <div class="form-text">Chỉ nhận jpg, jpeg, png, gif hoặc webp. Dung lượng tối đa 5MB.</div>
                             </div>
                             <c:if test="${not empty schedule.issueId}">
                                 <div class="form-check mb-4">
@@ -128,7 +139,7 @@
                             </c:if>
                             <div class="d-flex justify-content-end gap-2">
                                 <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=detail&id=${schedule.maintenanceScheduleId}">Hủy</a>
-                                <button class="btn btn-success" type="submit"><i class="fa fa-check me-2"></i>Hoàn thành bảo trì</button>
+                                <button class="btn btn-success" type="submit"><i class="fa fa-paper-plane me-2"></i>Gửi Admin duyệt</button>
                             </div>
                         </c:when>
                     </c:choose>

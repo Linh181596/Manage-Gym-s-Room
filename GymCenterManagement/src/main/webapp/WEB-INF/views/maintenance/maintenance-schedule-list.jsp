@@ -69,6 +69,14 @@
             </a>
         </div>
         <div class="col-sm-6 col-xl-3">
+            <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=list&status=PendingApproval#maintenance-table">
+                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                    <i class="fa fa-clipboard-check fa-3x text-info"></i>
+                    <div class="ms-3 text-end"><p class="mb-2 text-muted">Chờ duyệt</p><h5 class="mb-0">${statistics.pendingApproval}</h5></div>
+                </div>
+            </a>
+        </div>
+        <div class="col-sm-6 col-xl-3">
             <a class="text-decoration-none" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=list&status=Completed#maintenance-table">
                 <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
                     <i class="fa fa-check-double fa-3x text-success"></i>
@@ -93,6 +101,7 @@
                     <option value="">Tất cả trạng thái</option>
                     <option value="Scheduled" <c:if test="${status == 'Scheduled'}">selected="selected"</c:if>>Đã lên lịch</option>
                     <option value="InProgress" <c:if test="${status == 'InProgress'}">selected="selected"</c:if>>Đang bảo trì</option>
+                    <option value="PendingApproval" <c:if test="${status == 'PendingApproval'}">selected="selected"</c:if>>Chờ duyệt</option>
                     <option value="Completed" <c:if test="${status == 'Completed'}">selected="selected"</c:if>>Đã hoàn thành</option>
                     <option value="Cancelled" <c:if test="${status == 'Cancelled'}">selected="selected"</c:if>>Đã hủy</option>
                 </select>
@@ -166,6 +175,7 @@
                                 <c:choose>
                                     <c:when test="${item.status == 'Scheduled'}"><span class="badge bg-primary">Đã lên lịch</span></c:when>
                                     <c:when test="${item.status == 'InProgress'}"><span class="badge bg-warning text-dark">Đang bảo trì</span></c:when>
+                                    <c:when test="${item.status == 'PendingApproval'}"><span class="badge bg-info text-dark">Chờ duyệt</span></c:when>
                                     <c:when test="${item.status == 'Completed'}"><span class="badge bg-success">Đã hoàn thành</span></c:when>
                                     <c:otherwise><span class="badge bg-secondary">Đã hủy</span></c:otherwise>
                                 </c:choose>
