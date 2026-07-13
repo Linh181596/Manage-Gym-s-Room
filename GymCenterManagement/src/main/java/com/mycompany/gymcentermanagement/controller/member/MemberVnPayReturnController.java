@@ -25,9 +25,11 @@ public class MemberVnPayReturnController extends HttpServlet {
         try {
             Map<String, String> fields = new HashMap<>();
             for (Enumeration<String> params = req.getParameterNames(); params.hasMoreElements();) {
-                String fieldName = URLEncoder.encode(params.nextElement(), StandardCharsets.US_ASCII.toString());
-                String fieldValue = URLEncoder.encode(req.getParameter(fieldName), StandardCharsets.US_ASCII.toString());
-                if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                String paramName = params.nextElement();
+                String fieldName = URLEncoder.encode(paramName, StandardCharsets.US_ASCII.toString());
+                String paramValue = req.getParameter(paramName);
+                if (paramValue != null && paramValue.length() > 0) {
+                    String fieldValue = URLEncoder.encode(paramValue, StandardCharsets.US_ASCII.toString());
                     fields.put(fieldName, fieldValue);
                 }
             }
@@ -44,7 +46,12 @@ public class MemberVnPayReturnController extends HttpServlet {
             
             // Lấy ID hóa đơn từ vnp_TxnRef (định dạng invoiceId_random)
             String vnp_TxnRef = req.getParameter("vnp_TxnRef");
-            String invoiceIdStr = vnp_TxnRef.split("_")[0];
+            String invoiceIdStr;
+            if (vnp_TxnRef.contains("_")) {
+                invoiceIdStr = vnp_TxnRef.split("_")[0];
+            } else {
+                invoiceIdStr = vnp_TxnRef.substring(0, vnp_TxnRef.length() - 8);
+            }
             int invoiceId = Integer.parseInt(invoiceIdStr);
 
             if (signValue.equals(vnp_SecureHash)) {

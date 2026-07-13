@@ -39,10 +39,10 @@ public class StaffVnPayCreatePaymentController extends HttpServlet {
             
             String vnp_Version = "2.1.0";
             String vnp_Command = "pay";
-            String vnp_OrderInfo = "ThanhToanHoaDon" + invoiceId;
+            String vnp_OrderInfo = "ThanhToanHoaDon_" + invoiceId;
             String orderType = "other";
-            // Use TxnRef to store our invoiceId directly or append it. No underscores.
-            String vnp_TxnRef = invoiceId + VnPayConfig.getRandomNumber(8);
+            // Use TxnRef to store our invoiceId directly or append it. Let's use format: invoiceId_random
+            String vnp_TxnRef = invoiceId + "_" + VnPayConfig.getRandomNumber(8);
             String vnp_IpAddr = "127.0.0.1"; // Hardcoded to avoid IPv6 encoding issues
             String vnp_TmnCode = VnPayConfig.vnp_TmnCode;
 

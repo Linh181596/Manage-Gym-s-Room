@@ -26,9 +26,10 @@ public class StaffVnPayReturnController extends HttpServlet {
             Map<String, String> fields = new HashMap<>();
             for (Enumeration<String> params = req.getParameterNames(); params.hasMoreElements();) {
                 String paramName = params.nextElement();
-                String fieldName = URLEncoder.encode(paramName, StandardCharsets.UTF_8.toString()).replace("+", "%20");
-                String fieldValue = URLEncoder.encode(req.getParameter(paramName), StandardCharsets.UTF_8.toString()).replace("+", "%20");
-                if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                String fieldName = URLEncoder.encode(paramName, StandardCharsets.US_ASCII.toString());
+                String paramValue = req.getParameter(paramName);
+                if (paramValue != null && paramValue.length() > 0) {
+                    String fieldValue = URLEncoder.encode(paramValue, StandardCharsets.US_ASCII.toString());
                     fields.put(fieldName, fieldValue);
                 }
             }
@@ -45,7 +46,14 @@ public class StaffVnPayReturnController extends HttpServlet {
             
             // Lấy ID hóa đơn từ vnp_TxnRef (định dạng invoiceId_random)
             String vnp_TxnRef = req.getParameter("vnp_TxnRef");
-            String invoiceIdStr = vnp_TxnRef.split("_")[0];
+            String invoiceIdStr;
+            if (vnp_TxnRef.contains("_")) {
+                invoiceIdStr = vnp_TxnRef.split("_")[0];
+            } else {
+                // Xử lý trường hợp lỡ tạo không có dấu _ (chỉ có trong giao dịch vừa rồi)
+                // Cắt bỏ 8 số ngẫu nhiên cuối cùng
+                invoiceIdStr = vnp_TxnRef.substring(0, vnp_TxnRef.length() - 8);
+            }
             int invoiceId = Integer.parseInt(invoiceIdStr);
 
             if (signValue.equals(vnp_SecureHash)) {
