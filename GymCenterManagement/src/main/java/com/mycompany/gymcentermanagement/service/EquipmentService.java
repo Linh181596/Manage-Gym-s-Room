@@ -30,6 +30,7 @@ public class EquipmentService {
     public static final String TYPE_MACHINE = "May keo";
     public static final String TYPE_ACCESSORY = "Phu kien";
     public static final String TYPE_OTHER = "Khac";
+    public static final String ISSUE_TYPE_DAMAGE = "Hu hong";
     public static final String ISSUE_PENDING = "Pending";
     public static final String ISSUE_IN_PROGRESS = "InProgress";
     public static final String ISSUE_RESOLVED = "Resolved";
@@ -87,6 +88,7 @@ public class EquipmentService {
     }
 
     public int createIssue(EquipmentIssue issue) throws SQLException {
+        issue.setIssueType(ISSUE_TYPE_DAMAGE);
         validateIssueForCreate(issue);
         issue.setStatus(ISSUE_PENDING);
         try (Connection connection = DBContext.getConnection()) {

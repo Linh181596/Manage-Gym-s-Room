@@ -74,6 +74,7 @@
             <input type="hidden" name="id" value="${issue.issueId}">
             <input type="hidden" name="reportedBy" value="${issue.reportedBy}">
             <input type="hidden" name="currentIssueImageUrl" value="${issue.issueImageUrl}">
+            <input type="hidden" name="issueType" value="${issue.issueId > 0 ? issue.issueType : 'Hu hong'}">
             
             <div class="row g-3">
                 <div class="col-md-6">
@@ -112,31 +113,8 @@
                 </div>
                 
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Loại sự cố <span class="text-danger">*</span></label>
-                    <select class="form-select" name="issueType" required>
-                        <option value="">Chọn loại sự cố</option>
-                        <option value="Hu hong" ${issue.issueType == 'Hu hong' ? 'selected' : ''}>Hư hỏng</option>
-                        <option value="Bao tri" ${issue.issueType == 'Bao tri' ? 'selected' : ''}>Bảo trì / Sửa chữa</option>
-                        <option value="An toan" ${issue.issueType == 'An toan' ? 'selected' : ''}>An toàn phòng tập</option>
-                        <option value="Khac" ${issue.issueType == 'Khac' ? 'selected' : ''}>Khác</option>
-                    </select>
-                </div>
-                
-                <div class="col-md-6">
                     <label class="form-label fw-semibold">Trạng thái xử lý</label>
-                    <c:choose>
-                        <c:when test="${issue.issueId > 0}">
-                            <select class="form-select border-warning" name="status" required>
-                                <option value="Pending" ${issue.status == 'Pending' ? 'selected' : ''}>Chờ xử lý</option>
-                                <option value="InProgress" ${issue.status == 'InProgress' ? 'selected' : ''}>Đang xử lý / Sửa chữa</option>
-                                <option value="Resolved" ${issue.status == 'Resolved' ? 'selected' : ''}>Đã khắc phục hoàn toàn</option>
-                            </select>
-                        </c:when>
-                        <c:otherwise>
-                            <input type="hidden" name="status" value="Pending">
-                            <input type="text" class="form-control" value="Chờ xử lý (Tự động)" readonly>
-                        </c:otherwise>
-                    </c:choose>
+                    <input type="text" class="form-control" value="${empty issue.statusDisplay ? 'Chờ xử lý (Tự động)' : issue.statusDisplay}" readonly>
                 </div>
                 
                 <div class="col-12">

@@ -209,13 +209,12 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         } else if (user.getRole() == User.Role.Staff) {
             String nextStatus = trim(request.getParameter("status"));
             String completionNote = trim(request.getParameter("completionNote"));
-            boolean resolveIssue = "true".equals(request.getParameter("resolveIssue"));
             if (MaintenanceScheduleService.STATUS_PENDING_APPROVAL.equals(nextStatus)) {
                 String completionImageUrl = resolveCompletionImageUrl(request);
-                service.submitForApproval(id, completionNote, completionImageUrl, resolveIssue, user.getFullName());
+                service.submitForApproval(id, completionNote, completionImageUrl, true, user.getFullName());
                 setSuccess(request, "Đã gửi kết quả bảo trì chờ Admin duyệt.");
             } else {
-                service.updateProgress(id, nextStatus, completionNote, resolveIssue, user.getFullName());
+                service.updateProgress(id, nextStatus, completionNote, false, user.getFullName());
                 setSuccess(request, "Đã cập nhật tiến độ bảo trì.");
             }
         } else {
