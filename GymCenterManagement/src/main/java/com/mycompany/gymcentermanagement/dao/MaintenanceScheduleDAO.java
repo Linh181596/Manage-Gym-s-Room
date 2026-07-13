@@ -162,19 +162,81 @@ public class MaintenanceScheduleDAO {
             String completionNote, String updatedBy) throws SQLException {
         String sql = """
                 UPDATE MaintenanceSchedules
-                SET Status = ?,
-                    CompletionDate = CASE WHEN ? = 'Completed' THEN SYSDATETIME() ELSE CompletionDate END,
-                    CompletionNote = CASE WHEN ? = 'Completed' THEN ? ELSE CompletionNote END,
-                    UpdatedBy = ?, UpdatedDate = SYSDATETIME()
+                SET Status = ?, UpdatedBy = ?, UpdatedDate = SYSDATETIME()
                 WHERE MaintenanceScheduleID = ? AND IsDeleted = 0
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, nextStatus);
-            statement.setString(2, nextStatus);
-            statement.setString(3, nextStatus);
-            statement.setString(4, completionNote);
+            statement.setString(2, updatedBy);
+            statement.setInt(3, id);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    public boolean submitForApproval(Connection connection, int id, String completionNote,
+            String completionImageUrl, boolean resolveRelatedIssue, String updatedBy) throws SQLException {
+        String sql = """
+                UPDATE MaintenanceSchedules
+                SET Status = 'PendingApproval',
+                    CompletionDate = SYSDATETIME(),
+                    CompletionNote = ?,
+                    CompletionImageURL = ?,
+                    SubmittedForApprovalAt = SYSDATETIME(),
+                    SubmittedBy = ?,
+                    RequestedIssueResolution = ?,
+                    ApprovalNote = NULL,
+                    ApprovedBy = NULL,
+                    ApprovedAt = NULL,
+                    UpdatedBy = ?,
+                    UpdatedDate = SYSDATETIME()
+                WHERE MaintenanceScheduleID = ? AND Status = 'InProgress' AND IsDeleted = 0
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, completionNote);
+            statement.setString(2, completionImageUrl);
+            statement.setString(3, updatedBy);
+            statement.setBoolean(4, resolveRelatedIssue);
             statement.setString(5, updatedBy);
             statement.setInt(6, id);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    public boolean approveCompletion(Connection connection, int id, String approvalNote, String updatedBy)
+            throws SQLException {
+        String sql = """
+                UPDATE MaintenanceSchedules
+                SET Status = 'Completed',
+                    ApprovedBy = ?,
+                    ApprovedAt = SYSDATETIME(),
+                    ApprovalNote = ?,
+                    UpdatedBy = ?,
+                    UpdatedDate = SYSDATETIME()
+                WHERE MaintenanceScheduleID = ? AND Status = 'PendingApproval' AND IsDeleted = 0
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, updatedBy);
+            statement.setString(2, approvalNote);
+            statement.setString(3, updatedBy);
+            statement.setInt(4, id);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    public boolean rejectCompletion(Connection connection, int id, String rejectionNote, String updatedBy)
+            throws SQLException {
+        String sql = """
+                UPDATE MaintenanceSchedules
+                SET Status = 'InProgress',
+                    ApprovalNote = ?,
+                    UpdatedBy = ?,
+                    UpdatedDate = SYSDATETIME()
+                WHERE MaintenanceScheduleID = ? AND Status = 'PendingApproval' AND IsDeleted = 0
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, rejectionNote);
+            statement.setString(2, updatedBy);
+            statement.setInt(3, id);
             return statement.executeUpdate() > 0;
         }
     }
@@ -259,6 +321,15 @@ public class MaintenanceScheduleDAO {
         Timestamp completionDate = resultSet.getTimestamp("CompletionDate");
         schedule.setCompletionDate(completionDate == null ? null : completionDate.toLocalDateTime());
         schedule.setCompletionNote(resultSet.getString("CompletionNote"));
+        schedule.setCompletionImageUrl(resultSet.getString("CompletionImageURL"));
+        Timestamp submittedAt = resultSet.getTimestamp("SubmittedForApprovalAt");
+        schedule.setSubmittedForApprovalAt(submittedAt == null ? null : submittedAt.toLocalDateTime());
+        schedule.setSubmittedBy(resultSet.getString("SubmittedBy"));
+        schedule.setRequestedIssueResolution(resultSet.getBoolean("RequestedIssueResolution"));
+        schedule.setApprovedBy(resultSet.getString("ApprovedBy"));
+        Timestamp approvedAt = resultSet.getTimestamp("ApprovedAt");
+        schedule.setApprovedAt(approvedAt == null ? null : approvedAt.toLocalDateTime());
+        schedule.setApprovalNote(resultSet.getString("ApprovalNote"));
         schedule.setCreatedBy(resultSet.getString("CreatedBy"));
         Timestamp createdDate = resultSet.getTimestamp("CreatedDate");
         schedule.setCreatedDate(createdDate == null ? null : createdDate.toLocalDateTime());
