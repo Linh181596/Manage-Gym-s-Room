@@ -129,12 +129,8 @@
                                 <div class="form-text">Chỉ nhận jpg, jpeg, png, gif hoặc webp. Dung lượng tối đa 5MB.</div>
                             </div>
                             <c:if test="${not empty schedule.issueId}">
-                                <div class="form-check mb-4">
-                                    <input class="form-check-input" type="checkbox" id="resolveIssue" name="resolveIssue" value="true">
-                                    <label class="form-check-label" for="resolveIssue">
-                                        Xác nhận sự cố #SC-${schedule.issueId} đã được khắc phục
-                                    </label>
-                                    <div class="form-text">Bỏ chọn nếu sự cố vẫn cần tiếp tục xử lý.</div>
+                                <div class="alert alert-info mb-4">
+                                    Sự cố #SC-${schedule.issueId} sẽ tự chuyển sang Đã khắc phục sau khi Admin duyệt kết quả bảo trì.
                                 </div>
                             </c:if>
                             <div class="d-flex justify-content-end gap-2">

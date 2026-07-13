@@ -123,6 +123,25 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    public boolean existsOpenScheduleForIssue(Connection connection, int issueId,
+            int excludedScheduleId) throws SQLException {
+        String sql = """
+                SELECT COUNT(*) AS Total
+                FROM MaintenanceSchedules
+                WHERE IssueID = ?
+                  AND Status IN ('Scheduled', 'InProgress', 'PendingApproval')
+                  AND IsDeleted = 0
+                  AND MaintenanceScheduleID <> ?
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, issueId);
+            statement.setInt(2, excludedScheduleId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() && resultSet.getInt("Total") > 0;
+            }
+        }
+    }
+
     public int create(Connection connection, MaintenanceSchedule schedule) throws SQLException {
         String sql = """
                 INSERT INTO MaintenanceSchedules
