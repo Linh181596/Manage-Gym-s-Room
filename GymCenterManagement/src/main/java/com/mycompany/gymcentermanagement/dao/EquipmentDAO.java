@@ -100,7 +100,7 @@ public class EquipmentDAO {
                         WHERE EquipmentID = ? AND Status = 'InProgress' AND IsDeleted = 0
                     ) OR EXISTS (
                         SELECT 1 FROM MaintenanceSchedules
-                        WHERE EquipmentID = ? AND Status = 'InProgress' AND IsDeleted = 0
+                        WHERE EquipmentID = ? AND Status IN ('InProgress', 'PendingApproval') AND IsDeleted = 0
                     ) THEN 'Maintenance'
                     ELSE 'Available'
                 END AS CalculatedStatus

@@ -2077,18 +2077,18 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 conn.setAutoCommit(false);
             }
 
-            // 1. Cáº­p nháº­t dá»¯ liá»‡u cá»‘t lÃµi vÃ o báº£ng Users chÃ­nh
+            // 1. Cập nhật dữ liệu cốt lõi vào bảng Users chính
             psUser = conn.prepareStatement(sqlUser);
             psUser.setString(1, profileDto.getDisplayName());
             psUser.setString(2, profileDto.getPhone());
             psUser.setInt(3, profileDto.getUserId());
             int userRows = psUser.executeUpdate();
 
-            int subRows = 1; // Máº·c Ä‘á»‹nh há»£p lá»‡ cho trÆ°á»ng há»£p Admin hoáº·c Staff (khÃ´ng cÃ³
-                             // báº£ng phá»¥ cáº§n cáº­p nháº­t qua trang profile cá»§a DÆ°Æ¡ng)
+            int subRows = 1; // Mặc định hợp lệ cho trường hợp Admin hoặc Staff (không có
+                             // bảng phụ cần cập nhật qua trang profile của Dương)
 
-            // 2. Ráº½ nhÃ¡nh cáº­p nháº­t dá»¯ liá»‡u Ä‘áº·c thÃ¹ phá»¥ thuá»™c theo vai
-            // trÃ²
+            // 2. Rẽ nhánh cập nhật dữ liệu đặc thù phụ thuộc theo vai
+            // trò
             if ("Member".equalsIgnoreCase(roleName) && profileDto instanceof MemberProfileDTO) {
                 MemberProfileDTO memberDto = (MemberProfileDTO) profileDto;
                 String sqlMember = "UPDATE Members SET Gender = ?, DateOfBirth = ?, Address = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
@@ -2112,8 +2112,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 subRows = psSub.executeUpdate();
             }
 
-            // 3. XÃ¡c nháº­n lÆ°u dá»¯ liá»‡u thÃ nh cÃ´ng náº¿u cáº£ 2 khá»‘i lá»‡nh
-            // thá»±c thi trÆ¡n tru
+            // 3. Xác nhận lưu dữ liệu thành công nếu cả 2 khối lệnh
+            // thực thi trơn tru
             if (userRows > 0 && subRows > 0) {
                 success = true;
             }

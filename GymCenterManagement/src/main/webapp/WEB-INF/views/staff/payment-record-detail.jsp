@@ -265,17 +265,26 @@
                         </form>
                         
                         <c:if test="${!isAdmin}">
-                            <button type="button" class="btn btn-lg btn-outline-danger px-4" onclick="confirmCancelInvoice()">
-                                <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
-                            </button>
-                            
-                            <form action="${backUrl}" method="post">
-                                <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
-                                <input type="hidden" name="action" value="pay" />
-                                <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
-                                    <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
+                            <div class="d-flex gap-3">
+                                <button type="button" class="btn btn-lg btn-outline-danger px-4" onclick="confirmCancelInvoice()">
+                                    <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
                                 </button>
-                            </form>
+                                
+                                <form action="${pageContext.request.contextPath}/staff/vnpay-create" method="post">
+                                    <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                                    <button type="submit" class="btn btn-lg btn-primary px-4 shadow-sm">
+                                        <i class="fa fa-credit-card me-1"></i> Thanh toán qua VNPAY
+                                    </button>
+                                </form>
+
+                                <form action="${backUrl}" method="post">
+                                    <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                                    <input type="hidden" name="action" value="pay" />
+                                    <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
+                                        <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
+                                    </button>
+                                </form>
+                            </div>
                         </c:if>
                     </c:if>
                 </div>

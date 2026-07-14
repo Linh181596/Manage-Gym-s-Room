@@ -1,10 +1,10 @@
 /**
  * =========================================================================
  * @file          : HomeController.java
- * @description   : Controller xá»­ lÃ½ trang chá»§ cÃ´ng cá»™ng, náº¡p danh sÃ¡ch gÃ³i táº­p Ä‘á»™ng.
- * @author        : Nguyá»…n Äáº¡i DÆ°Æ¡ng (duongnd)
+ * @description   : Controller xử lý trang chủ công cộng, nạp danh sách gói tập động.
+ * @author        : Nguyễn Đại Dương (duongnd)
  * @created       : 2026-06-26
- * @last_modified : 2026-06-26 bá»Ÿi Antigravity Agent
+ * @last_modified : 2026-06-26 bởi Antigravity Agent
  * =========================================================================
  */
 package com.mycompany.gymcentermanagement.controller;
@@ -53,7 +53,7 @@ public class HomeController extends HttpServlet {
             request.setAttribute("activePackages", activePackages);
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("packagesLoadError", "KhÃ´ng thá»ƒ táº£i danh sÃ¡ch gÃ³i táº­p.");
+            request.setAttribute("packagesLoadError", "Không thể tải danh sách gói tập.");
         }
         
         request.getRequestDispatcher("/WEB-INF/views/home.jsp").forward(request, response);
