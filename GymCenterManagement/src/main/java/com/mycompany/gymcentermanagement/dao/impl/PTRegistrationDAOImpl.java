@@ -584,7 +584,13 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.Note,
                            pt.Status AS PTStatus,
                            CASE 
-                                WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                                WHEN r.Status = 'Active' AND (
+                                    SELECT COUNT(*) 
+                                    FROM PTSchedules s 
+                                    WHERE s.PTRegistrationID = r.PTRegistrationID 
+                                      AND s.SessionStatus = 'Completed' 
+                                      AND s.IsDeleted = 0
+                                ) >= r.PurchasedSessions THEN 'Completed'
                                 ELSE r.Status
                            END AS Status,
                            r.PaymentStatus,
@@ -786,7 +792,13 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.PreferredStartDate, 
                            r.TotalAmount,
                            CASE 
-                                WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                                WHEN r.Status = 'Active' AND (
+                                    SELECT COUNT(*) 
+                                    FROM PTSchedules s 
+                                    WHERE s.PTRegistrationID = r.PTRegistrationID 
+                                      AND s.SessionStatus = 'Completed' 
+                                      AND s.IsDeleted = 0
+                                ) >= r.PurchasedSessions THEN 'Completed'
                                 ELSE r.Status
                             END AS Status,
                            r.PaymentStatus,
