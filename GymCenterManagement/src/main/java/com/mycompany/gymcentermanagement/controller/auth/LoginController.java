@@ -106,16 +106,8 @@ public class LoginController extends HttpServlet {
             return;
         }
         
-        // Luồng bỏ qua tạm thời cho tài khoản demo của hệ thống
         User authenticatedUser = null;
-        if ("admin@gym.com".equalsIgnoreCase(email.trim()) && "admin123".equals(password)) {
-            authenticatedUser = new User(1, "admin@gym.com", "", "Demo Admin", "0987654321", User.Role.Admin, User.AccountStatus.Active);
-        } else if ("staff@gym.com".equalsIgnoreCase(email.trim()) && "staff123".equals(password)) {
-            authenticatedUser = new User(2, "staff@gym.com", "", "Demo Staff", "0987654321", User.Role.Staff, User.AccountStatus.Active);
-        } else if ("member@gym.com".equalsIgnoreCase(email.trim()) && "member123".equals(password)) {
-            authenticatedUser = new User(4, "member@gym.com", "", "Demo Member", "0987654321", User.Role.Member, User.AccountStatus.Active);
-        } else {
-            try {
+        try {
                 // Xác thực tài khoản dựa trên truy vấn CSDL
                 User user = userDAO.findByEmail(email.trim());
                 String hashedInputPassword = PasswordUtils.hashPassword(password);
@@ -147,7 +139,6 @@ public class LoginController extends HttpServlet {
                 request.setAttribute("errorMessage", "Lỗi kết nối hệ thống: " + e.getMessage());
                 request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
                 return;
-            }
         }
         
         if (authenticatedUser != null) {
