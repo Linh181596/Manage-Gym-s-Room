@@ -83,7 +83,6 @@
                                 <th>Trạng thái</th>
                                 <th>Giờ vào</th>
                                 <th>Giờ ra</th>
-                                <th>Người điểm danh</th>
                                 <th class="text-center">Thao tác</th>
                             </tr>
                         </thead>
@@ -114,9 +113,6 @@
                                     </td>
                                     <td class="small text-muted">
                                         <c:out value="${a.checkedOutAtDisplay}" default="-"/>
-                                    </td>
-                                    <td class="small text-muted">
-                                        <c:out value="${a.checkedByName}" default="-"/>
                                     </td>
                                     <td class="text-center">
                                         <div class="d-inline-flex gap-2 flex-wrap justify-content-center">
