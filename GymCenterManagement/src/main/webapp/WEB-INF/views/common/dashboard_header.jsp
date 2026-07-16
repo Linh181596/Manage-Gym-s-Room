@@ -84,8 +84,7 @@
                             </div>
                         </c:when>
 
-                        <c:when test="${role == 'Staff'}">
-                            <a href="${pageContext.request.contextPath}/staff/notifications" class="nav-item nav-link ${fn:contains(reqUri, '/staff/notifications') ? 'active' : ''}"><i class="fa fa-bell me-2"></i>Hộp thư thông báo</a>
+                            <c:when test="${role == 'Staff'}">
                             <a href="${pageContext.request.contextPath}/staff/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/staff/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
                             <a href="${pageContext.request.contextPath}/staff/members" class="nav-item nav-link ${fn:contains(reqUri, '/staff/members') ? 'active' : ''}"><i class="fa fa-users me-2"></i>Quản lý hội viên</a>
                             <a href="${pageContext.request.contextPath}/staff/public-content" class="nav-item nav-link ${fn:contains(reqUri, '/staff/public-content') ? 'active' : ''}"><i class="fa fa-newspaper me-2"></i>Nội dung công khai</a>
@@ -100,8 +99,7 @@
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-check me-2"></i>Lịch đặt trước</a>
                         </c:when>
 
-                        <c:when test="${role == 'PT'}">
-                            <a href="${pageContext.request.contextPath}/pt/notifications" class="nav-item nav-link ${fn:contains(reqUri, '/pt/notifications') ? 'active' : ''}"><i class="fa fa-bell me-2"></i>Hộp thư thông báo</a>
+                            <c:when test="${role == 'PT'}">
                             <a href="${pageContext.request.contextPath}/pt/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/pt/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
                             <a href="${pageContext.request.contextPath}/pt/members" class="nav-item nav-link ${fn:contains(reqUri, '/pt/members') ? 'active' : ''}"><i class="fa fa-user-friends me-2"></i>Hội viên của tôi</a>
                             <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/pt/schedule-dashboard') ? 'active' : ''}"><i class="fa fa-calendar-alt me-2"></i>Lịch dạy học</a>
@@ -111,7 +109,6 @@
                         <c:when test="${role == 'Member'}">
                             <a href="${pageContext.request.contextPath}/member/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/member/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
                             <a href="${pageContext.request.contextPath}/member/portal" class="nav-item nav-link ${fn:contains(reqUri, '/member/portal') ? 'active' : ''}"><i class="fa fa-id-card me-2"></i>Thẻ & Gói tập</a>
-                            <a href="${pageContext.request.contextPath}/member/notifications" class="nav-item nav-link ${fn:contains(reqUri, '/member/notifications') ? 'active' : ''}"><i class="fa fa-bell me-2"></i>Hộp thư thông báo</a>
                             <a href="${pageContext.request.contextPath}/member/schedule-dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/member/schedule-dashboard') ? 'active' : ''}"><i class="fa fa-calendar-plus me-2"></i>Lịch tập PT</a>
                             <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/member/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Thuê HLV (PT)</a>
                         </c:when>
