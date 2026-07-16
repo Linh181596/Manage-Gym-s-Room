@@ -64,6 +64,7 @@ public class ManagePackageController extends HttpServlet {
                     String delIdStr = request.getParameter("id");
                     if (delIdStr != null) {
                         int id = Integer.parseInt(delIdStr);
+                        // Thực hiện Soft Delete: Cập nhật cờ IsDeleted = 1 thay vì xóa cứng khỏi DB
                         gymPackageService.deletePackage(id);
                         response.sendRedirect(request.getContextPath() + "/admin/packages?successMsg=" + 
                                 java.net.URLEncoder.encode("Xóa gói tập thành công!", java.nio.charset.StandardCharsets.UTF_8));
@@ -73,6 +74,8 @@ public class ManagePackageController extends HttpServlet {
                     break;
                 case "list":
                 default:
+                    // Logic phân trang phía Server (Server-side Pagination)
+                    // Lấy page hiện tại và cấu hình pageSize (mặc định 10)
                     int page = com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("page"), 1);
                     int pageSize = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePageSize(
                             com.mycompany.gymcentermanagement.utils.PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
@@ -81,6 +84,7 @@ public class ManagePackageController extends HttpServlet {
                     page = com.mycompany.gymcentermanagement.utils.PaginationHelper.normalizePage(page, totalPages);
                     int offset = (page - 1) * pageSize;
 
+                    // Truy vấn DB lấy danh sách gói tập theo offset và limit
                     List<GymPackage> list = gymPackageService.getPackagesPaginated(offset, pageSize);
                     request.setAttribute("packages", list);
 
@@ -170,6 +174,8 @@ public class ManagePackageController extends HttpServlet {
                 currentId = Integer.parseInt(idStr);
             }
 
+            // Server-side validation để kiểm tra trùng lặp tên gói tập.
+            // Nếu phát hiện tên gói đã tồn tại (loại trừ chính gói đang cập nhật), sẽ block và trả về lỗi
             if (gymPackageService.isPackageNameExists(packageName.trim(), currentId)) {
                 request.setAttribute("errorMessage", "Tên gói tập đã tồn tại trên hệ thống. Vui lòng chọn tên khác.");
                 request.setAttribute("formTitle", idStr == null || idStr.isEmpty() ? "Thêm gói tập mới" : "Sửa gói tập");
@@ -190,13 +196,15 @@ public class ManagePackageController extends HttpServlet {
 
             String successMsg;
             if (idStr == null || idStr.trim().isEmpty()) {
-                // Insert new package
+                // Luồng Insert (Thêm mới gói tập)
+                // Gắn tên Admin thực hiện để phục vụ cho Audit Log (CreatedBy)
                 GymPackage pkg = new GymPackage(0, packageName.trim(), durationMonths, price, description, status);
                 pkg.setCreatedBy(creatorName);
                 gymPackageService.createPackage(pkg);
                 successMsg = "Thêm gói tập mới thành công!";
             } else {
-                // Update existing package
+                // Luồng Update (Cập nhật gói tập)
+                // Lấy bản ghi cũ từ DB, đắp đè dữ liệu mới và gắn tên Admin (UpdatedBy)
                 int id = Integer.parseInt(idStr);
                 GymPackage pkg = gymPackageService.getPackageById(id);
                 if (pkg != null) {

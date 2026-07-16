@@ -54,12 +54,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         
         try {
             conn = DBContext.getConnection();
+            // Bắt đầu Transaction thủ công để đảm bảo tính toàn vẹn dữ liệu (ACID).
             conn.setAutoCommit(false);
             
             InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
             MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
             
-            // 1. Fetch Invoice
+            // Lấy thông tin hóa đơn và kiểm tra trạng thái phải là Pending
             Invoice inv = invDAO.findById(invoiceId);
             if (inv == null) {
                 throw new SQLException("Invoice not found.");
@@ -68,7 +69,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new SQLException("Invoice is already processed (Status: " + inv.getStatus() + ").");
             }
             
-            // 2. Update Invoice Status to Paid
+            // Cập nhật hóa đơn thành Đã thanh toán (Paid)
             inv.setStatus("Paid");
             inv.setPaymentDate(LocalDateTime.now());
             inv.setProcessBy(staffUserId);
@@ -80,7 +81,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new SQLException("Failed to update invoice status.");
             }
             
-            // 3. Activate Member Package if associated
+            // Kích hoạt gói tập tương ứng của thành viên (chuyển sang Active)
             if (inv.getMemberPackageId() != null) {
                 MemberPackage mp = mpDAO.findById(inv.getMemberPackageId());
                 if (mp == null) {
@@ -123,11 +124,13 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
             }
             
+            // Commit toàn bộ giao dịch nếu các bước trên đều thành công
             conn.commit();
             success = true;
         } catch (SQLException e) {
             if (conn != null) {
                 try {
+                    // Rollback lại trạng thái ban đầu nếu có lỗi, ngăn rác dữ liệu
                     conn.rollback();
                 } catch (SQLException ex) {
                     // Ignore
