@@ -68,9 +68,12 @@
         }
 
         .hero-img {
+            display: block;
             width: 100%;
-            max-height: 430px;
-            object-fit: cover;
+            max-width: 820px;
+            height: auto;
+            margin-left: auto;
+            margin-right: auto;
             border-radius: 8px;
             background: var(--home-soft);
         }
@@ -97,6 +100,12 @@
 
         .footer-home a:hover {
             color: #ffffff;
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-img {
+                height: auto;
+            }
         }
     </style>
 </head>
@@ -139,7 +148,6 @@
             </c:if>
             <div class="content-body fs-6"><c:out value="${content.body}" /></div>
             <div class="border-top mt-5 pt-4 d-flex flex-wrap gap-2">
-                <a href="${pageContext.request.contextPath}/register" class="btn btn-primary">Đăng ký thành viên</a>
                 <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-secondary">Về trang chủ</a>
             </div>
         </article>
