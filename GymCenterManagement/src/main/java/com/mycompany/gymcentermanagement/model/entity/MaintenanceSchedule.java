@@ -17,6 +17,13 @@ public class MaintenanceSchedule {
     private String status;
     private LocalDateTime completionDate;
     private String completionNote;
+    private String completionImageUrl;
+    private LocalDateTime submittedForApprovalAt;
+    private String submittedBy;
+    private boolean requestedIssueResolution;
+    private String approvedBy;
+    private LocalDateTime approvedAt;
+    private String approvalNote;
     private String createdBy;
     private LocalDateTime createdDate;
     private String updatedBy;
@@ -99,6 +106,62 @@ public class MaintenanceSchedule {
 
     public void setCompletionNote(String completionNote) {
         this.completionNote = completionNote;
+    }
+
+    public String getCompletionImageUrl() {
+        return completionImageUrl;
+    }
+
+    public void setCompletionImageUrl(String completionImageUrl) {
+        this.completionImageUrl = completionImageUrl;
+    }
+
+    public LocalDateTime getSubmittedForApprovalAt() {
+        return submittedForApprovalAt;
+    }
+
+    public void setSubmittedForApprovalAt(LocalDateTime submittedForApprovalAt) {
+        this.submittedForApprovalAt = submittedForApprovalAt;
+    }
+
+    public String getSubmittedBy() {
+        return submittedBy;
+    }
+
+    public void setSubmittedBy(String submittedBy) {
+        this.submittedBy = submittedBy;
+    }
+
+    public boolean isRequestedIssueResolution() {
+        return requestedIssueResolution;
+    }
+
+    public void setRequestedIssueResolution(boolean requestedIssueResolution) {
+        this.requestedIssueResolution = requestedIssueResolution;
+    }
+
+    public String getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(String approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public String getApprovalNote() {
+        return approvalNote;
+    }
+
+    public void setApprovalNote(String approvalNote) {
+        this.approvalNote = approvalNote;
     }
 
     public String getCreatedBy() {
@@ -189,6 +252,14 @@ public class MaintenanceSchedule {
         return completionDate == null ? "" : completionDate.format(DATE_TIME_FORMAT);
     }
 
+    public String getSubmittedForApprovalAtDisplay() {
+        return submittedForApprovalAt == null ? "" : submittedForApprovalAt.format(DATE_TIME_FORMAT);
+    }
+
+    public String getApprovedAtDisplay() {
+        return approvedAt == null ? "" : approvedAt.format(DATE_TIME_FORMAT);
+    }
+
     public String getCreatedDateDisplay() {
         return createdDate == null ? "" : createdDate.format(DATE_TIME_FORMAT);
     }
@@ -209,6 +280,7 @@ public class MaintenanceSchedule {
         return switch (status == null ? "" : status) {
             case "Scheduled" -> "Đã lên lịch";
             case "InProgress" -> "Đang bảo trì";
+            case "PendingApproval" -> "Chờ duyệt";
             case "Completed" -> "Đã hoàn thành";
             case "Cancelled" -> "Đã hủy";
             default -> status;

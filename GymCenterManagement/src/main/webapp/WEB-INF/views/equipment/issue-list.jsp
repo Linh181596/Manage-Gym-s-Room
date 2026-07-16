@@ -168,9 +168,6 @@
                                     <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=detail&id=${item.issueId}" title="Xem chi tiết">
                                         <i class="fa fa-eye"></i>
                                     </a>
-                                    <a class="btn btn-outline-warning" href="${pageContext.request.contextPath}/staff/equipment-issues?action=edit&id=${item.issueId}" title="Cập nhật tiến độ">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
                                 </div>
                             </td>
                         </tr>

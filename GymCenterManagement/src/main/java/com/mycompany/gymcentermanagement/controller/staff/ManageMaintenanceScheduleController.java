@@ -4,22 +4,35 @@ import com.mycompany.gymcentermanagement.model.entity.MaintenanceSchedule;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.MaintenanceScheduleService;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.UUID;
 
 @WebServlet(name = "ManageMaintenanceScheduleController", urlPatterns = {"/staff/maintenance-schedules"})
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024,
+        maxFileSize = 5 * 1024 * 1024,
+        maxRequestSize = 8 * 1024 * 1024
+)
 public class ManageMaintenanceScheduleController extends HttpServlet {
     private static final String VIEW_DIR = "/WEB-INF/views/maintenance/";
+    private static final String UPLOAD_DIR = "/assets/uploads/maintenance";
     private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
 
     private final MaintenanceScheduleService service = new MaintenanceScheduleService();
 
@@ -63,6 +76,8 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
                 case "create" -> create(request, response, user);
                 case "update" -> update(request, response, user);
                 case "cancel" -> cancel(request, response, user);
+                case "approve" -> approve(request, response, user);
+                case "reject" -> reject(request, response, user);
                 default -> response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             }
         } catch (SecurityException ex) {
@@ -184,7 +199,7 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
     }
 
     private void update(HttpServletRequest request, HttpServletResponse response, User user)
-            throws SQLException, IOException {
+            throws SQLException, IOException, ServletException {
         int id = parseRequiredId(request.getParameter("id"));
         if (user.getRole() == User.Role.Admin) {
             MaintenanceSchedule changes = readPlanned(request);
@@ -194,12 +209,35 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         } else if (user.getRole() == User.Role.Staff) {
             String nextStatus = trim(request.getParameter("status"));
             String completionNote = trim(request.getParameter("completionNote"));
-            boolean resolveIssue = "true".equals(request.getParameter("resolveIssue"));
-            service.updateProgress(id, nextStatus, completionNote, resolveIssue, user.getFullName());
-            setSuccess(request, "Đã cập nhật tiến độ bảo trì.");
+            if (MaintenanceScheduleService.STATUS_PENDING_APPROVAL.equals(nextStatus)) {
+                String completionImageUrl = resolveCompletionImageUrl(request);
+                service.submitForApproval(id, completionNote, completionImageUrl, true, user.getFullName());
+                setSuccess(request, "Đã gửi kết quả bảo trì chờ Admin duyệt.");
+            } else {
+                service.updateProgress(id, nextStatus, completionNote, false, user.getFullName());
+                setSuccess(request, "Đã cập nhật tiến độ bảo trì.");
+            }
         } else {
             throw new SecurityException("Unauthorized role.");
         }
+        response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules?action=detail&id=" + id);
+    }
+
+    private void approve(HttpServletRequest request, HttpServletResponse response, User user)
+            throws SQLException, IOException {
+        requireAdmin(user);
+        int id = parseRequiredId(request.getParameter("id"));
+        service.approveCompletion(id, trim(request.getParameter("approvalNote")), user.getFullName());
+        setSuccess(request, "Đã duyệt hoàn tất bảo trì #" + id + ".");
+        response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules?action=detail&id=" + id);
+    }
+
+    private void reject(HttpServletRequest request, HttpServletResponse response, User user)
+            throws SQLException, IOException {
+        requireAdmin(user);
+        int id = parseRequiredId(request.getParameter("id"));
+        service.rejectCompletion(id, trim(request.getParameter("approvalNote")), user.getFullName());
+        setSuccess(request, "Đã từ chối kết quả bảo trì #" + id + ".");
         response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules?action=detail&id=" + id);
     }
 
@@ -210,6 +248,38 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         service.cancel(id, user.getFullName());
         setSuccess(request, "Đã hủy lịch bảo trì #" + id + ".");
         response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules");
+    }
+
+    private String resolveCompletionImageUrl(HttpServletRequest request) throws IOException, ServletException {
+        Part imagePart = request.getPart("completionImageFile");
+        if (imagePart == null || imagePart.getSize() == 0) {
+            throw new IllegalArgumentException("Completion image is required.");
+        }
+
+        String submittedName = Path.of(imagePart.getSubmittedFileName()).getFileName().toString();
+        String extension = extensionOf(submittedName);
+        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Only jpg, jpeg, png, gif or webp image files are allowed.");
+        }
+
+        String realUploadPath = getServletContext().getRealPath(UPLOAD_DIR);
+        if (realUploadPath == null) {
+            throw new IOException("Cannot resolve maintenance image upload directory.");
+        }
+
+        Files.createDirectories(Path.of(realUploadPath));
+        String fileName = UUID.randomUUID() + "." + extension;
+        Path target = Path.of(realUploadPath, fileName);
+        imagePart.write(target.toString());
+        return request.getContextPath() + UPLOAD_DIR + "/" + fileName;
+    }
+
+    private String extensionOf(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+            return "";
+        }
+        return fileName.substring(dotIndex + 1).toLowerCase();
     }
 
     private MaintenanceSchedule readPlanned(HttpServletRequest request) {

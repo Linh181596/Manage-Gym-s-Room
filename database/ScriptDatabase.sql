@@ -1,4 +1,4 @@
-﻿﻿USE [master]
+﻿USE [master]
 GO
 /****** Object:  Database [GymCenterManagement]    Script Date: 7/8/2026 2:38:41 PM ******/
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'GymCenterManagement')
@@ -197,6 +197,13 @@ CREATE TABLE [dbo].[MaintenanceSchedules](
 	[Status] [varchar](20) NOT NULL,
 	[CompletionDate] [datetime2](7) NULL,
 	[CompletionNote] [nvarchar](max) NULL,
+	[CompletionImageURL] [varchar](255) NULL,
+	[SubmittedForApprovalAt] [datetime2](7) NULL,
+	[SubmittedBy] [nvarchar](50) NULL,
+	[RequestedIssueResolution] [bit] NOT NULL,
+	[ApprovedBy] [nvarchar](50) NULL,
+	[ApprovedAt] [datetime2](7) NULL,
+	[ApprovalNote] [nvarchar](max) NULL,
 	[CreatedBy] [nvarchar](50) NULL,
 	[CreatedDate] [datetime2](7) NOT NULL,
 	[UpdatedBy] [nvarchar](50) NULL,
@@ -239,7 +246,7 @@ GO
 CREATE TABLE [dbo].[Members](
 	[MemberID] [int] IDENTITY(1,1) NOT NULL,
 	[UserID] [int] NOT NULL,
-	[Gender] [varchar](10) NULL,
+	[Gender] [nvarchar](10) NULL CHECK (Gender IN (N'Nam', N'Nữ', N'Khác') OR Gender IS NULL),
 	[DateOfBirth] [date] NULL,
 	[Address] [nvarchar](255) NULL,
 	[MembershipStatus] [varchar](20) NOT NULL,
@@ -630,12 +637,12 @@ SET IDENTITY_INSERT [dbo].[MemberPackages] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Members] ON 
 
-INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 4, N'Male', CAST(N'2000-01-01' AS Date), N'Hà Nội', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4538048' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 4, N'Nam', CAST(N'2000-01-01' AS Date), N'Hà Nội', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4538048' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, 12, N'Nam', CAST(N'2004-10-22' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-09T10:51:16.1071091' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (3, 14, N'Nam', CAST(N'2004-10-22' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-12T07:48:15.9443539' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (4, 15, N'Nam', CAST(N'2004-05-17' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-12T07:50:16.0118158' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (5, 25, N'Nam', CAST(N'2004-10-22' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-25T10:03:26.5753400' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (6, 27, N'N?', CAST(N'2001-06-14' AS Date), N'Hoàn Kiếm-Hà Nội', N'Pending', N'System', CAST(N'2026-06-30T10:37:39.6844516' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (6, 27, N'Nữ', CAST(N'2001-06-14' AS Date), N'Hoàn Kiếm-Hà Nội', N'Pending', N'System', CAST(N'2026-06-30T10:37:39.6844516' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[Members] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Notifications] ON 
@@ -1202,6 +1209,8 @@ ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedule
 GO
 ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedules_IsDeleted]  DEFAULT ((0)) FOR [IsDeleted]
 GO
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedules_RequestedIssueResolution]  DEFAULT ((0)) FOR [RequestedIssueResolution]
+GO
 ALTER TABLE [dbo].[MemberPackages] ADD  DEFAULT (sysdatetime()) FOR [CreatedDate]
 GO
 ALTER TABLE [dbo].[MemberPackages] ADD  DEFAULT ((0)) FOR [IsDeleted]
@@ -1493,7 +1502,7 @@ ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Status] CH
 GO
 ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Status]
 GO
-ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='Completed' OR [Status]='Cancelled'))
+ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='PendingApproval' OR [Status]='Completed' OR [Status]='Cancelled'))
 GO
 ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Status]
 GO
