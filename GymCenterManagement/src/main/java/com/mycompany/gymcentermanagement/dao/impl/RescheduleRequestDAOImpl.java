@@ -27,9 +27,10 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                     ProposedEndTime,
                     Status,
                     Reason,
+                    EscalationReason,
                     CreatedDate
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, SYSDATETIME())
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME())
                 """;
 
         try (Connection conn = DBContext.getConnection();
@@ -43,7 +44,9 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
             ps.setDate(7, Date.valueOf(request.getProposedDate()));
             ps.setTime(8, request.getProposedStartTime());
             ps.setTime(9, request.getProposedEndTime());
-            ps.setString(10, request.getReason());
+            ps.setString(10, request.getStatus());
+            ps.setString(11, request.getReason());
+            ps.setString(12, request.getEscalationReason());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,7 +60,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                 SELECT 1
                 FROM RescheduleRequests
                 WHERE PTScheduleID = ?
-                  AND Status = 'Pending'
+                  AND (Status = 'Pending' OR Status = 'Escalated')
                 """;
 
         try (Connection conn = DBContext.getConnection();
@@ -264,7 +267,8 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                 + "  u_recv.DisplayName AS ReceiverName, "
                 + "  u_pt.DisplayName AS PTName, "
                 + "  u_memb.DisplayName AS MemberName, "
-                + "  p.PackageName "
+                + "  p.PackageName, "
+                + "  s.SessionStatus AS OriginalSessionStatus "
                 + "FROM RescheduleRequests r "
                 + "INNER JOIN Users u_send ON r.SenderUserID = u_send.UserID "
                 + "INNER JOIN Users u_recv ON r.ReceiverUserID = u_recv.UserID "
@@ -321,6 +325,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                 dto.setPtName(rs.getString("PTName"));
                 dto.setMemberName(rs.getString("MemberName"));
                 dto.setPackageName(rs.getString("PackageName"));
+                dto.setOriginalSessionStatus(rs.getString("OriginalSessionStatus"));
                 
                 list.add(dto);
             }
