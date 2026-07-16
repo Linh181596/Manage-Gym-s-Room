@@ -223,7 +223,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     @Override
-    public List<StaffPTAttendance> searchHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate,
+    public List<StaffPTAttendance> searchHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate,
             String keyword, int offset, int limit) throws SQLException {
         StringBuilder sql = new StringBuilder("""
                 SELECT
@@ -250,7 +250,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                 """);
 
         List<Object> params = new ArrayList<>();
-        appendFilters(sql, params, userId, userRole, fromDate, toDate, keyword);
+        appendFilters(sql, params, userId, userRole, shiftBlock, fromDate, toDate, keyword);
 
         sql.append(" ORDER BY a.CheckedInAt DESC, a.AttendanceID DESC");
         sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
@@ -276,7 +276,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     @Override
-    public int countHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword)
+    public int countHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword)
             throws SQLException {
         StringBuilder sql = new StringBuilder("""
                 SELECT COUNT(*) AS Total
@@ -285,7 +285,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                 WHERE a.IsDeleted = 0
                 """);
         List<Object> params = new ArrayList<>();
-        appendFilters(sql, params, userId, userRole, fromDate, toDate, keyword);
+        appendFilters(sql, params, userId, userRole, shiftBlock, fromDate, toDate, keyword);
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -331,7 +331,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     private void appendFilters(StringBuilder sql, List<Object> params,
-            int userId, String userRole,
+            int userId, String userRole, String shiftBlock,
             LocalDate fromDate, LocalDate toDate,
             String keyword) {
         if (userId > 0) {
@@ -341,6 +341,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         if (userRole != null && !userRole.isBlank()) {
             sql.append(" AND a.UserRole = ?");
             params.add(userRole);
+        }
+        if (shiftBlock != null && !shiftBlock.isBlank()) {
+            sql.append(" AND a.ShiftBlock = ?");
+            params.add(shiftBlock);
         }
         if (fromDate != null) {
             sql.append(" AND a.AttendanceDate >= ?");

@@ -6,7 +6,7 @@
 <div class="container-fluid pt-4 px-4">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h4 class="mb-0"><i class="fa fa-user-check me-2 text-primary"></i>Điểm danh ra vào</h4>
-        <a href="${pageContext.request.contextPath}/staff/work-history" class="btn btn-outline-secondary btn-sm">
+        <a href="${pageContext.request.contextPath}/admin/work-history" class="btn btn-outline-secondary btn-sm">
             <i class="fa fa-history me-1"></i>Lịch sử
         </a>
     </div>
@@ -22,7 +22,7 @@
     </c:if>
 
     <div class="bg-light rounded p-3 mb-4">
-        <form id="checkinFilterForm" method="get" action="${pageContext.request.contextPath}/staff/checkin" class="row g-3 align-items-end">
+        <form id="checkinFilterForm" method="get" action="${pageContext.request.contextPath}/admin/checkin" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-semibold">Ca làm việc</label>
                 <select name="shift" class="form-select" onchange="this.form.submit()">
@@ -60,7 +60,7 @@
         <c:when test="${not empty errorMessage}">
             <div class="alert alert-danger">
                 <i class="fa fa-exclamation-circle me-2"></i>${errorMessage}
-                <a href="${pageContext.request.contextPath}/staff/checkin?shift=${selectedShift}&date=${selectedDate}&keyword=${keyword}"
+                <a href="${pageContext.request.contextPath}/admin/checkin?shift=${selectedShift}&date=${selectedDate}&keyword=${keyword}"
                    class="btn btn-sm btn-outline-danger ms-3">Thử lại</a>
             </div>
         </c:when>
@@ -121,7 +121,7 @@
                                     <td class="text-center">
                                         <div class="d-inline-flex gap-2 flex-wrap justify-content-center">
                                             <c:if test="${a.attendanceId == 0}">
-                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                <form method="post" action="${pageContext.request.contextPath}/admin/checkin"
                                                       onsubmit="return confirm('Xác nhận ghi giờ vào cho ${a.targetFullName}?')">
                                                     <input type="hidden" name="action" value="checkin">
                                                     <input type="hidden" name="targetUserId" value="${a.userId}">
@@ -135,7 +135,7 @@
                                                 </form>
                                             </c:if>
                                             <c:if test="${a.attendanceId > 0 && empty a.checkedOutAt}">
-                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                <form method="post" action="${pageContext.request.contextPath}/admin/checkin"
                                                       onsubmit="return confirm('Xác nhận ghi giờ ra cho ${a.targetFullName}?')">
                                                     <input type="hidden" name="action" value="checkout">
                                                     <input type="hidden" name="attendanceId" value="${a.attendanceId}">
@@ -148,7 +148,7 @@
                                                 </form>
                                             </c:if>
                                             <c:if test="${a.attendanceId > 0 && not empty a.checkedOutAt}">
-                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                <form method="post" action="${pageContext.request.contextPath}/admin/checkin"
                                                       onsubmit="return confirm('Hoàn tác giờ ra cho ${a.targetFullName}?')">
                                                     <input type="hidden" name="action" value="undoCheckout">
                                                     <input type="hidden" name="attendanceId" value="${a.attendanceId}">
@@ -161,7 +161,7 @@
                                                 </form>
                                             </c:if>
                                             <c:if test="${a.attendanceId > 0}">
-                                                <form method="post" action="${pageContext.request.contextPath}/staff/checkin"
+                                                <form method="post" action="${pageContext.request.contextPath}/admin/checkin"
                                                       onsubmit="return confirm('Hủy bản ghi điểm danh này?')">
                                                     <input type="hidden" name="action" value="cancel">
                                                     <input type="hidden" name="attendanceId" value="${a.attendanceId}">
