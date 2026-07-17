@@ -90,15 +90,6 @@
                             <span class="text-muted">Chưa có tài khoản?</span>
                             <a href="${pageContext.request.contextPath}/register" class="fw-bold">Đăng ký tài khoản</a>
                         </div>
-                        
-                        <div class="border-top pt-3 mt-3">
-                            <p class="mb-1 text-muted" style="font-size: 0.85rem;">Tài khoản dùng thử (Demo):</p>
-                            <ul class="text-muted ps-3 mb-0" style="font-size: 0.8rem;">
-                                <li>Quản trị (Admin): <code>admin@gym.com</code> / <code>admin123</code></li>
-                                <li>Nhân viên (Staff): <code>staff@gym.com</code> / <code>staff123</code></li>
-                                <li>Hội viên (Member): <code>member@gym.com</code> / <code>member123</code></li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
