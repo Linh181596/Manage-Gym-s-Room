@@ -365,46 +365,168 @@ skinparam activity {
 
 |System|
 start
-:Open Equipment Management feature;
-:Identify user role;
+:Receive Equipment Management request;
+:Identify actor role and selected process;
 
 if (Admin?) then (Yes)
   |Admin|
-  :Select business function\nEquipment, Issues, Reports,\nor Maintenance Approval;
-  :Enter or confirm information;
-
+  :Choose equipment, issue,\nreport, or maintenance process;
   |System|
-  :Check permission and business rules;
-  if (Valid request?) then (Yes)
-    :Save changes or generate report;
-    |Admin|
-    :View result;
-  else (No)
-    :Show validation message;
-    |Admin|
-    :Correct request;
-  endif
+  :Verify Admin permission;
 
 else (Staff)
   |Staff|
-  :Select business task\nView Equipment, Report Issue,\nor Update Maintenance;
-  :Enter task information;
+  :Choose equipment, issue,\nor maintenance task;
+  |System|
+  :Verify Staff permission;
+endif
+
+if (Report process?) then (Yes)
+  |System|
+  :Verify Admin report access;
+  :Collect equipment, issue,\nand maintenance data;
+  :Calculate status counts\nand availability summary;
+  :Display report dashboard;
+
+elseif (Equipment process?) then (Yes)
+  if (Admin?) then (Yes)
+    |Admin|
+    :Create, update, delete,\nsearch, or view equipment;
+  else (No)
+    |Staff|
+    :Search, view, or update\npermitted equipment data;
+  endif
 
   |System|
-  :Check permission and business rules;
-  if (Valid request?) then (Yes)
-    :Record issue or maintenance update;
-    :Update equipment status when needed;
-    |Staff|
-    :View result;
+  :Validate equipment code,\ntype, dates, status, and image;
+  if (Valid equipment request?) then (Yes)
+    :Save equipment change\nor soft delete record;
+    :Refresh equipment list;
   else (No)
     :Show validation message;
+  endif
+
+elseif (Issue process?) then (Yes)
+  if (Admin?) then (Yes)
+    |Admin|
+    :Search, view, report,\nor update equipment issue;
+  else (No)
     |Staff|
-    :Correct request;
+    :Search, view, report,\nor update equipment issue;
+  endif
+
+  |System|
+  :Validate equipment issue data\nand target equipment;
+  if (Valid issue request?) then (Yes)
+    :Create Pending issue\nor update issue status;
+    :Sync equipment status\nBroken, Maintenance, or Available;
+  else (No)
+    :Show validation message;
+  endif
+
+else (Maintenance process)
+  if (Admin?) then (Yes)
+    |Admin|
+    :Create, edit, cancel,\napprove, or reject schedule;
+  else (No)
+    |Staff|
+    :View assigned work,\nstart maintenance,\nor submit completion;
+  endif
+
+  |System|
+  :Validate schedule, equipment,\ntype, dates, and status rule;
+  if (Valid maintenance request?) then (Yes)
+    :Update maintenance status\nScheduled, InProgress,\nPendingApproval, Completed,\nor Cancelled;
+    :Update related issue/equipment\nwhen completion is approved;
+  else (No)
+    :Show validation message;
   endif
 endif
 
 |System|
-:Display final status;
+:Display final result;
+stop
+@enduml
+
+@startuml Manage_Blog_Policies_Activity
+title Figure 9: Manage Blog & Policies Swimlane Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 42
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Receive Blog & Policies request;
+:Identify request type and actor;
+
+if (Public viewing?) then (Yes)
+  |Public User|
+  :Open Blogs or Policies page;
+  :Search, filter, or select content;
+  |System|
+  :Load Published content\nthat is not deleted;
+  if (Policy page?) then (Yes)
+    :Display policy list or detail\nas text content;
+  else (Blog)
+    :Display blog list or detail\nwith category and thumbnail\nwhen available;
+  endif
+  |Public User|
+  :Read selected content;
+
+else (Management)
+  |System|
+  :Identify actor role;
+
+  if (Admin?) then (Yes)
+    |Admin|
+    :Open content management list;
+    :Create, update, publish,\nhide, search, or delete content;
+    |System|
+    :Validate title, summary,\nbody, type, category,\nstatus, and thumbnail;
+    if (Policy?) then (Yes)
+      :Remove thumbnail data;
+    else (Blog)
+      :Store blog thumbnail\nwhen provided;
+    endif
+    if (Delete request?) then (Yes)
+      :Soft delete content record;
+    else (Save request)
+      :Save selected status\nDraft, Published, or Hidden;
+      :Set PublishedAt only\nfor Published content;
+    endif
+    |Admin|
+    :View management result;
+
+  else (Staff)
+    |Staff|
+    :Open content management list;
+    :Create, update, or search content;
+    |System|
+    :Validate title, summary,\nbody, type, category,\nand thumbnail;
+    if (Policy?) then (Yes)
+      :Remove thumbnail data;
+    else (Blog)
+      :Store blog thumbnail\nwhen provided;
+    endif
+    :Force content status to Draft;
+    :Save draft content;
+    |Staff|
+    :View draft result;
+  endif
+endif
+
+|System|
+:Display final result or validation message;
 stop
 @enduml

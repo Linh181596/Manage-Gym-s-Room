@@ -28,7 +28,7 @@ if (Public viewing?) then (Yes)
   :Load Published content\nthat is not deleted;
   if (Policy page?) then (Yes)
     :Display policy list or detail\nas text content;
-  else (Policy)
+  else (Blog)
     :Display blog list or detail\nwith category and thumbnail\nwhen available;
   endif
   |Public User|
