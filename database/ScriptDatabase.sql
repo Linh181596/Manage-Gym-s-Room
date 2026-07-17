@@ -1,4 +1,4 @@
-﻿﻿USE [master]
+USE [master]
 GO
 /****** Object:  Database [GymCenterManagement]    Script Date: 7/8/2026 2:38:41 PM ******/
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'GymCenterManagement')
@@ -197,6 +197,13 @@ CREATE TABLE [dbo].[MaintenanceSchedules](
 	[Status] [varchar](20) NOT NULL,
 	[CompletionDate] [datetime2](7) NULL,
 	[CompletionNote] [nvarchar](max) NULL,
+	[CompletionImageURL] [varchar](255) NULL,
+	[SubmittedForApprovalAt] [datetime2](7) NULL,
+	[SubmittedBy] [nvarchar](50) NULL,
+	[RequestedIssueResolution] [bit] NOT NULL,
+	[ApprovedBy] [nvarchar](50) NULL,
+	[ApprovedAt] [datetime2](7) NULL,
+	[ApprovalNote] [nvarchar](max) NULL,
 	[CreatedBy] [nvarchar](50) NULL,
 	[CreatedDate] [datetime2](7) NOT NULL,
 	[UpdatedBy] [nvarchar](50) NULL,
@@ -239,7 +246,7 @@ GO
 CREATE TABLE [dbo].[Members](
 	[MemberID] [int] IDENTITY(1,1) NOT NULL,
 	[UserID] [int] NOT NULL,
-	[Gender] [varchar](10) NULL,
+	[Gender] [nvarchar](10) NULL CHECK (Gender IN (N'Nam', N'Nữ', N'Khác') OR Gender IS NULL),
 	[DateOfBirth] [date] NULL,
 	[Address] [nvarchar](255) NULL,
 	[MembershipStatus] [varchar](20) NOT NULL,
@@ -630,12 +637,12 @@ SET IDENTITY_INSERT [dbo].[MemberPackages] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Members] ON 
 
-INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 4, N'Male', CAST(N'2000-01-01' AS Date), N'Hà Nội', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4538048' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 4, N'Nam', CAST(N'2000-01-01' AS Date), N'Hà Nội', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4538048' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, 12, N'Nam', CAST(N'2004-10-22' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-09T10:51:16.1071091' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (3, 14, N'Nam', CAST(N'2004-10-22' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-12T07:48:15.9443539' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (4, 15, N'Nam', CAST(N'2004-05-17' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-12T07:50:16.0118158' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (5, 25, N'Nam', CAST(N'2004-10-22' AS Date), N'Hoài Đức - Hà Nội', N'Pending', N'System', CAST(N'2026-06-25T10:03:26.5753400' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (6, 27, N'N?', CAST(N'2001-06-14' AS Date), N'Hoàn Kiếm-Hà Nội', N'Pending', N'System', CAST(N'2026-06-30T10:37:39.6844516' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[Members] ([MemberID], [UserID], [Gender], [DateOfBirth], [Address], [MembershipStatus], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (6, 27, N'Nữ', CAST(N'2001-06-14' AS Date), N'Hoàn Kiếm-Hà Nội', N'Pending', N'System', CAST(N'2026-06-30T10:37:39.6844516' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[Members] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Notifications] ON 
@@ -1202,6 +1209,8 @@ ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedule
 GO
 ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedules_IsDeleted]  DEFAULT ((0)) FOR [IsDeleted]
 GO
+ALTER TABLE [dbo].[MaintenanceSchedules] ADD  CONSTRAINT [DF_MaintenanceSchedules_RequestedIssueResolution]  DEFAULT ((0)) FOR [RequestedIssueResolution]
+GO
 ALTER TABLE [dbo].[MemberPackages] ADD  DEFAULT (sysdatetime()) FOR [CreatedDate]
 GO
 ALTER TABLE [dbo].[MemberPackages] ADD  DEFAULT ((0)) FOR [IsDeleted]
@@ -1493,7 +1502,202 @@ ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Status] CH
 GO
 ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Status]
 GO
-ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='Completed' OR [Status]='Cancelled'))
+ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='PendingApproval' OR [Status]='Completed' OR [Status]='Cancelled'))
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Status]
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Type] CHECK  (([MaintenanceType]='Preventive' OR [MaintenanceType]='Corrective'))
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Type]
+GO
+ALTER TABLE [dbo].[MemberPackages]  WITH CHECK ADD  CONSTRAINT [CK_MemberPackages_Status] CHECK  (([Status]='Expired' OR [Status]='Active' OR [Status]='Pending'))
+GO
+ALTER TABLE [dbo].[MemberPackages] CHECK CONSTRAINT [CK_MemberPackages_Status]
+GO
+ALTER TABLE [dbo].[Members]  WITH CHECK ADD  CONSTRAINT [CK_Members_Status] CHECK  (([MembershipStatus]='Pending' OR [MembershipStatus]='Inactive' OR [MembershipStatus]='Active'))
+GO
+ALTER TABLE [dbo].[Members] CHECK CONSTRAINT [CK_Members_Status]
+GO
+ALTER TABLE [dbo].[PersonalTrainers]  WITH CHECK ADD  CONSTRAINT [CK_PersonalTrainers_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
+GO
+ALTER TABLE [dbo].[PersonalTrainers] CHECK CONSTRAINT [CK_PersonalTrainers_Status]
+GO
+ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_Duration] CHECK  (([DurationMonths]>(0)))
+GO
+ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_Duration]
+GO
+ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_NumberOfSessions] CHECK  (([NumberOfSessions]>(0)))
+GO
+ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_NumberOfSessions]
+GO
+ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_Sessions] CHECK  (([NumberOfSessions]>(0)))
+GO
+ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_Sessions]
+GO
+ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
+GO
+ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_Status]
+GO
+ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_PaymentStatus] CHECK  (([PaymentStatus]='Cancelled' OR [PaymentStatus]='Paid' OR [PaymentStatus]='Unpaid'))
+GO
+ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_PaymentStatus]
+GO
+ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_PurchasedSessions] CHECK  (([PurchasedSessions]>(0)))
+GO
+ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_PurchasedSessions]
+GO
+ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_Status] CHECK  (([Status]='Cancelled' OR [Status]='Completed' OR [Status]='Active' OR [Status]='Pending'))
+GO
+ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_Status]
+GO
+ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_TotalAmount] CHECK  (([TotalAmount]>=(0)))
+GO
+ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_TotalAmount]
+GO
+ALTER TABLE [dbo].[PTSchedules]  WITH CHECK ADD  CONSTRAINT [CK_PTSchedules_Attendance] CHECK  (([PTAttendanceResult]='Absent' OR [PTAttendanceResult]='Attended' OR [PTAttendanceResult]='Pending'))
+GO
+ALTER TABLE [dbo].[PTSchedules] CHECK CONSTRAINT [CK_PTSchedules_Attendance]
+GO
+ALTER TABLE [dbo].[PTSchedules]  WITH CHECK ADD  CONSTRAINT [CK_PTSchedules_Status] CHECK  (([SessionStatus]='Cancelled' OR [SessionStatus]='Completed' OR [SessionStatus]='Upcoming'))
+GO
+ALTER TABLE [dbo].[PTSchedules] CHECK CONSTRAINT [CK_PTSchedules_Status]
+GO
+ALTER TABLE [dbo].[PTSchedules]  WITH CHECK ADD  CONSTRAINT [CK_PTSchedules_Time] CHECK  (([StartTime]<[EndTime]))
+GO
+ALTER TABLE [dbo].[PTSchedules] CHECK CONSTRAINT [CK_PTSchedules_Time]
+GO
+ALTER TABLE [dbo].[PTServicePrices]  WITH CHECK ADD  CONSTRAINT [CK_PTServicePrices_Price] CHECK  (([Price]>=(0)))
+GO
+ALTER TABLE [dbo].[PTServicePrices] CHECK CONSTRAINT [CK_PTServicePrices_Price]
+GO
+ALTER TABLE [dbo].[PTServicePrices]  WITH CHECK ADD  CONSTRAINT [CK_PTServicePrices_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
+GO
+ALTER TABLE [dbo].[PTServicePrices] CHECK CONSTRAINT [CK_PTServicePrices_Status]
+GO
+ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [CK_RescheduleRequests_Status] CHECK  (([Status]='Escalated' OR [Status]='Rejected' OR [Status]='Approved' OR [Status]='Pending'))
+GO
+ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [CK_RescheduleRequests_Status]
+GO
+ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [CK_RescheduleRequests_Time] CHECK  (([ProposedStartTime]<[ProposedEndTime]))
+GO
+ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [CK_RescheduleRequests_Time]
+GO
+ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Role] CHECK  (([UserRole]='PT' OR [UserRole]='Staff'))
+GO
+ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Role]
+GO
+ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Shift] CHECK  (([ShiftBlock]='Evening' OR [ShiftBlock]='Afternoon' OR [ShiftBlock]='Morning'))
+GO
+ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Shift]
+GO
+ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Status] CHECK  (([Status]='Cancelled' OR [Status]='Active'))
+GO
+ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Status]
+GO
+ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Time] CHECK  (([CheckedOutAt] IS NULL OR [CheckedOutAt]>=[CheckedInAt]))
+GO
+ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Time]
+GO
+ALTER TABLE [dbo].[Staffs]  WITH CHECK ADD  CONSTRAINT [CK_Staffs_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
+GO
+ALTER TABLE [dbo].[Staffs] CHECK CONSTRAINT [CK_Staffs_Status]
+GO
+ALTER TABLE [dbo].[User_Tokens]  WITH CHECK ADD  CONSTRAINT [CK_UserTokens_Type] CHECK  (([TokenType]='REMEMBER_ME' OR [TokenType]='RESET_PASSWORD' OR [TokenType]='VERIFICATION'))
+GO
+ALTER TABLE [dbo].[User_Tokens] CHECK CONSTRAINT [CK_UserTokens_Type]
+GO
+ALTER TABLE [dbo].[Users]  WITH CHECK ADD  CONSTRAINT [CK_Users_Status] CHECK  (([Status]='Locked' OR [Status]='Inactive' OR [Status]='Active'))
+GO
+ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [CK_Users_Status]
+GO
+GO
+ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_EscalatedBy] FOREIGN KEY([EscalatedByUserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_EscalatedBy]
+GO
+ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_PTSchedules] FOREIGN KEY([PTScheduleID])
+REFERENCES [dbo].[PTSchedules] ([PTScheduleID])
+GO
+ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_PTSchedules]
+GO
+ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_Receiver] FOREIGN KEY([ReceiverUserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_Receiver]
+GO
+ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_RespondedBy] FOREIGN KEY([RespondedByUserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_RespondedBy]
+GO
+ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_Sender] FOREIGN KEY([SenderUserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_Sender]
+GO
+ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [FK_StaffPTAttendance_CheckedBy] FOREIGN KEY([CheckedBy])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [FK_StaffPTAttendance_CheckedBy]
+GO
+ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [FK_StaffPTAttendance_Users] FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [FK_StaffPTAttendance_Users]
+GO
+ALTER TABLE [dbo].[Staffs]  WITH CHECK ADD  CONSTRAINT [FK_Staffs_Users] FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+GO
+ALTER TABLE [dbo].[Staffs] CHECK CONSTRAINT [FK_Staffs_Users]
+GO
+ALTER TABLE [dbo].[User_Tokens]  WITH CHECK ADD  CONSTRAINT [FK_UserTokens_Users] FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[User_Tokens] CHECK CONSTRAINT [FK_UserTokens_Users]
+GO
+ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_Roles] FOREIGN KEY([RoleID])
+REFERENCES [dbo].[Roles] ([RoleID])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_Roles]
+GO
+ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_Users] FOREIGN KEY([UserID])
+REFERENCES [dbo].[Users] ([UserID])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_Users]
+GO
+ALTER TABLE [dbo].[EquipmentIssues]  WITH CHECK ADD  CONSTRAINT [CK_EquipmentIssues_Status] CHECK  (([Status]='Resolved' OR [Status]='InProgress' OR [Status]='Pending'))
+GO
+ALTER TABLE [dbo].[EquipmentIssues] CHECK CONSTRAINT [CK_EquipmentIssues_Status]
+GO
+ALTER TABLE [dbo].[Equipments]  WITH CHECK ADD  CONSTRAINT [CK_Equipments_Status] CHECK  (([Status]='Broken' OR [Status]='Maintenance' OR [Status]='Available'))
+GO
+ALTER TABLE [dbo].[Equipments] CHECK CONSTRAINT [CK_Equipments_Status]
+GO
+ALTER TABLE [dbo].[GymPackages]  WITH CHECK ADD  CONSTRAINT [CK_GymPackages_Duration] CHECK  (([DurationMonths]>(0)))
+GO
+ALTER TABLE [dbo].[GymPackages] CHECK CONSTRAINT [CK_GymPackages_Duration]
+GO
+ALTER TABLE [dbo].[GymPackages]  WITH CHECK ADD  CONSTRAINT [CK_GymPackages_Price] CHECK  (([Price]>=(0)))
+GO
+ALTER TABLE [dbo].[GymPackages] CHECK CONSTRAINT [CK_GymPackages_Price]
+GO
+ALTER TABLE [dbo].[GymPackages]  WITH CHECK ADD  CONSTRAINT [CK_GymPackages_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
+GO
+ALTER TABLE [dbo].[GymPackages] CHECK CONSTRAINT [CK_GymPackages_Status]
+GO
+ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Amount] CHECK  (([Amount]>=(0)))
+GO
+ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Amount]
+GO
+ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Status] CHECK  (([Status]='Cancelled' OR [Status]='Pending' OR [Status]='Paid'))
+GO
+ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Status]
+GO
+ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='PendingApproval' OR [Status]='Completed' OR [Status]='Cancelled'))
 GO
 ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Status]
 GO
@@ -1604,4 +1808,77 @@ GO
 USE [master]
 GO
 ALTER DATABASE [GymCenterManagement] SET  READ_WRITE 
+GO
+
+/****** Object:  Table [dbo].[PublicContents]    Script Date: 7/17/2026 12:20:00 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PublicContents](
+	[ContentID] [int] IDENTITY(1,1) NOT NULL,
+	[Title] [nvarchar](200) NOT NULL,
+	[Summary] [nvarchar](500) NULL,
+	[Body] [nvarchar](max) NOT NULL,
+	[ContentType] [varchar](20) NOT NULL,
+	[Category] [nvarchar](100) NULL,
+	[ThumbnailURL] [nvarchar](255) NULL,
+	[Status] [varchar](20) NOT NULL,
+	[PublishedAt] [datetime2](7) NULL,
+	[CreatedBy] [nvarchar](50) NULL,
+	[CreatedAt] [datetime2](7) NOT NULL,
+	[UpdatedBy] [nvarchar](50) NULL,
+	[UpdatedAt] [datetime2](7) NULL,
+	[IsDeleted] [bit] NOT NULL,
+ CONSTRAINT [PK_PublicContents] PRIMARY KEY CLUSTERED 
+(
+	[ContentID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+SET IDENTITY_INSERT [dbo].[PublicContents] ON 
+
+INSERT [dbo].[PublicContents] ([ContentID], [Title], [Summary], [Body], [ContentType], [Category], [ThumbnailURL], [Status], [PublishedAt], [CreatedBy], [CreatedAt], [UpdatedBy], [UpdatedAt], [IsDeleted]) VALUES (1, N'Chuẩn bị trước buổi tập đầu tiên', N'Những việc hội viên nên chuẩn bị trước khi bắt đầu lịch tập tại phòng gym.', N'Hãy đến sớm khoảng 10 phút để hoàn tất kiểm tra thông tin, chuẩn bị nước uống, khăn tập và trang phục thoải mái. Nếu có vấn đề sức khỏe đặc biệt, hãy trao đổi với nhân viên hoặc PT trước khi tập để được hướng dẫn phù hợp.', N'BLOG', N'Kinh nghiệm tập luyện', NULL, N'Published', CAST(N'2026-07-17T00:20:00' AS DateTime2), N'System', CAST(N'2026-07-17T00:20:00' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[PublicContents] ([ContentID], [Title], [Summary], [Body], [ContentType], [Category], [ThumbnailURL], [Status], [PublishedAt], [CreatedBy], [CreatedAt], [UpdatedBy], [UpdatedAt], [IsDeleted]) VALUES (2, N'Uống đủ nước khi luyện tập', N'Lưu ý đơn giản giúp cơ thể duy trì hiệu suất và phục hồi tốt hơn.', N'Nước hỗ trợ điều hòa nhiệt độ, vận chuyển dinh dưỡng và giảm cảm giác mệt mỏi trong quá trình tập. Hội viên nên uống từng ngụm nhỏ trước, trong và sau buổi tập; tránh chờ đến khi quá khát mới bổ sung nước.', N'BLOG', N'Phục hồi', NULL, N'Published', CAST(N'2026-07-17T00:20:00' AS DateTime2), N'System', CAST(N'2026-07-17T00:20:00' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[PublicContents] ([ContentID], [Title], [Summary], [Body], [ContentType], [Category], [ThumbnailURL], [Status], [PublishedAt], [CreatedBy], [CreatedAt], [UpdatedBy], [UpdatedAt], [IsDeleted]) VALUES (3, N'Chính sách bảo lưu gói tập', N'Quy định chung về bảo lưu thời hạn sử dụng gói tập.', N'Hội viên có thể liên hệ quầy lễ tân để gửi yêu cầu bảo lưu khi có lý do phù hợp. Thời gian, điều kiện và giấy tờ hỗ trợ sẽ được nhân viên kiểm tra theo từng loại gói và trạng thái thanh toán hiện tại.', N'POLICY', N'Bảo lưu', NULL, N'Published', CAST(N'2026-07-17T00:20:00' AS DateTime2), N'System', CAST(N'2026-07-17T00:20:00' AS DateTime2), NULL, NULL, 0)
+SET IDENTITY_INSERT [dbo].[PublicContents] OFF
+GO
+
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_PublicContents_Management]    Script Date: 7/17/2026 12:20:00 AM ******/
+CREATE NONCLUSTERED INDEX [IX_PublicContents_Management] ON [dbo].[PublicContents]
+(
+	[IsDeleted] ASC,
+	[ContentType] ASC,
+	[Status] ASC,
+	[ContentID] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_PublicContents_Public]    Script Date: 7/17/2026 12:20:00 AM ******/
+CREATE NONCLUSTERED INDEX [IX_PublicContents_Public] ON [dbo].[PublicContents]
+(
+	[ContentType] ASC,
+	[Status] ASC,
+	[IsDeleted] ASC,
+	[PublishedAt] DESC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[PublicContents] ADD  DEFAULT ('Draft') FOR [Status]
+GO
+ALTER TABLE [dbo].[PublicContents] ADD  DEFAULT (sysdatetime()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[PublicContents] ADD  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[PublicContents]  WITH CHECK ADD  CONSTRAINT [CK_PublicContents_ContentType] CHECK  (([ContentType]='POLICY' OR [ContentType]='BLOG'))
+GO
+ALTER TABLE [dbo].[PublicContents] CHECK CONSTRAINT [CK_PublicContents_ContentType]
+GO
+ALTER TABLE [dbo].[PublicContents]  WITH CHECK ADD  CONSTRAINT [CK_PublicContents_Status] CHECK  (([Status]='Hidden' OR [Status]='Published' OR [Status]='Draft'))
+GO
+ALTER TABLE [dbo].[PublicContents] CHECK CONSTRAINT [CK_PublicContents_Status]
 GO

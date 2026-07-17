@@ -92,6 +92,7 @@ public class GymPackageDAOImpl extends BaseDAO implements GymPackageDAO {
         
         try {
             conn = getActiveConnection();
+            // Chỉ lấy những gói tập chưa bị xóa (IsDeleted = 0)
             String sql = "SELECT * FROM GymPackages WHERE IsDeleted = 0 ORDER BY PackageID DESC";
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
@@ -218,6 +219,8 @@ public class GymPackageDAOImpl extends BaseDAO implements GymPackageDAO {
         
         try {
             conn = getActiveConnection();
+            // Soft Delete - Thay vì dùng lệnh DELETE FROM, ta set cờ IsDeleted = 1 
+            // Điều này giúp giữ lại dữ liệu lịch sử để tham chiếu (vd: Báo cáo, Lịch sử thanh toán)
             String sql = "UPDATE GymPackages SET IsDeleted = 1 WHERE PackageID = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, packageId);

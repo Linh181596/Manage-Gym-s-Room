@@ -171,7 +171,8 @@ public class ManageAccountController extends HttpServlet {
             return;
         }
 
-        prepareForm(request, account, false, "Cập nhật tài khoản");
+        prepareForm(request, account, false,
+                account.getAccountStatus() == User.AccountStatus.Inactive ? "Thông tin tài khoản" : "Cập nhật tài khoản");
         request.getRequestDispatcher(FORM_VIEW).forward(request, response);
     }
 
@@ -179,6 +180,20 @@ public class ManageAccountController extends HttpServlet {
             throws ServletException, IOException {
         Integer userId = parseUserIdFromValue(request.getParameter("userId"));
         boolean isCreate = userId == null || userId <= 0;
+
+        if (!isCreate) {
+            User existingAccount = userService.getAccountById(userId);
+            if (existingAccount == null) {
+                setFlash(request, "errorMessage", "Không tìm thấy tài khoản.");
+                response.sendRedirect(request.getContextPath() + "/admin/accounts");
+                return;
+            }
+            if (existingAccount.getAccountStatus() == User.AccountStatus.Inactive) {
+                setFlash(request, "errorMessage", "Tài khoản đã vô hiệu hóa chỉ có thể xem thông tin.");
+                response.sendRedirect(request.getContextPath() + "/admin/accounts?action=edit&id=" + userId);
+                return;
+            }
+        }
 
         User account = new User();
         account.setUserId(isCreate ? 0 : userId);
@@ -220,6 +235,18 @@ public class ManageAccountController extends HttpServlet {
         Integer userId = parseUserId(request);
         if (userId == null) {
             setFlash(request, "errorMessage", "Mã tài khoản không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+
+        User targetAccount = userService.getAccountById(userId);
+        if (targetAccount == null) {
+            setFlash(request, "errorMessage", "Không tìm thấy tài khoản.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+        if (targetAccount.getAccountStatus() == User.AccountStatus.Inactive) {
+            setFlash(request, "errorMessage", "Tài khoản đã vô hiệu hóa không thể thực hiện thao tác này.");
             response.sendRedirect(request.getContextPath() + "/admin/accounts");
             return;
         }
@@ -267,6 +294,18 @@ public class ManageAccountController extends HttpServlet {
         User.Role newRole = parseRole(request.getParameter("role"));
         if (userId == null || newRole == null) {
             setFlash(request, "errorMessage", "Yêu cầu đổi vai trò không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+
+        User targetAccount = userService.getAccountById(userId);
+        if (targetAccount == null) {
+            setFlash(request, "errorMessage", "Không tìm thấy tài khoản.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+        if (targetAccount.getAccountStatus() == User.AccountStatus.Inactive) {
+            setFlash(request, "errorMessage", "Tài khoản đã vô hiệu hóa không thể thay đổi vai trò.");
             response.sendRedirect(request.getContextPath() + "/admin/accounts");
             return;
         }

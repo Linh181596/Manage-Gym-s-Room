@@ -39,6 +39,7 @@ public class GymPackageServiceImpl implements GymPackageService {
 
     @Override
     public boolean createPackage(GymPackage pkg) throws SQLException {
+        // Tự động gán thời gian tạo hiện tại và đặt cờ IsDeleted = false (0) trước khi insert
         pkg.setCreatedDate(LocalDateTime.now());
         pkg.setDeleted(false);
         return gymPackageDAO.insert(pkg);
@@ -46,12 +47,14 @@ public class GymPackageServiceImpl implements GymPackageService {
 
     @Override
     public boolean updatePackage(GymPackage pkg) throws SQLException {
+        // Cập nhật thời gian UpdatedDate tự động khi thực hiện thay đổi thông tin
         pkg.setUpdatedDate(LocalDateTime.now());
         return gymPackageDAO.update(pkg);
     }
 
     @Override
     public boolean deletePackage(int id) throws SQLException {
+        // Chuyển tiếp lệnh xóa xuống DAO (Thực tế là Soft Delete)
         return gymPackageDAO.delete(id);
     }
 

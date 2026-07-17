@@ -24,7 +24,7 @@ public interface StaffPTAttendanceService {
     boolean undoCheckout(int attendanceId, int updatedBy) throws SQLException;
     boolean cancelAttendance(int attendanceId, int cancelledBy) throws SQLException;
     List<StaffPTAttendance> getCheckinStatusList(String shiftBlock, LocalDate date, String keyword) throws SQLException;
-    List<StaffPTAttendance> searchHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException;
-    int countHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException;
+    List<StaffPTAttendance> searchHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException;
+    int countHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException;
     StaffPTAttendance findById(int attendanceId) throws SQLException;
 }

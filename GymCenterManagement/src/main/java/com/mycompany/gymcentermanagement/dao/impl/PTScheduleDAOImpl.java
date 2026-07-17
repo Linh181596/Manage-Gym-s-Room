@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PTScheduleDAOImpl implements PTScheduleDAO {
     @Override
@@ -982,8 +983,8 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
     }
 
     @Override
-    public List<java.util.Map<String, Object>> getMassCancelledSlots() {
-        List<java.util.Map<String, Object>> list = new java.util.ArrayList<>();
+    public List<Map<String, Object>> getMassCancelledSlots() {
+        List<Map<String, Object>> list = new java.util.ArrayList<>();
         String sql = """
                 SELECT DISTINCT SessionDate, StartTime, EndTime, UpdatedBy
                 FROM PTSchedules
@@ -995,7 +996,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                Map<String, Object> map = new java.util.HashMap<>();
                 map.put("date", rs.getDate("SessionDate").toLocalDate().toString());
                 java.sql.Time start = rs.getTime("StartTime");
                 java.sql.Time end = rs.getTime("EndTime");

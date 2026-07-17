@@ -61,13 +61,13 @@ public class StaffPTAttendanceServiceImpl implements StaffPTAttendanceService {
     }
 
     @Override
-    public List<StaffPTAttendance> searchHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException {
-        return attendanceDAO.searchHistory(userId, userRole, fromDate, toDate, keyword, offset, limit);
+    public List<StaffPTAttendance> searchHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException {
+        return attendanceDAO.searchHistory(userId, userRole, shiftBlock, fromDate, toDate, keyword, offset, limit);
     }
 
     @Override
-    public int countHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException {
-        return attendanceDAO.countHistory(userId, userRole, fromDate, toDate, keyword);
+    public int countHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException {
+        return attendanceDAO.countHistory(userId, userRole, shiftBlock, fromDate, toDate, keyword);
     }
 
     @Override

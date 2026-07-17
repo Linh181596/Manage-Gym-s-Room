@@ -56,6 +56,7 @@ public class ManageEquipmentIssueController extends HttpServlet {
             switch (action) {
                 case "create" -> {
                     EquipmentIssue newIssue = new EquipmentIssue();
+                    newIssue.setStatus(EquipmentService.ISSUE_PENDING);
                     String eqIdStr = request.getParameter("equipmentId");
                     if (eqIdStr != null && !eqIdStr.isBlank()) {
                         try {
@@ -64,7 +65,6 @@ public class ManageEquipmentIssueController extends HttpServlet {
                     }
                     showForm(request, response, newIssue);
                 }
-                case "edit" -> showStatusForm(request, response);
                 case "detail" -> showDetail(request, response);
                 default -> list(request, response);
             }
@@ -85,12 +85,12 @@ public class ManageEquipmentIssueController extends HttpServlet {
         }
 
         String action = action(request);
+        if ("edit".equals(action)) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
         try {
-            if ("edit".equals(action)) {
-                service.updateIssue(readIssueForUpdate(request, currentUser.getFullName()), currentUser.getFullName());
-            } else {
-                service.createIssue(readIssue(request, currentUser.getUserId(), currentUser.getFullName()));
-            }
+            service.createIssue(readIssue(request, currentUser.getUserId(), currentUser.getFullName()));
             if (User.Role.Admin.equals(currentUser.getRole())) {
                 response.sendRedirect(request.getContextPath() + "/admin/equipment-reports");
             } else {
@@ -165,7 +165,7 @@ public class ManageEquipmentIssueController extends HttpServlet {
         EquipmentIssue issue = new EquipmentIssue();
         issue.setEquipmentId(parseInt(request.getParameter("equipmentId"), 0));
         issue.setReportedBy(userId);
-        issue.setIssueType(trim(request.getParameter("issueType")));
+        issue.setIssueType(EquipmentService.ISSUE_TYPE_DAMAGE);
         issue.setDescription(trim(request.getParameter("description")));
         issue.setIssueImageUrl(resolveIssueImageUrl(request));
         issue.setCreatedBy(userFullName);
@@ -201,7 +201,14 @@ public class ManageEquipmentIssueController extends HttpServlet {
         issue.setDescription(trim(request.getParameter("description")));
         issue.setCreatedBy(userFullName);
         issue.setIssueId(parseInt(request.getParameter("id"), 0));
-        issue.setStatus(request.getParameter("status"));
+        if (issue.getIssueId() == 0) {
+            issue.setIssueType(EquipmentService.ISSUE_TYPE_DAMAGE);
+        }
+        if (issue.getIssueId() > 0) {
+            issue.setStatus(request.getParameter("status"));
+        } else {
+            issue.setStatus(EquipmentService.ISSUE_PENDING);
+        }
         issue.setIssueImageUrl(trim(request.getParameter("currentIssueImageUrl")));
         return issue;
     }
