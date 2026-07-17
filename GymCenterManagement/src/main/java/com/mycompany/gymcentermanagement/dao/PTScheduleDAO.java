@@ -4,6 +4,7 @@ import com.mycompany.gymcentermanagement.dto.PTScheduleDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface PTScheduleDAO {
     boolean isScheduleConflict(int ptId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime);
@@ -25,5 +26,5 @@ public interface PTScheduleDAO {
     List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId);
     int massCancelSessions(LocalDate cancelDate, java.sql.Time startTime, java.sql.Time endTime, String reason, int cancelledByUserId, String updatedBy);
     boolean isSlotMassCancelled(LocalDate date, java.sql.Time startTime, java.sql.Time endTime);
-    List<java.util.Map<String, Object>> getMassCancelledSlots();
+    List<Map<String, Object>> getMassCancelledSlots();
 }
