@@ -1,0 +1,410 @@
+@startuml System_Account_Management_Activity
+title Figure 1: System & Account Management Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+|Guest|
+start
+:Open login, register, or password recovery page;
+
+|System|
+:Display requested account screen;
+
+if (Register account?) then (Yes)
+  |Guest|
+  :Submit registration information;
+  |System|
+  :Validate required data and duplicate account information;
+  if (Registration valid?) then (Yes)
+    :Create account with pending verification data;
+    :Send verification email;
+    |Guest|
+    :Verify email link;
+    |System|
+    :Activate verified account;
+  else (No)
+    :Show validation message;
+  endif
+else (No)
+  if (Login?) then (Yes)
+    |Guest|
+    :Submit email and password;
+    |System|
+    :Authenticate account and check role/status;
+    if (Login valid?) then (Yes)
+      :Create session and redirect to role dashboard;
+    else (No)
+      :Show login error;
+    endif
+  else (Password recovery)
+    |Guest|
+    :Submit email and reset password information;
+    |System|
+    :Validate reset token and update password;
+    :Show reset result;
+  endif
+endif
+
+stop
+@enduml
+
+@startuml Membership_Payment_Activity
+title Figure 2: Membership & Payment Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+|Member|
+start
+:Select package registration, renewal, transfer, or invoice payment;
+
+|System|
+:Load package, member, and invoice data;
+
+if (Staff handles package operation?) then (Yes)
+  |Staff|
+  :Enter member package operation information;
+  |System|
+  :Validate member, package, date, and payment data;
+  if (Valid operation?) then (Yes)
+    :Create or update member package;
+    :Create related invoice when needed;
+    |Staff|
+    :Record cash payment or guide online payment;
+  else (No)
+    :Show validation message;
+  endif
+else (Member payment)
+  |Member|
+  :Choose invoice and payment method;
+  |System|
+  :Validate invoice status and amount;
+  if (Online payment?) then (Yes)
+    |Member|
+    :Confirm payment through gateway;
+    |System|
+    :Receive payment callback and update invoice status;
+  else (Cash payment)
+    |Staff|
+    :Confirm cash payment receipt;
+    |System|
+    :Mark invoice as Paid and update related package;
+  endif
+endif
+
+|System|
+:Display package or payment result;
+stop
+@enduml
+
+@startuml Member_Staff_Management_Activity
+title Figure 3: Member & Staff Management Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+|System|
+start
+:Receive member or staff management request;
+:Identify current actor role;
+
+if (Actor is Admin?) then (Yes)
+  |Admin|
+  :Open member or staff management screen;
+  :Choose create, view, update, lock, unlock, or deactivate account;
+  |System|
+  :Verify Admin permission;
+else (Staff)
+  |Staff|
+  :Open member management screen;
+  :Choose view, search, or update permitted member information;
+  |System|
+  :Verify Staff permission;
+endif
+
+if (Create or update record?) then (Yes)
+  |System|
+  :Validate profile, account, role, and uniqueness rules;
+  if (Valid data?) then (Yes)
+    :Create or update selected record;
+    :Display saved result;
+  else (No)
+    :Show validation message;
+  endif
+else (No)
+  if (Deactivate or change account status?) then (Yes)
+    |Admin|
+    :Confirm account status operation;
+    |System|
+    :Apply role/status rules and update account;
+    :Display status result;
+  else (Search or view)
+    |System|
+    :Retrieve matching records or selected detail;
+    :Display management result;
+  endif
+endif
+
+stop
+@enduml
+
+@startuml PT_Service_Registration_Schedule_Generation_Activity
+title Figure 4: PT Service Registration & Schedule Generation Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+|Member|
+start
+:Select personal trainer service package;
+:Submit registration request;
+
+|System|
+:Validate member eligibility, package, trainer, and schedule preference;
+if (Registration valid?) then (Yes)
+  :Create PT registration with Pending status;
+  :Create related unpaid invoice;
+else (No)
+  :Show validation message;
+  stop
+endif
+
+|Staff|
+:Review pending PT registration and payment evidence;
+
+|System|
+:Validate registration still pending and payment can be processed;
+if (Payment approved?) then (Yes)
+  :Mark registration/payment as approved;
+  |Admin|
+  :Confirm schedule generation when required;
+  |System|
+  :Generate PT sessions from selected package and fixed time slots;
+  :Display generated schedule result;
+else (Rejected)
+  :Keep registration pending or mark rejected according to operation result;
+  :Display processing issue;
+endif
+
+stop
+@enduml
+
+@startuml Reschedule_Request_Activity
+title Figure 5: Reschedule Request Flow Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+|Member|
+start
+:Open eligible upcoming PT session;
+:Submit proposed reschedule date and time slot;
+
+|System|
+:Validate session eligibility and proposed slot availability;
+if (Proposal valid?) then (Yes)
+  :Create reschedule request with Pending status;
+else (No)
+  :Show validation message;
+  stop
+endif
+
+|Personal Trainer|
+:Review reschedule request;
+
+|System|
+if (Trainer approves?) then (Yes)
+  :Mark request Approved;
+  :Update session date and time slot;
+  :Notify affected users;
+else (Rejected)
+  :Mark request Rejected;
+  :Keep original session unchanged;
+  :Notify requester;
+endif
+
+stop
+@enduml
+
+@startuml Cancelled_Session_Makeup_Activity
+title Figure 6: Cancelled Session & Make-up Request Flow Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+|Admin|
+start
+:Cancel eligible future PT session and enter reason;
+
+|System|
+:Validate cancellation permission and session status;
+:Mark selected session as Cancelled;
+:Open make-up eligibility for affected session;
+:Notify member and trainer;
+
+|Member|
+:Submit make-up request with proposed future slot;
+
+|System|
+:Validate cancelled session, proposed slot, and duplicate make-up rules;
+if (Request valid?) then (Yes)
+  :Create make-up request with Pending status;
+else (No)
+  :Show validation message;
+  stop
+endif
+
+|Personal Trainer|
+:Review make-up request;
+
+|System|
+if (Request approved?) then (Yes)
+  :Mark make-up request Approved;
+  :Create replacement Upcoming session;
+  :Keep original session Cancelled;
+else (Rejected)
+  :Mark make-up request Rejected;
+  :Keep cancelled session eligible when policy allows;
+endif
+:Display make-up result;
+
+stop
+@enduml
+
+@startuml Staff_Admin_Schedule_Operations_Activity
+title Figure 7: Staff and Admin Schedule Operations Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+|System|
+start
+:Receive schedule operation request;
+:Identify current actor role;
+
+if (Actor is Admin?) then (Yes)
+  |Admin|
+  :Open schedule operation area;
+  :Choose registration review, substitute assignment, attendance update, or mass cancellation;
+  |System|
+  :Verify Admin permission;
+else (Staff)
+  |Staff|
+  :Open schedule operation area;
+  :Choose registration review or attendance update;
+  |System|
+  :Verify Staff permission;
+endif
+
+if (Review pending PT registration?) then (Yes)
+  |System|
+  :Validate registration and payment evidence;
+  :Approve or reject registration processing;
+  :Display processing result;
+else (No)
+  if (Assign substitute trainer?) then (Yes)
+    |Admin|
+    :Select original session and substitute trainer;
+    |System|
+    :Validate original session and substitute availability;
+    :Update assigned trainer for the session;
+    :Display substitute assignment result;
+  else (No)
+    if (Update attendance or session status?) then (Yes)
+      |System|
+      :Validate session and attendance result;
+      :Update attendance and session status;
+      :Update package progress when applicable;
+      :Display updated training result;
+    else (Mass cancellation)
+      |Admin|
+      :Enter date range and cancellation reason;
+      |System|
+      :Validate eligible sessions;
+      :Cancel affected sessions and record reason;
+      :Open make-up eligibility for affected sessions;
+      :Display cancellation summary;
+    endif
+  endif
+endif
+
+stop
+@enduml
+
+@startuml Equipment_Management_Activity
+title Figure 8: Equipment Management Swimlane Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 42
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Open Equipment Management feature;
+:Identify user role;
+
+if (Admin?) then (Yes)
+  |Admin|
+  :Select business function\nEquipment, Issues, Reports,\nor Maintenance Approval;
+  :Enter or confirm information;
+
+  |System|
+  :Check permission and business rules;
+  if (Valid request?) then (Yes)
+    :Save changes or generate report;
+    |Admin|
+    :View result;
+  else (No)
+    :Show validation message;
+    |Admin|
+    :Correct request;
+  endif
+
+else (Staff)
+  |Staff|
+  :Select business task\nView Equipment, Report Issue,\nor Update Maintenance;
+  :Enter task information;
+
+  |System|
+  :Check permission and business rules;
+  if (Valid request?) then (Yes)
+    :Record issue or maintenance update;
+    :Update equipment status when needed;
+    |Staff|
+    :View result;
+  else (No)
+    :Show validation message;
+    |Staff|
+    :Correct request;
+  endif
+endif
+
+|System|
+:Display final status;
+stop
+@enduml

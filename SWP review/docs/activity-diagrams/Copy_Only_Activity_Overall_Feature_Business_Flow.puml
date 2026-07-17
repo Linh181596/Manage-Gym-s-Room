@@ -1,0 +1,78 @@
+@startuml Overall_Feature_Business_Flow_Activity_Diagram
+title Figure 9: Overall Feature Business Flow Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 38
+skinparam ranksep 45
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Open selected feature;
+:Identify user role and request;
+
+if (Public content request?) then (Yes)
+  |Public User|
+  :Open Blogs or Policies page;
+  :Select content to read;
+
+  |System|
+  :Show published active content;
+
+else (Management request)
+  |System|
+  :Route to management function;
+
+  if (Admin?) then (Yes)
+    |Admin|
+    :Select management function;
+
+    if (Equipment function?) then (Yes)
+      :Manage equipment, issues, reports,\nor maintenance approval;
+      |System|
+      :Validate business rules;
+      :Save equipment changes\nor generate report;
+    else (Blog and Policies)
+      :Create, update, publish, hide,\ndelete, or search content;
+      |System|
+      :Validate content rules;
+      :Save selected content status;
+    endif
+
+    |Admin|
+    :Review operation result;
+
+  else (Staff)
+    |Staff|
+    :Select assigned function;
+
+    if (Equipment task?) then (Yes)
+      :View equipment, report issue,\nor update maintenance work;
+      |System|
+      :Validate business rules;
+      :Record issue or maintenance update;
+    else (Blog and Policies)
+      :Create, update, or search content;
+      |System|
+      :Validate content rules;
+      :Save content as Draft;
+    endif
+
+    |Staff|
+    :Review operation result;
+  endif
+endif
+
+|System|
+:Display final status;
+stop
+@enduml

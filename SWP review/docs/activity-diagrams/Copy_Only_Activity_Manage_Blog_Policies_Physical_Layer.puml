@@ -1,0 +1,73 @@
+@startuml Manage_Blog_Policies_Public_Management_Swimlane_Activity_Diagram
+title Figure 6: Manage Blog & Policies Swimlane Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 42
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Open Blog & Policies feature;
+:Identify request type;
+
+if (Public viewing?) then (Yes)
+  |Public User|
+  :Open Blogs or Policies page;
+  |System|
+  :Load Published and active content;
+  if (Blog?) then (Yes)
+    :Show blog list or detail\nwith thumbnail when available;
+  else (Policy)
+    :Show policy list or detail\nas text content;
+  endif
+  |Public User|
+  :Read selected content;
+
+else (Management)
+  |System|
+  :Identify actor role;
+
+  if (Admin?) then (Yes)
+    |Admin|
+    :Create, update, search, publish,\nhide, or delete content;
+    |System|
+    :Validate content information;
+    if (Policy?) then (Yes)
+      :Remove thumbnail data;
+    else (Blog)
+      :Keep blog thumbnail when provided;
+    endif
+    :Save selected status\nDraft, Published, Hidden, or Deleted;
+    |Admin|
+    :View management result;
+
+  else (Staff)
+    |Staff|
+    :Create, update, or search content;
+    |System|
+    :Validate content information;
+    if (Policy?) then (Yes)
+      :Remove thumbnail data;
+    else (Blog)
+      :Keep blog thumbnail when provided;
+    endif
+    :Save content as Draft;
+    |Staff|
+    :View draft result;
+  endif
+endif
+
+|System|
+:Display final result;
+stop
+@enduml

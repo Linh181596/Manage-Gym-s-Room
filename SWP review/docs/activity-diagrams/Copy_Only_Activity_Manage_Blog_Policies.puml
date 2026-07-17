@@ -1,0 +1,82 @@
+@startuml Manage_Blog_Policies_Swimlane_Activity_Diagram
+title Figure 5: Manage Blog & Policies Swimlane Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 42
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Receive Blog & Policies request;
+:Identify request type and actor;
+
+if (Public viewing?) then (Yes)
+  |Public User|
+  :Open Blogs or Policies page;
+  :Search, filter, or select content;
+  |System|
+  :Load Published content\nthat is not deleted;
+  if (Policy page?) then (Yes)
+    :Display policy list or detail\nas text content;
+  else (Policy)
+    :Display blog list or detail\nwith category and thumbnail\nwhen available;
+  endif
+  |Public User|
+  :Read selected content;
+
+else (Management)
+  |System|
+  :Identify actor role;
+
+  if (Admin?) then (Yes)
+    |Admin|
+    :Open content management list;
+    :Create, update, publish,\nhide, search, or delete content;
+    |System|
+    :Validate title, summary,\nbody, type, category,\nstatus, and thumbnail;
+    if (Policy?) then (Yes)
+      :Remove thumbnail data;
+    else (Blog)
+      :Store blog thumbnail\nwhen provided;
+    endif
+    if (Delete request?) then (Yes)
+      :Soft delete content record;
+    else (Save request)
+      :Save selected status\nDraft, Published, or Hidden;
+      :Set PublishedAt only\nfor Published content;
+    endif
+    |Admin|
+    :View management result;
+
+  else (Staff)
+    |Staff|
+    :Open content management list;
+    :Create, update, or search content;
+    |System|
+    :Validate title, summary,\nbody, type, category,\nand thumbnail;
+    if (Policy?) then (Yes)
+      :Remove thumbnail data;
+    else (Blog)
+      :Store blog thumbnail\nwhen provided;
+    endif
+    :Force content status to Draft;
+    :Save draft content;
+    |Staff|
+    :View draft result;
+  endif
+endif
+
+|System|
+:Display final result or validation message;
+stop
+@enduml

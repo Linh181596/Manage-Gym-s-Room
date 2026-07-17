@@ -1,0 +1,21 @@
+@startuml Manage_Equipment_Issues_State_Diagram
+title Manage Equipment Issues - State Diagram
+skinparam monochrome true
+skinparam shadowing false
+
+[*] --> Pending : Create issue report
+
+Pending --> InProgress : Start handling issue
+InProgress --> Resolved : Resolve issue
+Pending --> Resolved : Resolve directly
+
+Resolved --> InProgress : Reopen issue
+InProgress --> Pending : Put issue back to pending
+
+Pending --> Deleted : Delete issue record
+InProgress --> Deleted : Delete issue record
+Resolved --> Deleted : Delete issue record
+
+Deleted --> [*]
+
+@enduml

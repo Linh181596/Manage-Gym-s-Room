@@ -1,0 +1,89 @@
+@startuml Manage_Blog_Policies_Implementation_Class_Diagram
+title Manage Blog & Policies - Implementation Class Diagram
+skinparam monochrome true
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Use Case Module: Manage Blog & Policies" {
+
+  class ManagePublicContentController <<Controller>> {
+    Role: handle staff/admin management screens
+    Main actions: list, create, edit, publish, hide, delete blog/policy
+    Uses: PublicContentService
+  }
+
+  class PublicContentController <<Public Read Controller>> {
+    Role: handle public blog and policy viewing pages
+    Main actions: show published list and detail
+    Uses: PublicContentService
+  }
+
+  interface PublicContentService <<Service Interface>> {
+    Role: define content business operations
+    Main actions: read published content, manage content, save, delete
+  }
+
+  class PublicContentServiceImpl <<Service Implementation>> {
+    Role: implement business rules for blog and policy content
+    Main actions: validate content, apply permissions, set published date
+    Uses: PublicContentDAO
+  }
+
+  interface PublicContentDAO <<DAO Interface>> {
+    Role: define database operations for public content
+    Main actions: search, find, insert, update, soft delete
+  }
+
+  class PublicContentDAOImpl <<DAO Implementation>> {
+    Role: access PublicContents table
+    Main actions: query content, save content, map rows to PublicContent
+    Extends: BaseDAO
+  }
+
+  class PublicContent <<Entity>> {
+    Role: represent one blog or policy record
+    Main data: id, title, summary, body, type, category, thumbnail
+    State data: status, published date, audit fields, deleted flag
+  }
+
+  enum ContentType {
+    BLOG
+    POLICY
+  }
+
+  enum ContentStatus {
+    Draft
+    Published
+    Hidden
+  }
+}
+
+class BaseDAO <<Base DAO>> {
+  Role: provide common database connection support
+}
+
+class User <<Entity>> {
+  Role: represent current staff/admin actor
+  Main data: user id, full name, role
+}
+
+ManagePublicContentController --> PublicContentService
+ManagePublicContentController --> PublicContent
+ManagePublicContentController --> User
+
+PublicContentController --> PublicContentService
+
+PublicContentServiceImpl ..|> PublicContentService
+PublicContentServiceImpl --> PublicContentDAO
+PublicContentServiceImpl --> PublicContent
+PublicContentServiceImpl --> User
+
+PublicContentDAOImpl ..|> PublicContentDAO
+PublicContentDAOImpl --|> BaseDAO
+PublicContentDAOImpl --> PublicContent
+
+PublicContent --> ContentType
+PublicContent --> ContentStatus
+
+@enduml

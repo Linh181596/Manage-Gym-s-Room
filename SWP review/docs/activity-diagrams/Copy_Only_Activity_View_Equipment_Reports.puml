@@ -1,0 +1,36 @@
+@startuml View_Equipment_Reports_Activity_Diagram
+title Figure 3: View Equipment Reports Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 38
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|Admin|
+start
+:Open equipment reports page;
+
+|System|
+:Verify Admin permission;
+if (Allowed?) then (Yes)
+  :Load equipment and issue data;
+  :Calculate status counts and active rate;
+  :Build report table and charts;
+  :Display report dashboard;
+  |Admin|
+  :Review equipment condition;
+else (No)
+  :Show forbidden response;
+endif
+
+stop
+@enduml

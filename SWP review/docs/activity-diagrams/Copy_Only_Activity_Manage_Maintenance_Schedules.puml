@@ -1,0 +1,67 @@
+@startuml Manage_Maintenance_Schedules_Activity_Diagram
+title Figure 4: Manage Maintenance Schedules Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 38
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Identify actor role;
+:Load schedule list and filters;
+
+if (Admin?) then (Yes)
+  |Admin|
+  :View maintenance schedules;
+  :Create/edit plan or cancel schedule;
+  |System|
+  :Validate plan, date, type, and duplicate rule;
+  if (Valid plan action?) then (Yes)
+    :Save Scheduled or Cancelled status;
+  else (No)
+    :Show validation message;
+  endif
+
+  |Admin|
+  :Review PendingApproval result;
+  |System|
+  if (Approve?) then (Yes)
+    :Change status to Completed;
+    :Set completion date;
+    :Update related issue/equipment if needed;
+  else (Reject)
+    :Return status to InProgress;
+    :Record rejection note;
+  endif
+else (Staff)
+  |Staff|
+  :View assigned maintenance work;
+  :Start maintenance or submit completion;
+  |System|
+  if (Start work?) then (Yes)
+    :Change Scheduled to InProgress;
+  else (Submit completion)
+    :Validate completion note;
+    if (Valid?) then (Yes)
+      :Change InProgress to PendingApproval;
+      :Wait for Admin review;
+    else (No)
+      :Show validation message;
+    endif
+  endif
+endif
+
+|System|
+:Refresh schedule status and statistics;
+stop
+@enduml

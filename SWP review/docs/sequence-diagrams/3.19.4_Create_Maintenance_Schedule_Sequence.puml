@@ -1,0 +1,29 @@
+@startuml Create_Maintenance_Schedule_Sequence_Diagram
+title 3.19.4 Create Maintenance Schedule - Sequence Diagram
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+autoactivate on
+
+actor "Admin" as Admin
+boundary "Maintenance Schedule Form" as Form
+control "ManageMaintenanceScheduleController" as Controller
+control "MaintenanceScheduleService" as Service
+entity "MaintenanceScheduleDAO" as DAO
+database "Database" as DB
+boundary "maintenance-schedule-detail.jsp" as DetailView
+
+Admin -> Form: Submit new schedule
+Form -> Controller: POST create schedule
+Controller -> Controller: Read form data
+Controller -> Service: create(schedule, adminName)
+Service -> Service: Validate schedule data
+Service -> DAO: create(schedule)
+DAO -> DB: Insert maintenance schedule
+DB --> DAO: New schedule id
+DAO --> Service: New schedule id
+Service --> Controller: New schedule id
+Controller -> DetailView: Redirect to schedule detail
+DetailView --> Admin: Display created schedule
+
+@enduml
