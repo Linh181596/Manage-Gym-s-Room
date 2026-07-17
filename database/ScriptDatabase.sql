@@ -1815,6 +1815,8 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+USE [GymCenterManagement]
+GO
 CREATE TABLE [dbo].[PublicContents](
 	[ContentID] [int] IDENTITY(1,1) NOT NULL,
 	[Title] [nvarchar](200) NOT NULL,
