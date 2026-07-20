@@ -61,6 +61,18 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 throw new SQLException("Gym package not found or is inactive.");
             }
             
+            // Validate: Không cho phép tạo nhiều hóa đơn chờ (Pending) cho cùng 1 loại gói
+            String checkPendingSql = "SELECT TOP 1 1 FROM MemberPackages WHERE MemberID = ? AND PackageID = ? AND Status = 'Pending' AND IsDeleted = 0";
+            try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingSql)) {
+                checkPendingStmt.setInt(1, memberId);
+                checkPendingStmt.setInt(2, packageId);
+                try (ResultSet rs = checkPendingStmt.executeQuery()) {
+                    if (rs.next()) {
+                        throw new SQLException("Khách hàng đang có một thủ tục đăng ký/gia hạn chờ thanh toán cho gói tập này. Vui lòng thanh toán hoặc hủy thủ tục cũ trước khi tạo mới.");
+                    }
+                }
+            }
+            
             // Kỹ thuật nối ngày (Concatenate Dates).
             // Tự động cộng dồn thời hạn nếu hội viên đang có gói Active
             LocalDate startDate = LocalDate.now();
@@ -176,6 +188,17 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(today, senderPackage.getEndDate());
             if (remainingDays < 1) {
                 throw new SQLException("Gói tập không đủ điều kiện chuyển nhượng (Thời hạn sử dụng còn lại phải tối thiểu 1 ngày).");
+            }
+            
+            // Validate: Không cho phép tạo nhiều hóa đơn chuyển nhượng (Pending) chồng chéo cho cùng 1 gói tập
+            String checkPendingTransferSql = "SELECT TOP 1 1 FROM Invoices WHERE CreatedBy LIKE ? AND Status = 'Pending' AND IsDeleted = 0";
+            try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingTransferSql)) {
+                checkPendingStmt.setString(1, "Transfer;SenderPackageID:" + senderPackage.getMemberPackageId() + ";%");
+                try (ResultSet rs = checkPendingStmt.executeQuery()) {
+                    if (rs.next()) {
+                        throw new SQLException("Gói tập này đang có một thủ tục chuyển nhượng chờ thanh toán. Vui lòng thanh toán hoặc hủy thủ tục cũ trước khi tạo mới.");
+                    }
+                }
             }
             
             // Tính ngày bắt đầu cho người nhận (nối tiếp nếu người nhận đã có gói đang hoạt động)
