@@ -37,7 +37,6 @@
                 
                 <form action="${pageContext.request.contextPath}/staff/package/transfer" method="post" id="transferForm" class="needs-validation" novalidate>
                     <input type="hidden" name="senderId" value="${sender.userId}">
-                    <input type="hidden" id="remainingDays" value="${remainingDays}">
                     
                     <!-- Sender Info Display -->
                     <div class="row g-3 mb-4">
@@ -50,11 +49,19 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark"><i class="fa fa-box me-1 text-muted"></i> Chi tiết gói tập chuyển nhượng</label>
-                            <div class="p-3 bg-white rounded border border-danger border-2 h-100">
-                                <div class="fw-bold text-danger fs-6">${senderPkg.gymPackage.packageName}</div>
-                                <div class="small text-dark fw-bold mt-1"><i class="fa fa-hourglass-half me-1"></i> Thời gian còn lại: ${remainingDays} ngày</div>
-                                <div class="small text-muted"><i class="fa fa-calendar-check me-1"></i> Hạn cuối ban đầu: ${senderPkg.endDate}</div>
+                            <label class="form-label fw-bold text-dark"><i class="fa fa-box me-1 text-muted"></i> 1. Chọn gói tập chuyển nhượng <span class="text-danger">*</span></label>
+                            <div class="p-3 bg-white rounded border border-danger border-2 h-100" style="max-height: 200px; overflow-y: auto;">
+                                <c:forEach var="pkg" items="${senderPackages}">
+                                    <div class="form-check border-bottom pb-2 mb-2">
+                                        <input class="form-check-input sender-pkg-radio" type="radio" name="senderPkgId" id="pkg_${pkg.memberPackageId}" value="${pkg.memberPackageId}" data-days="${remainingDaysMap[pkg.memberPackageId]}" data-name="${pkg.gymPackage.packageName}" required>
+                                        <label class="form-check-label w-100 cursor-pointer" for="pkg_${pkg.memberPackageId}">
+                                            <div class="fw-bold text-danger fs-6">${pkg.gymPackage.packageName}</div>
+                                            <div class="small text-dark fw-bold mt-1"><i class="fa fa-hourglass-half me-1"></i> Thời gian còn lại: ${remainingDaysMap[pkg.memberPackageId]} ngày</div>
+                                            <div class="small text-muted"><i class="fa fa-calendar-check me-1"></i> Hạn cuối: ${pkg.endDate}</div>
+                                        </label>
+                                    </div>
+                                </c:forEach>
+                                <div class="invalid-feedback">Vui lòng chọn 1 gói tập để chuyển nhượng.</div>
                             </div>
                         </div>
                     </div>
@@ -121,9 +128,9 @@
                             <h6 class="text-uppercase text-secondary fw-bold small mb-2">Người chuyển nhượng</h6>
                             <div class="p-3 bg-light rounded border text-dark">
                                 <div class="fw-bold">${sender.userDetails.fullName}</div>
-                                <small class="text-muted"><i class="fa fa-box me-1"></i> Gói tập: ${senderPkg.gymPackage.packageName}</small>
-                                <br/>
-                                <small class="text-danger fw-bold"><i class="fa fa-hourglass-half me-1"></i> Chuyển đi: ${remainingDays} ngày tập</small>
+                                <div id="summarySenderContainer" class="mt-2 text-muted">
+                                    <i class="fa fa-box me-1"></i> Chưa chọn gói tập.
+                                </div>
                             </div>
                         </div>
 
@@ -186,19 +193,20 @@
 
         // Summary details update
         const summaryReceiver = document.getElementById("summaryReceiverContainer");
-        const remainingDays = parseInt(document.getElementById("remainingDays").value) || 0;
+        const summarySender = document.getElementById("summarySenderContainer");
+        const senderRadios = document.querySelectorAll(".sender-pkg-radio");
+        let currentRemainingDays = 0;
 
-        receiverSelect.addEventListener("change", function() {
+        function updateReceiverSummary() {
             const selectedOpt = receiverSelect.options[receiverSelect.selectedIndex];
-            if (selectedOpt) {
+            if (selectedOpt && currentRemainingDays > 0) {
                 const name = selectedOpt.getAttribute("data-name");
                 const phone = selectedOpt.getAttribute("data-phone");
                 const id = selectedOpt.value;
 
-                // Dự kiến ngày kết thúc
-                let startDate = new Date(); // Kích hoạt ngay lập tức từ hôm nay sau khi đóng phí
+                let startDate = new Date(); 
                 let endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + remainingDays);
+                endDate.setDate(endDate.getDate() + currentRemainingDays);
 
                 const startStr = startDate.toLocaleDateString('vi-VN');
                 const endStr = endDate.toLocaleDateString('vi-VN');
@@ -207,12 +215,32 @@
                     <div class="fw-bold text-dark fs-6">\${name}</div>
                     <div class="small text-muted"><i class="fa fa-id-card me-1"></i> Mã: MEM-\${id} | SĐT: \${phone}</div>
                     <div class="small text-success fw-bold mt-2"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu: Hôm nay (\${startStr})</div>
-                    <div class="small text-success fw-bold"><i class="fa fa-calendar-check me-1"></i> Hạn sử dụng gói tập được nhận: \${endStr} (\${remainingDays} ngày)</div>
+                    <div class="small text-success fw-bold"><i class="fa fa-calendar-check me-1"></i> Hạn sử dụng gói tập được nhận: \${endStr} (\${currentRemainingDays} ngày)</div>
                 `;
                 summaryReceiver.classList.remove("text-muted");
                 summaryReceiver.classList.add("border-solid");
+            } else if (selectedOpt) {
+                summaryReceiver.innerHTML = `<i class="fa fa-info-circle me-1"></i> Vui lòng chọn gói tập để tính toán thời gian.`;
             }
+        }
+
+        senderRadios.forEach(radio => {
+            radio.addEventListener("change", function() {
+                if (this.checked) {
+                    currentRemainingDays = parseInt(this.getAttribute("data-days")) || 0;
+                    const pkgName = this.getAttribute("data-name");
+                    summarySender.innerHTML = `
+                        <small class="text-dark fw-bold"><i class="fa fa-box me-1"></i> Gói tập: \${pkgName}</small>
+                        <br/>
+                        <small class="text-danger fw-bold"><i class="fa fa-hourglass-half me-1"></i> Chuyển đi: \${currentRemainingDays} ngày tập</small>
+                    `;
+                    summarySender.classList.remove("text-muted");
+                    updateReceiverSummary();
+                }
+            });
         });
+
+        receiverSelect.addEventListener("change", updateReceiverSummary);
     });
 </script>
 
