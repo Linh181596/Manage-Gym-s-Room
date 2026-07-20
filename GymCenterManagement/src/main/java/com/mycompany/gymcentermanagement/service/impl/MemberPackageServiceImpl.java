@@ -61,15 +61,15 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 throw new SQLException("Gym package not found or is inactive.");
             }
 
-            // Validate: Không cho phép tạo nhiều hóa đơn chờ (Pending) cho bất kỳ loại gói
-            // nào
-            String checkPendingSql = "SELECT TOP 1 1 FROM MemberPackages WHERE MemberID = ? AND Status = 'Pending' AND IsDeleted = 0";
+            // Validate: Không cho phép tạo nhiều hóa đơn chờ (Pending) cho cùng 1 loại gói
+            String checkPendingSql = "SELECT TOP 1 1 FROM MemberPackages WHERE MemberID = ? AND PackageID = ? AND Status = 'Pending' AND IsDeleted = 0";
             try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingSql)) {
                 checkPendingStmt.setInt(1, memberId);
+                checkPendingStmt.setInt(2, packageId);
                 try (ResultSet rs = checkPendingStmt.executeQuery()) {
                     if (rs.next()) {
                         throw new SQLException(
-                                "Khách hàng đang có một thủ tục chờ thanh toán. Vui lòng thanh toán hoặc hủy thủ tục cũ trước khi tạo giao dịch mới.");
+                                "Khách hàng đang có một thủ tục đăng ký/gia hạn chờ thanh toán cho gói tập này. Vui lòng thanh toán hoặc hủy thủ tục cũ trước khi tạo mới.");
                     }
                 }
             }
@@ -213,19 +213,6 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                     if (rs.next()) {
                         throw new SQLException(
                                 "Gói tập này đang có một thủ tục chuyển nhượng chờ thanh toán. Vui lòng thanh toán hoặc hủy thủ tục cũ trước khi tạo mới.");
-                    }
-                }
-            }
-
-            // Validate: Không cho phép người nhận nhận chuyển nhượng nếu đang có gói chờ
-            // thanh toán
-            String checkReceiverPendingSql = "SELECT TOP 1 1 FROM MemberPackages WHERE MemberID = ? AND Status = 'Pending' AND IsDeleted = 0";
-            try (PreparedStatement checkReceiverStmt = conn.prepareStatement(checkReceiverPendingSql)) {
-                checkReceiverStmt.setInt(1, receiverMemberId);
-                try (ResultSet rs = checkReceiverStmt.executeQuery()) {
-                    if (rs.next()) {
-                        throw new SQLException(
-                                "Người nhận đang có một thủ tục gói tập chờ thanh toán. Vui lòng yêu cầu họ thanh toán hoặc hủy thủ tục cũ trước khi nhận chuyển nhượng.");
                     }
                 }
             }
