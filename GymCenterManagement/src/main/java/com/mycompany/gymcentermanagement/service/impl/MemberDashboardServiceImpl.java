@@ -33,6 +33,21 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
 
     private final MemberDashboardDAO dashboardDAO = new MemberDashboardDAOImpl();
 
+    /**
+     * Lấy dữ liệu tổng hợp cho Member Dashboard.
+     * Luồng nghiệp vụ:
+     * 1. Đếm số lịch hẹn sắp tới của hội viên.
+     * 2. Lấy thông tin gói tập hiện tại và tính toán số ngày còn lại.
+     * 3. Tính tổng chi tiêu trong tháng hiện tại.
+     * 4. Đếm số lượng thông báo chưa đọc của tài khoản.
+     * 5. Lấy danh sách buổi tập sắp tới và hóa đơn gần đây.
+     * 6. Lấy xu hướng chi tiêu trong 6 tháng gần nhất, điền dữ liệu cho các tháng thiếu và chuẩn hóa JSON.
+     * 
+     * @param memberId ID của hội viên
+     * @param userId ID của người dùng (tài khoản)
+     * @return Dữ liệu dashboard cho Member
+     * @throws SQLException Nếu có lỗi truy xuất CSDL
+     */
     @Override
     public MemberDashboardData getMemberDashboardData(int memberId, int userId) throws SQLException {
         MemberDashboardData data = new MemberDashboardData();

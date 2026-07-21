@@ -1,4 +1,14 @@
+/**
+ * =========================================================================
+ * @file          : FinancialRevenueReportDAOImpl.java
+ * @description   : Lớp triển khai các truy vấn thống kê doanh thu cho báo cáo tài chính
+ * @author        : Nguyễn Hoàng Thắng
+ * @created       : 2026-06-15
+ * @last_modified : 2026-06-20
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.dao.impl;
+
 
 import com.mycompany.gymcentermanagement.dao.BaseDAO;
 import com.mycompany.gymcentermanagement.dao.FinancialRevenueReportDAO;
@@ -23,6 +33,17 @@ public class FinancialRevenueReportDAOImpl extends BaseDAO implements FinancialR
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * Lấy các dữ liệu tổng quan cho báo cáo doanh thu (Tổng doanh thu gói tập, PT, số lượng hóa đơn Paid/Pending).
+     * Luồng nghiệp vụ:
+     * - [BR-CONS-38]: Báo cáo doanh thu chỉ lấy các hóa đơn (Invoices) không bị xóa và theo loại doanh thu yêu cầu.
+     * 
+     * @param data Dữ liệu báo cáo
+     * @param fromDate Từ ngày
+     * @param toDate Đến ngày
+     * @param revenueType Loại doanh thu
+     * @throws SQLException 
+     */
     @Override
     public void populateRevenueSummary(FinancialRevenueReportData data, String fromDate, String toDate, String revenueType) throws SQLException {
         Connection conn = null;
@@ -31,6 +52,7 @@ public class FinancialRevenueReportDAOImpl extends BaseDAO implements FinancialR
         try {
             conn = getActiveConnection();
             
+            // SQL: Tính tổng doanh thu gói tập thể hình (Gym Package) đã thanh toán
             // 1. Get Gym Package Revenue
             String sqlGym = "SELECT COALESCE(SUM(Amount), 0) FROM Invoices "
                     + "WHERE IsDeleted = 0 AND Status = 'Paid' "
@@ -46,6 +68,7 @@ public class FinancialRevenueReportDAOImpl extends BaseDAO implements FinancialR
             rs.close();
             stmt.close();
 
+            // SQL: Tính tổng doanh thu dịch vụ PT đã thanh toán
             // 2. Get PT Revenue
             String sqlPT = "SELECT COALESCE(SUM(Amount), 0) FROM Invoices "
                     + "WHERE IsDeleted = 0 AND Status = 'Paid' "
@@ -63,6 +86,7 @@ public class FinancialRevenueReportDAOImpl extends BaseDAO implements FinancialR
             
             data.setTotalRevenue(data.getGymPackageRevenue().add(data.getPtRevenue()));
 
+            // SQL: Đếm số lượng hóa đơn đã thanh toán (Paid)
             // 3. Count Paid Invoices
             String typeCondition = getRevenueTypeCondition(revenueType);
             String sqlPaid = "SELECT COUNT(*) FROM Invoices i "
@@ -79,6 +103,7 @@ public class FinancialRevenueReportDAOImpl extends BaseDAO implements FinancialR
             rs.close();
             stmt.close();
 
+            // SQL: Đếm số lượng hóa đơn chưa thanh toán (Pending)
             // 4. Count Unpaid Invoices
             String sqlUnpaid = "SELECT COUNT(*) FROM Invoices i "
                     + "WHERE i.IsDeleted = 0 AND i.Status = 'Pending' "
@@ -97,9 +122,18 @@ public class FinancialRevenueReportDAOImpl extends BaseDAO implements FinancialR
         }
     }
 
+    /**
+     * Lấy dữ liệu xu hướng doanh thu (để vẽ biểu đồ).
+     * Luồng nghiệp vụ: Nhóm doanh thu theo ngày, tuần hoặc tháng.
+     * 
+     * @param filter Bộ lọc biểu đồ
+     * @return Danh sách điểm doanh thu
+     * @throws SQLException 
+     */
     @Override
     public List<RevenuePoint> getRevenueTrend(RevenueChartFilter filter) throws SQLException {
         List<RevenuePoint> points = new ArrayList<>();
+        // SQL: Nhóm doanh thu dựa trên khoảng thời gian nhóm (ngày/tuần/tháng)
         String bucketExpression = getRevenueBucketExpression(filter.getGroupBy());
         String sql = "SELECT " + bucketExpression + " AS RevenueDate, COALESCE(SUM(i.Amount), 0) AS TotalAmount "
                 + "FROM Invoices i "
@@ -130,9 +164,21 @@ public class FinancialRevenueReportDAOImpl extends BaseDAO implements FinancialR
         return points;
     }
 
+    /**
+     * Lấy danh sách hóa đơn theo bộ lọc báo cáo doanh thu.
+     * Luồng nghiệp vụ: Sử dụng cho bảng chi tiết hóa đơn trên Dashboard.
+     * 
+     * @param fromDate Từ ngày
+     * @param toDate Đến ngày
+     * @param revenueType Loại doanh thu
+     * @param limit Số lượng giới hạn
+     * @return Danh sách hóa đơn
+     * @throws SQLException 
+     */
     @Override
     public List<DashboardInvoice> getFilteredInvoices(String fromDate, String toDate, String revenueType, int limit) throws SQLException {
         List<DashboardInvoice> invoices = new ArrayList<>();
+        // SQL: Lấy danh sách hóa đơn kết hợp thông tin khách hàng và tên gói tập/dịch vụ PT
         String sql = "SELECT TOP (?) i.InvoiceID, i.PaymentDate, i.Amount, i.Status, "
                 + "u.DisplayName AS CustomerName, "
                 + "CASE WHEN i.MemberPackageID IS NOT NULL THEN N'Gói tập thể hình' ELSE N'Dịch vụ huấn luyện viên cá nhân' END AS ServiceType, "
