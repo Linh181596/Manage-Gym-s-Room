@@ -230,4 +230,33 @@ public class MemberPackageDAOImpl extends BaseDAO implements MemberPackageDAO {
         }
         return mp;
     }
+
+    @Override
+    public java.util.List<MemberPackage> findAllActiveByMemberId(int memberId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        java.util.List<MemberPackage> list = new java.util.ArrayList<>();
+        
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT mp.*, gp.PackageName, gp.Price, gp.DurationMonths, u.DisplayName, u.Email " +
+                         "FROM MemberPackages mp " +
+                         "INNER JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
+                         "INNER JOIN Members m ON mp.MemberID = m.MemberID " +
+                         "INNER JOIN Users u ON m.UserID = u.UserID " +
+                         "WHERE mp.MemberID = ? AND mp.Status = 'Active' AND mp.IsDeleted = 0 " +
+                         "AND mp.EndDate >= CAST(GETDATE() AS date) " +
+                         "ORDER BY mp.EndDate ASC";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, memberId);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToMemberPackage(rs));
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return list;
+    }
 }

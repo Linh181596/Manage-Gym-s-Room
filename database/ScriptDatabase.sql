@@ -15697,3 +15697,12 @@ Vui lòng liên hệ qua email hoặc số điện thoại để được hỗ t
 END;
 GO
 
+GO
+USE [GymCenterManagement]
+GO
+UPDATE u
+SET u.PasswordHash = '5600376e863d2f57a053518f324ad3840b0bc2348b573af281a7b7cbe7a228c6'
+FROM [dbo].[Users] u
+INNER JOIN [dbo].[UserRoles] ur ON u.UserID = ur.UserID
+WHERE ur.RoleID = 4;
+GO

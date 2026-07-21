@@ -47,18 +47,24 @@ public class TransferPackageController extends HttpServlet {
                 return;
             }
 
-            // Lấy gói tập đang Active của người gửi
-            MemberPackage senderPkg = memberPackageService.getActivePackageByMemberId(sender.getMemberId());
-            if (senderPkg == null) {
-                request.setAttribute("errorMessage", "Hội viên này hiện không có gói tập nào đang hoạt động để chuyển nhượng.");
-                request.getRequestDispatcher("/WEB-INF/views/staff/members.jsp").forward(request, response);
-                return;
+            // Lấy TẤT CẢ gói tập đang Active của người gửi
+            List<MemberPackage> allActivePkgs = memberPackageService.findAllActivePackagesByMemberId(sender.getMemberId());
+            List<MemberPackage> senderPackages = new java.util.ArrayList<>();
+            java.util.Map<Integer, Long> remainingDaysMap = new java.util.HashMap<>();
+            
+            if (allActivePkgs != null) {
+                for (MemberPackage pkg : allActivePkgs) {
+                    LocalDate effectiveStart = pkg.getStartDate().isAfter(LocalDate.now()) ? pkg.getStartDate() : LocalDate.now();
+                    long days = java.time.temporal.ChronoUnit.DAYS.between(effectiveStart, pkg.getEndDate());
+                    if (days >= 1) {
+                        senderPackages.add(pkg);
+                        remainingDaysMap.put(pkg.getMemberPackageId(), days);
+                    }
+                }
             }
 
-            // Tính số ngày còn lại
-            long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), senderPkg.getEndDate());
-            if (remainingDays < 1) {
-                request.setAttribute("errorMessage", "Thời hạn gói tập còn lại dưới 1 ngày, không đủ điều kiện chuyển nhượng.");
+            if (senderPackages.isEmpty()) {
+                request.setAttribute("errorMessage", "Hội viên này hiện không có gói tập nào đủ điều kiện để chuyển nhượng (Thời hạn còn lại phải >= 1 ngày).");
                 request.getRequestDispatcher("/WEB-INF/views/staff/members.jsp").forward(request, response);
                 return;
             }
@@ -68,8 +74,8 @@ public class TransferPackageController extends HttpServlet {
             activeMembers.removeIf(m -> m.getMemberId() == sender.getMemberId());
 
             request.setAttribute("sender", sender);
-            request.setAttribute("senderPkg", senderPkg);
-            request.setAttribute("remainingDays", remainingDays);
+            request.setAttribute("senderPackages", senderPackages);
+            request.setAttribute("remainingDaysMap", remainingDaysMap);
             request.setAttribute("activeMembers", activeMembers);
 
             request.getRequestDispatcher("/WEB-INF/views/staff/package-transfer.jsp").forward(request, response);
@@ -88,11 +94,13 @@ public class TransferPackageController extends HttpServlet {
         int staffUserId = (currentUser != null) ? currentUser.getUserId() : 2; // Fallback
 
         String senderUserIdStr = request.getParameter("senderId");
+        String senderPkgIdStr = request.getParameter("senderPkgId");
         String receiverUserIdStr = request.getParameter("receiverId");
         String transferFeeStr = request.getParameter("transferFee");
         String note = request.getParameter("note");
 
         if (senderUserIdStr == null || senderUserIdStr.trim().isEmpty() ||
+            senderPkgIdStr == null || senderPkgIdStr.trim().isEmpty() ||
             receiverUserIdStr == null || receiverUserIdStr.trim().isEmpty() ||
             transferFeeStr == null || transferFeeStr.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Thông tin chuyển nhượng không hợp lệ.");
@@ -102,6 +110,7 @@ public class TransferPackageController extends HttpServlet {
 
         try {
             int senderUserId = Integer.parseInt(senderUserIdStr);
+            int senderPkgId = Integer.parseInt(senderPkgIdStr);
             int receiverUserId = Integer.parseInt(receiverUserIdStr);
             double transferFee = Double.parseDouble(transferFeeStr);
 
@@ -115,7 +124,7 @@ public class TransferPackageController extends HttpServlet {
             }
 
             Invoice pendingInvoice = memberPackageService.transferMemberPackage(
-                    sender.getMemberId(), receiver.getMemberId(), transferFee, staffUserId, note);
+                    senderPkgId, receiver.getMemberId(), transferFee, staffUserId, note);
             
             if (pendingInvoice != null) {
                 // Chuyển hướng đến hóa đơn chờ thanh toán phí chuyển nhượng

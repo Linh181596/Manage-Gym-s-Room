@@ -45,22 +45,35 @@ public class MemberPackageServiceImpl implements MemberPackageService {
     public Invoice registerMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException {
         Connection conn = null;
         Invoice pendingInvoice = null;
-        
+
         try {
             conn = DBContext.getConnection();
             conn.setAutoCommit(false);
-            
+
             // Instantiates DAOs with the shared transaction connection
             GymPackageDAO gpDAO = new GymPackageDAOImpl(conn);
             MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
             InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
-            
+
             // Lấy thông tin Gói tập và kiểm tra xem có đang Active không
             GymPackage gp = gpDAO.findById(packageId);
             if (gp == null || !"Active".equals(gp.getStatus())) {
                 throw new SQLException("Gym package not found or is inactive.");
             }
-            
+
+            // Validate: Không cho phép tạo nhiều hóa đơn chờ (Pending) cho cùng 1 loại gói
+            String checkPendingSql = "SELECT TOP 1 1 FROM MemberPackages WHERE MemberID = ? AND PackageID = ? AND Status = 'Pending' AND IsDeleted = 0";
+            try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingSql)) {
+                checkPendingStmt.setInt(1, memberId);
+                checkPendingStmt.setInt(2, packageId);
+                try (ResultSet rs = checkPendingStmt.executeQuery()) {
+                    if (rs.next()) {
+                        throw new SQLException(
+                                "Khách hàng đang có một thủ tục đăng ký/gia hạn chờ thanh toán cho gói tập này. Vui lòng thanh toán hoặc hủy thủ tục cũ trước khi tạo mới.");
+                    }
+                }
+            }
+
             // Kỹ thuật nối ngày (Concatenate Dates).
             // Tự động cộng dồn thời hạn nếu hội viên đang có gói Active
             LocalDate startDate = LocalDate.now();
@@ -72,7 +85,8 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                         java.sql.Date activeEndDate = rs.getDate("EndDate");
                         if (activeEndDate != null) {
                             LocalDate latestEndDate = activeEndDate.toLocalDate();
-                            // If latest active package expires in the future, start the new one the day after
+                            // If latest active package expires in the future, start the new one the day
+                            // after
                             if (latestEndDate.isAfter(LocalDate.now()) || latestEndDate.isEqual(LocalDate.now())) {
                                 startDate = latestEndDate.plusDays(1);
                             }
@@ -80,9 +94,9 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                     }
                 }
             }
-            
+
             LocalDate endDate = startDate.plusMonths(gp.getDurationMonths());
-            
+
             // Khởi tạo gói tập của hội viên ở trạng thái Pending (Chờ thanh toán)
             MemberPackage mp = new MemberPackage();
             mp.setMemberId(memberId);
@@ -92,12 +106,12 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             mp.setStatus("Pending");
             mp.setCreatedBy("StaffUserID: " + staffUserId);
             mp.setCreatedDate(LocalDateTime.now());
-            
+
             boolean insertPackageSuccess = mpDAO.insert(mp);
             if (!insertPackageSuccess) {
                 throw new SQLException("Failed to create Member Package record.");
             }
-            
+
             // Tạo hóa đơn thanh toán tương ứng cho gói tập này
             pendingInvoice = new Invoice();
             pendingInvoice.setMemberId(memberId);
@@ -108,12 +122,12 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             pendingInvoice.setStatus("Pending");
             pendingInvoice.setCreatedBy("StaffUserID: " + staffUserId);
             pendingInvoice.setCreatedDate(LocalDateTime.now());
-            
+
             boolean insertInvoiceSuccess = invDAO.insert(pendingInvoice);
             if (!insertInvoiceSuccess) {
                 throw new SQLException("Failed to create invoice.");
             }
-            
+
             // Giao dịch thành công, lưu toàn bộ dữ liệu (Commit)
             conn.commit();
         } catch (SQLException e) {
@@ -135,7 +149,7 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 }
             }
         }
-        
+
         return pendingInvoice;
     }
 
@@ -146,39 +160,65 @@ public class MemberPackageServiceImpl implements MemberPackageService {
     }
 
     @Override
+    public java.util.List<MemberPackage> findAllActivePackagesByMemberId(int memberId) throws SQLException {
+        MemberPackageDAO mpDAO = new MemberPackageDAOImpl();
+        return mpDAO.findAllActiveByMemberId(memberId);
+    }
+
+    @Override
     public Invoice renewMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException {
         return registerMemberPackage(memberId, packageId, staffUserId);
     }
 
     @Override
-    public Invoice transferMemberPackage(int senderMemberId, int receiverMemberId, double transferFee, int staffUserId, String note) throws SQLException {
+    public Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, double transferFee, int staffUserId,
+            String note) throws SQLException {
         Connection conn = null;
         Invoice pendingInvoice = null;
-        
+
         try {
             conn = DBContext.getConnection();
             conn.setAutoCommit(false);
-            
+
             MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
             InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
-            
-            // Lấy gói tập Active của người gửi
-            MemberPackage senderPackage = mpDAO.findActiveByMemberId(senderMemberId);
+
+            // Lấy cụ thể gói tập Active được chọn của người gửi
+            MemberPackage senderPackage = mpDAO.findById(senderPkgId);
             if (senderPackage == null) {
-                throw new SQLException("Không tìm thấy gói tập nào đang hoạt động của người chuyển nhượng.");
+                throw new SQLException("Không tìm thấy gói tập được chọn để chuyển nhượng.");
             }
-            if (senderPackage.getMemberId() != senderMemberId) {
-                throw new SQLException("Xác thực thông tin gói tập người gửi không khớp (IDOR Protection).");
+            if (!"Active".equals(senderPackage.getStatus())) {
+                throw new SQLException("Gói tập được chọn không trong trạng thái hoạt động.");
             }
-            
-            // Tính số ngày tập còn lại của người gửi
+
+            // Tính số ngày tập còn lại của người gửi cho gói tập này
+
             LocalDate today = LocalDate.now();
-            long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(today, senderPackage.getEndDate());
+            LocalDate effectiveStartDate = senderPackage.getStartDate().isAfter(today) ? senderPackage.getStartDate()
+                    : today;
+            long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(effectiveStartDate,
+                    senderPackage.getEndDate());
             if (remainingDays < 1) {
-                throw new SQLException("Gói tập không đủ điều kiện chuyển nhượng (Thời hạn sử dụng còn lại phải tối thiểu 1 ngày).");
+                throw new SQLException(
+                        "Gói tập không đủ điều kiện chuyển nhượng (Thời hạn sử dụng còn lại phải tối thiểu 1 ngày).");
             }
-            
-            // Tính ngày bắt đầu cho người nhận (nối tiếp nếu người nhận đã có gói đang hoạt động)
+
+            // Validate: Không cho phép tạo nhiều hóa đơn chuyển nhượng (Pending) chồng chéo
+            // cho cùng 1 gói tập
+            String checkPendingTransferSql = "SELECT TOP 1 1 FROM Invoices WHERE CreatedBy LIKE ? AND Status = 'Pending' AND IsDeleted = 0";
+            try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingTransferSql)) {
+                checkPendingStmt.setString(1, "Transfer;SenderPackageID:" + senderPackage.getMemberPackageId() + ";%");
+                try (ResultSet rs = checkPendingStmt.executeQuery()) {
+                    if (rs.next()) {
+                        throw new SQLException(
+                                "Gói tập này đang có một thủ tục chuyển nhượng chờ thanh toán. Vui lòng thanh toán hoặc hủy thủ tục cũ trước khi tạo mới.");
+                    }
+                }
+            }
+
+            // Tính ngày bắt đầu cho người nhận (nối tiếp nếu người nhận đã có gói đang hoạt
+            // động)
             MemberPackage receiverActive = mpDAO.findActiveByMemberId(receiverMemberId);
             LocalDate receiverStartDate = today;
             if (receiverActive != null) {
@@ -187,7 +227,7 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 }
             }
             LocalDate receiverEndDate = receiverStartDate.plusDays(remainingDays);
-            
+
             // Tạo gói tập mới ở trạng thái 'Pending' cho người nhận
             MemberPackage receiverPackage = new MemberPackage();
             receiverPackage.setMemberId(receiverMemberId);
@@ -195,14 +235,15 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             receiverPackage.setStartDate(receiverStartDate);
             receiverPackage.setEndDate(receiverEndDate);
             receiverPackage.setStatus("Pending");
-            receiverPackage.setCreatedBy("Transfer from Member ID: " + senderMemberId + ". Staff ID: " + staffUserId);
+            receiverPackage.setCreatedBy(
+                    "Transfer from Member ID: " + senderPackage.getMemberId() + ". Staff ID: " + staffUserId);
             receiverPackage.setCreatedDate(LocalDateTime.now());
-            
+
             boolean insertPackageSuccess = mpDAO.insert(receiverPackage);
             if (!insertPackageSuccess) {
                 throw new SQLException("Không thể tạo bản ghi gói tập mới cho người nhận.");
             }
-            
+
             // Tạo hóa đơn phí dịch vụ chuyển nhượng ở trạng thái 'Pending'
             pendingInvoice = new Invoice();
             pendingInvoice.setMemberId(receiverMemberId);
@@ -211,14 +252,15 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             pendingInvoice.setAmount(java.math.BigDecimal.valueOf(transferFee));
             pendingInvoice.setPaymentMethod("Cash");
             pendingInvoice.setStatus("Pending");
-            pendingInvoice.setCreatedBy("Transfer;SenderPackageID:" + senderPackage.getMemberPackageId() + ";StaffId:" + staffUserId + ";Note:" + note);
+            pendingInvoice.setCreatedBy("Transfer;SenderPackageID:" + senderPackage.getMemberPackageId() + ";StaffId:"
+                    + staffUserId + ";Note:" + note);
             pendingInvoice.setCreatedDate(LocalDateTime.now());
-            
+
             boolean insertInvoiceSuccess = invDAO.insert(pendingInvoice);
             if (!insertInvoiceSuccess) {
                 throw new SQLException("Không thể khởi tạo hóa đơn phí dịch vụ chuyển nhượng.");
             }
-            
+
             conn.commit();
         } catch (SQLException e) {
             if (conn != null) {
@@ -238,7 +280,7 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 }
             }
         }
-        
+
         return pendingInvoice;
     }
 }
