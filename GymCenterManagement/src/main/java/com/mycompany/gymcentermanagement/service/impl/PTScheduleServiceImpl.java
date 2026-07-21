@@ -37,6 +37,17 @@ public class PTScheduleServiceImpl implements PTScheduleService {
     private final MemberDAO memberDAO = new MemberDAOImpl();
     private final NotificationDAO notificationDAO = new NotificationDAOImpl();
 
+    /**
+     * Kiểm tra xem PT có bị trùng lịch trong một khung giờ cụ thể không.
+     * Luồng nghiệp vụ: Truy vấn kiểm tra giao thoa giữa các thời gian của các Schedule 'Upcoming'/'Completed'.
+     * [BR-CONS-41]: System prevents the scheduling of training sessions for a member or a PT if either is already booked for that specific time.
+     * 
+     * @param ptId ID của PT
+     * @param sessionDate Ngày học
+     * @param startTime Thời gian bắt đầu
+     * @param endTime Thời gian kết thúc
+     * @return true nếu bị trùng lịch
+     */
     @Override
     public boolean isScheduleConflict(int ptId, LocalDate sessionDate, Time startTime, Time endTime) {
         return ptScheduleDAO.isScheduleConflict(ptId, sessionDate, startTime, endTime);
@@ -62,6 +73,17 @@ public class PTScheduleServiceImpl implements PTScheduleService {
         return ptScheduleDAO.getAllSchedulesByDate(date);
     }
 
+    /**
+     * Kiểm tra xem Hội viên có bị trùng lịch trong một khung giờ cụ thể không.
+     * Luồng nghiệp vụ: Truy vấn kiểm tra giao thoa giữa các thời gian của các Schedule.
+     * [BR-CONS-41]: System prevents the scheduling of training sessions for a member or a PT if either is already booked for that specific time.
+     * 
+     * @param memberId ID của hội viên
+     * @param sessionDate Ngày học
+     * @param startTime Thời gian bắt đầu
+     * @param endTime Thời gian kết thúc
+     * @return true nếu bị trùng lịch
+     */
     @Override
     public boolean isMemberScheduleConflict(int memberId, LocalDate sessionDate, Time startTime, Time endTime) {
         return ptScheduleDAO.isMemberScheduleConflict(memberId, sessionDate, startTime, endTime);
@@ -92,6 +114,17 @@ public class PTScheduleServiceImpl implements PTScheduleService {
         return ptScheduleDAO.cancelSession(scheduleId, reason, cancelledByUserId, updatedBy);
     }
 
+    /**
+     * Lưu danh sách các buổi học và cập nhật ngày bắt đầu, kết thúc của đơn đăng ký.
+     * Dùng cho xếp lịch cố định toàn bộ số buổi (Generate Fixed Schedule).
+     * [BR-CONS-41]: Đảm bảo không trùng lịch khi save (check lại lần cuối bằng Transaction).
+     * 
+     * @param schedules Danh sách các buổi học
+     * @param createdByUserId ID người tạo
+     * @param actualStartDate Ngày bắt đầu thực tế (ngày học buổi đầu tiên)
+     * @param actualEndDate Ngày kết thúc thực tế (ngày học buổi cuối cùng)
+     * @return true nếu lưu thành công
+     */
     @Override
     public boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId,
             LocalDate actualStartDate, LocalDate actualEndDate) {
@@ -251,6 +284,21 @@ public class PTScheduleServiceImpl implements PTScheduleService {
         return ptScheduleDAO.getMemberScheduleDetailsForWeek(memberId, startDate, endDate);
     }
 
+    /**
+     * Phân công HLV dạy thay thế cho một buổi tập.
+     * Luồng nghiệp vụ:
+     * 1. Validate HLV thay thế phải tồn tại, đang Active, không trùng HLV gốc.
+     * 2. [BR-CONS-41] Check HLV thay thế không bị trùng lịch vào giờ này.
+     * 3. Update buổi học thành PT thay thế (OriginalPTID giữ HLV gốc).
+     * 4. [BR-CONS-27] Gửi Notification thông báo cho cả HLV dạy thay và HLV gốc.
+     * 
+     * @param scheduleId ID lịch tập
+     * @param substitutePtId ID HLV thay thế
+     * @param reason Lý do
+     * @param substituteByUserId Người phân công (Staff)
+     * @param updatedBy Tên người phân công
+     * @return Chuỗi thông báo kết quả ("SUCCESS" nếu thành công)
+     */
     @Override
     public String assignSubstitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId,
             String updatedBy) {
@@ -342,6 +390,20 @@ public class PTScheduleServiceImpl implements PTScheduleService {
         return ptScheduleDAO.getUpcomingSubstituteSessions(ptId);
     }
 
+    /**
+     * Hủy hàng loạt các lịch học của trung tâm trong một khoảng thời gian (Lễ tết, bảo trì...).
+     * Luồng nghiệp vụ: Cập nhật SessionStatus = 'Cancelled'.
+     * [BR-CONS-27]: System cannot allow a staff to randomly cancel member's schedule without notifying.
+     * Ghi chú: Notification hàng loạt được xử lý độc lập hoặc bổ sung sau.
+     * 
+     * @param cancelDate Ngày hủy
+     * @param startTime Thời gian bắt đầu
+     * @param endTime Thời gian kết thúc
+     * @param reason Lý do
+     * @param cancelledByUserId Người hủy
+     * @param updatedBy Tên người hủy
+     * @return Số lượng buổi học đã bị hủy
+     */
     @Override
     public int massCancelSessions(LocalDate cancelDate, Time startTime, Time endTime, String reason,
             int cancelledByUserId, String updatedBy) {

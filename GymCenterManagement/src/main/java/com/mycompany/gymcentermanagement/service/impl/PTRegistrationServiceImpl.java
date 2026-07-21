@@ -29,11 +29,29 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
         return registrationDAO.findActiveServicePricesByTrainerId(ptId);
     }
 
+    /**
+     * Lấy chi tiết một gói dịch vụ PT theo ID.
+     * Luồng nghiệp vụ: Truy vấn bảng PTServicePrices kết hợp với thông tin PT và PackageType.
+     * 
+     * @param ptServicePriceId ID Giá dịch vụ PT
+     * @return PTServicePrice nếu tìm thấy
+     */
     @Override
     public PTServicePrice getServicePriceById(int ptServicePriceId) {
         return registrationDAO.findServicePriceById(ptServicePriceId);
     }
 
+    /**
+     * Đăng ký một gói Personal Training cho hội viên.
+     * Luồng nghiệp vụ:
+     * 1. Validate gói dịch vụ phải tồn tại và đang 'Active'.
+     * 2. Validate PT phải đang 'Active'.
+     * 3. [BR-ACT-47], [BR-CONS-47]: Kiểm tra hội viên phải có thẻ tập (Gym Membership) đang Active.
+     * 4. Tạo hóa đơn (Registration) với trạng thái Pending/Unpaid.
+     * 
+     * @param registration Đối tượng đăng ký
+     * @return true nếu đăng ký thành công
+     */
     @Override
     public boolean registerPTService(PTRegistration registration) {
         PTServicePrice servicePrice = registrationDAO.findServicePriceById(registration.getPtServicePriceId());
@@ -62,6 +80,8 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
         }
 
         // Validate member has active gym membership package
+        // [BR-ACT-47]: Members can register for Personal Training (PT) packages only if they have an active Gym Membership.
+        // [BR-CONS-47]: Members cannot register for a PT package if they do not have an active gym membership.
         try {
             MemberPackageDAO memberPackageDAO = new MemberPackageDAOImpl();
             MemberPackage activePackage = memberPackageDAO.findActiveByMemberId(registration.getMemberId());
@@ -80,16 +100,39 @@ public class PTRegistrationServiceImpl implements PTRegistrationService {
         return registrationDAO.insert(registration);
     }
 
+    /**
+     * Lấy danh sách đăng ký PT của một hội viên.
+     * 
+     * @param memberId ID Hội viên
+     * @return Danh sách đăng ký
+     */
     @Override
     public List<PTRegistration> getRegistrationsByMemberId(int memberId) {
         return registrationDAO.findByMemberId(memberId);
     }
 
+    /**
+     * Lấy toàn bộ danh sách đăng ký PT cho màn hình quản lý (Admin/Staff).
+     * 
+     * @return Danh sách PTRegistration
+     */
     @Override
     public List<PTRegistration> getAllRegistrationsForManagement() {
         return registrationDAO.findAllForManagement();
     }
 
+    /**
+     * Xử lý một đơn đăng ký PT (bởi Staff/Admin).
+     * Luồng nghiệp vụ: Cập nhật trạng thái và trạng thái thanh toán.
+     * [BR-CONS-34]: Staff có thể duyệt hoặc hủy các đơn Pending.
+     * 
+     * @param ptRegistrationId ID đăng ký
+     * @param status Trạng thái xử lý (Active/Cancelled...)
+     * @param paymentStatus Trạng thái thanh toán (Paid/Unpaid...)
+     * @param processedByUserId Người xử lý
+     * @param updatedBy Người cập nhật
+     * @return true nếu thành công
+     */
     @Override
     public boolean processRegistration(int ptRegistrationId, String status,
                                        String paymentStatus, int processedByUserId,

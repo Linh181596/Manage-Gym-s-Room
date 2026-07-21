@@ -81,10 +81,15 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Gets all active Personal Trainers for public trainer list.
+     * Lấy danh sách tất cả các Huấn luyện viên đang hoạt động (Active).
+     * Luồng nghiệp vụ: Truy vấn bảng PersonalTrainers join với bảng Users. Lọc các PT và User có trạng thái Active và chưa bị xóa mềm.
+     * Dùng cho trang danh sách PT công khai.
+     * 
+     * @return Danh sách PersonalTrainer
      */
     @Override
     public List<PersonalTrainer> findActiveTrainers() {
+        // SQL: Join PersonalTrainers với Users, lọc các tài khoản Active và chưa bị xóa, sắp xếp theo tên
         String sql = """
                     SELECT
                         pt.PTID,
@@ -138,7 +143,12 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Gets active Personal Trainers by multiple specialization values.
+     * Lấy danh sách các Huấn luyện viên đang hoạt động theo danh sách chuyên môn (Multiple specializations).
+     * Luồng nghiệp vụ: Truy vấn bảng PersonalTrainers join Users. 
+     * Linh động tạo điều kiện OR cho từng chuyên môn trong danh sách.
+     * 
+     * @param specializations Danh sách chuyên môn cần lọc
+     * @return Danh sách PersonalTrainer
      */
     @Override
     public List<PersonalTrainer> findActiveTrainersBySpecializations(List<String> specializations) {
@@ -156,6 +166,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
             }
         }
 
+        // SQL: Truy vấn PT active kèm theo các điều kiện lọc LIKE OR theo từng chuyên môn
         String sql = """
                 SELECT
                     pt.PTID,
@@ -215,8 +226,16 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         return trainers;
     }
 
+    /**
+     * Tìm thông tin chi tiết một Huấn luyện viên theo PTID.
+     * Luồng nghiệp vụ: Truy vấn join lấy dữ liệu PT và User theo ID, bỏ qua các bản ghi bị xóa.
+     * 
+     * @param ptId PTID
+     * @return PersonalTrainer nếu tìm thấy
+     */
     @Override
     public PersonalTrainer findById(int ptId) {
+        // SQL: Join PersonalTrainers với Users theo PTID
         String sql = """
                     SELECT
                         pt.PTID,
@@ -267,8 +286,16 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         return null;
     }
 
+    /**
+     * Tìm thông tin Huấn luyện viên dựa trên UserID.
+     * Luồng nghiệp vụ: Dùng để lấy thông tin PT khi họ đăng nhập (liên kết UserID).
+     * 
+     * @param userId UserID
+     * @return PersonalTrainer
+     */
     @Override
     public PersonalTrainer findPTByUserId(int userId) {
+        // SQL: Tìm PT liên kết với tài khoản UserID
         String sql = """
                     SELECT
                         pt.PTID,
@@ -320,12 +347,16 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Gets all Personal Trainers for Staff/Admin management screen.
+     * Lấy tất cả hồ sơ Huấn luyện viên cho màn hình quản lý của Staff/Admin.
+     * Luồng nghiệp vụ: Lấy tất cả trạng thái (Active, Inactive), chỉ loại bỏ các bản ghi đã xóa mềm (IsDeleted = 1).
+     * 
+     * @return Danh sách PersonalTrainer
      */
     @Override
     public List<PersonalTrainer> findAllForManagement() {
         List<PersonalTrainer> trainers = new ArrayList<>();
 
+        // SQL: Lấy tất cả PT chưa bị xóa, sắp xếp theo thời gian tạo mới nhất
         String sql = """
                     SELECT
                         pt.PTID,
@@ -376,12 +407,18 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Searches active Personal Trainers by keyword and specialization.
+     * Tìm kiếm PT đang hoạt động theo từ khóa và 1 chuyên môn cụ thể.
+     * Luồng nghiệp vụ: Tìm kiếm linh hoạt trên nhiều trường (Tên, Hiển thị, Chuyên môn, Email...).
+     * 
+     * @param keyword Từ khóa tìm kiếm
+     * @param specialization Chuyên môn cụ thể
+     * @return Danh sách PersonalTrainer
      */
     @Override
     public List<PersonalTrainer> searchActiveTrainers(String keyword, String specialization) {
         List<PersonalTrainer> trainers = new ArrayList<>();
 
+        // SQL: Truy vấn tìm kiếm LIKE OR trên các trường, lọc theo Active
         String sql = """
                     SELECT
                         pt.PTID,
@@ -469,12 +506,18 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Search active PT by keyword and multiple specializations.
+     * Tìm kiếm PT đang hoạt động theo từ khóa và nhiều chuyên môn.
+     * Luồng nghiệp vụ: Tương tự như trên nhưng build chuỗi SQL động để xử lý list specializations bằng OR.
+     * 
+     * @param keyword Từ khóa
+     * @param specializations Danh sách chuyên môn
+     * @return Danh sách PT
      */
     @Override
     public List<PersonalTrainer> searchActiveTrainers(String keyword, List<String> specializations) {
         List<PersonalTrainer> trainers = new ArrayList<>();
 
+        // SQL: Base query cho việc tìm kiếm
         StringBuilder sql = new StringBuilder("""
                     SELECT
                         pt.PTID,
@@ -575,10 +618,20 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         return trainers;
     }
 
+    /**
+     * Tìm kiếm PT cho màn hình quản lý (có bộ lọc Trạng thái).
+     * Luồng nghiệp vụ: Dựa vào đầu vào để append các điều kiện SQL động (Status, Keyword, Specializations).
+     * 
+     * @param keyword Từ khóa
+     * @param specializations Chuyên môn
+     * @param status Trạng thái lọc (Active, Inactive, Locked, All)
+     * @return Danh sách PT
+     */
     @Override
     public List<PersonalTrainer> searchTrainersForManagement(String keyword, List<String> specializations, String status) {
         List<PersonalTrainer> trainers = new ArrayList<>();
 
+        // SQL: Base query cho việc tìm kiếm màn hình quản lý (Không lọc Status ban đầu)
         StringBuilder sql = new StringBuilder("""
                     SELECT
                         pt.PTID,
@@ -684,10 +737,15 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Inserts an official Personal Trainer profile.
+     * Thêm mới một hồ sơ Huấn luyện viên chính thức.
+     * Luồng nghiệp vụ: Gắn với UserID đã có. Các trường cơ bản được truyền vào, trạng thái IsDeleted mặc định = 0.
+     * 
+     * @param trainer Thông tin PT
+     * @return true nếu thêm thành công
      */
     @Override
     public boolean insertPersonalTrainer(PersonalTrainer trainer) {
+        // SQL: Insert thông tin PT
         String sql = """
                     INSERT INTO PersonalTrainers (
                         UserID,
@@ -745,10 +803,15 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Updates verified and public trainer information.
+     * Cập nhật thông tin công khai và đã xác minh của PT.
+     * Luồng nghiệp vụ: Update các trường thông tin PT dựa trên PTID. Không cho phép đổi UserID liên kết.
+     * 
+     * @param trainer Thông tin cần cập nhật
+     * @return true nếu cập nhật thành công
      */
     @Override
     public boolean updatePersonalTrainer(PersonalTrainer trainer) {
+        // SQL: Cập nhật thông tin PT
         String sqlPT = """
                     UPDATE PersonalTrainers
                     SET FullName = ?,
@@ -805,10 +868,18 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Updates only trainer working status.
+     * Cập nhật trạng thái làm việc của Huấn luyện viên.
+     * Luồng nghiệp vụ: Chỉ cập nhật cờ Status ('Active' / 'Inactive') của PT. 
+     * Gọi từ service khi đồng bộ trạng thái.
+     * 
+     * @param ptId ID của PT
+     * @param status Trạng thái mới
+     * @param updatedBy Người thực hiện
+     * @return true nếu thành công
      */
     @Override
     public boolean updateTrainerStatus(int ptId, String status, String updatedBy) {
+        // SQL: Cập nhật trường Status trong bảng PersonalTrainers
         String sqlPT = """
                     UPDATE PersonalTrainers
                     SET Status = ?,
@@ -837,10 +908,16 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Soft deletes a Personal Trainer profile.
+     * Xóa mềm hồ sơ Huấn luyện viên.
+     * Luồng nghiệp vụ: Set cờ IsDeleted = 1.
+     * 
+     * @param ptId ID PT
+     * @param updatedBy Người xóa
+     * @return true nếu xóa thành công
      */
     @Override
     public boolean softDeletePersonalTrainer(int ptId, String updatedBy) {
+        // SQL: Đánh dấu xóa (soft delete) cho PT
         String sql = """
                     UPDATE PersonalTrainers
                     SET IsDeleted = 1,
@@ -867,7 +944,13 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
     }
 
     /**
-     * Update PT profile(PT feat): Change avatar, bio/description and displayName
+     * Cập nhật hồ sơ công khai của PT (chức năng cho PT tự thực hiện).
+     * Luồng nghiệp vụ: Cho phép PT đổi Avatar, Mô tả và Tên hiển thị công khai.
+     * [BR-ACT-44]: Personal Trainers can update their public profile, including their avatar, description, and specialization.
+     * 
+     * @param pt Đối tượng PT chứa thông tin cập nhật
+     * @return true nếu cập nhật thành công
+     * @throws SQLException
      */
     @Override
     public boolean updateProfile(PersonalTrainer pt) throws SQLException {
@@ -875,6 +958,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         PreparedStatement stm = null;
         try {
             conn = getActiveConnection();
+            // SQL: Cập nhật các trường DisplayName, Description, AvatarPath do PT tự điều chỉnh
             String sql = "UPDATE PersonalTrainers SET "
                     + "DisplayName = ?, "
                     + "Description = ?, "
@@ -901,9 +985,18 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         }
     }
 
+    /**
+     * Lấy danh sách các hội viên đang theo học PT (Dành cho PT).
+     * Luồng nghiệp vụ: Truy vấn bảng PTRegistrations join Members, PTServicePrices để lấy học viên của PT.
+     * Lấy số buổi đã mua, số buổi đã hoàn thành, số buổi đã hủy và lịch học.
+     * 
+     * @param ptId PTID
+     * @return Danh sách PTMemberDTO
+     */
     @Override
     public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPT(int ptId) {
         List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> list = new ArrayList<>();
+        // SQL: Join để lấy danh sách học viên Active, đếm số buổi học, và dùng STRING_AGG để tạo chuỗi ngày giờ học (SQL Server syntax)
         String sql = """
                 SELECT 
                     r.PTRegistrationID,
@@ -968,8 +1061,15 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         return list;
     }
 
+    /**
+     * Lấy tổng số học viên đang theo học PT (dành cho phân trang/thống kê).
+     * 
+     * @param ptId PTID
+     * @return Số lượng học viên
+     */
     @Override
     public int getActiveMembersForPTCount(int ptId) {
+        // SQL: Đếm số lượng học viên Active của PT
         String sql = """
                 SELECT COUNT(*)
                 FROM PTRegistrations r
@@ -998,9 +1098,19 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         return 0;
     }
 
+    /**
+     * Lấy danh sách hội viên đang theo học PT, có phân trang.
+     * Luồng nghiệp vụ: Tương tự như hàm trên nhưng dùng OFFSET FETCH để phân trang.
+     * 
+     * @param ptId PTID
+     * @param offset Điểm bắt đầu
+     * @param limit Số lượng
+     * @return Danh sách PTMemberDTO
+     */
     @Override
     public List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> getActiveMembersForPTPaginated(int ptId, int offset, int limit) {
         List<com.mycompany.gymcentermanagement.dto.PTMemberDTO> list = new ArrayList<>();
+        // SQL: Phân trang học viên bằng OFFSET và FETCH NEXT (SQL Server)
         String sql = """
                 SELECT 
                     r.PTRegistrationID,
