@@ -43,11 +43,34 @@ public class ChatBotServiceImpl implements ChatBotService {
 
     private final ChatBotDAO chatBotDAO = new ChatBotDAOImpl();
 
+    /**
+     * Lấy lịch sử trò chuyện của người dùng hiện tại từ session.
+     * Luồng nghiệp vụ:
+     * 1. Kiểm tra session.
+     * 2. Trả về danh sách tin nhắn cũ, nếu chưa có thì khởi tạo lịch sử mặc định (tin nhắn chào mừng).
+     * 
+     * @param session Phiên làm việc của người dùng
+     * @return Danh sách các tin nhắn trong lịch sử trò chuyện
+     */
     @Override
     public List<ChatMessageModel> getChatHistory(HttpSession session) {
         return resolveChatHistory(session);
     }
 
+    /**
+     * Trả lời câu hỏi của người dùng gửi đến chatbot.
+     * Luồng nghiệp vụ:
+     * 1. Chuẩn hóa chuỗi nhập vào (loại bỏ khoảng trắng thừa).
+     * 2. Lấy lịch sử trò chuyện từ session.
+     * 3. Kiểm tra tính hợp lệ của câu hỏi (rỗng, quá dài).
+     * 4. Thêm câu hỏi của người dùng vào lịch sử.
+     * 5. Tìm kiếm câu trả lời phù hợp trong FAQ thông qua thuật toán tính điểm độ ưu tiên.
+     * 6. Thêm câu trả lời của bot vào lịch sử và trả về kết quả.
+     * 
+     * @param question Câu hỏi của người dùng
+     * @param session Phiên làm việc của người dùng
+     * @return Tin nhắn trả lời từ bot
+     */
     @Override
     public ChatMessageModel answerQuestion(String question, HttpSession session) {
         String normalizedInput = normalizeInput(question);
@@ -73,6 +96,15 @@ public class ChatBotServiceImpl implements ChatBotService {
         return botMessage;
     }
 
+    /**
+     * Xóa lịch sử trò chuyện hiện tại.
+     * Luồng nghiệp vụ:
+     * 1. Tạo danh sách tin nhắn mới với câu chào mặc định.
+     * 2. Lưu lại vào session để đè lên lịch sử cũ.
+     * 
+     * @param session Phiên làm việc của người dùng
+     * @return Lịch sử trò chuyện mới được khởi tạo
+     */
     @Override
     public List<ChatMessageModel> clearChatHistory(HttpSession session) {
         List<ChatMessageModel> history = createDefaultHistory();
