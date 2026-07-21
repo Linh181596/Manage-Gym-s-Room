@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 public class UserServiceImpl implements UserService {
     private static final Logger LOGGER = Logger.getLogger(UserServiceImpl.class.getName());
     private static final String PT_BLOCKING_SCHEDULE_MESSAGE = "PT đang có lịch dạy, vui lòng xử lý lịch trước.";
+    private static final String MEMBER_BLOCKING_SCHEDULE_MESSAGE = "Hội viên đang có lịch tập, vui lòng xử lý lịch trước.";
     
     // In a clean JEE environment, this can be injected via CDI.
     // Here we instantiate manually for simplicity.
@@ -412,6 +413,11 @@ public class UserServiceImpl implements UserService {
                 return ptScheduleCheck;
             }
 
+            AccountOperationResult memberScheduleCheck = validateMemberScheduleBeforeDeactivation(existing);
+            if (!memberScheduleCheck.isSuccess()) {
+                return memberScheduleCheck;
+            }
+
             boolean deactivated = userDAO.deactivateAccount(targetUserId, normalizeActor(updatedBy));
             if (!deactivated) {
                 return AccountOperationResult.failure("Không thể vô hiệu hóa tài khoản.");
@@ -521,6 +527,18 @@ public class UserServiceImpl implements UserService {
 
         if (userDAO.hasBlockingPTSchedule(account.getUserId())) {
             return AccountOperationResult.failure(PT_BLOCKING_SCHEDULE_MESSAGE);
+        }
+
+        return AccountOperationResult.success("OK");
+    }
+
+    private AccountOperationResult validateMemberScheduleBeforeDeactivation(User account) throws SQLException {
+        if (account.getRole() != User.Role.Member) {
+            return AccountOperationResult.success("OK");
+        }
+
+        if (userDAO.hasBlockingMemberSchedule(account.getUserId())) {
+            return AccountOperationResult.failure(MEMBER_BLOCKING_SCHEDULE_MESSAGE);
         }
 
         return AccountOperationResult.success("OK");

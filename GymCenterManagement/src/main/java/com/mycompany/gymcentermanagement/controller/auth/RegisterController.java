@@ -150,6 +150,11 @@ public class RegisterController extends HttpServlet {
                     request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
                     return;
                 }
+                if (dateOfBirth.plusYears(14).isAfter(LocalDate.now())) {
+                    request.setAttribute("error", "Bạn chưa đủ tuổi để đăng kí tập gym.");
+                    request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+                    return;
+                }
             } catch (DateTimeParseException e) {
                 request.setAttribute("error", "Định dạng ngày sinh nhập vào không hợp lệ!");
                 request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);

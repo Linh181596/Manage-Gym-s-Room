@@ -1777,6 +1777,36 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    public boolean hasBlockingMemberSchedule(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = """
+                        SELECT 1
+                        FROM Members m
+                        INNER JOIN PTSchedules s ON m.MemberID = s.MemberID
+                        WHERE m.UserID = ?
+                          AND m.IsDeleted = 0
+                          AND s.IsDeleted = 0
+                          AND s.SessionStatus <> 'Cancelled'
+                          AND (
+                              s.SessionDate >= CAST(GETDATE() AS date)
+                              OR s.SessionStatus <> 'Completed'
+                          )
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    @Override
     public boolean resetPassword(int userId, String newPasswordHash, String updatedBy) throws SQLException {
         Connection conn = null;
         PreparedStatement stmtPassword = null;

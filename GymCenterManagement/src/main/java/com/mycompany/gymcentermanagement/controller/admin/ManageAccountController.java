@@ -132,7 +132,7 @@ public class ManageAccountController extends HttpServlet {
         List<User> accounts = userService.searchAccounts(keyword, role, status, offset, pageSize);
         request.setAttribute("accounts", accounts);
         request.setAttribute("statuses", MANAGED_STATUSES);
-        request.setAttribute("roles", new User.Role[]{User.Role.Staff, User.Role.Member});
+        request.setAttribute("roles", new User.Role[]{User.Role.Staff, User.Role.Member, User.Role.PT});
         request.setAttribute("selectedRole", roleStr);
         request.setAttribute("selectedStatus", statusStr);
         request.setAttribute("keyword", keyword);
