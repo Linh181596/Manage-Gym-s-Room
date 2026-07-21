@@ -36,11 +36,32 @@ public class MemberPackageServiceImpl implements MemberPackageService {
 
     private final MemberDAO memberDAO = new MemberDAOImpl();
 
+    /**
+     * Lấy danh sách hội viên đang hoạt động (Active).
+     * Luồng nghiệp vụ: Truy vấn bảng Members qua MemberDAO, lọc hội viên Active.
+     * Dùng để cho phép nhân viên chọn người đăng ký gói tập.
+     * 
+     * @return Danh sách hội viên
+     * @throws SQLException
+     */
     @Override
     public List<Member> getActiveMembers() throws SQLException {
         return memberDAO.findAllActive();
     }
 
+    /**
+     * Đăng ký một gói tập mới cho hội viên.
+     * Luồng nghiệp vụ:
+     * 1. Validate gói tập và tính hợp lệ (VD: [BR-COMP-12] - Không cho đăng ký nếu đang có hóa đơn Pending trùng).
+     * 2. [BR-COMP-07] - Nối ngày tự động nếu hội viên đang có gói Active, ngược lại bắt đầu từ ngày hiện tại.
+     * 3. Sử dụng transaction: Insert gói tập (Trạng thái Pending) -> Insert Hóa đơn (Pending) -> Commit.
+     * 
+     * @param memberId ID Hội viên
+     * @param packageId ID Gói tập
+     * @param staffUserId ID Nhân viên xử lý
+     * @return Hóa đơn (Invoice) chờ thanh toán
+     * @throws SQLException nếu có lỗi hoặc validate thất bại
+     */
     @Override
     public Invoice registerMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException {
         Connection conn = null;
@@ -62,6 +83,7 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             }
 
             // Validate: Không cho phép tạo nhiều hóa đơn chờ (Pending) cho cùng 1 loại gói
+            // [BR-COMP-12]: The system shall not allow users to register a new package if they have an unpaid pending invoice.
             String checkPendingSql = "SELECT TOP 1 1 FROM MemberPackages WHERE MemberID = ? AND PackageID = ? AND Status = 'Pending' AND IsDeleted = 0";
             try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingSql)) {
                 checkPendingStmt.setInt(1, memberId);
@@ -75,7 +97,7 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             }
 
             // Kỹ thuật nối ngày (Concatenate Dates).
-            // Tự động cộng dồn thời hạn nếu hội viên đang có gói Active
+            // [BR-COMP-07]: The system must automatically concatenate the date if the member registers for a package when the current one is still active.
             LocalDate startDate = LocalDate.now();
             String checkActiveSql = "SELECT TOP 1 EndDate FROM MemberPackages WHERE MemberID = ? AND Status = 'Active' AND IsDeleted = 0 ORDER BY EndDate DESC";
             try (PreparedStatement checkStmt = conn.prepareStatement(checkActiveSql)) {
@@ -153,23 +175,67 @@ public class MemberPackageServiceImpl implements MemberPackageService {
         return pendingInvoice;
     }
 
+    /**
+     * Lấy gói tập đang hoạt động của hội viên (có thời hạn dài nhất nếu có nhiều gói).
+     * Luồng nghiệp vụ: Truy vấn MemberPackageDAO.
+     * 
+     * @param memberId ID hội viên
+     * @return MemberPackage nếu tìm thấy
+     * @throws SQLException
+     */
     @Override
     public MemberPackage getActivePackageByMemberId(int memberId) throws SQLException {
         MemberPackageDAO mpDAO = new MemberPackageDAOImpl();
         return mpDAO.findActiveByMemberId(memberId);
     }
 
+    /**
+     * Lấy danh sách tất cả gói tập đang hoạt động của hội viên.
+     * Luồng nghiệp vụ: Lấy các gói Status='Active' và EndDate >= hôm nay.
+     * 
+     * @param memberId ID hội viên
+     * @return Danh sách MemberPackage
+     * @throws SQLException
+     */
     @Override
     public java.util.List<MemberPackage> findAllActivePackagesByMemberId(int memberId) throws SQLException {
         MemberPackageDAO mpDAO = new MemberPackageDAOImpl();
         return mpDAO.findAllActiveByMemberId(memberId);
     }
 
+    /**
+     * Gia hạn gói tập.
+     * Luồng nghiệp vụ: Gọi lại quy trình đăng ký gói tập thông thường.
+     * [BR-COMP-18]: Members can renew their membership package.
+     * 
+     * @param memberId ID hội viên
+     * @param packageId ID gói tập
+     * @param staffUserId ID nhân viên xử lý
+     * @return Hóa đơn
+     * @throws SQLException
+     */
     @Override
     public Invoice renewMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException {
         return registerMemberPackage(memberId, packageId, staffUserId);
     }
 
+    /**
+     * Chuyển nhượng gói tập cho hội viên khác.
+     * Luồng nghiệp vụ:
+     * 1. Kiểm tra gói tập có đủ điều kiện chuyển không (> 1 ngày) [BR-COMP-19].
+     * 2. [BR-COMP-12] Kiểm tra không có hóa đơn Pending chuyển nhượng.
+     * 3. [BR-COMP-07] Tính ngày bắt đầu cho người nhận (nối ngày).
+     * 4. Dùng Transaction lưu Gói nhận (Pending) và Hóa đơn phí (Pending).
+     * (Việc disable gói gốc được thực hiện lúc thanh toán hóa đơn này).
+     * 
+     * @param senderPkgId ID gói của người gửi
+     * @param receiverMemberId ID hội viên nhận
+     * @param transferFee Phí chuyển nhượng
+     * @param staffUserId Nhân viên xử lý
+     * @param note Ghi chú
+     * @return Hóa đơn
+     * @throws SQLException
+     */
     @Override
     public Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, double transferFee, int staffUserId,
             String note) throws SQLException {
@@ -204,8 +270,8 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                         "Gói tập không đủ điều kiện chuyển nhượng (Thời hạn sử dụng còn lại phải tối thiểu 1 ngày).");
             }
 
-            // Validate: Không cho phép tạo nhiều hóa đơn chuyển nhượng (Pending) chồng chéo
-            // cho cùng 1 gói tập
+            // Validate: Không cho phép tạo nhiều hóa đơn chuyển nhượng (Pending) chồng chéo cho cùng 1 gói tập
+            // [BR-COMP-12]: The system shall not allow users to register a new package if they have an unpaid pending invoice.
             String checkPendingTransferSql = "SELECT TOP 1 1 FROM Invoices WHERE CreatedBy LIKE ? AND Status = 'Pending' AND IsDeleted = 0";
             try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingTransferSql)) {
                 checkPendingStmt.setString(1, "Transfer;SenderPackageID:" + senderPackage.getMemberPackageId() + ";%");

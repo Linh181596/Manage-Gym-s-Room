@@ -33,8 +33,20 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * Kiểm tra xem nhân viên/PT đã check-in trong ca làm việc của ngày đó chưa.
+     * Luồng nghiệp vụ:
+     * - [BR-CONS-62]: Mỗi Staff/PT chỉ có tối đa 1 check-in record mỗi shift block trong một ngày.
+     * 
+     * @param userId ID nhân viên
+     * @param shiftBlock Ca làm việc
+     * @param date Ngày
+     * @return true nếu đã check-in
+     * @throws SQLException 
+     */
     @Override
     public boolean existsCheckinForShift(int userId, String shiftBlock, LocalDate date) throws SQLException {
+        // SQL: Đếm số record Active, chưa bị xóa cho user trong ca và ngày đó
         String sql = """
                 SELECT COUNT(*) AS Total
                 FROM StaffPTAttendance
@@ -91,8 +103,18 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * Checkout điểm danh.
+     * Luồng nghiệp vụ: Cập nhật giờ checkout cho record đang Active.
+     * 
+     * @param attendanceId ID điểm danh
+     * @param checkedBy ID người checkout (Staff/Admin)
+     * @return true nếu checkout thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean checkout(int attendanceId, int checkedBy) throws SQLException {
+        // SQL: Cập nhật CheckedOutAt = SYSDATETIME() cho các record chưa checkout
         String sql = """
                 UPDATE StaffPTAttendance
                 SET CheckedOutAt = SYSDATETIME(),

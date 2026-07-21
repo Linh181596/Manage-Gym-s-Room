@@ -82,6 +82,9 @@ public class AuthenticationFilter extends HttpFilter {
         }
         
         // RBAC Check based on request path
+        // [BR-CONS-03]: Kiểm tra phân quyền truy cập theo vai trò (Admin, Staff, PT, Member).
+        // [BR-CONS-04]: Admin có quyền truy cập rộng, nhưng không được phép thao tác các chức năng dành riêng cho PT hoặc Member (Trừ một số ngoại lệ).
+        // [BR-CONS-05]: Admin được quyền truy cập vào các dashboard tài chính và quản lý.
         boolean authorized = false;
         User.Role role = user.getRole();
         

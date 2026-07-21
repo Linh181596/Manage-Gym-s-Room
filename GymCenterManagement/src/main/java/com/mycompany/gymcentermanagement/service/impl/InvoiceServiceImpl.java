@@ -47,6 +47,20 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceDAO.findAllPaginated(offset, limit);
     }
 
+    /**
+     * Xác nhận thanh toán hóa đơn bằng tiền mặt (Cash).
+     * Luồng nghiệp vụ:
+     * 1. Lấy thông tin hóa đơn, kiểm tra trạng thái Pending.
+     * 2. [BR-CONS-35]: Chỉ Admin/Staff được quyền duyệt hóa đơn thanh toán tiền mặt. (Validate quyền ở Controller).
+     * 3. Update trạng thái Invoice thành 'Paid', cập nhật PaymentMethod và Processor.
+     * 4. Kích hoạt gói tập (MemberPackage) thành 'Active'.
+     * 5. [Transaction]: Dùng Manual Transaction để đảm bảo tính toàn vẹn (Invoice và MemberPackage phải cùng được cập nhật hoặc cùng bị hủy).
+     * 
+     * @param invoiceId ID hóa đơn
+     * @param staffUserId ID người duyệt
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException {
         Connection conn = null;
@@ -150,6 +164,18 @@ public class InvoiceServiceImpl implements InvoiceService {
         return success;
     }
 
+    /**
+     * Ghi nhận thanh toán hóa đơn trực tuyến (VNPay).
+     * Luồng nghiệp vụ:
+     * 1. Lấy hóa đơn, check trạng thái Pending.
+     * 2. Update trạng thái Invoice thành 'Paid', cập nhật PaymentMethod là 'Chuyển khoản VNPAY'.
+     * 3. Kích hoạt MemberPackage thành 'Active'.
+     * 4. [Transaction]: Dùng Manual Transaction đảm bảo dữ liệu.
+     * 
+     * @param invoiceId ID hóa đơn
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean recordOnlinePayment(int invoiceId) throws SQLException {
         Connection conn = null;
@@ -250,6 +276,19 @@ public class InvoiceServiceImpl implements InvoiceService {
         return success;
     }
 
+    /**
+     * Hủy hóa đơn đang chờ thanh toán.
+     * Luồng nghiệp vụ:
+     * 1. [BR-CONS-10]: Nếu hóa đơn không được thanh toán trong 48h, hệ thống (hoặc Staff) có thể hủy đơn và release slot.
+     * 2. Cập nhật trạng thái Invoice thành Cancelled.
+     * 3. Đánh dấu xóa mềm (delete) cho MemberPackage liên quan để nhả slot.
+     * 4. [Transaction]: Thực hiện trong transaction.
+     * 
+     * @param invoiceId ID hóa đơn
+     * @param staffUserId Người hủy
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException {
         Connection conn = null;

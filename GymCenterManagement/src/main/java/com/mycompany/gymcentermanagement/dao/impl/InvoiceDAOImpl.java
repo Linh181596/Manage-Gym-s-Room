@@ -111,6 +111,14 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         return inv;
     }
 
+    /**
+     * Tìm hóa đơn theo ID kèm theo thông tin Member, Processor và Package (nếu có).
+     * Luồng nghiệp vụ: Dùng cho trang chi tiết hóa đơn.
+     * 
+     * @param invoiceId ID hóa đơn
+     * @return Đối tượng Invoice
+     * @throws SQLException 
+     */
     @Override
     public Invoice findById(int invoiceId) throws SQLException {
         Connection conn = null;
@@ -120,6 +128,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         
         try {
             conn = getActiveConnection();
+            // SQL: Join Invoices với Members, Users (cho Member và Processor) và GymPackages
             String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName " +
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
@@ -140,6 +149,15 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         return inv;
     }
 
+    /**
+     * Thêm mới hóa đơn vào DB.
+     * Luồng nghiệp vụ: Insert hóa đơn mới với trạng thái Pending/Unpaid.
+     * [BR-CONS-36]: Các thanh toán đều cần lưu lại bằng chứng hoặc thông tin vào DB.
+     * 
+     * @param inv Hóa đơn
+     * @return true nếu thêm thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean insert(Invoice inv) throws SQLException {
         Connection conn = null;
@@ -149,6 +167,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         
         try {
             conn = getActiveConnection();
+            // SQL: Insert hóa đơn mới và trả về ID tự tăng
             String sql = "INSERT INTO Invoices (MemberID, ProcessBy, MemberPackageID, PTRegistrationID, Amount, PaymentMethod, PaymentDate, Status, CreatedBy, CreatedDate, IsDeleted) " +
                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -188,6 +207,14 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         return success;
     }
 
+    /**
+     * Cập nhật thông tin hóa đơn (Trạng thái, Phương thức thanh toán, v.v).
+     * Luồng nghiệp vụ: Update các field cho hóa đơn có sẵn.
+     * 
+     * @param inv Hóa đơn cần cập nhật
+     * @return true nếu update thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean update(Invoice inv) throws SQLException {
         Connection conn = null;
@@ -196,6 +223,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         
         try {
             conn = getActiveConnection();
+            // SQL: Update thông tin Invoice theo ID
             String sql = "UPDATE Invoices SET MemberID = ?, ProcessBy = ?, MemberPackageID = ?, PTRegistrationID = ?, Amount = ?, PaymentMethod = ?, PaymentDate = ?, Status = ?, UpdatedBy = ?, UpdatedDate = ? " +
                          "WHERE InvoiceID = ? AND IsDeleted = 0";
             stmt = conn.prepareStatement(sql);

@@ -32,6 +32,23 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
     private final RescheduleRequestDAO rescheduleRequestDAO = new RescheduleRequestDAOImpl();
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Tạo yêu cầu đổi lịch học (Từ Hội viên hoặc PT).
+     * Luồng nghiệp vụ:
+     * 1. Validate quyền, ngày đề xuất.
+     * 2. [BR-CONS-48]: Validate ngày không được ở trong quá khứ.
+     * 3. [BR-ACT-49], [BR-ACT-50], [BR-CONS-15]: PT và Hội viên có thể gửi yêu cầu đổi lịch.
+     * 4. Check khung giờ hợp lệ, không trùng lịch, không trùng ca bị hủy hàng loạt.
+     * 5. Lưu vào Database (Trạng thái Pending hoặc Escalated nếu ca cũ bị Cancelled).
+     * 
+     * @param actorUserId UserID của người gửi
+     * @param actorRole Role của người gửi
+     * @param scheduleId ID ca học
+     * @param proposedDate Ngày đề xuất
+     * @param proposedSlot Khung giờ đề xuất (VD: 08:15-09:45)
+     * @param reason Lý do
+     * @return Chuỗi kết quả ("SUCCESS" nếu thành công)
+     */
     @Override
     public String createRequest(int actorUserId, User.Role actorRole, int scheduleId, LocalDate proposedDate, String proposedSlot, String reason) {
         if (actorRole != User.Role.PT && actorRole != User.Role.Member) {
@@ -163,6 +180,19 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
         return created ? "SUCCESS" : "Không thể tạo yêu cầu đổi lịch lúc này.";
     }
 
+    /**
+     * Xử lý (Duyệt/Từ chối/Escalate) một yêu cầu đổi lịch.
+     * Luồng nghiệp vụ:
+     * - Approve: Check lại trùng lịch, update lịch học cũ hoặc tạo lịch học bù.
+     * - Reject: Cập nhật trạng thái Rejected kèm lý do.
+     * - Escalate: Chuyển lên Staff/Admin kèm lý do (Thường do PT/Member không tự thỏa thuận được).
+     * 
+     * @param requestId ID yêu cầu
+     * @param action Hành động (approve, reject, escalate)
+     * @param responderUserId Người thực hiện
+     * @param responseReason Lý do phản hồi
+     * @return Chuỗi kết quả
+     */
     @Override
     public String respondToRequest(int requestId, String action, int responderUserId, String responseReason) {
         RescheduleRequest req = rescheduleRequestDAO.getById(requestId);

@@ -15,11 +15,30 @@ public class PublicContentServiceImpl implements PublicContentService {
 
     private final PublicContentDAO publicContentDAO = new PublicContentDAOImpl();
 
+    /**
+     * Lấy các nội dung nổi bật (Featured).
+     * Luồng nghiệp vụ:
+     * 1. [BR-COMP-56]: Chỉ lấy những nội dung có trạng thái là 'Published' cho Member/Guest.
+     * 
+     * @param type Loại nội dung
+     * @param limit Số lượng
+     * @return Danh sách
+     * @throws SQLException 
+     */
     @Override
     public List<PublicContent> getFeaturedPublished(ContentType type, int limit) throws SQLException {
         return publicContentDAO.findFeaturedPublished(type, limit);
     }
 
+    /**
+     * Lấy danh sách nội dung theo loại.
+     * Luồng nghiệp vụ:
+     * 1. [BR-COMP-56]: Chỉ nội dung 'Published' mới được hiển thị.
+     * 
+     * @param type Loại nội dung
+     * @return Danh sách
+     * @throws SQLException 
+     */
     @Override
     public List<PublicContent> getPublishedByType(ContentType type) throws SQLException {
         return publicContentDAO.findPublishedByType(type);
@@ -53,6 +72,17 @@ public class PublicContentServiceImpl implements PublicContentService {
         return publicContentDAO.findById(contentId);
     }
 
+    /**
+     * Lưu thông tin (Tạo mới hoặc Cập nhật) một PublicContent.
+     * Luồng nghiệp vụ:
+     * 1. [BR-COMP-52]: Chỉ Admin và Staff được tạo/quản lý nội dung (validate ở normalizePermissions).
+     * 2. [BR-COMP-53]: Nếu là Staff -> Ép trạng thái thành Draft.
+     * 3. Lưu xuống database.
+     * 
+     * @param content Nội dung
+     * @param currentUser Người dùng thao tác
+     * @throws SQLException 
+     */
     @Override
     public void save(PublicContent content, User currentUser) throws SQLException {
         validateContent(content);
@@ -69,6 +99,15 @@ public class PublicContentServiceImpl implements PublicContentService {
         }
     }
 
+    /**
+     * Xóa nội dung.
+     * Luồng nghiệp vụ:
+     * 1. [BR-COMP-54]: Chỉ Admin mới được quyền xóa nội dung.
+     * 
+     * @param contentId ID
+     * @param currentUser Người thao tác
+     * @throws SQLException 
+     */
     @Override
     public void delete(int contentId, User currentUser) throws SQLException {
         requireAdmin(currentUser);
