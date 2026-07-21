@@ -96,6 +96,7 @@
             </div>
         </c:if>
 
+        <%-- Form cập nhật thông tin hồ sơ (POST). Hỗ trợ upload file ảnh/chứng chỉ nhờ enctype="multipart/form-data" --%>
         <form action="${pageContext.request.contextPath}/profile" method="POST" enctype="multipart/form-data" id="profileForm">
             <div class="row g-4 justify-content-center">
                 
@@ -342,7 +343,7 @@
                 }
             });
 
-            // Form submit validation for description word limit
+            // Validation khi submit form: Kiểm tra độ dài phần mô tả (Bio) của PT
             $('form').submit(function(e) {
                 const bioField = $('#floatingBio');
                 if (bioField.length && !bioField.prop('disabled')) {

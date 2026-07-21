@@ -11,6 +11,11 @@ package com.mycompany.gymcentermanagement.dto;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO đại diện cho các chỉ số đo lường (metrics) dạng số tổng quan trên cùng của Dashboard.
+ * Bao gồm: Số hội viên đang hoạt động, doanh thu trong ngày/tháng, số lượng PT, 
+ * ca tập trong ngày và số lượng cảnh báo chờ xử lý.
+ */
 public class DashboardMetric {
     private int activeMembers;
     private int newMembershipsToday;

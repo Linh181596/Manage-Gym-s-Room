@@ -23,6 +23,7 @@
             <small class="text-muted">Tổng quan vận hành phòng tập theo dữ liệu hiện có trong cơ sở dữ liệu</small>
         </div>
         <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-primary">
+            <%-- Nút tải lại trang Dashboard để cập nhật dữ liệu mới nhất --%>
             <i class="fa fa-sync-alt me-1"></i> Làm mới
         </a>
     </div>
@@ -30,6 +31,7 @@
     <c:if test="${not empty dashboardLoadError}">
         <div class="alert alert-danger d-flex align-items-center justify-content-between shadow-sm" role="alert">
             <div><i class="fa fa-exclamation-circle me-2"></i>${dashboardLoadError}</div>
+            <%-- Nút thử lại nếu xảy ra lỗi trong quá trình tải dữ liệu --%>
             <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-sm btn-outline-danger">Thử lại</a>
         </div>
     </c:if>
@@ -130,6 +132,7 @@
                         </select>
                     </div>
                     <div class="col-sm-12 col-lg-2">
+                        <%-- Nút submit form gửi yêu cầu lọc dữ liệu biểu đồ doanh thu --%>
                         <button type="submit" class="btn btn-sm btn-primary w-100">
                             <i class="fa fa-filter me-1"></i> Áp dụng
                         </button>
@@ -259,6 +262,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Gán sự kiện khi thay đổi "Từ ngày" hoặc "Đến ngày" thì tự động chuyển khoảng thời gian sang "Tùy chọn"
         const revenueRange = document.getElementById("revenueRange");
         const fromDate = document.getElementById("fromDate");
         const toDate = document.getElementById("toDate");
@@ -275,9 +279,11 @@
             return;
         }
 
+        // Lấy dữ liệu dạng JSON cho nhãn (labels) và giá trị (values) từ thuộc tính data-*
         const labelsData = JSON.parse(chartElement.getAttribute("data-labels") || "[]");
         const valuesData = JSON.parse(chartElement.getAttribute("data-values") || "[]");
 
+        // Khởi tạo và vẽ biểu đồ doanh thu bằng thư viện Chart.js
         new Chart(chartElement.getContext("2d"), {
             type: "bar",
             data: {

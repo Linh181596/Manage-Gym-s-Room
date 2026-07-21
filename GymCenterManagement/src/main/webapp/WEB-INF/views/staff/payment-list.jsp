@@ -107,6 +107,7 @@
                 <input type="date" id="endDateFilter" class="form-control">
             </div>
             <div class="col-md-2 col-lg-2">
+                <%-- Nút reset form lọc hóa đơn về trạng thái ban đầu --%>
                 <button type="button" id="resetFilters" class="btn btn-outline-secondary w-100"><i class="fa fa-undo me-1"></i> Đặt lại</button>
             </div>
         </div>
@@ -182,11 +183,13 @@
                                     <td class="text-center">
                                         <c:choose>
                                             <c:when test="${inv.status == 'Pending' && !isAdmin}">
+                                                <%-- Nút chuyển hướng sang màn hình thu tiền / xác nhận thanh toán (dành cho lễ tân) --%>
                                                 <a href="${viewUrl}?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-primary px-3 shadow-sm-primary">
                                                     <i class="fa fa-cash-register me-1"></i> Thu tiền
                                                 </a>
                                             </c:when>
                                             <c:otherwise>
+                                                <%-- Nút chuyển hướng xem chi tiết hóa đơn --%>
                                                 <a href="${viewUrl}?invoiceId=${inv.invoiceId}" class="btn btn-sm btn-outline-secondary px-3">
                                                     <i class="fa fa-eye me-1"></i> Chi tiết
                                                 </a>
@@ -214,6 +217,7 @@
         const resetFilters = document.getElementById("resetFilters");
         const rows = document.querySelectorAll(".invoice-row");
 
+        // Hàm lọc danh sách hóa đơn theo từ khóa, trạng thái và khoảng thời gian (Client-side)
         function filterInvoices() {
             const searchVal = searchInput.value.toLowerCase().trim();
             const statusVal = statusFilter.value;

@@ -50,6 +50,7 @@
             </h5>
         </div>
 
+        <%-- Form thêm mới/cập nhật thông tin thiết bị (POST) có kèm file ảnh --%>
         <form id="equipmentForm" method="post" action="${pageContext.request.contextPath}/staff/equipment" enctype="multipart/form-data">
             <input type="hidden" name="id" value="${equipment.equipmentId}">
             <input type="hidden" name="imageUrl" value="${equipment.imageUrl}">
@@ -133,6 +134,7 @@
     const equipmentForm = document.getElementById('equipmentForm');
 
     function syncWarrantyMinDate() {
+        // Ràng buộc ngày hết hạn bảo hành không được chọn trước ngày mua
         if (purchaseDateInput.value) {
             warrantyDateInput.min = purchaseDateInput.value;
         } else {
@@ -145,10 +147,12 @@
         warrantyDateInput.setCustomValidity('');
     });
     
+    // Xử lý kiểm tra khi submit form
     equipmentForm.addEventListener('submit', function (event) {
         syncWarrantyMinDate();
         if (purchaseDateInput.value && warrantyDateInput.value && warrantyDateInput.value < purchaseDateInput.value) {
             event.preventDefault();
+            // Thiết lập thông báo lỗi hiển thị nếu logic không hợp lệ
             warrantyDateInput.setCustomValidity('Ngày hết hạn bảo hành không được trước ngày mua.');
             warrantyDateInput.reportValidity();
         } else {

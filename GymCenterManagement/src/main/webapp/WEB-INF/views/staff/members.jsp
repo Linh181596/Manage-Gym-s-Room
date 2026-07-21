@@ -28,6 +28,7 @@
             <h5 class="mb-1 text-primary fw-bold"><i class="fa fa-users me-2"></i>Quản lý danh sách hội viên</h5>
             <small class="text-muted">Bảng điều khiển nghiệp vụ dành riêng cho nhân viên quầy lễ tân</small>
         </div>
+        <%-- Nút toggle mở/đóng form thêm hội viên mới --%>
         <button class="btn btn-success py-2 px-3 fw-bold" onclick="toggleAddMemberForm()" id="mainActionBtn">
             <i class="fa fa-plus-circle me-2"></i>Thêm hội viên mới
         </button>
@@ -70,6 +71,7 @@
             </div>
             <div class="d-flex justify-content-end gap-2 border-top pt-3">
                 <button class="btn btn-outline-secondary px-4" type="button" onclick="toggleAddMemberForm()">Hủy bỏ</button>
+                <%-- Nút submit form gửi thông tin đăng ký tài khoản hội viên mới --%>
                 <button class="btn btn-success px-4" type="submit">Xác nhận thêm</button>
             </div>
         </form>
@@ -97,7 +99,9 @@
                         </select>
                     </div>
                     <div class="d-grid gap-2 mt-4">
+                        <%-- Nút submit form lọc dữ liệu danh sách hội viên --%>
                         <button class="btn btn-primary" type="submit"><i class="fa fa-search me-2"></i>Tìm kiếm</button>
+                        <%-- Nút reset form lọc (xóa bỏ toàn bộ điều kiện lọc) --%>
                         <a href="<%= contextPath %>/staff/members" class="btn btn-outline-secondary"><i class="fa fa-undo me-2"></i>Xóa bộ lọc</a>
                     </div>
                 </form>
@@ -152,20 +156,24 @@
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1 justify-content-center">
+                                                <%-- Nút chuyển hướng sang trang chi tiết hồ sơ hội viên --%>
                                                 <a href="<%= contextPath %>/member/portal?viewMemberId=<%= userId %>" class="btn btn-sm btn-outline-info" title="Xem hồ sơ">
                                                     <i class="fa fa-eye"></i> Hồ sơ
                                                 </a>
                                                 <% if (isActive) { %>
+                                                    <%-- Nút chuyển hướng sang tính năng gia hạn gói tập cho hội viên --%>
                                                     <a href="<%= contextPath %>/staff/package/renew?memberId=<%= userId %>" 
                                                        class="btn btn-sm btn-outline-success" 
                                                        title="Gia hạn gói tập">
                                                         <i class="fa fa-history"></i> Gia hạn
                                                     </a>
+                                                    <%-- Nút chuyển hướng sang tính năng chuyển nhượng gói tập --%>
                                                     <a href="<%= contextPath %>/staff/package/transfer?senderId=<%= userId %>" 
                                                        class="btn btn-sm btn-outline-danger" 
                                                        title="Chuyển nhượng gói tập">
                                                         <i class="fa fa-exchange-alt"></i> Chuyển nhượng
                                                     </a>
+                                                    <%-- Nút thay đổi trạng thái hội viên thành Locked (khóa tài khoản) --%>
                                                     <a href="<%= contextPath %>/staff/members/toggle?userId=<%= userId %>&targetStatus=Locked" 
                                                        class="btn btn-sm btn-outline-warning" 
                                                        onclick="return confirm('Bạn có chắc chắn muốn KHÓA hội viên này?')" 
@@ -173,6 +181,7 @@
                                                         <i class="fa fa-lock"></i> Khóa
                                                     </a>
                                                 <% } else { %>
+                                                    <%-- Nút thay đổi trạng thái hội viên thành Active (mở khóa tài khoản) --%>
                                                     <a href="<%= contextPath %>/staff/members/toggle?userId=<%= userId %>&targetStatus=Active" 
                                                        class="btn btn-sm btn-outline-success" 
                                                        onclick="return confirm('Bạn có chắc chắn muốn MỞ KHÓA hội viên này?')" 
@@ -180,12 +189,14 @@
                                                         <i class="fa fa-lock-open"></i> Mở
                                                     </a>
                                                 <% } %>
+                                                <%-- Nút kích hoạt gửi thông báo nhắc nhở gia hạn/thanh toán --%>
                                                 <a href="<%= contextPath %>/staff/members/notify?userId=<%= userId %>" 
                                                    class="btn btn-sm btn-outline-primary" 
                                                    onclick="return confirm('Hệ thống sẽ gửi thông báo nhắc nợ tự động. Tiếp tục?')" 
                                                    title="Nhắc nhở gia hạn">
                                                     <i class="fa fa-bell"></i> Nhắc nhở
                                                 </a>
+                                                <%-- Nút xóa vĩnh viễn dữ liệu hội viên khỏi hệ thống --%>
                                                 <a href="<%= contextPath %>/staff/members/delete?userId=<%= userId %>" 
                                                    class="btn btn-sm btn-outline-danger" 
                                                    onclick="return confirm('CẢNH BÁO: Bạn có thực sự chắc chắn muốn XÓA HỘI VIÊN này khỏi hệ thống không?')" 
@@ -214,6 +225,7 @@
 </div>
 
 <script>
+    // Hàm thực hiện chuyển đổi trạng thái hiển thị (ẩn/hiện) của khung form thêm hội viên mới
     function toggleAddMemberForm() {
         var formSection = document.getElementById("addMemberSection");
         var btn = document.getElementById("mainActionBtn");

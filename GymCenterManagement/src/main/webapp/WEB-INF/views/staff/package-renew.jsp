@@ -90,6 +90,7 @@
                     <!-- Actions -->
                     <div class="d-flex gap-3 justify-content-end border-top pt-4">
                         <a href="${pageContext.request.contextPath}/staff/members" class="btn btn-lg btn-outline-secondary px-4">Quay lại</a>
+                        <%-- Nút submit form gửi thông tin đăng ký gia hạn gói tập và tạo hóa đơn --%>
                         <button type="submit" class="btn btn-lg btn-primary px-5 shadow-sm">
                             Tạo hóa đơn gia hạn <i class="fa fa-arrow-right ms-2"></i>
                         </button>
@@ -145,6 +146,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById("renewForm");
         
+        // Ngăn chặn submit form và báo lỗi UI nếu dữ liệu không hợp lệ
         form.addEventListener("submit", function(event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
@@ -176,10 +178,12 @@
                 const duration = parseInt(selectedOpt.getAttribute("data-duration"));
 
                 // Tính toán ngày bắt đầu và kết thúc gói mới
-                let startDate = new Date(); // Mặc định là hôm nay nếu không có gói cũ
+                // Nếu hội viên chưa có gói tập hoặc gói đã hết hạn, ngày bắt đầu gói mới là Ngày hôm nay
+                let startDate = new Date(); 
+                // Nếu hội viên vẫn còn gói tập đang có hiệu lực, ngày bắt đầu gói gia hạn sẽ là ngày hôm sau của ngày hết hạn gói cũ
                 if (currentEndDate && currentEndDate >= new Date()) {
                     startDate = new Date(currentEndDate);
-                    startDate.setDate(startDate.getDate() + 1); // Bắt đầu ngày hôm sau ngày hết hạn gói cũ
+                    startDate.setDate(startDate.getDate() + 1); 
                 }
 
                 let endDate = new Date(startDate);

@@ -12,6 +12,11 @@ package com.mycompany.gymcentermanagement.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DTO tổng hợp toàn bộ dữ liệu cần thiết để render trang chủ (Dashboard) của Admin.
+ * Nhóm các luồng dữ liệu rời rạc (metric, biểu đồ, hóa đơn, cảnh báo) vào một Object duy nhất
+ * để Controller dễ dàng đẩy qua View (JSP).
+ */
 public class AdminDashboardData {
     private DashboardMetric metric = new DashboardMetric();
     private List<RevenuePoint> revenueTrend = new ArrayList<>();
