@@ -151,6 +151,34 @@ public class EmailUtils {
                 locked ? "Thong bao khoa tai khoan GCMS" : "Thong bao mo khoa tai khoan GCMS", htmlContent);
     }
 
+    /**
+     * Sends a notification after an administrator updates a user's account information.
+     */
+    public static boolean sendAccountUpdatedEmail(String toEmail, String fullName) {
+        String recipientName = escapeHtml(fullName == null || fullName.trim().isEmpty() ? "bạn" : fullName.trim());
+        String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
+                + "<h2 style='color: #007bff;'>Thông tin tài khoản đã được cập nhật</h2>"
+                + "<p>Chào " + recipientName + ",</p>"
+                + "<p>Quản trị viên đã cập nhật thông tin tài khoản GCMS của bạn.</p>"
+                + "<p>Nếu bạn không nhận ra thay đổi này, vui lòng liên hệ quản trị viên để được hỗ trợ.</p>"
+                + "</div>";
+        return sendAccountEmail(toEmail, "Thong bao cap nhat tai khoan GCMS", htmlContent);
+    }
+
+    /**
+     * Sends a notification after an administrator deactivates a user's account.
+     */
+    public static boolean sendAccountDeactivatedEmail(String toEmail, String fullName) {
+        String recipientName = escapeHtml(fullName == null || fullName.trim().isEmpty() ? "bạn" : fullName.trim());
+        String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
+                + "<h2 style='color: #dc3545;'>Tài khoản đã bị vô hiệu hóa</h2>"
+                + "<p>Chào " + recipientName + ",</p>"
+                + "<p>Tài khoản GCMS của bạn đã bị quản trị viên vô hiệu hóa.</p>"
+                + "<p>Bạn không thể đăng nhập hoặc sử dụng hệ thống cho đến khi được quản trị viên hỗ trợ.</p>"
+                + "</div>";
+        return sendAccountEmail(toEmail, "Thong bao vo hieu hoa tai khoan GCMS", htmlContent);
+    }
+
     private static boolean sendAccountEmail(String toEmail, String subject, String htmlContent) {
         Properties props = new Properties();
         props.put("mail.smtp.auth", properties.getProperty("mail.smtp.auth", "true"));
@@ -167,20 +195,38 @@ public class EmailUtils {
             }
         });
 
-        try {
-            Message message = new MimeMessage(session);
-            String fromEmail = properties.getProperty("mail.from.email", "noreply@gymcenter.com");
-            String fromName = properties.getProperty("mail.from.name", "GCMS System");
-            message.setFrom(new InternetAddress(fromEmail, fromName));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject(subject);
-            message.setContent(htmlContent, "text/html; charset=utf-8");
-            Transport.send(message);
-            return true;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to send account management email to " + toEmail, e);
-            return false;
+        for (int attempt = 0; attempt < 2; attempt++) {
+            try {
+                Message message = new MimeMessage(session);
+                String fromEmail = properties.getProperty("mail.from.email", "noreply@gymcenter.com");
+                String fromName = properties.getProperty("mail.from.name", "GCMS System");
+                message.setFrom(new InternetAddress(fromEmail, fromName));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+                message.setSubject(subject);
+                message.setContent(htmlContent, "text/html; charset=utf-8");
+                Transport.send(message);
+                return true;
+            } catch (Exception e) {
+                if (attempt == 0 && isMailtrapRateLimitError(e)) {
+                    try {
+                        // Mailtrap sandbox giới hạn số thư/giây; chờ ngắn rồi gửi lại một lần.
+                        Thread.sleep(1100);
+                        continue;
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt();
+                        LOGGER.log(Level.WARNING, "Email retry interrupted for " + toEmail, interruptedException);
+                    }
+                }
+                LOGGER.log(Level.SEVERE, "Failed to send account management email to " + toEmail, e);
+                return false;
+            }
         }
+        return false;
+    }
+
+    private static boolean isMailtrapRateLimitError(Exception exception) {
+        String message = exception.getMessage();
+        return message != null && message.toLowerCase().contains("too many emails per second");
     }
 
     private static String escapeHtml(String value) {

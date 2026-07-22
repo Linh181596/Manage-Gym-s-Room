@@ -83,6 +83,21 @@ public class AuthenticationFilter extends HttpFilter {
             return;
         }
 
+        // Luôn đọc lại trạng thái tài khoản từ CSDL để các phiên cũ không tiếp
+        // tục hoạt động sau khi Admin khóa hoặc vô hiệu hóa tài khoản.
+        try {
+            User persistedUser = new UserDAOImpl().findById(user.getUserId());
+            if (persistedUser == null || persistedUser.getAccountStatus() != User.AccountStatus.Active) {
+                if (session != null) {
+                    session.invalidate();
+                }
+                response.sendRedirect(request.getContextPath() + "/login?sessionEnded=1");
+                return;
+            }
+        } catch (Exception ex) {
+            throw new ServletException("Không thể kiểm tra trạng thái tài khoản.", ex);
+        }
+
         // Kiểm tra nghiệp vụ: Bắt buộc đổi mật khẩu ở lần đăng nhập đầu tiên (Tài khoản được cấp bởi Admin/Staff)
         if (user.isMustChangePassword()) {
             response.sendRedirect(request.getContextPath() + "/change-password");
