@@ -102,7 +102,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         pt.CertificateFilePath,
                         pt.Description,
                         pt.AvatarPath,
-                        pt.Status,
+                        u.Status AS Status,
                         pt.CreatedBy,
                         pt.CreatedDate,
                         pt.UpdatedBy,
@@ -114,8 +114,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         u.MustChangePassword
                     FROM PersonalTrainers pt
                     INNER JOIN Users u ON pt.UserID = u.UserID
-                    WHERE pt.Status = 'Active'
-                      AND u.Status = 'Active'
+                    WHERE u.Status = 'Active'
                       AND pt.IsDeleted = 0
                       AND u.IsDeleted = 0
                     ORDER BY pt.FullName
@@ -179,7 +178,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                     pt.CertificateFilePath,
                     pt.Description,
                     pt.AvatarPath,
-                    pt.Status,
+                    u.Status AS Status,
                     pt.CreatedBy,
                     pt.CreatedDate,
                     pt.UpdatedBy,
@@ -191,8 +190,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                     u.MustChangePassword
                 FROM PersonalTrainers pt
                 INNER JOIN Users u ON pt.UserID = u.UserID
-                WHERE pt.Status = 'Active'
-                  AND u.Status = 'Active'
+                WHERE u.Status = 'Active'
                   AND pt.IsDeleted = 0
                   AND u.IsDeleted = 0
                   AND (
@@ -248,7 +246,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         pt.CertificateFilePath,
                         pt.Description,
                         pt.AvatarPath,
-                        pt.Status,
+                        u.Status AS Status,
                         pt.CreatedBy,
                         pt.CreatedDate,
                         pt.UpdatedBy,
@@ -308,7 +306,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         pt.CertificateFilePath,
                         pt.Description,
                         pt.AvatarPath,
-                        pt.Status,
+                        u.Status AS Status,
                         pt.CreatedBy,
                         pt.CreatedDate,
                         pt.UpdatedBy,
@@ -369,7 +367,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         pt.CertificateFilePath,
                         pt.Description,
                         pt.AvatarPath,
-                        pt.Status,
+                        u.Status AS Status,
                         pt.CreatedBy,
                         pt.CreatedDate,
                         pt.UpdatedBy,
@@ -431,7 +429,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         pt.CertificateFilePath,
                         pt.Description,
                         pt.AvatarPath,
-                        pt.Status,
+                        u.Status AS Status,
                         pt.CreatedBy,
                         pt.CreatedDate,
                         pt.UpdatedBy,
@@ -443,8 +441,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         u.MustChangePassword
                     FROM PersonalTrainers pt
                     INNER JOIN Users u ON pt.UserID = u.UserID
-                    WHERE pt.Status = 'Active'
-                      AND u.Status = 'Active'
+                    WHERE u.Status = 'Active'
                       AND pt.IsDeleted = 0
                       AND u.IsDeleted = 0
                       AND (
@@ -530,7 +527,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         pt.CertificateFilePath,
                         pt.Description,
                         pt.AvatarPath,
-                        pt.Status,
+                        u.Status AS Status,
                         pt.CreatedBy,
                         pt.CreatedDate,
                         pt.UpdatedBy,
@@ -542,8 +539,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         u.MustChangePassword
                     FROM PersonalTrainers pt
                     INNER JOIN Users u ON pt.UserID = u.UserID
-                    WHERE pt.Status = 'Active'
-                      AND u.Status = 'Active'
+                    WHERE u.Status = 'Active'
                       AND pt.IsDeleted = 0
                       AND u.IsDeleted = 0
                 """);
@@ -644,7 +640,7 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
                         pt.CertificateFilePath,
                         pt.Description,
                         pt.AvatarPath,
-                        pt.Status,
+                        u.Status AS Status,
                         pt.CreatedBy,
                         pt.CreatedDate,
                         pt.UpdatedBy,
@@ -689,9 +685,9 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
 
         if (hasStatus) {
             if ("Active".equalsIgnoreCase(status)) {
-                sql.append(" AND pt.Status = 'Active' AND u.Status = 'Active' ");
+                sql.append(" AND u.Status = 'Active' ");
             } else if ("Inactive".equalsIgnoreCase(status)) {
-                sql.append(" AND pt.Status = 'Inactive' ");
+                sql.append(" AND u.Status = 'Inactive' ");
             } else if ("Locked".equalsIgnoreCase(status)) {
                 sql.append(" AND u.Status = 'Locked' ");
             }

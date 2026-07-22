@@ -154,14 +154,10 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
             conn.setAutoCommit(false);
 
             ((BaseDAO) personalTrainerDAO).setConnection(conn);
-            ((BaseDAO) userDAO).setConnection(conn);
 
             boolean ptUpdated = personalTrainerDAO.updatePersonalTrainer(pt);
 
-            User.AccountStatus userStatus = "Active".equalsIgnoreCase(pt.getStatus()) ? User.AccountStatus.Active : User.AccountStatus.Locked;
-            boolean userUpdated = userDAO.updateAccountStatus(pt.getUserId(), userStatus, pt.getUpdatedBy());
-
-            if (ptUpdated && userUpdated) {
+            if (ptUpdated) {
                 conn.commit();
                 return true;
             } else {
@@ -188,7 +184,6 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
                 }
             }
             ((BaseDAO) personalTrainerDAO).setConnection(null);
-            ((BaseDAO) userDAO).setConnection(null);
         }
     }
 

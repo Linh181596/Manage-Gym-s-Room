@@ -110,7 +110,8 @@ public class AuthenticationFilter extends HttpFilter {
                 relativePath.startsWith("/admin/pt/edit") ||
                 relativePath.startsWith("/admin/schedule/") ||
                 relativePath.startsWith("/admin/pt/schedule-setup") ||
-                relativePath.startsWith("/admin/pt/cancel")
+                relativePath.startsWith("/admin/pt/cancel") ||
+                relativePath.startsWith("/admin/pt/packages")
             )) {
                 authorized = true;
             } else if (role == User.Role.PT && (

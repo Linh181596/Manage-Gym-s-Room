@@ -72,21 +72,13 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label fw-bold">Trạng thái hoạt động</label>
-                    <c:choose>
-                        <c:when test="${sessionScope.currentUser.role == 'Staff'}">
-                            <select class="form-select" disabled>
-                                <option value="Active" ${pt.status == 'Active' ? 'selected' : ''}>Hoạt động (Active)</option>
-                                <option value="Inactive" ${pt.status == 'Inactive' ? 'selected' : ''}>Khóa (Inactive)</option>
-                            </select>
-                            <input type="hidden" name="status" value="${pt.status}">
-                        </c:when>
-                        <c:otherwise>
-                            <select name="status" class="form-select">
-                                <option value="Active" ${pt.status == 'Active' ? 'selected' : ''}>Hoạt động (Active)</option>
-                                <option value="Inactive" ${pt.status == 'Inactive' ? 'selected' : ''}>Khóa (Inactive)</option>
-                            </select>
-                        </c:otherwise>
-                    </c:choose>
+                    <select class="form-select bg-light" disabled>
+                        <option value="Active" ${pt.status == 'Active' ? 'selected' : ''}>Hoạt động (Active)</option>
+                        <option value="Inactive" ${pt.status == 'Inactive' ? 'selected' : ''}>Ngừng hoạt động (Inactive)</option>
+                        <option value="Locked" ${pt.status == 'Locked' ? 'selected' : ''}>Bị khóa (Locked)</option>
+                    </select>
+                    <input type="hidden" name="status" value="${pt.status}">
+                    <small class="text-muted"><i class="fa fa-info-circle me-1"></i>Trạng thái tài khoản/hoạt động được quản lý tại mục Quản lý Tài khoản.</small>
                 </div>
             </div>
 
