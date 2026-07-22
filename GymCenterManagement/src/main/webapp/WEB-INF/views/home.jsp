@@ -483,9 +483,11 @@
                             </a>
                         </c:when>
                         <c:otherwise>
+                            <%-- Nút chuyển hướng người dùng chưa đăng nhập tới trang Login --%>
                             <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-primary">
                                 <i class="fa fa-sign-in-alt me-1"></i>Đăng nhập
                             </a>
+                            <%-- Nút chuyển hướng đến trang đăng ký hội viên mới --%>
                             <a href="${pageContext.request.contextPath}/register" class="btn btn-primary">
                                 <i class="fa fa-user-plus me-1"></i>Đăng ký thành viên
                             </a>
@@ -510,6 +512,7 @@
                             <div class="d-flex flex-wrap gap-3">
                                 <c:choose>
                                     <c:when test="${not empty homeUser}">
+                                        <%-- Nút điều hướng hội viên đã đăng nhập vào hệ thống Dashboard --%>
                                         <a href="${pageContext.request.contextPath}${dashboardPath}" class="btn btn-primary btn-lg px-4">
                                             Vào bảng điều khiển
                                         </a>
@@ -846,6 +849,7 @@
     <jsp:include page="common/chatbot.jsp" />
     <script>
         (function () {
+            // Lấy các element liên quan đến Form tính BMI trên giao diện
             const form = document.getElementById("bmiForm");
             const heightInput = document.getElementById("bmiHeight");
             const weightInput = document.getElementById("bmiWeight");
@@ -857,6 +861,7 @@
             }
             
             function getBmiStatus(bmi) {
+                // Đánh giá trạng thái thể trạng dựa trên chỉ số BMI tính được
                 if (bmi < 18.5) {
                     return "Bạn đang ở nhóm thiếu cân. Hãy ưu tiên dinh dưỡng đầy đủ và lịch tập tăng sức mạnh.";
                 }
@@ -873,6 +878,7 @@
             }
             
             function calculateBmi() {
+                // Tính toán chỉ số BMI dựa trên cân nặng và chiều cao do người dùng nhập vào
                 const height = Number.parseFloat(heightInput.value);
                 const weight = Number.parseFloat(weightInput.value);
                 
@@ -895,9 +901,12 @@
             }
             
             form.addEventListener("submit", function (event) {
+                // Chặn hành vi submit mặc định của form và gọi hàm tính BMI ngay trên máy khách
                 event.preventDefault();
                 calculateBmi();
             });
+            
+            // Tự động tính lại BMI khi người dùng nhập hoặc thay đổi dữ liệu đầu vào
             heightInput.addEventListener("input", calculateBmi);
             weightInput.addEventListener("input", calculateBmi);
         })();

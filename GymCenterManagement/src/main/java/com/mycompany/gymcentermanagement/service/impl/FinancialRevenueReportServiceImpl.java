@@ -1,3 +1,12 @@
+/**
+ * =========================================================================
+ * @file          : FinancialRevenueReportServiceImpl.java
+ * @description   : Lớp triển khai dịch vụ xử lý báo cáo doanh thu
+ * @author        : Nguyễn Hoàng Thắng
+ * @created       : 2026-06-15
+ * @last_modified : 2026-06-20
+ * =========================================================================
+ */
 package com.mycompany.gymcentermanagement.service.impl;
 
 import com.mycompany.gymcentermanagement.dao.FinancialRevenueReportDAO;
@@ -17,6 +26,17 @@ import java.util.List;
 public class FinancialRevenueReportServiceImpl implements FinancialRevenueReportService {
     private final FinancialRevenueReportDAO reportDAO = new FinancialRevenueReportDAOImpl();
 
+    /**
+     * Tổng hợp dữ liệu báo cáo doanh thu.
+     * Luồng nghiệp vụ:
+     * 1. Lấy dữ liệu tổng quan.
+     * 2. Ước tính chi phí vận hành (giả lập 20%).
+     * 3. Lấy xu hướng doanh thu và xử lý ngày thiếu (zero-filling).
+     * 
+     * @param filter Bộ lọc
+     * @return Dữ liệu báo cáo tổng hợp
+     * @throws SQLException 
+     */
     @Override
     public FinancialRevenueReportData getReportData(RevenueChartFilter filter) throws SQLException {
         FinancialRevenueReportData data = new FinancialRevenueReportData();
@@ -46,6 +66,20 @@ public class FinancialRevenueReportServiceImpl implements FinancialRevenueReport
         data.setRecentInvoices(invoices);
 
         return data;
+    }
+
+    /**
+     * Lấy danh sách hóa đơn theo bộ lọc.
+     * Luồng nghiệp vụ: Lấy hóa đơn để hiển thị danh sách trong màn hình Dashboard.
+     * 
+     * @param filter Bộ lọc
+     * @param limit Giới hạn số lượng
+     * @return Danh sách hóa đơn
+     * @throws SQLException 
+     */
+    @Override
+    public List<DashboardInvoice> getFilteredInvoices(RevenueChartFilter filter, int limit) throws SQLException {
+        return reportDAO.getFilteredInvoices(filter.getFromDateValue(), filter.getToDateValue(), filter.getRevenueType(), limit);
     }
 
     private void processMissingDays(FinancialRevenueReportData data, String fromDateStr, String toDateStr) {

@@ -33,12 +33,23 @@ public class UserServiceImpl implements UserService {
     // Here we instantiate manually for simplicity.
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Xác thực thông tin đăng nhập của người dùng.
+     * Luồng nghiệp vụ: Tìm kiếm người dùng theo email. Nếu tìm thấy, kiểm tra mật khẩu.
+     * Nếu mật khẩu đúng, kiểm tra trạng thái tài khoản.
+     * [BR-CONS-01]: Only active users can log in to the system.
+     * 
+     * @param email Email đăng nhập
+     * @param rawPassword Mật khẩu thô
+     * @return Đối tượng User nếu đăng nhập thành công và tài khoản Active, ngược lại trả về null
+     */
     @Override
     public User login(String email, String rawPassword) {
         try {
             User user = userDAO.findByEmail(email);
             if (user != null && PasswordUtils.checkPassword(rawPassword, user.getPasswordHash())) {
                 // Ensure account is Active before allowing login
+                // [BR-CONS-01]: Only active users can log in to the system.
                 if (user.getAccountStatus() == User.AccountStatus.Active) {
                     return user;
                 }
@@ -49,10 +60,20 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    /**
+     * Đăng ký tài khoản Member mới.
+     * Luồng nghiệp vụ: Kiểm tra email đã tồn tại hay chưa ([BR-CONS-02]).
+     * Nếu chưa, mã hóa mật khẩu, gán vai trò Member, trạng thái Active và lưu vào DB.
+     * 
+     * @param user Thông tin người dùng cần đăng ký
+     * @param rawPassword Mật khẩu thô
+     * @return true nếu đăng ký thành công, ngược lại false
+     */
     @Override
     public boolean registerMember(User user, String rawPassword) {
         try {
             // Check if email already registered
+            // [BR-CONS-02]: Each email address must be unique in the system.
             if (userDAO.findByEmail(user.getEmail()) != null) {
                 LOGGER.warning("Registration failed: Email already exists: " + user.getEmail());
                 return false;
@@ -144,6 +165,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Tạo tài khoản quản lý (Staff hoặc Member) bởi Admin/Staff.
+     * Luồng nghiệp vụ: Kiểm tra phân quyền role hợp lệ, validate dữ liệu đầu vào.
+     * Tạo mật khẩu tạm thời ngẫu nhiên ([BR-ACT-22]), yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.
+     * Lưu tài khoản vào DB và trả về kết quả kèm mật khẩu tạm thời.
+     * 
+     * @param user Thông tin tài khoản cần tạo
+     * @param createdBy Người tạo tài khoản
+     * @return AccountOperationResult chứa kết quả và thông điệp xử lý
+     */
     @Override
     public AccountOperationResult createManagedAccount(User user, String createdBy) {
         try {
@@ -156,6 +187,7 @@ public class UserServiceImpl implements UserService {
                 return validation;
             }
 
+            // [BR-ACT-22]: Generate a temporary password, store only hashed password, require change at first login.
             String temporaryPassword = PasswordUtils.generateTemporaryPassword(10);
             user.setPasswordHash(PasswordUtils.hashPassword(temporaryPassword));
             user.setMustChangePassword(true);
@@ -415,6 +447,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Xác thực tính hợp lệ của dữ liệu tài khoản (email, số điện thoại, trạng thái).
+     * Luồng nghiệp vụ: Chuẩn hóa dữ liệu. Kiểm tra các trường bắt buộc, định dạng email, số điện thoại.
+     * Kiểm tra tính duy nhất của email ([BR-CONS-02]) và số điện thoại ([BR-CONS-40]).
+     * 
+     * @param user Thông tin người dùng
+     * @param excludedUserId ID người dùng ngoại trừ (dùng khi cập nhật)
+     * @return AccountOperationResult
+     * @throws SQLException nếu có lỗi truy vấn CSDL
+     */
     private AccountOperationResult validateAccountData(User user, int excludedUserId) throws SQLException {
         user.setFullName(normalizeBlank(user.getFullName()));
         user.setEmail(normalizeBlank(user.getEmail()));
@@ -444,10 +486,12 @@ public class UserServiceImpl implements UserService {
             return AccountOperationResult.failure("Trạng thái tài khoản không hợp lệ.");
         }
 
+        // [BR-CONS-02]: Each email address must be unique in the system.
         if (userDAO.checkEmailExistsForOtherUser(user.getEmail(), excludedUserId)) {
             return AccountOperationResult.failure("Email đã được sử dụng bởi tài khoản khác.");
         }
 
+        // [BR-CONS-40]: Each phone number must be unique in the system for User accounts.
         if (userDAO.checkPhoneExistsForOtherUser(user.getPhoneNumber(), excludedUserId)) {
             return AccountOperationResult.failure("Số điện thoại đã được sử dụng bởi tài khoản khác.");
         }
@@ -500,6 +544,12 @@ public class UserServiceImpl implements UserService {
         return userDAO.updateBasicUserInfo(user);
     }
 
+    /**
+     * Kiểm tra sự tồn tại của email.
+     * [BR-CONS-02]: Each email address must be unique in the system.
+     * @param email Email cần kiểm tra
+     * @return true nếu tồn tại
+     */
     @Override
     public boolean checkEmailExists(String email) {
         try {
@@ -510,6 +560,12 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    /**
+     * Kiểm tra sự tồn tại của số điện thoại.
+     * [BR-CONS-40]: Each phone number must be unique in the system for User accounts.
+     * @param phone Số điện thoại cần kiểm tra
+     * @return true nếu tồn tại
+     */
     @Override
     public boolean checkPhoneExists(String phone) {
         try {

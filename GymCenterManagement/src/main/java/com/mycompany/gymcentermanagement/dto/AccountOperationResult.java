@@ -9,6 +9,12 @@
  */
 package com.mycompany.gymcentermanagement.dto;
 
+/**
+ * DTO (Data Transfer Object) dùng để đóng gói kết quả của các thao tác quản lý tài khoản
+ * (ví dụ: tạo mới, đổi mật khẩu, reset mật khẩu).
+ * Thay vì chỉ trả về boolean hoặc String, class này trả về trạng thái thành công (success),
+ * thông báo chi tiết (message) và mật khẩu tạm thời (nếu có).
+ */
 public class AccountOperationResult {
     private final boolean success;
     private final String message;

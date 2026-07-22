@@ -74,6 +74,7 @@
                             </div>
                         </c:if>
 
+                        <%-- Form đăng ký tài khoản (POST) gửi tới server --%>
                         <form id="registerForm" action="${pageContext.request.contextPath}/register" method="POST">
                             
                             <div class="form-floating mb-3">
@@ -129,6 +130,7 @@
 
                             <div class="row g-3 mb-4">
                                 <div class="col-6">
+                                    <%-- Nút submit dữ liệu đăng ký thành viên mới --%>
                                     <button type="submit" class="btn btn-primary py-3 w-100 fw-bold">Đăng ký</button>
                                 </div>
                                 <div class="col-6">
@@ -160,11 +162,11 @@
 
     <script>
         $(document).ready(function() {
-            // Block choosing future dates for Date of Birth
+            // Giới hạn ngày sinh tối đa là ngày hôm nay (không cho phép chọn ngày ở tương lai)
             const today = new Date().toISOString().split("T")[0];
             $('#floatingDoB').attr('max', today);
 
-            // Toggle password visibility
+            // Xử lý logic ẩn/hiện hiển thị mật khẩu
             $('#togglePassword').click(function() {
                 const input = $('#floatingPassword');
                 const icon = $(this).find('i');
@@ -177,7 +179,7 @@
                 }
             });
 
-            // Toggle confirm password visibility
+            // Xử lý logic ẩn/hiện hiển thị xác nhận mật khẩu
             $('#toggleConfirmPassword').click(function() {
                 const input = $('#floatingConfirmPassword');
                 const icon = $(this).find('i');
@@ -190,7 +192,7 @@
                 }
             });
 
-            // Client-side validation
+            // Validation phía client trước khi submit: Kiểm tra trùng khớp mật khẩu
             $('#registerForm').on('submit', function(e) {
                 const password = $('#floatingPassword').val();
                 const confirmPassword = $('#floatingConfirmPassword').val();

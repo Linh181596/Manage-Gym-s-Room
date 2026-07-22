@@ -62,6 +62,7 @@ public class EmailUtils {
      * @return true if sent successfully, false otherwise.
      */
     public static boolean sendVerificationEmail(String toEmail, String token, String baseUrl) {
+        // Thiết lập cấu hình kết nối SMTP Server
         Properties props = new Properties();
         props.put("mail.smtp.auth", properties.getProperty("mail.smtp.auth", "true"));
         props.put("mail.smtp.starttls.enable", properties.getProperty("mail.smtp.starttls.enable", "true"));
@@ -71,6 +72,7 @@ public class EmailUtils {
         final String smtpUser = properties.getProperty("mail.smtp.username");
         final String smtpPassword = properties.getProperty("mail.smtp.password");
 
+        // Khởi tạo phiên làm việc với máy chủ thư điện tử (Mail Server) sử dụng thông tin xác thực
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -82,11 +84,14 @@ public class EmailUtils {
             Message message = new MimeMessage(session);
             String fromEmail = properties.getProperty("mail.from.email", "noreply@gymcenter.com");
             String fromName = properties.getProperty("mail.from.name", "GCMS System");
+            
+            // Thiết lập người gửi và người nhận
             message.setFrom(new InternetAddress(fromEmail, fromName));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Vui long xac thuc tai khoan GCMS cua ban");
 
-            // Build the verification link using the provided dynamic baseUrl
+            // Xây dựng đường link xác thực tài khoản bao gồm token kích hoạt
+            // Token này đã được lưu trong DB cùng với thời gian hết hạn (thường là 24h)
             String verifyLink = baseUrl + "/verify?token=" + token;
             String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
                     + "<h2 style='color: #007bff;'>Chào mừng bạn đến với Gym Center Management System</h2>"
@@ -95,7 +100,10 @@ public class EmailUtils {
                     + "<p style='margin-top: 20px; font-size: 12px; color: #777;'>*Link này sẽ hết hạn trong vòng 24 giờ.</p>"
                     + "</div>";
 
+            // Cấu hình nội dung email là mã HTML
             message.setContent(htmlContent, "text/html; charset=utf-8");
+            
+            // Thực thi gửi mail
             Transport.send(message);
             return true;
         } catch (Exception e) {
@@ -113,6 +121,7 @@ public class EmailUtils {
      * @return true if sent successfully, false otherwise.
      */
     public static boolean sendPasswordResetEmail(String toEmail, String token, String baseUrl) {
+        // Tương tự hàm xác thực, thiết lập kết nối SMTP
         Properties props = new Properties();
         props.put("mail.smtp.auth", properties.getProperty("mail.smtp.auth", "true"));
         props.put("mail.smtp.starttls.enable", properties.getProperty("mail.smtp.starttls.enable", "true"));
@@ -137,6 +146,7 @@ public class EmailUtils {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Dat lai mat khau GCMS");
 
+            // Đường link chứa token đặt lại mật khẩu (Token này sẽ hết hạn sau 30 phút theo logic nghiệp vụ)
             String resetLink = baseUrl + "/reset-password?token=" + token;
             String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
                     + "<h2 style='color: #007bff;'>Đặt lại mật khẩu GCMS</h2>"

@@ -54,6 +54,7 @@
                                     <td>${reg.packageName} (${reg.purchasedSessions} buổi)</td>
                                     <td>${reg.preferredStartDate}</td>
                                     <td>
+                                        <%-- Nút chuyển hướng sang màn hình xếp lịch dạy cho gói tập --%>
                                         <a href="${pageContext.request.contextPath}/admin/pt/schedule-setup?regId=${reg.ptRegistrationId}"
                                            class="btn btn-sm btn-warning fw-bold text-dark border border-warning shadow-sm">
                                             <i class="fa fa-calendar-plus me-1"></i> Xếp lịch dạy ngay
@@ -189,6 +190,7 @@
                                                 <c:when test="${empty s.rescheduleRequestId}">
                                                     <c:choose>
                                                         <c:when test="${s.sessionStatus == 'Upcoming'}">
+                                                            <%-- Nút mở modal gửi yêu cầu đổi lịch đối với ca học bình thường --%>
                                                             <button type="button"
                                                                     class="btn btn-sm btn-outline-primary mt-3 w-100 fw-bold"
                                                                     data-bs-toggle="modal"
@@ -197,6 +199,7 @@
                                                             </button>
                                                         </c:when>
                                                         <c:when test="${s.sessionStatus == 'Cancelled'}">
+                                                            <%-- Nút mở modal gửi yêu cầu xếp bù đối với ca học bị hủy --%>
                                                             <button type="button"
                                                                     class="btn btn-sm btn-outline-danger mt-3 w-100 fw-bold"
                                                                     data-bs-toggle="modal"
@@ -340,6 +343,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <%-- Nút submit form gửi yêu cầu đổi lịch/xếp bù --%>
                                 <button type="submit" class="btn btn-primary fw-bold">Gửi request</button>
                             </div>
                         </form>
@@ -525,9 +529,11 @@
                                             </c:otherwise>
                                         </c:choose>
                                         <div>
+                                            <%-- Nút submit hành động từ chối yêu cầu đổi lịch --%>
                                             <button type="submit" name="action" value="reject" class="btn btn-danger fw-bold me-2">
                                                 <i class="fa fa-times me-1"></i> Từ chối
                                             </button>
+                                            <%-- Nút submit hành động đồng ý yêu cầu đổi lịch --%>
                                             <button type="submit" name="action" value="approve" class="btn btn-success fw-bold">
                                                 <i class="fa fa-check me-1"></i> Đồng ý đổi
                                             </button>
@@ -596,6 +602,7 @@
         });
 
         // Validation for reschedule response form (Từ chối / Yêu cầu hỗ trợ)
+        // Bắt buộc nhập lý do khi chọn action là 'Từ chối' hoặc 'Yêu cầu hỗ trợ'
         document.querySelectorAll('form[action$="/reschedule-request/respond"]').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 const actionBtn = e.submitter;
@@ -637,6 +644,7 @@
     ];
 
     document.addEventListener("DOMContentLoaded", function () {
+        // Lắng nghe sự kiện thay đổi ngày đề xuất để lọc các khung giờ bị bận (Busy) hoặc hủy hàng loạt (Mass Cancelled)
         document.querySelectorAll('.reschedule-date-input').forEach(function (input) {
             input.addEventListener('change', function () {
                 const date = this.value;

@@ -13,6 +13,7 @@
             <h4 class="mb-1 text-dark fw-bold"><i class="fa fa-chart-line me-2 text-primary"></i>Báo cáo doanh thu tài chính</h4>
             <small class="text-muted">Phân tích chi tiết về doanh thu, chi phí và lợi nhuận của hệ thống</small>
         </div>
+        <%-- Nút tải lại báo cáo doanh thu tài chính để lấy số liệu mới nhất --%>
         <a href="${pageContext.request.contextPath}/admin/financial-revenue-report" class="btn btn-sm btn-primary">
             <i class="fa fa-sync-alt me-1"></i> Làm mới
         </a>
@@ -137,6 +138,7 @@
                 </select>
             </div>
             <div class="col-sm-12 col-lg-2">
+                <%-- Nút xác nhận áp dụng bộ lọc ngày tháng và loại doanh thu để truy vấn --%>
                 <button type="submit" class="btn btn-sm btn-primary w-100">
                     <i class="fa fa-filter me-1"></i> Áp dụng
                 </button>
@@ -228,6 +230,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Gắn sự kiện để tự động chuyển loại khoảng thời gian thành 'Tùy chọn' khi người dùng đổi ngày
         const revenueRange = document.getElementById("revenueRange");
         const fromDate = document.getElementById("fromDate");
         const toDate = document.getElementById("toDate");
@@ -244,9 +247,11 @@
             return;
         }
 
+        // Parse dữ liệu nhãn (labels) và doanh thu (values) từ JSON
         const labelsData = JSON.parse(chartElement.getAttribute("data-labels") || "[]");
         const valuesData = JSON.parse(chartElement.getAttribute("data-values") || "[]");
 
+        // Khởi tạo biểu đồ doanh thu tài chính bằng Chart.js
         new Chart(chartElement.getContext("2d"), {
             type: "bar",
             data: {

@@ -15,8 +15,20 @@ import java.util.List;
 import java.util.Map;
 
 public class PTScheduleDAOImpl implements PTScheduleDAO {
+    /**
+     * Kiểm tra PT có bị trùng lịch trong một khung giờ cụ thể không.
+     * Luồng nghiệp vụ: Truy vấn bảng PTSchedules với điều kiện PTID, ngày và giờ.
+     * [BR-CONS-41]: System prevents the scheduling of training sessions for a member or a PT if either is already booked for that specific time.
+     * 
+     * @param ptId PTID
+     * @param sessionDate Ngày học
+     * @param startTime Thời gian bắt đầu
+     * @param endTime Thời gian kết thúc
+     * @return true nếu có trùng lặp
+     */
     @Override
     public boolean isScheduleConflict(int ptId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) {
+        // SQL: Kiểm tra trùng lịch: thời gian mới giao thoa với thời gian cũ (không lấy ca đã Cancelled)
         String sql = """
                     SELECT COUNT(*) FROM PTSchedules 
                     WHERE PTID = ? 
@@ -539,7 +551,11 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
         return false;
     }
 
+    /**
+     * Kiểm tra trùng lịch hội viên trong Transaction.
+     */
     private boolean isMemberScheduleConflictTx(Connection conn, int memberId, LocalDate sessionDate, java.sql.Time startTime, java.sql.Time endTime) throws SQLException {
+        // SQL: Tương tự isMemberScheduleConflict nhưng dùng trong transaction (cùng Connection)
         String sql = """
                     SELECT COUNT(*) FROM PTSchedules 
                     WHERE MemberID = ? 
@@ -570,6 +586,20 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
         return false;
     }
 
+    /**
+     * Lưu hàng loạt buổi học và cập nhật thời hạn thực tế của gói PT.
+     * Luồng nghiệp vụ:
+     * 1. Check lại conflict lần cuối trong transaction cho từng buổi.
+     * 2. Insert batch các buổi học vào PTSchedules.
+     * 3. Update StartDate và EndDate thực tế vào PTRegistrations.
+     * [BR-CONS-41]: Đảm bảo không trùng lịch khi lưu.
+     * 
+     * @param schedules Danh sách buổi học
+     * @param createdByUserId ID người tạo
+     * @param actualStartDate Ngày bắt đầu gói
+     * @param actualEndDate Ngày kết thúc gói
+     * @return true nếu thành công
+     */
     @Override
     public boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate) {
         if (schedules == null || schedules.isEmpty()) {
@@ -577,9 +607,11 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
         }
         int regId = schedules.get(0).getRegistrationId();
         
+        // SQL: Insert lịch học mới
         String insertSql = "INSERT INTO PTSchedules (PTID, PTRegistrationID, MemberID, SessionDate, StartTime, EndTime, SessionStatus, PTAttendanceResult, CreatedByUserID, CreatedDate, IsDeleted) "
                 + "VALUES (?, ?, ?, ?, ?, ?, 'Upcoming', 'Pending', ?, GETDATE(), 0)";
                 
+        // SQL: Update ngày bắt đầu và kết thúc vào Registration
         String updateSql = "UPDATE PTRegistrations SET StartDate = ?, EndDate = ? WHERE PTRegistrationID = ?";
         
         try (Connection conn = DBContext.getConnection()) {

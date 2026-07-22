@@ -89,6 +89,13 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
                 """ + whereClause;
     }
 
+    /**
+     * Lấy toàn bộ thông báo.
+     * Luồng nghiệp vụ: Lấy danh sách các thông báo chưa bị xóa.
+     * 
+     * @return Danh sách Notification
+     * @throws SQLException 
+     */
     @Override
     public List<Notification> findAll() throws SQLException {
         Connection conn = null;
@@ -98,6 +105,7 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
 
         try {
             conn = getActiveConnection();
+            // SQL: Sử dụng OUTER APPLY để lấy RecipientID đầu tiên từ NotificationRecipients (chỉ dùng cho target là Specific)
             String sql = selectWithRecipientSql("WHERE n.IsDeleted = 0 ORDER BY n.PublishDate DESC, n.NotificationID DESC");
             stmt = conn.prepareStatement(sql);
             rs = stmt.executeQuery();
@@ -155,6 +163,14 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         return null;
     }
 
+    /**
+     * Thêm mới một thông báo.
+     * Luồng nghiệp vụ: Insert vào Notifications. Nếu có người nhận cụ thể (Specific), insert vào NotificationRecipients.
+     * 
+     * @param notification Thông báo mới
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean insert(Notification notification) throws SQLException {
         Connection conn = null;
@@ -167,6 +183,7 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
             if (localTx) {
                 conn.setAutoCommit(false);
             }
+            // SQL: Insert thông báo
             String sql = "INSERT INTO Notifications "
                     + "(Title, Content, CreatedBy, TargetRole, CreatedByRole, CreatedDate, PublishDate, ExpiryDate, NotificationImageURL, IsDeleted) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
@@ -193,6 +210,7 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
                 if (generatedKeys.next()) {
                     notification.setNotificationId(generatedKeys.getInt(1));
                 }
+                // Đồng bộ người nhận (Insert vào bảng con NotificationRecipients)
                 syncRecipient(conn, notification);
             }
             if (localTx) {
@@ -265,6 +283,14 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         }
     }
 
+    /**
+     * Xóa mềm một thông báo.
+     * Luồng nghiệp vụ: Set IsDeleted = 1
+     * 
+     * @param notificationId ID
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean delete(int notificationId) throws SQLException {
         Connection conn = null;
@@ -272,6 +298,7 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
 
         try {
             conn = getActiveConnection();
+            // SQL: Đánh dấu IsDeleted = 1 (Xóa mềm)
             String sql = "UPDATE Notifications SET IsDeleted = 1 WHERE NotificationID = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, notificationId);

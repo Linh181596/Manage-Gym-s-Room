@@ -13,7 +13,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * DTO lưu thông tin tóm tắt của một hóa đơn gần đây để hiển thị nhanh trên Dashboard.
+ * Lớp này cũng đảm nhiệm việc format ngày tháng theo chuẩn hiển thị (dd/MM/yyyy HH:mm)
+ * để tránh việc viết logic format phức tạp trong JSP.
+ */
 public class DashboardInvoice {
+    // Định dạng ngày giờ chuẩn hiển thị trên View
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private int invoiceId;
