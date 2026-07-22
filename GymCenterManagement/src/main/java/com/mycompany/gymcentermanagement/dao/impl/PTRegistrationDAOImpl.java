@@ -149,10 +149,9 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                       AND sp.IsDeleted = 0
                       AND pkg.Status = 'Active'
                       AND pkg.IsDeleted = 0
-                      AND pt.Status = 'Active'
                       AND pt.IsDeleted = 0
-                    AND u.Status = 'Active'
-                    AND u.IsDeleted = 0
+                      AND u.Status = 'Active'
+                      AND u.IsDeleted = 0
                     ORDER BY pkg.DurationMonths
                 """;
 
@@ -192,12 +191,14 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                         ON sp.PTPackageTypeID = pkg.PTPackageTypeID
                     INNER JOIN PersonalTrainers pt
                         ON sp.PTID = pt.PTID
+                    INNER JOIN Users u
+                        ON pt.UserID = u.UserID
                     WHERE sp.PTServicePriceID = ?
                       AND sp.Status = 'Active'
                       AND sp.IsDeleted = 0
                       AND pkg.Status = 'Active'
                       AND pkg.IsDeleted = 0
-                      AND pt.Status = 'Active'
+                      AND u.Status = 'Active'
                       AND pt.IsDeleted = 0
                 """;
 
@@ -593,7 +594,7 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.PreferredStartDate, 
                            r.TotalAmount,
                            r.Note,
-                           pt.Status AS PTStatus,
+                           u_pt.Status AS PTStatus,
                            CASE 
                                 WHEN r.Status = 'Active' AND (
                                     SELECT COUNT(*) 
@@ -612,6 +613,7 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                     INNER JOIN Users u ON m.UserID = u.UserID
                     INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
                     INNER JOIN PersonalTrainers pt ON sp.PTID = pt.PTID
+                    INNER JOIN Users u_pt ON pt.UserID = u_pt.UserID
                     INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
                     WHERE r.PTRegistrationID = ? AND r.IsDeleted = 0
                 """;

@@ -75,6 +75,7 @@
                     <select class="form-select bg-light" disabled>
                         <option value="Active" ${pt.status == 'Active' ? 'selected' : ''}>Hoạt động (Active)</option>
                         <option value="Inactive" ${pt.status == 'Inactive' ? 'selected' : ''}>Ngừng hoạt động (Inactive)</option>
+                        <option value="Locked" ${pt.status == 'Locked' ? 'selected' : ''}>Bị khóa (Locked)</option>
                     </select>
                     <input type="hidden" name="status" value="${pt.status}">
                     <small class="text-muted"><i class="fa fa-info-circle me-1"></i>Trạng thái tài khoản/hoạt động được quản lý tại mục Quản lý Tài khoản.</small>
