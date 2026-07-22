@@ -15887,6 +15887,27 @@ BEGIN
         N'Active'
     ),
     (
+	N'Có gói tập với PT nào?',
+        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Personal Trainer',
+        N'có gói tập với PT nào, co goi tap voi PT nao, gói PT nào, goi PT nao, gói tập PT, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Có gói PT nào?',
+        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Personal Trainer',
+        N'có gói PT nào, co goi PT nao, gói PT nào, goi PT nao, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Có những gói PT nào?',
+        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Personal Trainer',
+        N'có những gói PT nào, co nhung goi PT nao, các gói PT, cac goi PT, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
+        N'Active'
+    ),
+    (
         N'36 buổi là gói Gym hay gói PT?',
         N'36 buổi là số buổi của gói PT Cao cấp 3 Tháng, không phải gói Gym. Gói Gym được quản lý theo thời hạn như 1 tháng hoặc 3 tháng, còn gói PT được quản lý theo số buổi tập với huấn luyện viên cá nhân.',
         N'Personal Trainer',

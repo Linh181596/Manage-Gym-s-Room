@@ -63,6 +63,7 @@ public class ChatBotDAOImpl extends BaseDAO implements ChatBotDAO {
                 }
             }
 
+            stmt.setString(index++, originalQuestion == null ? "" : originalQuestion.trim());
             index = bindPatternTriplet(stmt, index, phrasePattern);
             if (keywords != null) {
                 for (String keyword : keywords) {
@@ -107,7 +108,8 @@ public class ChatBotDAOImpl extends BaseDAO implements ChatBotDAO {
         sql.append("""
                   )
                 ORDER BY (
-                        CASE WHEN question COLLATE Latin1_General_CI_AI LIKE ? ESCAPE '\\' THEN 200 ELSE 0 END
+                        CASE WHEN question COLLATE Latin1_General_CI_AI = ? THEN 10000 ELSE 0 END
+                      + CASE WHEN question COLLATE Latin1_General_CI_AI LIKE ? ESCAPE '\\' THEN 200 ELSE 0 END
                       + CASE WHEN keywords COLLATE Latin1_General_CI_AI LIKE ? ESCAPE '\\' THEN 180 ELSE 0 END
                       + CASE WHEN category COLLATE Latin1_General_CI_AI LIKE ? ESCAPE '\\' THEN 120 ELSE 0 END
                 """);
