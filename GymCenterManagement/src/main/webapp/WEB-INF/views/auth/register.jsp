@@ -162,9 +162,39 @@
 
     <script>
         $(document).ready(function() {
+<<<<<<< HEAD
+            // Only allow dates of birth for people who are at least 14 years old.
+            const today = new Date();
+            const latestAllowedDob = new Date(today.getFullYear() - 14, today.getMonth(), today.getDate());
+            const dobInput = $('#floatingDoB');
+            const formatDate = function(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            const validateMinimumAge = function() {
+                const dateOfBirth = dobInput.val();
+                if (!dateOfBirth) {
+                    dobInput[0].setCustomValidity('');
+                    return true;
+                }
+
+                if (new Date(`${dateOfBirth}T00:00:00`) > latestAllowedDob) {
+                    dobInput[0].setCustomValidity('Bạn chưa đủ tuổi để đăng kí tập gym.');
+                    return false;
+                }
+
+                dobInput[0].setCustomValidity('');
+                return true;
+            };
+            dobInput.attr('max', formatDate(latestAllowedDob));
+            dobInput.on('input change', validateMinimumAge);
+=======
             // Giới hạn ngày sinh tối đa là ngày hôm nay (không cho phép chọn ngày ở tương lai)
             const today = new Date().toISOString().split("T")[0];
             $('#floatingDoB').attr('max', today);
+>>>>>>> 791c22bac344832abd2b6ae2e693370264c69786
 
             // Xử lý logic ẩn/hiện hiển thị mật khẩu
             $('#togglePassword').click(function() {
@@ -196,6 +226,13 @@
             $('#registerForm').on('submit', function(e) {
                 const password = $('#floatingPassword').val();
                 const confirmPassword = $('#floatingConfirmPassword').val();
+
+                if (!validateMinimumAge()) {
+                    e.preventDefault();
+                    dobInput[0].reportValidity();
+                    dobInput.focus();
+                    return;
+                }
 
                 if (password !== confirmPassword) {
                     e.preventDefault();

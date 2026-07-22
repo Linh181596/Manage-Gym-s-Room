@@ -143,7 +143,10 @@ public class ChangePasswordController extends HttpServlet {
         }
 
         Object currentUser = session.getAttribute("currentUser");
-        return currentUser instanceof User user ? user : null;
+        if (currentUser instanceof User) {
+            return (User) currentUser;
+        }
+        return null;
     }
 
     private void prepareForm(HttpServletRequest request, User user) {
