@@ -470,12 +470,9 @@
                 <div class="home-actions d-flex align-items-center gap-2 flex-wrap justify-content-end">
                     <c:choose>
                         <c:when test="${not empty homeUser}">
-                            <span class="home-user-pill">
-                                <img src="${pageContext.request.contextPath}/${not empty homeUser.avatarPath ? homeUser.avatarPath : 'img/user.jpg'}" alt="${homeUser.fullName}">
+                            <a href="${pageContext.request.contextPath}${dashboardPath}" class="btn btn-outline-primary">
+                                <img style="width: 23px;height: 23px" src="${pageContext.request.contextPath}/${not empty homeUser.avatarPath ? homeUser.avatarPath : 'img/user.jpg'}" alt="${homeUser.fullName}">
                                 <span>${homeUser.fullName}</span>
-                            </span>
-                            <a href="${pageContext.request.contextPath}${dashboardPath}" class="btn btn-primary">
-                                <i class="fa fa-tachometer-alt me-1"></i>Bảng điều khiển
                             </a>
                             <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger">
                                 <i class="fa fa-sign-out-alt me-1"></i>Đăng xuất

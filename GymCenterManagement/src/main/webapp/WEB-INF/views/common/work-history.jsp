@@ -7,13 +7,8 @@
 <c:url var="resetUrl" value="${historyBasePath}" />
 
 <div class="container-fluid pt-4 px-4">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center mb-4">
         <h4 class="mb-0"><i class="fa fa-history me-2 text-primary"></i>Lịch sử điểm danh</h4>
-        <c:if test="${canManageAttendance}">
-            <a href="${pageContext.request.contextPath}/admin/checkin" class="btn btn-primary btn-sm">
-                <i class="fa fa-user-check me-1"></i>Điểm danh
-            </a>
-        </c:if>
     </div>
 
     <div class="bg-light rounded p-3 mb-4">

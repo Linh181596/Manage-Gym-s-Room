@@ -180,7 +180,7 @@
                         <div>
                             <p class="mb-2 fw-semibold">Tỷ lệ tăng trưởng</p>
                             <h3 class="mb-0 fw-bold">${summary.growthRateText}</h3>
-                            <small>Kỳ trước: ${summary.previousPeriodNewMembers}</small>
+                            <small>Tháng trước: ${summary.previousPeriodNewMembers}</small>
                         </div>
                         <div class="summary-icon rounded-circle d-flex align-items-center justify-content-center">
                             <i class="fa fa-percentage fa-2x"></i>
