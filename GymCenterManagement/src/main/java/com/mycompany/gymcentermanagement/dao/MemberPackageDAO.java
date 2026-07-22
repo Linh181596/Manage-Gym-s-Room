@@ -16,6 +16,7 @@ import java.util.List;
 public interface MemberPackageDAO {
     MemberPackage findById(int memberPackageId) throws SQLException;
     MemberPackage findActiveByMemberId(int memberId) throws SQLException;
+    MemberPackage findLatestByMemberId(int memberId) throws SQLException;
     List<MemberPackage> findAllActiveByMemberId(int memberId) throws SQLException;
     boolean insert(MemberPackage mp) throws SQLException;
     boolean update(MemberPackage mp) throws SQLException;

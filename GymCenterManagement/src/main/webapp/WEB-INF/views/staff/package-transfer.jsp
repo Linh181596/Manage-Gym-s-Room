@@ -92,9 +92,9 @@
                         <label for="transferFee" class="form-label fw-bold text-dark"><i class="fa fa-receipt me-1 text-muted"></i> 2. Phí dịch vụ chuyển nhượng (₫) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-white fw-bold text-dark">₫</span>
-                            <input type="number" id="transferFee" name="transferFee" class="form-control border-2 fw-bold text-primary" value="100000" readonly required>
+                            <input type="number" id="transferFee" name="transferFee" class="form-control border-2 fw-bold text-primary" value="100000" required>
                         </div>
-                        <div class="form-text text-muted">Phí chuyển nhượng cố định áp dụng tại quầy: <strong>100,000 ₫</strong>. Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí này.</div>
+                        <div class="form-text text-muted">Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí này.</div>
                     </div>
 
                     <!-- Notes/Reason -->
@@ -172,6 +172,19 @@
             }
             form.classList.add("was-validated");
         }, false);
+
+        // Xử lý update phí chuyển nhượng
+        const transferFeeInput = document.getElementById("transferFee");
+        const feeAmountText = document.getElementById("feeAmountText");
+        
+        function formatVND(value) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value).replace('₫', '₫');
+        }
+
+        transferFeeInput.addEventListener("input", function() {
+            const val = parseFloat(this.value) || 0;
+            feeAmountText.innerText = formatVND(val);
+        });
 
         // Receiver Search Filter
         const receiverSearch = document.getElementById("receiverSearch");
