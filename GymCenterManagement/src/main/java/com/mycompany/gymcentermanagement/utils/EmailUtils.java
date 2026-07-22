@@ -105,6 +105,88 @@ public class EmailUtils {
     }
 
     /**
+     * Sends the temporary password generated when an admin creates or resets an account.
+     */
+    public static boolean sendTemporaryPasswordEmail(String toEmail, String fullName,
+            String temporaryPassword, boolean isNewAccount) {
+        String recipientName = escapeHtml(fullName == null || fullName.trim().isEmpty() ? "bạn" : fullName.trim());
+        String actionText = isNewAccount
+                ? "Tài khoản GCMS của bạn đã được quản trị viên tạo."
+                : "Mật khẩu tài khoản GCMS của bạn đã được quản trị viên đặt lại.";
+        String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
+                + "<h2 style='color: #007bff;'>Thông tin đăng nhập tạm thời</h2>"
+                + "<p>Chào " + recipientName + ",</p>"
+                + "<p>" + actionText + "</p>"
+                + "<p>Email đăng nhập: <strong>" + escapeHtml(toEmail) + "</strong></p>"
+                + "<p>Mật khẩu tạm thời: <strong>" + escapeHtml(temporaryPassword) + "</strong></p>"
+                + "<p>Vui lòng đăng nhập và đổi mật khẩu ngay trong lần đăng nhập đầu tiên.</p>"
+                + "</div>";
+        return sendAccountEmail(toEmail, "Thong tin dang nhap tam thoi GCMS", htmlContent);
+    }
+
+    /**
+     * Sends an account lock or unlock notification to the affected user.
+     */
+    public static boolean sendAccountStatusEmail(String toEmail, String fullName, boolean locked) {
+        String recipientName = escapeHtml(fullName == null || fullName.trim().isEmpty() ? "bạn" : fullName.trim());
+        String statusText = locked ? "đã bị khóa" : "đã được mở khóa";
+        String detailText = locked
+                ? "Bạn tạm thời không thể đăng nhập. Vui lòng liên hệ quản trị viên nếu cần hỗ trợ."
+                : "Bạn có thể đăng nhập lại vào hệ thống.";
+        String htmlContent = "<div style='font-family: Arial, sans-serif; padding: 20px;'>"
+                + "<h2 style='color: #007bff;'>Thông báo trạng thái tài khoản</h2>"
+                + "<p>Chào " + recipientName + ",</p>"
+                + "<p>Tài khoản GCMS của bạn " + statusText + ".</p>"
+                + "<p>" + detailText + "</p>"
+                + "</div>";
+        return sendAccountEmail(toEmail,
+                locked ? "Thong bao khoa tai khoan GCMS" : "Thong bao mo khoa tai khoan GCMS", htmlContent);
+    }
+
+    private static boolean sendAccountEmail(String toEmail, String subject, String htmlContent) {
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", properties.getProperty("mail.smtp.auth", "true"));
+        props.put("mail.smtp.starttls.enable", properties.getProperty("mail.smtp.starttls.enable", "true"));
+        props.put("mail.smtp.host", properties.getProperty("mail.smtp.host", "sandbox.smtp.mailtrap.io"));
+        props.put("mail.smtp.port", properties.getProperty("mail.smtp.port", "2525"));
+
+        final String smtpUser = properties.getProperty("mail.smtp.username");
+        final String smtpPassword = properties.getProperty("mail.smtp.password");
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(smtpUser, smtpPassword);
+            }
+        });
+
+        try {
+            Message message = new MimeMessage(session);
+            String fromEmail = properties.getProperty("mail.from.email", "noreply@gymcenter.com");
+            String fromName = properties.getProperty("mail.from.name", "GCMS System");
+            message.setFrom(new InternetAddress(fromEmail, fromName));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+            message.setSubject(subject);
+            message.setContent(htmlContent, "text/html; charset=utf-8");
+            Transport.send(message);
+            return true;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to send account management email to " + toEmail, e);
+            return false;
+        }
+    }
+
+    private static String escapeHtml(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    /**
      * Sends a password reset email containing a one-time reset link.
      *
      * @param toEmail The recipient's email address.

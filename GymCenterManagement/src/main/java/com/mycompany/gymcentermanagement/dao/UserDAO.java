@@ -54,6 +54,8 @@ public interface UserDAO {
 
     boolean hasBlockingMemberSchedule(int userId) throws SQLException;
 
+    boolean hasBlockingMemberGymPackage(int userId) throws SQLException;
+
     boolean resetPassword(int userId, String newPasswordHash, String updatedBy) throws SQLException;
 
     // --- New Auth & Verification Methods ---

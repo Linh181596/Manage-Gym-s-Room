@@ -29,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private static final Logger LOGGER = Logger.getLogger(UserServiceImpl.class.getName());
     private static final String PT_BLOCKING_SCHEDULE_MESSAGE = "PT đang có lịch dạy, vui lòng xử lý lịch trước.";
     private static final String MEMBER_BLOCKING_SCHEDULE_MESSAGE = "Hội viên đang có lịch tập, vui lòng xử lý lịch trước.";
+    private static final String MEMBER_BLOCKING_GYM_PACKAGE_MESSAGE = "Hội viên đang có gói tập Gym đang hiệu lực hoặc chờ xử lý, vui lòng xử lý gói trước.";
     
     // In a clean JEE environment, this can be injected via CDI.
     // Here we instantiate manually for simplicity.
@@ -539,6 +540,10 @@ public class UserServiceImpl implements UserService {
 
         if (userDAO.hasBlockingMemberSchedule(account.getUserId())) {
             return AccountOperationResult.failure(MEMBER_BLOCKING_SCHEDULE_MESSAGE);
+        }
+
+        if (userDAO.hasBlockingMemberGymPackage(account.getUserId())) {
+            return AccountOperationResult.failure(MEMBER_BLOCKING_GYM_PACKAGE_MESSAGE);
         }
 
         return AccountOperationResult.success("OK");
