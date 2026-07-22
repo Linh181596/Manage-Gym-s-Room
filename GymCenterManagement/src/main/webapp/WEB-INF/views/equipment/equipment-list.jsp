@@ -93,6 +93,7 @@
 
     <!-- Filters Panel -->
     <div class="bg-light rounded p-4 mb-4 shadow-sm">
+        <%-- Form lọc dữ liệu thiết bị theo từ khóa, loại và trạng thái (GET) --%>
         <form method="get" action="${pageContext.request.contextPath}/staff/equipment" class="row g-3 align-items-center">
             <input type="hidden" name="action" value="list">
             
@@ -124,6 +125,7 @@
             </div>
             
             <div class="col-12 col-md-2 d-grid">
+                <%-- Nút submit form lọc thiết bị --%>
                 <button type="submit" class="btn btn-secondary">
                     <i class="fa fa-filter me-2"></i>Lọc
                 </button>
@@ -191,13 +193,16 @@
                             <td>${item.location}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
+                                    <%-- Nút chuyển hướng xem chi tiết thiết bị --%>
                                     <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}" title="Xem chi tiết">
                                         <i class="fa fa-eye"></i>
                                     </a>
+                                    <%-- Nút chuyển hướng form sửa thông tin thiết bị --%>
                                     <a class="btn btn-outline-warning" href="${pageContext.request.contextPath}/staff/equipment?action=edit&id=${item.equipmentId}" title="Cập nhật">
                                         <i class="fa fa-edit"></i>
                                     </a>
                                     <c:if test="${sessionScope.currentUser.role == 'Admin'}">
+                                        <%-- Nút xóa thiết bị (chỉ Admin mới có quyền), cảnh báo xác nhận --%>
                                         <a class="btn btn-outline-danger" href="${pageContext.request.contextPath}/staff/equipment?action=delete&id=${item.equipmentId}" 
                                            onclick="return confirm('Bạn có chắc chắn muốn xóa thiết bị này không?')" title="Xóa">
                                             <i class="fa fa-trash"></i>

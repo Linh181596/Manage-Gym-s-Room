@@ -2,6 +2,10 @@ package com.mycompany.gymcentermanagement.dto;
 
 import java.time.LocalDate;
 
+/**
+ * DTO chứa thông tin chi tiết về một đơn đăng ký thuê Huấn luyện viên (PT).
+ * Quản lý trạng thái hợp đồng, quá trình thanh toán, số buổi tập đã mua và tiến độ hoàn thành.
+ */
 public class PTRegistrationDTO {
     private int ptRegistrationId;
     private int memberId;

@@ -36,6 +36,7 @@
                 <label for="contentSearch" class="form-label fw-bold text-secondary">Tìm kiếm nội dung</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0"><i class="fa fa-search text-muted"></i></span>
+                    <%-- Ô nhập liệu tìm kiếm theo từ khóa (tiêu đề, mô tả, danh mục) --%>
                     <input id="contentSearch" type="text" class="form-control border-start-0"
                            placeholder="Tìm theo tiêu đề, mô tả hoặc danh mục...">
                 </div>
@@ -58,6 +59,7 @@
                 </select>
             </div>
             <div class="col-md-4 col-lg-2">
+                <%-- Nút reset tất cả các bộ lọc về mặc định --%>
                 <button id="resetFilters" type="button" class="btn btn-outline-secondary w-100">
                     <i class="fa fa-undo me-1"></i>Đặt lại
                 </button>
@@ -138,10 +140,12 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
+                                            <%-- Nút chuyển hướng sang form sửa nội dung --%>
                                             <a class="btn btn-sm btn-outline-primary" href="${pageContext.request.contextPath}/staff/public-content?action=edit&id=${item.contentId}">
                                                 <i class="fa fa-edit"></i> Sửa
                                             </a>
                                             <c:if test="${sessionScope.currentUser.role == 'Admin'}">
+                                                <%-- Nút xóa mềm (xóa logic) nội dung, yêu cầu xác nhận alert --%>
                                                 <a class="btn btn-sm btn-outline-danger"
                                                    href="${pageContext.request.contextPath}/staff/public-content?action=delete&id=${item.contentId}"
                                                    onclick="return confirm('Bạn có chắc muốn xóa mềm nội dung này?');">
@@ -169,15 +173,19 @@
         const rows = document.querySelectorAll(".content-row");
 
         function filterRows() {
+            // Lấy từ khóa và chuyển thành chữ thường để tìm kiếm không phân biệt hoa thường
             const keyword = (searchInput.value || "").toLowerCase().trim();
             const type = typeFilter.value;
             const status = statusFilter.value;
 
+            // Lặp qua từng dòng nội dung và so sánh dữ liệu với các bộ lọc
             rows.forEach(row => {
                 const rowText = (row.dataset.search || "").toLowerCase();
                 const matchesText = !keyword || rowText.includes(keyword);
                 const matchesType = !type || row.dataset.type === type;
                 const matchesStatus = !status || row.dataset.status === status;
+                
+                // Ẩn/Hiện thẻ dòng tương ứng với kết quả lọc
                 row.style.display = matchesText && matchesType && matchesStatus ? "" : "none";
             });
         }

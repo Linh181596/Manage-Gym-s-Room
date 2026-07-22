@@ -248,6 +248,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <%-- Nút submit form gửi yêu cầu đổi lịch/xếp bù cho buổi tập --%>
                                 <button type="submit" class="btn btn-primary fw-bold">Gửi yêu cầu</button>
                             </div>
                         </form>
@@ -427,15 +428,18 @@
                                                 <span class="badge bg-warning text-dark"><i class="fa fa-balance-scale me-1"></i> Chờ Admin hỗ trợ</span>
                                             </c:when>
                                             <c:otherwise>
+                                                <%-- Nút submit hành động yêu cầu Admin hỗ trợ giải quyết đổi lịch --%>
                                                 <button type="submit" name="action" value="escalate" class="btn btn-warning fw-bold text-dark">
                                                     <i class="fa fa-balance-scale me-1"></i> Yêu cầu hỗ trợ đổi lịch
                                                 </button>
                                             </c:otherwise>
                                         </c:choose>
                                         <div>
+                                            <%-- Nút submit hành động từ chối đổi lịch --%>
                                             <button type="submit" name="action" value="reject" class="btn btn-danger fw-bold me-2">
                                                 <i class="fa fa-times me-1"></i> Từ chối
                                             </button>
+                                            <%-- Nút submit hành động chấp thuận đổi lịch --%>
                                             <button type="submit" name="action" value="approve" class="btn btn-success fw-bold">
                                                 <i class="fa fa-check me-1"></i> Đồng ý đổi
                                             </button>
@@ -504,6 +508,7 @@
         });
 
         // Validation for reschedule response form (Từ chối / Yêu cầu hỗ trợ)
+        // Kiểm tra xem người dùng đã nhập lý do phản hồi chưa trước khi cho phép submit từ chối/yêu cầu hỗ trợ
         document.querySelectorAll('form[action$="/reschedule-request/respond"]').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 const actionBtn = e.submitter;
@@ -524,27 +529,28 @@
     });
 
     const busySchedules = [
-        <c:forEach var="s" items="${allUpcomingSchedules}">
-            <c:if test="${s.sessionStatus != 'Cancelled'}">
+        // <c:forEach var="s" items="${allUpcomingSchedules}">
+            // <c:if test="${s.sessionStatus != 'Cancelled'}">
             {
                 date: "${s.sessionDate}",
-                slot: "${s.startTime.toString().substring(0,5)}-${s.endTime.toString().substring(0,5)}"
+                slot: "${s.startTime}".substring(0,5) + "-" + "${s.endTime}".substring(0,5)
             },
-            </c:if>
-        </c:forEach>
+            // </c:if>
+        // </c:forEach>
     ];
 
     const massCancelledSlots = [
-        <c:forEach var="mc" items="${massCancelledSlots}">
+        // <c:forEach var="mc" items="${massCancelledSlots}">
         {
             date: "${mc.date}",
             slot: "${mc.slot}",
-            isAllDay: ${mc.isAllDay}
+            isAllDay: "${mc.isAllDay}" === "true"
         },
-        </c:forEach>
+        // </c:forEach>
     ];
 
     document.addEventListener("DOMContentLoaded", function () {
+        // Lắng nghe sự kiện thay đổi ngày đề xuất để tự động vô hiệu hóa các khung giờ bị trùng lịch hoặc bị hủy
         document.querySelectorAll('.reschedule-date-input').forEach(function (input) {
             input.addEventListener('change', function () {
                 const date = this.value;

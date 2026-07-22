@@ -7,6 +7,7 @@
  * @last_modified : 2026-07-08 bởi Nguyễn Trí Linh (linhnt)
  * =========================================================================
  */
+
 package com.mycompany.gymcentermanagement.dto;
 
 import java.util.Locale;
@@ -17,6 +18,9 @@ public class MembershipGrowthSummary {
     private int expiredMembers;
     private int previousPeriodNewMembers;
     private Double growthRate;
+
+    public MembershipGrowthSummary() {
+    }
 
     public int getNewMembers() {
         return newMembers;

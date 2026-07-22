@@ -14,6 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * DTO chứa toàn bộ dữ liệu cần thiết để hiển thị trên Dashboard của Hội viên (Member).
+ * Gói gọn thông tin số buổi tập sắp tới, trạng thái gói tập hiện tại, 
+ * tổng chi tiêu trong tháng, và danh sách các hóa đơn/lịch tập gần nhất.
+ */
 public class MemberDashboardData {
     private int upcomingAppointmentsCount;
     private String activePackageName = "Chưa đăng ký gói";

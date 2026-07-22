@@ -106,6 +106,7 @@
                     <!-- Actions -->
                     <div class="d-flex gap-3 justify-content-end border-top pt-4">
                         <a href="${pageContext.request.contextPath}/staff/members" class="btn btn-lg btn-outline-secondary px-4">Hủy bỏ</a>
+                        <%-- Nút submit form gửi thông tin làm thủ tục chuyển nhượng và tạo hóa đơn thanh toán phí --%>
                         <button type="submit" class="btn btn-lg btn-danger px-5 shadow-sm">
                             Tạo thủ tục chuyển nhượng <i class="fa fa-arrow-right ms-2"></i>
                         </button>
@@ -163,6 +164,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById("transferForm");
         
+        // Xử lý chặn submit khi dữ liệu trong form không hợp lệ (validation)
         form.addEventListener("submit", function(event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
@@ -197,6 +199,7 @@
         const senderRadios = document.querySelectorAll(".sender-pkg-radio");
         let currentRemainingDays = 0;
 
+        // Hàm cập nhật bản tóm tắt thông tin người nhận gói tập và tính toán thời gian hiệu lực mới
         function updateReceiverSummary() {
             const selectedOpt = receiverSelect.options[receiverSelect.selectedIndex];
             if (selectedOpt && currentRemainingDays > 0) {
