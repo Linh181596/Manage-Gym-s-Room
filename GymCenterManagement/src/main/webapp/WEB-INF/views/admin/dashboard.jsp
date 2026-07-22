@@ -101,7 +101,6 @@
                         <h6 class="mb-0 text-dark fw-bold">Biểu đồ doanh thu</h6>
                         <small class="text-muted">Doanh thu đã thanh toán từ ${revenueFilter.fromDateValue} đến ${revenueFilter.toDateValue}</small>
                     </div>
-                    <a href="${pageContext.request.contextPath}/staff/record-payment">Xem hóa đơn</a>
                 </div>
                 <form method="get" action="${pageContext.request.contextPath}/admin/dashboard" class="row g-2 align-items-end mb-4">
                     <div class="col-sm-6 col-lg-3">

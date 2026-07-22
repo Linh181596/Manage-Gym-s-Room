@@ -106,6 +106,21 @@ public final class SessionRegistry {
      * @return Số lượng session đã bị vô hiệu hóa
      */
     public static int invalidateOtherSessions(int userId, String currentSessionId) {
+        return invalidateSessions(userId, currentSessionId);
+    }
+
+    /**
+     * Vô hiệu hóa toàn bộ phiên đăng nhập của một tài khoản.
+     * Dùng khi tài khoản bị khóa hoặc vô hiệu hóa bởi quản trị viên.
+     *
+     * @param userId ID của tài khoản cần kết thúc phiên
+     * @return Số lượng session đã bị vô hiệu hóa
+     */
+    public static int invalidateAllSessions(int userId) {
+        return invalidateSessions(userId, null);
+    }
+
+    private static int invalidateSessions(int userId, String sessionIdToKeep) {
         Set<String> sessionIds = SESSION_IDS_BY_USER_ID.getOrDefault(userId, Collections.emptySet());
         // Tạo bản sao để tránh lỗi ConcurrentModificationException khi lặp
         Set<String> sessionIdsSnapshot = new HashSet<>(sessionIds);
@@ -113,7 +128,7 @@ public final class SessionRegistry {
 
         for (String sessionId : sessionIdsSnapshot) {
             // Bỏ qua session hiện tại
-            if (sessionId.equals(currentSessionId)) {
+            if (sessionIdToKeep != null && sessionId.equals(sessionIdToKeep)) {
                 continue;
             }
 
