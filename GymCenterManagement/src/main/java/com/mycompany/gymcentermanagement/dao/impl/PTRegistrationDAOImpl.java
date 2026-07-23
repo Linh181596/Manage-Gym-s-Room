@@ -149,10 +149,9 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                       AND sp.IsDeleted = 0
                       AND pkg.Status = 'Active'
                       AND pkg.IsDeleted = 0
-                      AND pt.Status = 'Active'
                       AND pt.IsDeleted = 0
-                    AND u.Status = 'Active'
-                    AND u.IsDeleted = 0
+                      AND u.Status = 'Active'
+                      AND u.IsDeleted = 0
                     ORDER BY pkg.DurationMonths
                 """;
 
@@ -192,12 +191,14 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                         ON sp.PTPackageTypeID = pkg.PTPackageTypeID
                     INNER JOIN PersonalTrainers pt
                         ON sp.PTID = pt.PTID
+                    INNER JOIN Users u
+                        ON pt.UserID = u.UserID
                     WHERE sp.PTServicePriceID = ?
                       AND sp.Status = 'Active'
                       AND sp.IsDeleted = 0
                       AND pkg.Status = 'Active'
                       AND pkg.IsDeleted = 0
-                      AND pt.Status = 'Active'
+                      AND u.Status = 'Active'
                       AND pt.IsDeleted = 0
                 """;
 
@@ -476,12 +477,23 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
     }
 
     /**
-     * Processes a PT service registration by Staff/Admin.
+     * Xử lý duyệt hoặc từ chối đơn đăng ký PT (Bởi Staff/Admin).
+     * Luồng nghiệp vụ: Cập nhật Status và PaymentStatus. Ghi nhận người xử lý và thời gian xử lý.
+     * [BR-CONS-34]: Staff có thể duyệt hoặc hủy các đơn đăng ký Pending.
+     * [BR-CONS-46]: Workflow quản lý đăng ký PT cho Admin/Staff.
+     * 
+     * @param ptRegistrationId ID đăng ký
+     * @param status Trạng thái đăng ký mới
+     * @param paymentStatus Trạng thái thanh toán mới
+     * @param processedByUserId UserID của người xử lý
+     * @param updatedBy Tên người xử lý (để lưu log)
+     * @return true nếu thành công
      */
     @Override
     public boolean processRegistration(int ptRegistrationId, String status,
                                        String paymentStatus, int processedByUserId,
                                        String updatedBy) {
+        // SQL: Cập nhật trạng thái cho các đơn đang Pending và Unpaid
         String sql = """
                     UPDATE PTRegistrations
                     SET Status = ?,
@@ -582,9 +594,15 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.PreferredStartDate, 
                            r.TotalAmount,
                            r.Note,
-                           pt.Status AS PTStatus,
+                           u_pt.Status AS PTStatus,
                            CASE 
-                                WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                                WHEN r.Status = 'Active' AND (
+                                    SELECT COUNT(*) 
+                                    FROM PTSchedules s 
+                                    WHERE s.PTRegistrationID = r.PTRegistrationID 
+                                      AND s.SessionStatus = 'Completed' 
+                                      AND s.IsDeleted = 0
+                                ) >= r.PurchasedSessions THEN 'Completed'
                                 ELSE r.Status
                            END AS Status,
                            r.PaymentStatus,
@@ -595,6 +613,7 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                     INNER JOIN Users u ON m.UserID = u.UserID
                     INNER JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
                     INNER JOIN PersonalTrainers pt ON sp.PTID = pt.PTID
+                    INNER JOIN Users u_pt ON pt.UserID = u_pt.UserID
                     INNER JOIN PTPackageTypes pkg ON sp.PTPackageTypeID = pkg.PTPackageTypeID
                     WHERE r.PTRegistrationID = ? AND r.IsDeleted = 0
                 """;
@@ -636,8 +655,17 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
         return null;
     }
 
+    /**
+     * Cập nhật trạng thái đăng ký và thanh toán chung.
+     * 
+     * @param regId ID đăng ký
+     * @param status Trạng thái đăng ký
+     * @param paymentStatus Trạng thái thanh toán
+     * @return true nếu cập nhật thành công
+     */
     @Override
     public boolean updateRegistrationAndPaymentStatus(int regId, String status, String paymentStatus) {
+        // SQL: Update trạng thái dựa vào ID
         String sql = "UPDATE PTRegistrations SET Status = ?, PaymentStatus = ? WHERE PTRegistrationID = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -657,8 +685,20 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
         }
     }
 
+    /**
+     * Hủy đơn đăng ký PT.
+     * Luồng nghiệp vụ: Cập nhật Status thành 'Cancelled', PaymentStatus thành 'Cancelled',
+     * Nối thêm lý do hủy vào cột Note.
+     * 
+     * @param regId ID đăng ký
+     * @param cancelReason Lý do hủy
+     * @param processedByUserId Người thực hiện
+     * @param updatedBy Tên người thực hiện
+     * @return true nếu hủy thành công
+     */
     @Override
     public boolean cancelRegistration(int regId, String cancelReason, int processedByUserId, String updatedBy) {
+        // SQL: Cập nhật trạng thái Hủy và nối (CONCAT) lý do vào ghi chú
         String sql = """
                     UPDATE PTRegistrations
                     SET Status = 'Cancelled',
@@ -786,7 +826,13 @@ public class PTRegistrationDAOImpl implements PTRegistrationDAO {
                            r.PreferredStartDate, 
                            r.TotalAmount,
                            CASE 
-                                WHEN r.Status = 'Active' AND r.EndDate < CAST(GETDATE() AS Date) THEN 'Completed'
+                                WHEN r.Status = 'Active' AND (
+                                    SELECT COUNT(*) 
+                                    FROM PTSchedules s 
+                                    WHERE s.PTRegistrationID = r.PTRegistrationID 
+                                      AND s.SessionStatus = 'Completed' 
+                                      AND s.IsDeleted = 0
+                                ) >= r.PurchasedSessions THEN 'Completed'
                                 ELSE r.Status
                             END AS Status,
                            r.PaymentStatus,

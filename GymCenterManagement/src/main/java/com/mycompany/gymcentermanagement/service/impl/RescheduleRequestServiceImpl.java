@@ -10,6 +10,7 @@ import com.mycompany.gymcentermanagement.dao.impl.PTScheduleDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.PersonalTrainerDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.RescheduleRequestDAOImpl;
 import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
+import com.mycompany.gymcentermanagement.dto.RescheduleRequestDetailDTO;
 import com.mycompany.gymcentermanagement.model.entity.Member;
 import com.mycompany.gymcentermanagement.model.entity.PTSchedule;
 import com.mycompany.gymcentermanagement.model.entity.PersonalTrainer;
@@ -17,8 +18,11 @@ import com.mycompany.gymcentermanagement.model.entity.RescheduleRequest;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.RescheduleRequestService;
 import com.mycompany.gymcentermanagement.utils.PTFixedSlotHelper;
+
+import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalDate;
+import java.util.List;
 
 public class RescheduleRequestServiceImpl implements RescheduleRequestService {
 
@@ -28,6 +32,23 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
     private final RescheduleRequestDAO rescheduleRequestDAO = new RescheduleRequestDAOImpl();
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Tạo yêu cầu đổi lịch học (Từ Hội viên hoặc PT).
+     * Luồng nghiệp vụ:
+     * 1. Validate quyền, ngày đề xuất.
+     * 2. [BR-CONS-48]: Validate ngày không được ở trong quá khứ.
+     * 3. [BR-ACT-49], [BR-ACT-50], [BR-CONS-15]: PT và Hội viên có thể gửi yêu cầu đổi lịch.
+     * 4. Check khung giờ hợp lệ, không trùng lịch, không trùng ca bị hủy hàng loạt.
+     * 5. Lưu vào Database (Trạng thái Pending hoặc Escalated nếu ca cũ bị Cancelled).
+     * 
+     * @param actorUserId UserID của người gửi
+     * @param actorRole Role của người gửi
+     * @param scheduleId ID ca học
+     * @param proposedDate Ngày đề xuất
+     * @param proposedSlot Khung giờ đề xuất (VD: 08:15-09:45)
+     * @param reason Lý do
+     * @return Chuỗi kết quả ("SUCCESS" nếu thành công)
+     */
     @Override
     public String createRequest(int actorUserId, User.Role actorRole, int scheduleId, LocalDate proposedDate, String proposedSlot, String reason) {
         if (actorRole != User.Role.PT && actorRole != User.Role.Member) {
@@ -55,8 +76,8 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             return "Không tìm thấy buổi tập cần đổi lịch.";
         }
 
-        if (!"Upcoming".equalsIgnoreCase(schedule.getSessionStatus())) {
-            return "Chỉ được tạo yêu cầu đổi lịch cho buổi tập Upcoming.";
+        if (!"Upcoming".equalsIgnoreCase(schedule.getSessionStatus()) && !"Cancelled".equalsIgnoreCase(schedule.getSessionStatus())) {
+            return "Chỉ được tạo yêu cầu đổi lịch/xếp bù cho buổi tập Upcoming hoặc Cancelled.";
         }
 
         PersonalTrainer pt = personalTrainerDAO.findById(schedule.getPtId());
@@ -106,7 +127,11 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 && proposedStartTime.equals(schedule.getStartTime())
                 && proposedEndTime.equals(schedule.getEndTime());
         if (sameAsOriginal) {
-            return "Khung giờ mới phải khác lịch gốc hiện tại.";
+            return "Khung giờ đề xuất mới phải khác với khung giờ gốc của ca tập đã bị hủy/đổi.";
+        }
+
+        if (ptScheduleDAO.isSlotMassCancelled(proposedDate, proposedStartTime, proposedEndTime)) {
+            return "Khung giờ này đã bị hủy hàng loạt bởi Admin (Ví dụ: sự cố vận hành, bảo trì...). Vui lòng đề xuất ngày hoặc khung giờ khác.";
         }
 
         boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
@@ -143,13 +168,31 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
         request.setProposedDate(proposedDate);
         request.setProposedStartTime(proposedStartTime);
         request.setProposedEndTime(proposedEndTime);
-        request.setStatus("Pending");
+        if ("Cancelled".equalsIgnoreCase(schedule.getSessionStatus())) {
+            request.setStatus("Escalated");
+            request.setEscalationReason("Yêu cầu xếp lịch bù cho ca tập bị hủy bởi Admin/Hệ thống.");
+        } else {
+            request.setStatus("Pending");
+        }
         request.setReason(reason.trim());
 
         boolean created = rescheduleRequestDAO.create(request);
         return created ? "SUCCESS" : "Không thể tạo yêu cầu đổi lịch lúc này.";
     }
 
+    /**
+     * Xử lý (Duyệt/Từ chối/Escalate) một yêu cầu đổi lịch.
+     * Luồng nghiệp vụ:
+     * - Approve: Check lại trùng lịch, update lịch học cũ hoặc tạo lịch học bù.
+     * - Reject: Cập nhật trạng thái Rejected kèm lý do.
+     * - Escalate: Chuyển lên Staff/Admin kèm lý do (Thường do PT/Member không tự thỏa thuận được).
+     * 
+     * @param requestId ID yêu cầu
+     * @param action Hành động (approve, reject, escalate)
+     * @param responderUserId Người thực hiện
+     * @param responseReason Lý do phản hồi
+     * @return Chuỗi kết quả
+     */
     @Override
     public String respondToRequest(int requestId, String action, int responderUserId, String responseReason) {
         RescheduleRequest req = rescheduleRequestDAO.getById(requestId);
@@ -164,7 +207,7 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
         User responder = null;
         try {
             responder = userDAO.findById(responderUserId);
-        } catch (java.sql.SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
@@ -181,6 +224,10 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             PTSchedule schedule = ptScheduleDAO.getScheduleById(req.getScheduleId());
             if (schedule == null) {
                 return "Không tìm thấy buổi tập liên quan.";
+            }
+
+            if (ptScheduleDAO.isSlotMassCancelled(req.getProposedDate(), req.getProposedStartTime(), req.getProposedEndTime())) {
+                return "Không thể duyệt do khung giờ đề xuất mới đã bị hủy hàng loạt bởi Admin (Ví dụ: sự cố vận hành, bảo trì...).";
             }
 
             boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
@@ -213,13 +260,46 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             );
             return success ? "SUCCESS" : "Lỗi hệ thống khi cập nhật lịch mới.";
         } else if ("reject".equalsIgnoreCase(action)) {
+            if (responseReason == null || responseReason.trim().isEmpty()) {
+                return "Vui lòng nhập lý do từ chối.";
+            }
             boolean success = rescheduleRequestDAO.rejectRequest(requestId, responderUserId, responseReason);
             return success ? "SUCCESS" : "Lỗi hệ thống khi từ chối yêu cầu.";
         } else if ("escalate".equalsIgnoreCase(action)) {
+            if (responseReason == null || responseReason.trim().isEmpty()) {
+                return "Vui lòng nhập lý do yêu cầu hỗ trợ.";
+            }
             boolean success = rescheduleRequestDAO.escalateRequest(requestId, responderUserId, responseReason);
-            return success ? "SUCCESS" : "Lỗi hệ thống khi khiếu nại yêu cầu.";
+            return success ? "SUCCESS" : "Lỗi hệ thống khi gửi yêu cầu hỗ trợ.";
         }
 
         return "Hành động không hợp lệ.";
+    }
+
+    @Override
+    public List<RescheduleRequestDetailDTO> getEscalatedRequests() {
+        List<RescheduleRequestDetailDTO> list = rescheduleRequestDAO.getEscalatedRequests();
+        for (RescheduleRequestDetailDTO req : list) {
+            PTSchedule schedule = ptScheduleDAO.getScheduleById(req.getScheduleId());
+            if (schedule != null) {
+                boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
+                        schedule.getPtId(),
+                        req.getProposedDate(),
+                        req.getProposedStartTime(),
+                        req.getProposedEndTime(),
+                        req.getScheduleId()
+                );
+                boolean memberConflict = ptScheduleDAO.isMemberScheduleConflictExcluding(
+                        schedule.getMemberId(),
+                        req.getProposedDate(),
+                        req.getProposedStartTime(),
+                        req.getProposedEndTime(),
+                        req.getScheduleId()
+                );
+                req.setPtConflict(ptConflict);
+                req.setMemberConflict(memberConflict);
+            }
+        }
+        return list;
     }
 }

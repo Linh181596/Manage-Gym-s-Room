@@ -53,13 +53,13 @@ public class RescheduleRequestController extends HttpServlet {
             );
 
             if ("SUCCESS".equals(result)) {
-                String actionViet = "đồng ý";
+                String toastMsg = "Đã đồng ý yêu cầu đổi lịch!";
                 if ("reject".equalsIgnoreCase(action)) {
-                    actionViet = "từ chối";
+                    toastMsg = "Đã từ chối yêu cầu đổi lịch!";
                 } else if ("escalate".equalsIgnoreCase(action)) {
-                    actionViet = "khiếu nại";
+                    toastMsg = "Đã gửi yêu cầu hỗ trợ đổi lịch lên Admin/Staff!";
                 }
-                session.setAttribute("toastMsg", "Đã " + actionViet + " yêu cầu đổi lịch!");
+                session.setAttribute("toastMsg", toastMsg);
             } else {
                 session.setAttribute("errorMessage", result);
             }

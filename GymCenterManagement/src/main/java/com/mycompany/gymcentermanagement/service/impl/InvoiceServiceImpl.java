@@ -47,6 +47,20 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceDAO.findAllPaginated(offset, limit);
     }
 
+    /**
+     * Xác nhận thanh toán hóa đơn bằng tiền mặt (Cash).
+     * Luồng nghiệp vụ:
+     * 1. Lấy thông tin hóa đơn, kiểm tra trạng thái Pending.
+     * 2. [BR-CONS-35]: Chỉ Admin/Staff được quyền duyệt hóa đơn thanh toán tiền mặt. (Validate quyền ở Controller).
+     * 3. Update trạng thái Invoice thành 'Paid', cập nhật PaymentMethod và Processor.
+     * 4. Kích hoạt gói tập (MemberPackage) thành 'Active'.
+     * 5. [Transaction]: Dùng Manual Transaction để đảm bảo tính toàn vẹn (Invoice và MemberPackage phải cùng được cập nhật hoặc cùng bị hủy).
+     * 
+     * @param invoiceId ID hóa đơn
+     * @param staffUserId ID người duyệt
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException {
         Connection conn = null;
@@ -54,12 +68,13 @@ public class InvoiceServiceImpl implements InvoiceService {
         
         try {
             conn = DBContext.getConnection();
+            // Bắt đầu Transaction thủ công để đảm bảo tính toàn vẹn dữ liệu (ACID).
             conn.setAutoCommit(false);
             
             InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
             MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
             
-            // 1. Fetch Invoice
+            // Lấy thông tin hóa đơn và kiểm tra trạng thái phải là Pending
             Invoice inv = invDAO.findById(invoiceId);
             if (inv == null) {
                 throw new SQLException("Invoice not found.");
@@ -68,7 +83,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new SQLException("Invoice is already processed (Status: " + inv.getStatus() + ").");
             }
             
-            // 2. Update Invoice Status to Paid
+            // Cập nhật hóa đơn thành Đã thanh toán (Paid)
             inv.setStatus("Paid");
             inv.setPaymentDate(LocalDateTime.now());
             inv.setProcessBy(staffUserId);
@@ -80,7 +95,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new SQLException("Failed to update invoice status.");
             }
             
-            // 3. Activate Member Package if associated
+            // Kích hoạt gói tập tương ứng của thành viên (chuyển sang Active)
             if (inv.getMemberPackageId() != null) {
                 MemberPackage mp = mpDAO.findById(inv.getMemberPackageId());
                 if (mp == null) {
@@ -123,6 +138,120 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
             }
             
+            // Commit toàn bộ giao dịch nếu các bước trên đều thành công
+            conn.commit();
+            success = true;
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    // Rollback lại trạng thái ban đầu nếu có lỗi, ngăn rác dữ liệu
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    // Ignore
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException ex) {
+                    // Ignore
+                }
+            }
+        }
+        
+        return success;
+    }
+
+    /**
+     * Ghi nhận thanh toán hóa đơn trực tuyến (VNPay).
+     * Luồng nghiệp vụ:
+     * 1. Lấy hóa đơn, check trạng thái Pending.
+     * 2. Update trạng thái Invoice thành 'Paid', cập nhật PaymentMethod là 'Chuyển khoản VNPAY'.
+     * 3. Kích hoạt MemberPackage thành 'Active'.
+     * 4. [Transaction]: Dùng Manual Transaction đảm bảo dữ liệu.
+     * 
+     * @param invoiceId ID hóa đơn
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
+    @Override
+    public boolean recordOnlinePayment(int invoiceId) throws SQLException {
+        Connection conn = null;
+        boolean success = false;
+        
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+            
+            InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
+            MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
+            
+            // 1. Fetch Invoice
+            Invoice inv = invDAO.findById(invoiceId);
+            if (inv == null) {
+                throw new SQLException("Invoice not found.");
+            }
+            if (!"Pending".equals(inv.getStatus())) {
+                throw new SQLException("Invoice is already processed (Status: " + inv.getStatus() + ").");
+            }
+            
+            // 2. Update Invoice Status to Paid
+            inv.setStatus("Paid");
+            inv.setPaymentMethod("Chuyển khoản VNPAY");
+            inv.setPaymentDate(LocalDateTime.now());
+            // No processBy for online payment or set it to 0
+            inv.setUpdatedBy("System: VNPAY");
+            inv.setUpdatedDate(LocalDateTime.now());
+            
+            boolean updateInvoiceSuccess = invDAO.update(inv);
+            if (!updateInvoiceSuccess) {
+                throw new SQLException("Failed to update invoice status.");
+            }
+            
+            // 3. Activate Member Package if associated
+            if (inv.getMemberPackageId() != null) {
+                MemberPackage mp = mpDAO.findById(inv.getMemberPackageId());
+                if (mp == null) {
+                    throw new SQLException("Associated Member Package not found.");
+                }
+                mp.setStatus("Active");
+                mp.setUpdatedBy("System: VNPAY");
+                mp.setUpdatedDate(LocalDateTime.now());
+                
+                boolean updatePackageSuccess = mpDAO.update(mp);
+                if (!updatePackageSuccess) {
+                    throw new SQLException("Failed to activate Member Package.");
+                }
+
+                // Tự động đóng gói của người gửi nếu đây là giao dịch chuyển nhượng (Transfer)
+                if (inv.getCreatedBy() != null && inv.getCreatedBy().startsWith("Transfer;SenderPackageID:")) {
+                    try {
+                        String[] parts = inv.getCreatedBy().split(";");
+                        int senderPkgId = -1;
+                        for (String part : parts) {
+                            if (part.startsWith("SenderPackageID:")) {
+                                senderPkgId = Integer.parseInt(part.split(":")[1]);
+                                break;
+                            }
+                        }
+                        if (senderPkgId != -1) {
+                            MemberPackage senderPkg = mpDAO.findById(senderPkgId);
+                            if (senderPkg != null) {
+                                senderPkg.setStatus("Expired");
+                                senderPkg.setEndDate(java.time.LocalDate.now()); // Đặt EndDate về Hôm nay
+                                senderPkg.setUpdatedBy("Transferred by System: VNPAY");
+                                senderPkg.setUpdatedDate(LocalDateTime.now());
+                                mpDAO.update(senderPkg);
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi đóng gói người gửi khi xử lý chuyển nhượng: " + e.getMessage());
+                    }
+                }
+            }
+            
             conn.commit();
             success = true;
         } catch (SQLException e) {
@@ -147,6 +276,19 @@ public class InvoiceServiceImpl implements InvoiceService {
         return success;
     }
 
+    /**
+     * Hủy hóa đơn đang chờ thanh toán.
+     * Luồng nghiệp vụ:
+     * 1. [BR-CONS-10]: Nếu hóa đơn không được thanh toán trong 48h, hệ thống (hoặc Staff) có thể hủy đơn và release slot.
+     * 2. Cập nhật trạng thái Invoice thành Cancelled.
+     * 3. Đánh dấu xóa mềm (delete) cho MemberPackage liên quan để nhả slot.
+     * 4. [Transaction]: Thực hiện trong transaction.
+     * 
+     * @param invoiceId ID hóa đơn
+     * @param staffUserId Người hủy
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException {
         Connection conn = null;

@@ -19,11 +19,15 @@ public interface PTScheduleService {
 
     List<PTScheduleDetailDTO> getPTScheduleDetailsForWeek(int ptId, LocalDate startDate, LocalDate endDate);
     List<PTScheduleDetailDTO> getAllSchedulesByDate(LocalDate date);
-    boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus);
+    boolean updateAttendance(int scheduleId, String attendanceStatus, String sessionStatus, String updatedBy);
     PTSchedule getScheduleById(int scheduleId);
     List<PTScheduleDetailDTO> getCompletedSessions(int ptId);
     boolean cancelSession(int scheduleId, String reason, int cancelledByUserId, String updatedBy);
     String generateFixedScheduleForPT(int regId, int loggedInPtId, LocalDate actualStartDate, Map<String, String> dayTimeSlots, int createdByUserId);
     boolean insertSchedulesAndUpdateRegistration(List<PTSchedule> schedules, int createdByUserId, LocalDate actualStartDate, LocalDate actualEndDate);
     List<PTScheduleDetailDTO> getMemberScheduleDetailsForWeek(int memberId, LocalDate startDate, LocalDate endDate);
+    String assignSubstitutePT(int scheduleId, int substitutePtId, String reason, int substituteByUserId, String updatedBy);
+    List<PTScheduleDetailDTO> getUpcomingSubstituteSessions(int ptId);
+    int massCancelSessions(LocalDate cancelDate, Time startTime, Time endTime, String reason, int cancelledByUserId, String updatedBy);
+    List<Map<String, Object>> getMassCancelledSlots();
 }

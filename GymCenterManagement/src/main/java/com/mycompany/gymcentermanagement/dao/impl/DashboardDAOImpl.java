@@ -57,7 +57,7 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         metric.setActiveTrainers(queryInt(
                 "SELECT COUNT(*) FROM PersonalTrainers pt "
                 + "INNER JOIN Users u ON pt.UserID = u.UserID "
-                + "WHERE pt.Status = 'Active' AND pt.IsDeleted = 0 "
+                + "WHERE pt.IsDeleted = 0 "
                 + "AND u.Status = 'Active' AND u.IsDeleted = 0"));
         metric.setTodayPtSessions(queryInt(
                 "SELECT COUNT(*) FROM PTSchedules "
@@ -66,7 +66,8 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         metric.setPendingAlerts(
                 queryInt("SELECT COUNT(*) FROM EquipmentIssues WHERE IsDeleted = 0 AND Status IN ('Pending', 'InProgress')")
                 + queryInt("SELECT COUNT(*) FROM Invoices WHERE IsDeleted = 0 AND Status = 'Pending'")
-                + queryInt("SELECT COUNT(*) FROM MemberPackages WHERE IsDeleted = 0 AND Status = 'Active' AND EndDate BETWEEN CAST(GETDATE() AS date) AND DATEADD(day, 7, CAST(GETDATE() AS date))"));
+                + queryInt("SELECT COUNT(*) FROM MemberPackages WHERE IsDeleted = 0 AND Status = 'Active' AND EndDate BETWEEN CAST(GETDATE() AS date) AND DATEADD(day, 7, CAST(GETDATE() AS date))")
+                + queryInt("SELECT COUNT(*) FROM RescheduleRequests WHERE Status = 'Escalated'"));
         return metric;
     }
 
@@ -200,6 +201,13 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
                 "warning",
                 "/staff/record-payment",
                 "SELECT COUNT(*) FROM Invoices WHERE IsDeleted = 0 AND Status = 'Pending'");
+        addCountAlert(alerts,
+                "Reschedule Complaint",
+                "Yêu cầu hỗ trợ đổi lịch tập",
+                "yêu cầu hỗ trợ đổi lịch đang chờ xử lý",
+                "danger",
+                "/admin/schedule/manage?activeTab=reschedules",
+                "SELECT COUNT(*) FROM RescheduleRequests WHERE Status = 'Escalated'");
         return alerts;
     }
 

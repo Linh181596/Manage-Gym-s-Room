@@ -94,6 +94,20 @@
     </div>
 
     <!-- Error/Success Alerts -->
+    <c:if test="${not empty sessionScope.error}">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4 no-print" role="alert">
+            <i class="fa fa-exclamation-circle me-2"></i> ${sessionScope.error}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <c:remove var="error" scope="session"/>
+    </c:if>
+    <c:if test="${not empty sessionScope.message}">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4 no-print" role="alert">
+            <i class="fa fa-check-circle me-2"></i> ${sessionScope.message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <c:remove var="message" scope="session"/>
+    </c:if>
     <c:if test="${not empty errorMessage}">
         <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4 no-print" role="alert">
             <i class="fa fa-exclamation-circle me-2"></i> ${errorMessage}
@@ -221,7 +235,16 @@
                     <div class="col-sm-6">
                         <div class="p-3 bg-light rounded border">
                             <span class="small text-muted d-block">Hình thức thanh toán</span>
-                            <span class="fw-bold text-dark"><i class="fa fa-money-bill-wave text-success me-1"></i> ${invoice.paymentMethod} (Tiền mặt trực tiếp)</span>
+                            <span class="fw-bold text-dark">
+                                <c:choose>
+                                    <c:when test="${invoice.paymentMethod == 'Chuyển khoản VNPAY'}">
+                                        <i class="fa fa-credit-card text-primary me-1"></i> ${invoice.paymentMethod}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <i class="fa fa-money-bill-wave text-success me-1"></i> ${empty invoice.paymentMethod ? 'Tiền mặt' : invoice.paymentMethod}
+                                    </c:otherwise>
+                                </c:choose>
+                            </span>
                         </div>
                     </div>
                     <div class="col-sm-6">
@@ -254,11 +277,19 @@
                     <i class="fa fa-chevron-left me-1"></i> Quay lại cổng thông tin
                 </a>
                 
-                <c:if test="${invoice.status == 'Paid'}">
-                    <button type="button" class="btn btn-primary py-2 px-4 fw-bold" onclick="window.print()">
-                        <i class="fa fa-print me-1"></i> In biên lai / Hóa đơn
-                    </button>
-                </c:if>
+                <c:choose>
+                    <c:when test="${invoice.status == 'Paid'}">
+                        <%-- Nút thực thi lệnh in (window.print) để in hóa đơn đã thanh toán --%>
+                        <button type="button" class="btn btn-primary py-2 px-4 fw-bold" onclick="window.print()">
+                            <i class="fa fa-print me-1"></i> In biên lai / Hóa đơn
+                        </button>
+                    </c:when>
+                    <c:when test="${invoice.status == 'Pending' && not isStaffOrAdmin}">
+                        <button type="button" class="btn btn-warning py-2 px-4 fw-bold" disabled>
+                            <i class="fa fa-clock me-1"></i> Vui lòng thanh toán tại quầy
+                        </button>
+                    </c:when>
+                </c:choose>
             </div>
 
         </div>

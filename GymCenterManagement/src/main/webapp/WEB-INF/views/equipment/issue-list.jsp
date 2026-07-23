@@ -85,6 +85,7 @@
 
     <!-- Filters Panel -->
     <div class="bg-light rounded p-4 mb-4 shadow-sm">
+        <%-- Form lọc dữ liệu sự cố theo từ khóa và trạng thái (GET) --%>
         <form method="get" action="${pageContext.request.contextPath}/staff/equipment-issues" class="row g-3 align-items-center">
             <input type="hidden" name="action" value="list">
             
@@ -105,6 +106,7 @@
             </div>
             
             <div class="col-12 col-md-2 d-grid">
+                <%-- Nút submit form lọc sự cố --%>
                 <button type="submit" class="btn btn-secondary">
                     <i class="fa fa-filter me-2"></i>Lọc
                 </button>
@@ -165,11 +167,9 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
+                                    <%-- Nút chuyển hướng xem chi tiết sự cố --%>
                                     <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=detail&id=${item.issueId}" title="Xem chi tiết">
                                         <i class="fa fa-eye"></i>
-                                    </a>
-                                    <a class="btn btn-outline-warning" href="${pageContext.request.contextPath}/staff/equipment-issues?action=edit&id=${item.issueId}" title="Cập nhật tiến độ">
-                                        <i class="fa fa-edit"></i>
                                     </a>
                                 </div>
                             </td>

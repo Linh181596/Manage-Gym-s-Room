@@ -191,60 +191,108 @@
                                required>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Lịch tập cố định (Chọn ngày)</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="daysOfWeek" value="MONDAY"
-                                       id="day1"
-                                ${not empty submittedDays && submittedDays.contains('MONDAY') ? 'checked' : ''}>
-                                <label class="form-check-label" for="day1">Thứ 2</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="daysOfWeek" value="TUESDAY"
-                                       id="day2"
-                                ${not empty submittedDays && submittedDays.contains('TUESDAY') ? 'checked' : ''}>
-                                <label class="form-check-label" for="day2">Thứ 3</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="daysOfWeek" value="WEDNESDAY"
-                                       id="day3"
-                                ${not empty submittedDays && submittedDays.contains('WEDNESDAY') ? 'checked' : ''}>
-                                <label class="form-check-label" for="day3">Thứ 4</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="daysOfWeek" value="THURSDAY"
-                                       id="day4"
-                                ${not empty submittedDays && submittedDays.contains('THURSDAY') ? 'checked' : ''}>
-                                <label class="form-check-label" for="day4">Thứ 5</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="daysOfWeek" value="FRIDAY"
-                                       id="day5"
-                                ${not empty submittedDays && submittedDays.contains('FRIDAY') ? 'checked' : ''}>
-                                <label class="form-check-label" for="day5">Thứ 6</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="daysOfWeek" value="SATURDAY"
-                                       id="day6"
-                                ${not empty submittedDays && submittedDays.contains('SATURDAY') ? 'checked' : ''}>
-                                <label class="form-check-label" for="day6">Thứ 7</label>
-                            </div>
-
+                    <div class="mb-4 bg-white p-3 rounded border border-light shadow-sm">
+                        <label class="form-label fw-bold text-primary mb-3">Lịch tập cố định & Khung giờ tương ứng</label>
+                        <div class="row g-3">
+                            <c:forEach var="day" items="${['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']}">
+                                <c:set var="dayLabel" value="" />
+                                <c:set var="colIdx" value="0" />
+                                <c:choose>
+                                    <c:when test="${day == 'MONDAY'}"><c:set var="dayLabel" value="Thứ 2" /><c:set var="colIdx" value="0" /></c:when>
+                                    <c:when test="${day == 'TUESDAY'}"><c:set var="dayLabel" value="Thứ 3" /><c:set var="colIdx" value="1" /></c:when>
+                                    <c:when test="${day == 'WEDNESDAY'}"><c:set var="dayLabel" value="Thứ 4" /><c:set var="colIdx" value="2" /></c:when>
+                                    <c:when test="${day == 'THURSDAY'}"><c:set var="dayLabel" value="Thứ 5" /><c:set var="colIdx" value="3" /></c:when>
+                                    <c:when test="${day == 'FRIDAY'}"><c:set var="dayLabel" value="Thứ 6" /><c:set var="colIdx" value="4" /></c:when>
+                                    <c:when test="${day == 'SATURDAY'}"><c:set var="dayLabel" value="Thứ 7" /><c:set var="colIdx" value="5" /></c:when>
+                                </c:choose>
+                                <div class="col-12 d-flex align-items-center justify-content-between border-bottom pb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input day-checkbox" type="checkbox" name="daysOfWeek" value="${day}"
+                                               id="day_${day}" data-day="${day}"
+                                               ${not empty submittedDays && submittedDays.contains(day) ? 'checked' : ''}>
+                                        <label class="form-check-label fw-semibold" for="day_${day}">${dayLabel}</label>
+                                    </div>
+                                    <div class="ms-3" style="width: 65%;">
+                                        <select class="form-select form-select-sm slot-select" name="timeSlot_${day}" id="slot_${day}" 
+                                                ${not empty submittedDays && submittedDays.contains(day) ? '' : 'disabled'} required>
+                                            <option value="">-- Chọn ca tập --</option>
+                                            
+                                            <!-- Ca 1: 08:15-09:45 (rowIdx = 0) -->
+                                            <c:set var="busyPt_0" value="${ptMatrix[0][colIdx]}" />
+                                            <c:set var="busyMem_0" value="${memberMatrix[0][colIdx]}" />
+                                            <option value="08:15-09:45" ${busyPt_0 || busyMem_0 ? 'disabled' : ''} ${submittedDayTimeSlots[day] == '08:15-09:45' ? 'selected' : ''}>
+                                                08:15 - 09:45 
+                                                <c:choose>
+                                                    <c:when test="${busyPt_0 && busyMem_0}">(Cả 2 bận ❌)</c:when>
+                                                    <c:when test="${busyPt_0}">(PT bận ❌)</c:when>
+                                                    <c:when test="${busyMem_0}">(HV bận ❌)</c:when>
+                                                </c:choose>
+                                            </option>
+                                            
+                                            <!-- Ca 2: 10:00-11:30 (rowIdx = 1) -->
+                                            <c:set var="busyPt_1" value="${ptMatrix[1][colIdx]}" />
+                                            <c:set var="busyMem_1" value="${memberMatrix[1][colIdx]}" />
+                                            <option value="10:00-11:30" ${busyPt_1 || busyMem_1 ? 'disabled' : ''} ${submittedDayTimeSlots[day] == '10:00-11:30' ? 'selected' : ''}>
+                                                10:00 - 11:30 
+                                                <c:choose>
+                                                    <c:when test="${busyPt_1 && busyMem_1}">(Cả 2 bận ❌)</c:when>
+                                                    <c:when test="${busyPt_1}">(PT bận ❌)</c:when>
+                                                    <c:when test="${busyMem_1}">(HV bận ❌)</c:when>
+                                                </c:choose>
+                                            </option>
+                                            
+                                            <!-- Ca 3: 13:30-15:00 (rowIdx = 2) -->
+                                            <c:set var="busyPt_2" value="${ptMatrix[2][colIdx]}" />
+                                            <c:set var="busyMem_2" value="${memberMatrix[2][colIdx]}" />
+                                            <option value="13:30-15:00" ${busyPt_2 || busyMem_2 ? 'disabled' : ''} ${submittedDayTimeSlots[day] == '13:30-15:00' ? 'selected' : ''}>
+                                                13:30 - 15:00 
+                                                <c:choose>
+                                                    <c:when test="${busyPt_2 && busyMem_2}">(Cả 2 bận ❌)</c:when>
+                                                    <c:when test="${busyPt_2}">(PT bận ❌)</c:when>
+                                                    <c:when test="${busyMem_2}">(HV bận ❌)</c:when>
+                                                </c:choose>
+                                            </option>
+                                            
+                                            <!-- Ca 4: 15:15-16:45 (rowIdx = 3) -->
+                                            <c:set var="busyPt_3" value="${ptMatrix[3][colIdx]}" />
+                                            <c:set var="busyMem_3" value="${memberMatrix[3][colIdx]}" />
+                                            <option value="15:15-16:45" ${busyPt_3 || busyMem_3 ? 'disabled' : ''} ${submittedDayTimeSlots[day] == '15:15-16:45' ? 'selected' : ''}>
+                                                15:15 - 16:45 
+                                                <c:choose>
+                                                    <c:when test="${busyPt_3 && busyMem_3}">(Cả 2 bận ❌)</c:when>
+                                                    <c:when test="${busyPt_3}">(PT bận ❌)</c:when>
+                                                    <c:when test="${busyMem_3}">(HV bận ❌)</c:when>
+                                                </c:choose>
+                                            </option>
+                                            
+                                            <!-- Ca 5: 17:00-18:30 (rowIdx = 4) -->
+                                            <c:set var="busyPt_4" value="${ptMatrix[4][colIdx]}" />
+                                            <c:set var="busyMem_4" value="${memberMatrix[4][colIdx]}" />
+                                            <option value="17:00-18:30" ${busyPt_4 || busyMem_4 ? 'disabled' : ''} ${submittedDayTimeSlots[day] == '17:00-18:30' ? 'selected' : ''}>
+                                                17:00 - 18:30 
+                                                <c:choose>
+                                                    <c:when test="${busyPt_4 && busyMem_4}">(Cả 2 bận ❌)</c:when>
+                                                    <c:when test="${busyPt_4}">(PT bận ❌)</c:when>
+                                                    <c:when test="${busyMem_4}">(HV bận ❌)</c:when>
+                                                </c:choose>
+                                            </option>
+                                            
+                                            <!-- Ca 6: 18:45-20:15 (rowIdx = 5) -->
+                                            <c:set var="busyPt_5" value="${ptMatrix[5][colIdx]}" />
+                                            <c:set var="busyMem_5" value="${memberMatrix[5][colIdx]}" />
+                                            <option value="18:45-20:15" ${busyPt_5 || busyMem_5 ? 'disabled' : ''} ${submittedDayTimeSlots[day] == '18:45-20:15' ? 'selected' : ''}>
+                                                18:45 - 20:15 
+                                                <c:choose>
+                                                    <c:when test="${busyPt_5 && busyMem_5}">(Cả 2 bận ❌)</c:when>
+                                                    <c:when test="${busyPt_5}">(PT bận ❌)</c:when>
+                                                    <c:when test="${busyMem_5}">(HV bận ❌)</c:when>
+                                                </c:choose>
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </c:forEach>
                         </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">Khung giờ tập (Ca tập)</label>
-                        <select class="form-select" name="timeSlot" required>
-                            <option value="">-- Chọn khung giờ --</option>
-                            <option value="08:15-09:45" ${submittedTimeSlot == '08:15-09:45' ? 'selected' : ''}>Sáng 1: 08:15 - 09:45</option>
-                            <option value="10:00-11:30" ${submittedTimeSlot == '10:00-11:30' ? 'selected' : ''}>Sáng 2: 10:00 - 11:30</option>
-                            <option value="13:30-15:00" ${submittedTimeSlot == '13:30-15:00' ? 'selected' : ''}>Chiều 1: 13:30 - 15:00</option>
-                            <option value="15:15-16:45" ${submittedTimeSlot == '15:15-16:45' ? 'selected' : ''}>Chiều 2: 15:15 - 16:45</option>
-                            <option value="17:00-18:30" ${submittedTimeSlot == '17:00-18:30' ? 'selected' : ''}>Tối 1: 17:00 - 18:30</option>
-                            <option value="18:45-20:15" ${submittedTimeSlot == '18:45-20:15' ? 'selected' : ''}>Tối 2: 18:45 - 20:15</option>
-                        </select>
                     </div>
 
                     <c:if test="${reg.paymentStatus != 'Paid'}">
@@ -337,12 +385,25 @@
             dateInput.value = minDateString;
         }
 
-        // 2. LOGIC BẮT BỘC CHỌN CHECKBOX
+        // 2. LOGIC BẬT TẮT DROPDOWN KHI CHỌN CHECKBOX
+        document.querySelectorAll('.day-checkbox').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const day = this.getAttribute('data-day');
+                const select = document.getElementById('slot_' + day);
+                if (this.checked) {
+                    select.disabled = false;
+                } else {
+                    select.disabled = true;
+                    select.value = "";
+                }
+            });
+        });
+
+        // 3. LOGIC BẮT BUỘC CHỌN CHECKBOX VÀ CHỌN KHUNG GIỜ CHO TỪNG THỨ
         const form = document.getElementById('scheduleSetupForm');
 
         form.addEventListener('submit', function (e) {
             const checkboxes = document.querySelectorAll('input[name="daysOfWeek"]:checked');
-            const timeSlot = document.querySelector('select[name="timeSlot"]').value;
 
             if (checkboxes.length === 0) {
                 Swal.fire({
@@ -354,11 +415,20 @@
                 return false;
             }
 
-            if (!timeSlot) {
+            let missingSlot = false;
+            checkboxes.forEach(function(cb) {
+                const day = cb.value;
+                const select = document.getElementById('slot_' + day);
+                if (!select || !select.value) {
+                    missingSlot = true;
+                }
+            });
+
+            if (missingSlot) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Thiếu thông tin',
-                    text: 'Vui lòng chọn khung ca tập!'
+                    text: 'Vui lòng chọn khung giờ tương ứng cho tất cả các ngày tập đã chọn!'
                 });
                 e.preventDefault();
                 return false;

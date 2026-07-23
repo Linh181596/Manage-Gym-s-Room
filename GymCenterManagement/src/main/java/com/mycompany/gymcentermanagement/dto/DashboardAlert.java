@@ -9,6 +9,11 @@
  */
 package com.mycompany.gymcentermanagement.dto;
 
+/**
+ * DTO biểu diễn một cảnh báo (Alert) hệ thống hiển thị trên Dashboard.
+ * Có thể là cảnh báo về thiết bị hỏng, hội viên sắp hết hạn gói tập, 
+ * hoặc yêu cầu dời lịch tập từ PT.
+ */
 public class DashboardAlert {
     private String type;
     private String title;

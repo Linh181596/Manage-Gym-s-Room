@@ -104,6 +104,15 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return user;
     }
 
+    /**
+     * Tìm kiếm người dùng theo địa chỉ email.
+     * Luồng nghiệp vụ: Lấy thông tin User, Role và Avatar từ các bảng liên kết. 
+     * Dùng cho chức năng đăng nhập và kiểm tra tồn tại. (Liên quan BR-CONS-01)
+     * 
+     * @param email Địa chỉ email cần tìm
+     * @return Đối tượng User nếu tìm thấy, ngược lại null
+     * @throws SQLException nếu có lỗi truy vấn CSDL
+     */
     @Override
     public User findByEmail(String email) throws SQLException {
         Connection conn = null;
@@ -113,6 +122,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
+            // SQL: Join Users với UserRoles, Roles và PersonalTrainers để lấy đầy đủ thông tin tài khoản, chỉ lấy user chưa bị xóa (IsDeleted = 0)
             String sql = "SELECT u.*, r.RoleName, pt.AvatarPath FROM Users u "
                     + "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID "
                     + "LEFT JOIN Roles r ON ur.RoleID = r.RoleID "
@@ -131,6 +141,14 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return user;
     }
 
+    /**
+     * Tìm kiếm người dùng theo UserID.
+     * Luồng nghiệp vụ: Tương tự findByEmail, lấy thông tin User, Role và Avatar.
+     * 
+     * @param userId ID của người dùng
+     * @return Đối tượng User nếu tìm thấy, ngược lại null
+     * @throws SQLException nếu có lỗi truy vấn CSDL
+     */
     @Override
     public User findById(int userId) throws SQLException {
         Connection conn = null;
@@ -140,6 +158,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
+            // SQL: Join Users với UserRoles, Roles và PersonalTrainers để lấy thông tin tài khoản qua UserID
             String sql = "SELECT u.*, r.RoleName, pt.AvatarPath FROM Users u "
                     + "LEFT JOIN UserRoles ur ON u.UserID = ur.UserID "
                     + "LEFT JOIN Roles r ON ur.RoleID = r.RoleID "
@@ -158,6 +177,15 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return user;
     }
 
+    /**
+     * Thêm mới một tài khoản người dùng vào hệ thống.
+     * Luồng nghiệp vụ: Sử dụng Transaction. Đầu tiên insert vào bảng Users, lấy generated keys (UserID).
+     * Sau đó tìm RoleID tương ứng và insert vào bảng UserRoles. Commit nếu cả 2 thành công.
+     * 
+     * @param user Thông tin tài khoản cần tạo
+     * @return true nếu thêm mới thành công
+     * @throws SQLException nếu có lỗi CSDL
+     */
     @Override
     public boolean insert(User user) throws SQLException {
         Connection conn = null;
@@ -178,6 +206,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
 
             // 1. Insert User
+            // SQL: Insert dữ liệu cơ bản của User, trạng thái mặc định IsDeleted = 0
             String sqlUser = "INSERT INTO Users "
                     + "(Email, PasswordHash, DisplayName, Phone, Status, MustChangePassword, CreatedBy, CreatedDate, IsDeleted) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)";
@@ -253,6 +282,14 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return success;
     }
 
+    /**
+     * Cập nhật thông tin cơ bản của tài khoản người dùng.
+     * Luồng nghiệp vụ: Sử dụng Transaction. Cập nhật bảng Users. Sau đó cập nhật bảng UserRoles nếu role thay đổi.
+     * 
+     * @param user Thông tin người dùng cần cập nhật
+     * @return true nếu cập nhật thành công
+     * @throws SQLException nếu có lỗi CSDL
+     */
     @Override
     public boolean update(User user) throws SQLException {
         Connection conn = null;
@@ -271,6 +308,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
             }
 
             // 1. Update User
+            // SQL: Cập nhật thông tin User dựa trên UserID
             String sqlUser = "UPDATE Users SET Email = ?, PasswordHash = ?, DisplayName = ?, Phone = ?, Status = ?, UpdatedBy = ?, UpdatedDate = ? "
                     + "WHERE UserID = ? AND IsDeleted = 0";
             stmtUser = conn.prepareStatement(sqlUser);
@@ -333,6 +371,14 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return success;
     }
 
+    /**
+     * Xóa mềm (soft delete) tài khoản người dùng.
+     * Luồng nghiệp vụ: Set IsDeleted = 1 trong bảng Users. Đồng thời xóa (hard delete) dữ liệu trong bảng UserRoles.
+     * 
+     * @param userId ID người dùng cần xóa
+     * @return true nếu xóa mềm thành công
+     * @throws SQLException nếu có lỗi CSDL
+     */
     @Override
     public boolean delete(int userId) throws SQLException {
         Connection conn = null;
@@ -348,6 +394,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 conn.setAutoCommit(false);
             }
 
+            // SQL: Xóa mềm User bằng cách set IsDeleted = 1
             String sqlUser = "UPDATE Users SET IsDeleted = 1 WHERE UserID = ?";
             stmtUser = conn.prepareStatement(sqlUser);
             stmtUser.setInt(1, userId);
@@ -711,6 +758,15 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Kiểm tra sự tồn tại của email.
+     * Luồng nghiệp vụ: Truy vấn vào bảng Users để xem có bản ghi nào trùng email và chưa bị xóa (IsDeleted = 0).
+     * [BR-CONS-02]: Each email address must be unique in the system.
+     * 
+     * @param email Email cần kiểm tra
+     * @return true nếu tồn tại
+     * @throws SQLException nếu có lỗi CSDL
+     */
     @Override
     public boolean checkEmailExists(String email) throws SQLException {
         Connection conn = null;
@@ -720,6 +776,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         try {
             conn = getActiveConnection();
 
+            // SQL: Kiểm tra tồn tại email trong hệ thống, loại trừ các tài khoản đã bị xóa mềm (IsDeleted = 0)
             String sql = """
                         SELECT 1
                         FROM Users
@@ -738,6 +795,15 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Kiểm tra sự tồn tại của số điện thoại.
+     * Luồng nghiệp vụ: Truy vấn vào bảng Users để xem có bản ghi nào trùng phone và chưa bị xóa.
+     * [BR-CONS-40]: Each phone number must be unique in the system for User accounts.
+     * 
+     * @param phone Số điện thoại cần kiểm tra
+     * @return true nếu tồn tại
+     * @throws SQLException nếu có lỗi CSDL
+     */
     @Override
     public boolean checkPhoneExists(String phone) throws SQLException {
         Connection conn = null;
@@ -747,6 +813,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         try {
             conn = getActiveConnection();
 
+            // SQL: Kiểm tra tồn tại số điện thoại trong hệ thống, loại trừ các tài khoản đã bị xóa mềm (IsDeleted = 0)
             String sql = "SELECT 1 FROM Users WHERE Phone = ? AND IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, phone);
@@ -1369,6 +1436,16 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return 0;
     }
 
+    /**
+     * Kiểm tra sự tồn tại của email đối với người dùng khác.
+     * Luồng nghiệp vụ: Kiểm tra email đã được sử dụng bởi ai khác chưa, ngoại trừ UserID hiện tại.
+     * [BR-CONS-02]: Each email address must be unique in the system.
+     * 
+     * @param email Email cần kiểm tra
+     * @param excludedUserId ID người dùng ngoại trừ
+     * @return true nếu tồn tại
+     * @throws SQLException nếu có lỗi CSDL
+     */
     @Override
     public boolean checkEmailExistsForOtherUser(String email, int excludedUserId) throws SQLException {
         Connection conn = null;
@@ -1377,6 +1454,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
+            // SQL: Kiểm tra xem có user nào khác (ngoài excludedUserId) đang dùng email này không
             String sql = "SELECT 1 FROM Users WHERE Email = ? AND UserID <> ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, email);
@@ -1388,6 +1466,16 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Kiểm tra sự tồn tại của số điện thoại đối với người dùng khác.
+     * Luồng nghiệp vụ: Kiểm tra số điện thoại đã được sử dụng bởi ai khác chưa, ngoại trừ UserID hiện tại.
+     * [BR-CONS-40]: Each phone number must be unique in the system for User accounts.
+     * 
+     * @param phone Số điện thoại cần kiểm tra
+     * @param excludedUserId ID người dùng ngoại trừ
+     * @return true nếu tồn tại
+     * @throws SQLException nếu có lỗi CSDL
+     */
     @Override
     public boolean checkPhoneExistsForOtherUser(String phone, int excludedUserId) throws SQLException {
         if (normalizeBlank(phone) == null) {
@@ -1400,6 +1488,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
         try {
             conn = getActiveConnection();
+            // SQL: Kiểm tra xem có user nào khác (ngoài excludedUserId) đang dùng phone này không
             String sql = "SELECT 1 FROM Users WHERE Phone = ? AND UserID <> ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, phone);
@@ -1676,6 +1765,65 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                           AND (
                               s.SessionDate >= CAST(GETDATE() AS date)
                               OR s.SessionStatus <> 'Completed'
+                          )
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    @Override
+    public boolean hasBlockingMemberSchedule(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = """
+                        SELECT 1
+                        FROM Members m
+                        INNER JOIN PTSchedules s ON m.MemberID = s.MemberID
+                        WHERE m.UserID = ?
+                          AND m.IsDeleted = 0
+                          AND s.IsDeleted = 0
+                          AND s.SessionStatus <> 'Cancelled'
+                          AND (
+                              s.SessionDate >= CAST(GETDATE() AS date)
+                              OR s.SessionStatus <> 'Completed'
+                          )
+                    """;
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+            rs = stmt.executeQuery();
+            return rs.next();
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+    }
+
+    @Override
+    public boolean hasBlockingMemberGymPackage(int userId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            String sql = """
+                        SELECT 1
+                        FROM Members m
+                        INNER JOIN MemberPackages mp ON m.MemberID = mp.MemberID
+                        WHERE m.UserID = ?
+                          AND m.IsDeleted = 0
+                          AND mp.IsDeleted = 0
+                          AND (
+                              mp.Status = 'Pending'
+                              OR (mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date))
                           )
                     """;
             stmt = conn.prepareStatement(sql);
@@ -2077,18 +2225,18 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 conn.setAutoCommit(false);
             }
 
-            // 1. Cáº­p nháº­t dá»¯ liá»‡u cá»‘t lÃµi vÃ o báº£ng Users chÃ­nh
+            // 1. Cập nhật dữ liệu cốt lõi vào bảng Users chính
             psUser = conn.prepareStatement(sqlUser);
             psUser.setString(1, profileDto.getDisplayName());
             psUser.setString(2, profileDto.getPhone());
             psUser.setInt(3, profileDto.getUserId());
             int userRows = psUser.executeUpdate();
 
-            int subRows = 1; // Máº·c Ä‘á»‹nh há»£p lá»‡ cho trÆ°á»ng há»£p Admin hoáº·c Staff (khÃ´ng cÃ³
-                             // báº£ng phá»¥ cáº§n cáº­p nháº­t qua trang profile cá»§a DÆ°Æ¡ng)
+            int subRows = 1; // Mặc định hợp lệ cho trường hợp Admin hoặc Staff (không có
+                             // bảng phụ cần cập nhật qua trang profile của Dương)
 
-            // 2. Ráº½ nhÃ¡nh cáº­p nháº­t dá»¯ liá»‡u Ä‘áº·c thÃ¹ phá»¥ thuá»™c theo vai
-            // trÃ²
+            // 2. Rẽ nhánh cập nhật dữ liệu đặc thù phụ thuộc theo vai
+            // trò
             if ("Member".equalsIgnoreCase(roleName) && profileDto instanceof MemberProfileDTO) {
                 MemberProfileDTO memberDto = (MemberProfileDTO) profileDto;
                 String sqlMember = "UPDATE Members SET Gender = ?, DateOfBirth = ?, Address = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
@@ -2112,8 +2260,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
                 subRows = psSub.executeUpdate();
             }
 
-            // 3. XÃ¡c nháº­n lÆ°u dá»¯ liá»‡u thÃ nh cÃ´ng náº¿u cáº£ 2 khá»‘i lá»‡nh
-            // thá»±c thi trÆ¡n tru
+            // 3. Xác nhận lưu dữ liệu thành công nếu cả 2 khối lệnh
+            // thực thi trơn tru
             if (userRows > 0 && subRows > 0) {
                 success = true;
             }

@@ -52,6 +52,15 @@ public class ScheduleSetupController extends HttpServlet {
             }
         }
 
+        for (PTSchedule s : memberWeekSchedules) {
+            int col = s.getSessionDate().getDayOfWeek().getValue() - 1; // Thứ 2 = 1 -> Index 0
+            int row = getTimeSlotRow(s.getStartTime().toString());
+            if (row != -1 && col >= 0 && col < 7) {
+                matrix[row][col] = true; // Chuyển thành TRUE (Bận)
+                memberMatrix[row][col] = true;
+            }
+        }
+
         // 4. Đẩy ra View
         java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
         request.setAttribute("timetableMatrix", matrix);

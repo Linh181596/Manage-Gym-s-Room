@@ -54,9 +54,6 @@
                     </a>
                 </c:otherwise>
             </c:choose>
-            <a class="btn btn-warning text-dark" href="${pageContext.request.contextPath}/staff/equipment-issues?action=edit&id=${issue.issueId}">
-                <i class="fa fa-edit me-2"></i>Cập nhật tiến độ
-            </a>
         </div>
     </div>
 

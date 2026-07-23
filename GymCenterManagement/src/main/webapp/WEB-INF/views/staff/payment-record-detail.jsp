@@ -253,6 +253,7 @@
                 
                 <div class="d-flex gap-3">
                     <c:if test="${invoice.status == 'Paid'}">
+                        <%-- Nút gọi lệnh in (print) của trình duyệt để in biên lai --%>
                         <button type="button" class="btn btn-lg btn-secondary px-4" onclick="window.print()">
                             <i class="fa fa-print me-1"></i> In biên lai
                         </button>
@@ -265,17 +266,29 @@
                         </form>
                         
                         <c:if test="${!isAdmin}">
-                            <button type="button" class="btn btn-lg btn-outline-danger px-4" onclick="confirmCancelInvoice()">
-                                <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
-                            </button>
-                            
-                            <form action="${backUrl}" method="post">
-                                <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
-                                <input type="hidden" name="action" value="pay" />
-                                <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
-                                    <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
+                            <div class="d-flex gap-3">
+                                <%-- Nút kích hoạt popup xác nhận trước khi submit form hủy hóa đơn --%>
+                                <button type="button" class="btn btn-lg btn-outline-danger px-4" onclick="confirmCancelInvoice()">
+                                    <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
                                 </button>
-                            </form>
+                                
+                                <form action="${pageContext.request.contextPath}/staff/vnpay-create" method="post">
+                                    <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                                    <%-- Nút submit form khởi tạo giao dịch thanh toán qua cổng VNPAY --%>
+                                    <button type="submit" class="btn btn-lg btn-primary px-4 shadow-sm">
+                                        <i class="fa fa-credit-card me-1"></i> Thanh toán qua VNPAY
+                                    </button>
+                                </form>
+
+                                <form action="${backUrl}" method="post">
+                                    <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                                    <input type="hidden" name="action" value="pay" />
+                                    <%-- Nút submit form xác nhận đã thu tiền mặt và cập nhật trạng thái hóa đơn thành Paid --%>
+                                    <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
+                                        <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
+                                    </button>
+                                </form>
+                            </div>
                         </c:if>
                     </c:if>
                 </div>

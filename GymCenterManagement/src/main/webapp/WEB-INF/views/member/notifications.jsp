@@ -13,6 +13,8 @@
     String mailboxSubtitle = request.getAttribute("mailboxSubtitle") != null ? (String) request.getAttribute("mailboxSubtitle") : "Xem các thông báo mới nhất từ trung tâm";
     String dashboardUrl = request.getAttribute("dashboardUrl") != null ? (String) request.getAttribute("dashboardUrl") : contextPath + "/member/dashboard";
     String notificationBasePath = request.getAttribute("notificationBasePath") != null ? (String) request.getAttribute("notificationBasePath") : contextPath + "/member/notifications";
+    String notificationSuccessMessage = (String) request.getAttribute("notificationSuccessMessage");
+    String notificationErrorMessage = (String) request.getAttribute("notificationErrorMessage");
     int unreadCount = 0;
     if (notis != null) {
         for (Map<String, String> noti : notis) {
@@ -24,6 +26,18 @@
 %>
 
 <div class="container-fluid pt-4 px-4">
+    <% if (notificationSuccessMessage != null) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa fa-check-circle me-2"></i><%= notificationSuccessMessage %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if (notificationErrorMessage != null) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa fa-exclamation-circle me-2"></i><%= notificationErrorMessage %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
     <div class="d-flex align-items-center justify-content-between mb-4 bg-light rounded p-4 border">
         <div>
             <h5 class="mb-1 text-primary fw-bold"><i class="fa fa-bell me-2"></i><%= mailboxTitle %></h5>
@@ -46,6 +60,11 @@
                     <span><i class="fa fa-envelope-open me-2 text-primary"></i>Danh sách thông báo</span>
                     <span class="badge bg-light text-dark border"><%= notis != null ? notis.size() : 0 %></span>
                 </h6>
+                <form method="post" action="<%= notificationBasePath %>/mark-read" class="mb-3">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="fa fa-check-double me-1"></i>Đánh dấu tất cả đã đọc
+                    </button>
+                </form>
                 <div style="max-height: 500px; overflow-y: auto; padding-right: 4px;">
                     <% if (notis != null && !notis.isEmpty()) { %>
                         <div class="list-group">

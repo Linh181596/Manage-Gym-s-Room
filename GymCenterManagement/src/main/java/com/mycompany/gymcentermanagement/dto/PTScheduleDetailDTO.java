@@ -3,6 +3,10 @@ package com.mycompany.gymcentermanagement.dto;
 import java.sql.Time;
 import java.time.LocalDate;
 
+/**
+ * DTO chứa thông tin chi tiết của một lịch tập PT (1 ca tập cụ thể).
+ * Bao gồm thời gian, trạng thái điểm danh, thông tin hội viên, PT phụ trách và các yêu cầu dời lịch (reschedule).
+ */
 public class PTScheduleDetailDTO {
     private int scheduleId; // Thêm mã lịch để điểm danh
     private LocalDate sessionDate;
@@ -12,6 +16,8 @@ public class PTScheduleDetailDTO {
     private String memberName;
     private String packageName;
     private String ptName; // Thêm tên PT để hiển thị ở trang quản lý lịch của Admin/Staff
+    private String ptSpecialization; // Chuyên môn của PT
+    private String originalPtName; // Tên HLV cũ trước khi bị thay thế
     private String attendanceStatus; // Thêm trường này để chứa kết quả điểm danh
 
     public PTScheduleDetailDTO() {
@@ -102,6 +108,7 @@ public class PTScheduleDetailDTO {
     private String cancellationReason;
     private int ptId;
     private int memberId;
+    private Integer originalPtId;
 
     // Reschedule request fields
     private Integer rescheduleRequestId;
@@ -216,5 +223,29 @@ public class PTScheduleDetailDTO {
 
     public void setMemberId(int memberId) {
         this.memberId = memberId;
+    }
+
+    public String getPtSpecialization() {
+        return ptSpecialization;
+    }
+
+    public void setPtSpecialization(String ptSpecialization) {
+        this.ptSpecialization = ptSpecialization;
+    }
+
+    public String getOriginalPtName() {
+        return originalPtName;
+    }
+
+    public void setOriginalPtName(String originalPtName) {
+        this.originalPtName = originalPtName;
+    }
+
+    public Integer getOriginalPtId() {
+        return originalPtId;
+    }
+
+    public void setOriginalPtId(Integer originalPtId) {
+        this.originalPtId = originalPtId;
     }
 }

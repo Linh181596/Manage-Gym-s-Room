@@ -14,6 +14,7 @@
             <h4 class="mb-1 text-dark fw-bold"><i class="fa fa-home me-2 text-primary"></i>Chào mừng quay trở lại, ${sessionScope.currentUser.fullName}!</h4>
             <small class="text-muted">Xem tổng quan về các chỉ số huấn luyện và lịch dạy hôm nay của bạn</small>
         </div>
+        <%-- Nút tải lại dữ liệu bảng điều khiển (Dashboard) cho PT --%>
         <a href="${pageContext.request.contextPath}/pt/dashboard" class="btn btn-sm btn-primary shadow-sm">
             <i class="fa fa-sync-alt me-1"></i> Làm mới
         </a>
@@ -29,8 +30,26 @@
                     <small class="text-muted">Vui lòng xếp lịch để hội viên có thể bắt đầu tập luyện.</small>
                 </div>
             </div>
+            <%-- Nút chuyển hướng đến trang xếp lịch dạy cho gói tập mới --%>
             <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="btn btn-warning fw-bold text-dark shadow-sm">
                 <i class="fa fa-calendar-alt me-1"></i> Đến trang xếp lịch dạy
+            </a>
+        </div>
+    </c:if>
+
+    <!-- Alert: Assigned Substitute PT Sessions -->
+    <c:if test="${not empty substituteSessionsCount && substituteSessionsCount > 0}">
+        <div class="alert alert-info border-info border-2 shadow-sm d-flex align-items-center justify-content-between fade show p-3 mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa fa-info-circle text-info me-3 fs-4"></i>
+                <div>
+                    <h6 class="mb-0 fw-bold text-dark">Bạn có ${substituteSessionsCount} ca dạy thay thế mới được phân công!</h6>
+                    <small class="text-muted">Bạn được phân công dạy thay cho HLV khác. Vui lòng kiểm tra lịch để chuẩn bị giảng dạy.</small>
+                </div>
+            </div>
+            <%-- Nút chuyển hướng đến trang xem lịch dạy thay thế --%>
+            <a href="${pageContext.request.contextPath}/pt/schedule-dashboard" class="btn btn-info fw-bold text-white shadow-sm">
+                <i class="fa fa-calendar-check me-1"></i> Xem lịch dạy của tôi
             </a>
         </div>
     </c:if>
@@ -41,7 +60,7 @@
         <div class="col-sm-6 col-xl-3">
             <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100 pt-card-btn" 
                  style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
-                 onclick="handleCardClick('members', ${empty data ? 0 : data.activeMembersCount})">
+                 onclick="handleCardClick('members', '${empty data ? 0 : data.activeMembersCount}')">
                 <i class="fa fa-user-friends fa-3x text-primary"></i>
                 <div class="ms-3 text-end">
                     <p class="mb-2 text-muted fw-semibold">Hội viên của tôi</p>
@@ -53,7 +72,7 @@
         <div class="col-sm-6 col-xl-3">
             <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100 pt-card-btn" 
                  style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
-                 onclick="handleCardClick('weekly', ${empty data ? 0 : data.weeklySessionsCount})">
+                 onclick="handleCardClick('weekly', '${empty data ? 0 : data.weeklySessionsCount}')">
                 <i class="fa fa-dumbbell fa-3x text-success"></i>
                 <div class="ms-3 text-end">
                     <p class="mb-2 text-muted fw-semibold">Buổi tập trong tuần</p>
@@ -79,7 +98,7 @@
         <div class="col-sm-6 col-xl-3">
             <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100 pt-card-btn" 
                  style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
-                 onclick="handleCardClick('today', ${empty data ? 0 : data.completedTodayCount})">
+                 onclick="handleCardClick('today', '${empty data ? 0 : data.completedTodayCount}')">
                 <i class="fa fa-check-circle fa-3x text-warning"></i>
                 <div class="ms-3 text-end">
                     <p class="mb-2 text-muted fw-semibold">Hoàn thành hôm nay</p>
@@ -169,8 +188,18 @@
                                                     </span>
                                                 </td>
                                                 <td>${s.memberName}</td>
-                                                <td>${s.packageName}</td>
                                                  <td>
+                                                     ${s.packageName}
+                                                     <c:choose>
+                                                         <c:when test="${not empty s.originalPtId and s.ptId == pt.ptId}">
+                                                             <span class="badge bg-info text-white ms-1">Dạy thay</span>
+                                                         </c:when>
+                                                         <c:when test="${not empty s.originalPtId and s.originalPtId == pt.ptId}">
+                                                             <span class="badge bg-warning text-dark ms-1" data-bs-toggle="tooltip" title="Ca này bạn đã nhờ dạy hộ">Dạy thay bởi: ${s.ptName}</span>
+                                                         </c:when>
+                                                     </c:choose>
+                                                 </td>
+                                                  <td>
                                                      <span class="badge bg-${s.sessionStatus == 'Completed' ? 'success' : (s.sessionStatus == 'Cancelled' ? 'danger' : 'warning text-dark')}">
                                                          ${s.sessionStatus}
                                                      </span>
@@ -323,8 +352,8 @@
                                             <td style="width: 20%;">
                                                 <div class="d-flex align-items-center">
                                                     <div class="progress flex-grow-1" style="height: 8px;">
-                                                        <div class="progress-bar bg-success" role="progressbar" 
-                                                             style="width: ${reg.progressPercentage}%;" 
+                                                        <div class="progress-bar bg-success pt-progress-bar" role="progressbar" 
+                                                             data-progress="${reg.progressPercentage}" 
                                                              aria-valuenow="${reg.progressPercentage}" 
                                                              aria-valuemin="0" 
                                                              aria-valuemax="100"></div>
@@ -393,7 +422,17 @@
                                                 </span>
                                             </td>
                                             <td class="fw-bold">${s.memberName}</td>
-                                            <td>${s.packageName}</td>
+                                            <td>
+                                                ${s.packageName}
+                                                <c:choose>
+                                                    <c:when test="${not empty s.originalPtId and s.ptId == pt.ptId}">
+                                                        <span class="badge bg-info text-white ms-1">Dạy thay</span>
+                                                    </c:when>
+                                                    <c:when test="${not empty s.originalPtId and s.originalPtId == pt.ptId}">
+                                                        <span class="badge bg-warning text-dark ms-1" data-bs-toggle="tooltip" title="Ca này bạn đã nhờ dạy hộ">Dạy thay bởi: ${s.currentPtName}</span>
+                                                    </c:when>
+                                                </c:choose>
+                                            </td>
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${s.sessionStatus == 'Completed'}">
@@ -452,6 +491,7 @@
 </style>
 
 <script>
+    // Hàm xử lý sự kiện click vào các thẻ KPI, điều hướng đến trang chi tiết hoặc hiển thị bảng chi tiết bên dưới
     function handleCardClick(type, count) {
         if (type === 'members') {
             if (count >= 5) {
@@ -476,6 +516,7 @@
         }
     }
 
+    // Hàm chuyển đổi hiển thị thông tin chi tiết của thẻ KPI được chọn, tự động cuộn màn hình
     function toggleDetailSection(type) {
         const container = document.getElementById('detailsCollapseContainer');
         const sections = ['members', 'weekly', 'hours', 'today'];
@@ -520,6 +561,14 @@
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Initialize dynamic progress bars
+        document.querySelectorAll('.pt-progress-bar').forEach(function(bar) {
+            var progress = bar.getAttribute('data-progress');
+            if (progress) {
+                bar.style.width = progress + '%';
+            }
         });
     });
 </script>
