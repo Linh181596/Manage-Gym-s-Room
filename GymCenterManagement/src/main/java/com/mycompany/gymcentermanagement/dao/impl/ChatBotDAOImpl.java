@@ -83,6 +83,63 @@ public class ChatBotDAOImpl extends BaseDAO implements ChatBotDAO {
         return faqs;
     }
 
+    @Override
+    public List<FAQModel> getActiveFAQs(int limit) throws SQLException {
+        List<FAQModel> faqs = new ArrayList<>();
+        String sql = """
+                SELECT faq_id, question, answer, category, keywords, status, created_at, updated_at
+                FROM dbo.FAQ
+                WHERE status = N'Active'
+                ORDER BY
+                    CASE WHEN category IS NULL OR LTRIM(RTRIM(category)) = '' THEN 1 ELSE 0 END,
+                    category ASC,
+                    question ASC,
+                    faq_id ASC
+                OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY
+                """;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, Math.max(1, limit));
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                faqs.add(mapFAQ(rs));
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return faqs;
+    }
+
+    @Override
+    public FAQModel getActiveFAQById(int faqId) throws SQLException {
+        String sql = """
+                SELECT faq_id, question, answer, category, keywords, status, created_at, updated_at
+                FROM dbo.FAQ
+                WHERE faq_id = ? AND status = N'Active'
+                """;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getActiveConnection();
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, faqId);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapFAQ(rs);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return null;
+    }
+
     private String buildSearchSql(List<String> keywords) {
         StringBuilder sql = new StringBuilder();
         sql.append("""

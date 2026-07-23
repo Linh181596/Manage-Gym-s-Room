@@ -11,6 +11,7 @@
 package com.mycompany.gymcentermanagement.controller;
 
 import com.mycompany.gymcentermanagement.model.entity.ChatMessageModel;
+import com.mycompany.gymcentermanagement.model.entity.FAQModel;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.ChatBotService;
 import com.mycompany.gymcentermanagement.service.impl.ChatBotServiceImpl;
@@ -26,7 +27,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-@WebServlet(name = "ChatBotController", urlPatterns = {"/chatbot/send", "/chatbot/history", "/chatbot/clear"})
+@WebServlet(name = "ChatBotController", urlPatterns = {"/chatbot/send", "/chatbot/history", "/chatbot/clear", "/chatbot/faqs", "/chatbot/answer"})
 public class ChatBotController extends HttpServlet {
 
     private final ChatBotService chatBotService = new ChatBotServiceImpl();
@@ -42,6 +43,11 @@ public class ChatBotController extends HttpServlet {
         
         if ("/chatbot/history".equals(request.getServletPath())) {
             writeHistoryResponse(response, chatBotService.getChatHistory(request.getSession(true)));
+            return;
+        }
+
+        if ("/chatbot/faqs".equals(request.getServletPath())) {
+            writeFAQListResponse(response, chatBotService.getAvailableFAQs());
             return;
         }
 
@@ -64,6 +70,11 @@ public class ChatBotController extends HttpServlet {
             return;
         }
 
+        if ("/chatbot/answer".equals(servletPath)) {
+            handleAnswerFAQ(request, response);
+            return;
+        }
+
         if ("/chatbot/clear".equals(servletPath)) {
             handleClearHistory(request, response);
             return;
@@ -75,6 +86,20 @@ public class ChatBotController extends HttpServlet {
     private void handleSendQuestion(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(true);
         ChatMessageModel botMessage = chatBotService.answerQuestion(request.getParameter("question"), session);
+        writeMessageResponse(response, botMessage);
+    }
+
+    private void handleAnswerFAQ(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int faqId;
+        try {
+            faqId = Integer.parseInt(request.getParameter("faqId"));
+        } catch (NumberFormatException ex) {
+            writeBadRequestResponse(response, "Câu hỏi không hợp lệ.");
+            return;
+        }
+
+        HttpSession session = request.getSession(true);
+        ChatMessageModel botMessage = chatBotService.answerFAQ(faqId, session);
         writeMessageResponse(response, botMessage);
     }
 
@@ -100,7 +125,12 @@ public class ChatBotController extends HttpServlet {
 
     private void writeForbiddenResponse(HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        writeJson(response, "{\"thanhCong\":false,\"thongBao\":\"Bạn không có quyền sử dụng chatbot.\"}");
+        writeJson(response, "{\"thanhCong\":false,\"thongBao\":\"Bạn không có quyền sử dụng chat box FAQ.\"}");
+    }
+
+    private void writeBadRequestResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        writeJson(response, "{\"thanhCong\":false,\"thongBao\":\"" + JsonUtils.escapeJson(message) + "\"}");
     }
 
     private void writeMessageResponse(HttpServletResponse response, ChatMessageModel botMessage) throws IOException {
@@ -114,6 +144,14 @@ public class ChatBotController extends HttpServlet {
         } else {
             builder.append(toMessageJson(botMessage));
         }
+        builder.append("}");
+        writeJson(response, builder.toString());
+    }
+
+    private void writeFAQListResponse(HttpServletResponse response, List<FAQModel> faqs) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{\"thanhCong\":true,\"faqs\":");
+        builder.append(toFAQsJson(faqs));
         builder.append("}");
         writeJson(response, builder.toString());
     }
@@ -144,6 +182,38 @@ public class ChatBotController extends HttpServlet {
         }
 
         builder.append("]");
+        return builder.toString();
+    }
+
+    private String toFAQsJson(List<FAQModel> faqs) {
+        StringBuilder builder = new StringBuilder("[");
+        boolean firstFAQ = true;
+
+        if (faqs != null) {
+            for (FAQModel faq : faqs) {
+                if (faq == null) {
+                    continue;
+                }
+                if (!firstFAQ) {
+                    builder.append(",");
+                }
+                firstFAQ = false;
+                builder.append(toFAQJson(faq));
+            }
+        }
+
+        builder.append("]");
+        return builder.toString();
+    }
+
+    private String toFAQJson(FAQModel faq) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{");
+        builder.append("\"faqId\":").append(faq.getFaqId()).append(",");
+        builder.append("\"cauHoi\":\"").append(JsonUtils.escapeJson(faq.getQuestion())).append("\",");
+        builder.append("\"danhMuc\":\"").append(JsonUtils.escapeJson(faq.getCategory())).append("\",");
+        builder.append("\"tuKhoa\":\"").append(JsonUtils.escapeJson(faq.getKeywords())).append("\"");
+        builder.append("}");
         return builder.toString();
     }
 

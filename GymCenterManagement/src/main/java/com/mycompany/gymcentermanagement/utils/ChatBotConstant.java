@@ -28,6 +28,8 @@ public final class ChatBotConstant {
     
     // Số lượng ký tự tối đa hoặc giới hạn tìm kiếm nội dung trong tài liệu mẫu
     public static final int SEARCH_LIMIT = 80;
+
+    public static final int FAQ_LIST_LIMIT = 1000;
     
     // Điểm khớp (match score) tối thiểu để thuật toán xác định là câu hỏi hợp lệ (theo %)
     public static final int MIN_MATCH_SCORE = 35;
@@ -36,8 +38,7 @@ public final class ChatBotConstant {
     public static final String WELCOME_MESSAGE = """
             Xin chào!
 
-            Tôi là trợ lý hỗ trợ của hệ thống Manage Gym's Room.
-            Bạn có thể hỏi tôi về: gói tập, hội viên, huấn luyện viên, lớp học, thiết bị, thanh toán, giờ mở cửa và nội quy phòng tập.
+            Vui lòng chọn một câu hỏi trong database FAQ bên dưới để xem câu trả lời từ hệ thống Manage Gym's Room.
             """;
 
     // Phản hồi khi điểm khớp (match score) dưới mức MIN_MATCH_SCORE
@@ -52,6 +53,8 @@ public final class ChatBotConstant {
     
     // Phản hồi khi có lỗi ngoại lệ (Exception) xảy ra ở server
     public static final String SYSTEM_ERROR_MESSAGE = "Có lỗi xảy ra khi tìm câu trả lời. Vui lòng thử lại sau.";
+
+    public static final String FAQ_NOT_AVAILABLE_MESSAGE = "Câu hỏi này hiện không còn trong database FAQ. Vui lòng chọn câu hỏi khác.";
 
     private ChatBotConstant() {
         // Ngăn chặn khởi tạo đối tượng từ class chứa hằng số

@@ -49,6 +49,16 @@ public class ChatBotServiceImpl implements ChatBotService {
     }
 
     @Override
+    public List<FAQModel> getAvailableFAQs() {
+        try {
+            return chatBotDAO.getActiveFAQs(ChatBotConstant.FAQ_LIST_LIMIT);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.WARNING, "Không thể tải danh sách FAQ cho chat box.", ex);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
     public ChatMessageModel answerQuestion(String question, HttpSession session) {
         String normalizedInput = normalizeInput(question);
         List<ChatMessageModel> history = resolveChatHistory(session);
@@ -71,6 +81,30 @@ public class ChatBotServiceImpl implements ChatBotService {
         ChatMessageModel botMessage = ChatMessageModel.bot(findAnswer(normalizedInput));
         addMessage(history, botMessage);
         return botMessage;
+    }
+
+    @Override
+    public ChatMessageModel answerFAQ(int faqId, HttpSession session) {
+        List<ChatMessageModel> history = resolveChatHistory(session);
+
+        try {
+            FAQModel faq = chatBotDAO.getActiveFAQById(faqId);
+            if (faq == null) {
+                ChatMessageModel botMessage = ChatMessageModel.bot(ChatBotConstant.FAQ_NOT_AVAILABLE_MESSAGE);
+                addMessage(history, botMessage);
+                return botMessage;
+            }
+
+            addMessage(history, ChatMessageModel.user(faq.getQuestion()));
+            ChatMessageModel botMessage = ChatMessageModel.bot(faq.getAnswer());
+            addMessage(history, botMessage);
+            return botMessage;
+        } catch (SQLException ex) {
+            LOGGER.log(Level.WARNING, "Không thể lấy câu trả lời FAQ cho chat box.", ex);
+            ChatMessageModel botMessage = ChatMessageModel.bot(ChatBotConstant.SYSTEM_ERROR_MESSAGE);
+            addMessage(history, botMessage);
+            return botMessage;
+        }
     }
 
     @Override
