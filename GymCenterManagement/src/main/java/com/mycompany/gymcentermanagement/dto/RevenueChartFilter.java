@@ -12,6 +12,11 @@ package com.mycompany.gymcentermanagement.dto;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * DTO chứa cấu hình các tiêu chí lọc cho biểu đồ doanh thu (Theo loại doanh thu và khoảng thời gian).
+ * Chứa logic chuyển đổi tự động các mốc tương đối (ví dụ: "last7", "this_month", "this_quarter") 
+ * thành ngày cụ thể (fromDate, toDate) để gọi truy vấn SQL dễ dàng.
+ */
 public class RevenueChartFilter {
     public static final String RANGE_LAST_7_DAYS = "last7";
     public static final String RANGE_LAST_30_DAYS = "last30";

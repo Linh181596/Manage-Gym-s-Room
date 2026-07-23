@@ -80,6 +80,7 @@
                 <i class="fa fa-chart-line me-2 text-primary"></i>Báo cáo tăng trưởng thành viên
             </h4>
         </div>
+        <%-- Nút quay trở về màn hình Dashboard chính của Admin --%>
         <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-outline-primary">
             <i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển
         </a>
@@ -112,11 +113,13 @@
                 </select>
             </div>
             <div class="col-md-4 col-lg-3">
+                <%-- Nút gửi biểu mẫu (GET request) lấy báo cáo tăng trưởng theo tháng/năm --%>
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="fa fa-eye me-2"></i>Xem báo cáo
                 </button>
             </div>
             <div class="col-md-4 col-lg-3">
+                <%-- Nút hủy các thay đổi trên form và tải lại báo cáo với thời gian mặc định --%>
                 <a href="${pageContext.request.contextPath}/admin/membership-growth-report" class="btn btn-outline-secondary w-100">
                     <i class="fa fa-undo me-2"></i>Đặt lại
                 </a>
@@ -180,7 +183,7 @@
                         <div>
                             <p class="mb-2 fw-semibold">Tỷ lệ tăng trưởng</p>
                             <h3 class="mb-0 fw-bold">${summary.growthRateText}</h3>
-                            <small>Kỳ trước: ${summary.previousPeriodNewMembers}</small>
+                            <small>Tháng trước: ${summary.previousPeriodNewMembers}</small>
                         </div>
                         <div class="summary-icon rounded-circle d-flex align-items-center justify-content-center">
                             <i class="fa fa-percentage fa-2x"></i>
@@ -231,9 +234,11 @@
                            value="${fn:escapeXml(searchKeyword)}"
                            placeholder="Tìm theo mã hoặc tên thành viên">
                 </div>
+                <%-- Nút tìm kiếm thành viên theo từ khóa trong báo cáo --%>
                 <button type="submit" class="btn btn-primary">
                     <i class="fa fa-search"></i>
                 </button>
+                <%-- Nút xóa bộ lọc tìm kiếm và nạp lại danh sách thành viên --%>
                 <a href="${clearSearchUrl}#memberTable" class="btn btn-outline-secondary">
                     <i class="fa fa-undo"></i>
                 </a>
@@ -347,6 +352,7 @@
             "Nov": "Tháng 11",
             "Dec": "Tháng 12"
         };
+        // Map nhãn tiếng Anh sang tiếng Việt cho hiển thị biểu đồ
         const labelsData = JSON.parse(chartElement.getAttribute("data-labels") || "[]").map(function(label) {
             if (monthLabelMap[label]) {
                 return monthLabelMap[label];
@@ -360,6 +366,7 @@
             return parseInt(value, 10) || 0;
         });
 
+        // Render biểu đồ bar chart với Chart.js cho số liệu thành viên mới
         new Chart(chartElement.getContext("2d"), {
             type: "bar",
             data: {

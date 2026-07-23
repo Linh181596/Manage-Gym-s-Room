@@ -4,7 +4,7 @@
   Document    : manage-pt-service-prices.jsp
   Created on  : 2026-06-04
   Author      : Nguyễn Đình Phú (phund)
-  Description : Giao diện cấu hình giá dịch vụ tập luyện với HLV cá nhân.
+  Description : Giao diện cấu hình giá dịch vụ tập luyện với HLV cá nhân (Động theo gói PT).
   =========================================================================
 --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
@@ -39,7 +39,7 @@
                     <span class="badge bg-light-primary text-primary px-3 py-1.5 rounded-pill fw-semibold mb-2">
                         <i class="fa fa-dumbbell me-1"></i>${trainer.specialization}
                     </span>
-                    <p class="text-muted small">Cấu hình bảng giá dịch vụ cho 2 gói tập cơ bản của huấn luyện viên này.</p>
+                    <p class="text-muted small">Cấu hình bảng giá dịch vụ cho các gói tập của huấn luyện viên này.</p>
                 </div>
 
                 <!-- Feedback Message Display -->
@@ -54,42 +54,41 @@
                     <!-- Hidden field for PT ID -->
                     <input type="hidden" name="id" value="${trainer.ptId}" />
 
-                    <!-- Package 12 Sessions -->
-                    <div class="mb-4">
-                        <label for="price12" class="form-label fw-bold text-dark">
-                            <i class="fa fa-box me-1 text-muted"></i> Gói PT Cơ bản 1 Tháng (12 buổi) <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <input type="number" class="form-control form-control-lg border-2" id="price12" name="price12" 
-                                   value="${price12.price != null ? price12.price.toBigInteger() : '0'}" 
-                                   placeholder="Nhập giá tiền cho gói 12 buổi" min="1000" step="1000" required>
-                            <span class="input-group-text bg-white border-2 border-start-0 fw-semibold text-secondary">₫</span>
-                            <div class="invalid-feedback">Vui lòng nhập giá tiền hợp lệ cho gói 12 buổi (phải lớn hơn 0 và không để trống).</div>
-                        </div>
-                        <div class="form-text">Đây là giá tiền áp dụng cho gói PT 12 buổi trong 1 tháng.</div>
-                    </div>
-
-                    <!-- Package 36 Sessions -->
-                    <div class="mb-5">
-                        <label for="price36" class="form-label fw-bold text-dark">
-                            <i class="fa fa-boxes me-1 text-muted"></i> Gói PT Cao cấp 3 Tháng (36 buổi) <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <input type="number" class="form-control form-control-lg border-2" id="price36" name="price36" 
-                                   value="${price36.price != null ? price36.price.toBigInteger() : '0'}" 
-                                   placeholder="Nhập giá tiền cho gói 36 buổi" min="1000" step="1000" required>
-                            <span class="input-group-text bg-white border-2 border-start-0 fw-semibold text-secondary">₫</span>
-                            <div class="invalid-feedback">Vui lòng nhập giá tiền hợp lệ cho gói 36 buổi (phải lớn hơn 0 và không để trống).</div>
-                        </div>
-                        <div class="form-text">Đây là giá tiền áp dụng cho gói PT 36 buổi trong 3 tháng.</div>
-                    </div>
+                    <!-- Danh sách các gói PT cấu hình động -->
+                    <c:choose>
+                        <c:when test="${empty activePackages}">
+                            <div class="alert alert-warning mb-4" role="alert">
+                                <i class="fa fa-exclamation-triangle me-2"></i> Hệ thống chưa có gói tập PT nào được kích hoạt hoạt động. Vui lòng tạo gói PT mới trước khi thiết lập giá.
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="pkg" items="${activePackages}">
+                                <div class="mb-4">
+                                    <label for="price_${pkg.ptPackageTypeId}" class="form-label fw-bold text-dark">
+                                        <i class="fa fa-box me-1 text-muted"></i> ${pkg.packageName} (${pkg.numberOfSessions} buổi) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <c:set var="pkgPrice" value="${priceMap[pkg.ptPackageTypeId]}" />
+                                        <input type="number" class="form-control form-control-lg border-2" id="price_${pkg.ptPackageTypeId}" name="price_${pkg.ptPackageTypeId}" 
+                                               value="${pkgPrice != null ? pkgPrice.toBigInteger() : '0'}" 
+                                               placeholder="Nhập giá tiền cho gói ${pkg.packageName}" min="1000" step="1000" required>
+                                        <span class="input-group-text bg-white border-2 border-start-0 fw-semibold text-secondary">₫</span>
+                                        <div class="invalid-feedback">Vui lòng nhập giá tiền hợp lệ (lớn hơn 0 và không bỏ trống).</div>
+                                    </div>
+                                    <div class="form-text text-muted">Thời hạn sử dụng: ${pkg.durationMonths} Tháng. <c:if test="${not empty pkg.description}">(${pkg.description})</c:if></div>
+                                </div>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
 
                     <!-- Action Buttons -->
                     <div class="d-flex gap-3 justify-content-end border-top pt-4">
                         <a href="${pageContext.request.contextPath}/pt/detail?id=${trainer.ptId}" class="btn btn-lg btn-outline-secondary px-5">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-lg btn-primary px-5 shadow-sm">
-                            <i class="fa fa-save me-2"></i> Lưu cấu hình giá
-                        </button>
+                        <c:if test="${not empty activePackages}">
+                            <button type="submit" class="btn btn-lg btn-primary px-5 shadow-sm">
+                                <i class="fa fa-save me-2"></i> Lưu cấu hình giá
+                            </button>
+                        </c:if>
                     </div>
                 </form>
             </div>

@@ -4,11 +4,8 @@
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
 <div class="container-fluid pt-4 px-4">
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex align-items-center mb-4">
         <h4 class="mb-0"><i class="fa fa-user-check me-2 text-primary"></i>Điểm danh ra vào</h4>
-        <a href="${pageContext.request.contextPath}/admin/work-history" class="btn btn-outline-secondary btn-sm">
-            <i class="fa fa-history me-1"></i>Lịch sử
-        </a>
     </div>
 
     <c:if test="${not empty sessionScope.flashMessage}">

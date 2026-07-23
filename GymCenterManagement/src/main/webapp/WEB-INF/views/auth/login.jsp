@@ -68,6 +68,7 @@
                             </div>
                         </c:if>
 
+                        <%-- Form gửi yêu cầu đăng nhập (POST) lên hệ thống, truyền tham số email và password --%>
                         <form action="${pageContext.request.contextPath}/login" method="POST">
                             <div class="form-floating mb-3">
                                 <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com" value="${not empty requestScope.prepopulatedEmail ? requestScope.prepopulatedEmail : param.email}">
@@ -84,6 +85,7 @@
                                 </div>
                                 <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a>
                             </div>
+                            <%-- Nút submit dữ liệu đăng nhập --%>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Đăng nhập</button>
                         </form>
                         <div class="text-center mb-3">

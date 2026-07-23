@@ -51,19 +51,26 @@
 
                     <!-- Current Package display -->
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark"><i class="fa fa-box me-1 text-muted"></i> Gói tập đang hoạt động hiện tại</label>
+                        <label class="form-label fw-bold text-dark"><i class="fa fa-box me-1 text-muted"></i> Gói tập hiện tại của hội viên</label>
                         <c:choose>
-                            <c:when test="${not empty activePkg}">
+                            <c:when test="${not empty latestPkg and latestPkg.status eq 'Active'}">
                                 <div class="p-3 bg-white rounded border border-success border-2">
-                                    <div class="fw-bold text-success fs-6"><i class="fa fa-check-circle me-1"></i> ${activePkg.gymPackage.packageName}</div>
-                                    <div class="small text-muted mt-1"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu: ${activePkg.startDate}</div>
-                                    <div class="small text-dark fw-bold"><i class="fa fa-calendar-check me-1"></i> Ngày hết hạn: ${activePkg.endDate}</div>
-                                    <div class="small text-muted"><i class="fa fa-clock me-1"></i> Giá trị: ${activePkg.gymPackage.durationMonths} Tháng</div>
+                                    <div class="fw-bold text-success fs-6"><i class="fa fa-check-circle me-1"></i> ${latestPkg.gymPackage.packageName}</div>
+                                    <div class="small text-muted mt-1"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu: ${latestPkg.startDate}</div>
+                                    <div class="small text-dark fw-bold"><i class="fa fa-calendar-check me-1"></i> Ngày hết hạn: ${latestPkg.endDate}</div>
+                                    <div class="small text-muted"><i class="fa fa-clock me-1"></i> Giá trị: ${latestPkg.gymPackage.durationMonths} Tháng</div>
+                                </div>
+                            </c:when>
+                            <c:when test="${not empty latestPkg and latestPkg.status eq 'Expired'}">
+                                <div class="p-3 bg-white rounded border border-warning border-dashed border-2 text-warning">
+                                    <div class="fw-bold fs-6"><i class="fa fa-exclamation-triangle me-1"></i> ${latestPkg.gymPackage.packageName} (Đã hết hạn)</div>
+                                    <div class="small mt-1"><i class="fa fa-calendar-times me-1"></i> Ngày hết hạn cũ: ${latestPkg.endDate}</div>
+                                    <div class="small"><i class="fa fa-info-circle me-1"></i> Gói gia hạn mới sẽ được kích hoạt kể từ <strong>Hôm nay</strong>.</div>
                                 </div>
                             </c:when>
                             <c:otherwise>
-                                <div class="p-3 bg-white rounded border border-warning border-dashed border-2 text-warning">
-                                    <i class="fa fa-exclamation-triangle me-1"></i> Không có gói tập nào đang hoạt động hoặc gói tập đã hết hạn. Gói gia hạn mới sẽ được kích hoạt kể từ <strong>Hôm nay</strong>.
+                                <div class="p-3 bg-white rounded border border-secondary border-dashed border-2 text-secondary">
+                                    <i class="fa fa-info-circle me-1"></i> Trạng thái gói tập: ${latestPkg.status}
                                 </div>
                             </c:otherwise>
                         </c:choose>
@@ -71,25 +78,20 @@
 
                     <!-- Package Selector -->
                     <div class="mb-5">
-                        <label for="packageSelect" class="form-label fw-bold text-dark"><i class="fa fa-cart-plus me-1 text-muted"></i> Chọn gói tập Gym gia hạn <span class="text-danger">*</span></label>
-                        <select class="form-select form-select-lg border-2" id="packageSelect" name="packageId" required>
-                            <option value="" disabled selected>-- Chọn gói tập --</option>
-                            <c:forEach var="pkg" items="${packages}">
-                                <option value="${pkg.packageId}" 
-                                        data-name="${pkg.packageName}" 
-                                        data-price="${pkg.price}" 
-                                        data-duration="${pkg.durationMonths}"
-                                        data-desc="${pkg.description}">
-                                    ${pkg.packageName} (${pkg.durationMonths} Tháng - <fmt:formatNumber value="${pkg.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>)
-                                </option>
-                            </c:forEach>
-                        </select>
-                        <div class="invalid-feedback">Vui lòng chọn một gói tập để gia hạn.</div>
+                        <label class="form-label fw-bold text-dark"><i class="fa fa-cart-plus me-1 text-muted"></i> Gói tập Gym được phép gia hạn</label>
+                        <div class="p-3 bg-light rounded border-2 border-primary border">
+                            <div class="fw-bold text-primary fs-6">${allowedPackage.packageName}</div>
+                            <div class="small text-muted mt-1">Thời hạn: ${allowedPackage.durationMonths} Tháng</div>
+                            <div class="fw-bold text-dark mt-2">Phí gia hạn: <fmt:formatNumber value="${allowedPackage.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></div>
+                        </div>
+                        <input type="hidden" name="packageId" value="${allowedPackage.packageId}">
+                        <div class="form-text text-muted"><i class="fa fa-lock me-1"></i> Hội viên chỉ có thể gia hạn đúng gói tập hiện tại để đảm bảo chính sách kinh doanh.</div>
                     </div>
 
                     <!-- Actions -->
                     <div class="d-flex gap-3 justify-content-end border-top pt-4">
                         <a href="${pageContext.request.contextPath}/staff/members" class="btn btn-lg btn-outline-secondary px-4">Quay lại</a>
+                        <%-- Nút submit form gửi thông tin đăng ký gia hạn gói tập và tạo hóa đơn --%>
                         <button type="submit" class="btn btn-lg btn-primary px-5 shadow-sm">
                             Tạo hóa đơn gia hạn <i class="fa fa-arrow-right ms-2"></i>
                         </button>
@@ -145,6 +147,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById("renewForm");
         
+        // Ngăn chặn submit form và báo lỗi UI nếu dữ liệu không hợp lệ
         form.addEventListener("submit", function(event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
@@ -153,7 +156,6 @@
             form.classList.add("was-validated");
         }, false);
 
-        const packageSelect = document.getElementById("packageSelect");
         const summaryDates = document.getElementById("summaryDatesContainer");
         const totalAmountText = document.getElementById("totalAmountText");
 
@@ -164,43 +166,44 @@
 
         // Parse date from java model to JS LocalDate
         let currentEndDate = null;
-        <c:if test="${not empty activePkg}">
-            currentEndDate = new Date("${activePkg.endDate}");
+        let isCurrentActive = false;
+        <c:if test="${not empty latestPkg}">
+            currentEndDate = new Date("${latestPkg.endDate}");
+            isCurrentActive = "${latestPkg.status}" === "Active";
         </c:if>
 
-        packageSelect.addEventListener("change", function() {
-            const selectedOpt = packageSelect.options[packageSelect.selectedIndex];
-            if (selectedOpt) {
-                const name = selectedOpt.getAttribute("data-name");
-                const price = parseFloat(selectedOpt.getAttribute("data-price"));
-                const duration = parseInt(selectedOpt.getAttribute("data-duration"));
+        const duration = parseInt("${allowedPackage.durationMonths}") || 0;
+        const price = parseFloat("${allowedPackage.price}") || 0;
+        const name = "${allowedPackage.packageName}";
 
-                // Tính toán ngày bắt đầu và kết thúc gói mới
-                let startDate = new Date(); // Mặc định là hôm nay nếu không có gói cũ
-                if (currentEndDate && currentEndDate >= new Date()) {
-                    startDate = new Date(currentEndDate);
-                    startDate.setDate(startDate.getDate() + 1); // Bắt đầu ngày hôm sau ngày hết hạn gói cũ
-                }
-
-                let endDate = new Date(startDate);
-                endDate.setMonth(endDate.getMonth() + duration);
-
-                // Format dates to dd/mm/yyyy
-                const startStr = startDate.toLocaleDateString('vi-VN');
-                const endStr = endDate.toLocaleDateString('vi-VN');
-
-                summaryDates.innerHTML = `
-                    <div class="fw-bold text-dark">${name}</div>
-                    <div class="small text-muted mt-1"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu gói mới: <strong>${startStr}</strong></div>
-                    <div class="small text-primary fw-bold"><i class="fa fa-calendar-check me-1"></i> Ngày hết hạn gói mới: <strong>${endStr}</strong></div>
-                    <div class="small text-muted"><i class="fa fa-hourglass-half me-1"></i> Thời gian cộng thêm: ${duration} Tháng</div>
-                `;
-                summaryDates.classList.remove("text-muted");
-                summaryDates.classList.add("border-solid");
-
-                totalAmountText.innerText = formatVND(price);
+        if (name) {
+            // Tính toán ngày bắt đầu và kết thúc gói mới
+            // Nếu hội viên chưa có gói tập hoặc gói đã hết hạn, ngày bắt đầu gói mới là Ngày hôm nay
+            let startDate = new Date(); 
+            // Nếu hội viên vẫn còn gói tập đang có hiệu lực, ngày bắt đầu gói gia hạn sẽ là ngày hôm sau của ngày hết hạn gói cũ
+            if (isCurrentActive && currentEndDate && currentEndDate >= new Date()) {
+                startDate = new Date(currentEndDate);
+                startDate.setDate(startDate.getDate() + 1); 
             }
-        });
+
+            let endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + duration);
+
+            // Format dates to dd/mm/yyyy
+            const startStr = startDate.toLocaleDateString('vi-VN');
+            const endStr = endDate.toLocaleDateString('vi-VN');
+
+            summaryDates.innerHTML = `
+                <div class="fw-bold text-dark">\${name}</div>
+                <div class="small text-muted mt-1"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu gói mới: <strong>\${startStr}</strong></div>
+                <div class="small text-primary fw-bold"><i class="fa fa-calendar-check me-1"></i> Ngày hết hạn gói mới: <strong>\${endStr}</strong></div>
+                <div class="small text-muted"><i class="fa fa-hourglass-half me-1"></i> Thời gian cộng thêm: \${duration} Tháng</div>
+            `;
+            summaryDates.classList.remove("text-muted");
+            summaryDates.classList.add("border-solid");
+
+            totalAmountText.innerText = formatVND(price);
+        }
     });
 </script>
 

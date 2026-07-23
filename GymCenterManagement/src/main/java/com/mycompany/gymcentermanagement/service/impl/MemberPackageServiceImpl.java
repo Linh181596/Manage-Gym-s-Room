@@ -190,6 +190,21 @@ public class MemberPackageServiceImpl implements MemberPackageService {
     }
 
     /**
+     * Lấy gói tập mới nhất của hội viên (bất kể trạng thái).
+     * Luồng nghiệp vụ: Truy vấn MemberPackageDAO.
+     * Dùng để xác định gói tập được phép gia hạn.
+     * 
+     * @param memberId ID hội viên
+     * @return MemberPackage nếu tìm thấy
+     * @throws SQLException
+     */
+    @Override
+    public MemberPackage getLatestPackageByMemberId(int memberId) throws SQLException {
+        MemberPackageDAO mpDAO = new MemberPackageDAOImpl();
+        return mpDAO.findLatestByMemberId(memberId);
+    }
+
+    /**
      * Lấy danh sách tất cả gói tập đang hoạt động của hội viên.
      * Luồng nghiệp vụ: Lấy các gói Status='Active' và EndDate >= hôm nay.
      * 

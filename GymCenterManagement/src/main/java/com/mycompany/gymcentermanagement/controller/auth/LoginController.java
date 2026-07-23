@@ -84,6 +84,10 @@ public class LoginController extends HttpServlet {
             }
         }
 
+        if ("1".equals(request.getParameter("sessionEnded"))) {
+            request.setAttribute("errorMessage", "Phiên đăng nhập đã kết thúc vì tài khoản của bạn đã bị khóa hoặc vô hiệu hóa.");
+        }
+
         // Hiển thị giao diện Đăng nhập ban đầu
         request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
     }

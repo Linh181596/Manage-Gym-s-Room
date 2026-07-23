@@ -274,6 +274,7 @@
                         </div>
                     </c:when>
                     <c:otherwise>
+                        <%-- Form tìm kiếm và lọc danh sách blog (GET) --%>
                         <form class="blog-filter" method="get" action="${pageContext.request.contextPath}/blogs">
                             <div class="row g-3 align-items-center">
                                 <div class="col-lg-6">
@@ -336,6 +337,7 @@
                         </div>
 
                         <c:if test="${totalPages > 1}">
+                            <%-- Phân trang danh sách bài viết blog --%>
                             <nav class="blog-pagination mt-5" aria-label="Phân trang blog">
                                 <ul class="pagination justify-content-center flex-wrap gap-1">
                                     <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">

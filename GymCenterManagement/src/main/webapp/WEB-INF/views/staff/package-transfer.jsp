@@ -92,9 +92,9 @@
                         <label for="transferFee" class="form-label fw-bold text-dark"><i class="fa fa-receipt me-1 text-muted"></i> 2. Phí dịch vụ chuyển nhượng (₫) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-white fw-bold text-dark">₫</span>
-                            <input type="number" id="transferFee" name="transferFee" class="form-control border-2 fw-bold text-primary" value="100000" readonly required>
+                            <input type="number" id="transferFee" name="transferFee" class="form-control border-2 fw-bold text-primary" value="100000" required>
                         </div>
-                        <div class="form-text text-muted">Phí chuyển nhượng cố định áp dụng tại quầy: <strong>100,000 ₫</strong>. Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí này.</div>
+                        <div class="form-text text-muted">Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí này.</div>
                     </div>
 
                     <!-- Notes/Reason -->
@@ -106,6 +106,7 @@
                     <!-- Actions -->
                     <div class="d-flex gap-3 justify-content-end border-top pt-4">
                         <a href="${pageContext.request.contextPath}/staff/members" class="btn btn-lg btn-outline-secondary px-4">Hủy bỏ</a>
+                        <%-- Nút submit form gửi thông tin làm thủ tục chuyển nhượng và tạo hóa đơn thanh toán phí --%>
                         <button type="submit" class="btn btn-lg btn-danger px-5 shadow-sm">
                             Tạo thủ tục chuyển nhượng <i class="fa fa-arrow-right ms-2"></i>
                         </button>
@@ -163,6 +164,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById("transferForm");
         
+        // Xử lý chặn submit khi dữ liệu trong form không hợp lệ (validation)
         form.addEventListener("submit", function(event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
@@ -170,6 +172,19 @@
             }
             form.classList.add("was-validated");
         }, false);
+
+        // Xử lý update phí chuyển nhượng
+        const transferFeeInput = document.getElementById("transferFee");
+        const feeAmountText = document.getElementById("feeAmountText");
+        
+        function formatVND(value) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value).replace('₫', '₫');
+        }
+
+        transferFeeInput.addEventListener("input", function() {
+            const val = parseFloat(this.value) || 0;
+            feeAmountText.innerText = formatVND(val);
+        });
 
         // Receiver Search Filter
         const receiverSearch = document.getElementById("receiverSearch");
@@ -197,6 +212,7 @@
         const senderRadios = document.querySelectorAll(".sender-pkg-radio");
         let currentRemainingDays = 0;
 
+        // Hàm cập nhật bản tóm tắt thông tin người nhận gói tập và tính toán thời gian hiệu lực mới
         function updateReceiverSummary() {
             const selectedOpt = receiverSelect.options[receiverSelect.selectedIndex];
             if (selectedOpt && currentRemainingDays > 0) {

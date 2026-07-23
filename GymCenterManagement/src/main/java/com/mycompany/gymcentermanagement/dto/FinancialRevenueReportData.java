@@ -4,6 +4,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DTO tổng hợp dữ liệu cho báo cáo tài chính và doanh thu.
+ * Bao gồm các chỉ số tổng quát (doanh thu tổng, doanh thu gói tập, doanh thu PT),
+ * chi phí vận hành giả lập, lợi nhuận, và dữ liệu để vẽ biểu đồ xu hướng doanh thu.
+ */
 public class FinancialRevenueReportData {
     private BigDecimal totalRevenue = BigDecimal.ZERO;
     private BigDecimal gymPackageRevenue = BigDecimal.ZERO;

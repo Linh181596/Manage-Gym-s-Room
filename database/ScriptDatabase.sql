@@ -15706,3 +15706,571 @@ FROM [dbo].[Users] u
 INNER JOIN [dbo].[UserRoles] ur ON u.UserID = ur.UserID
 WHERE ur.RoleID = 4;
 GO
+
+USE [GymCenterManagement]
+GO
+
+-- Contextual FAQ additions for chatbot.
+-- Append-only block: keeps existing FAQ data unchanged and inserts only missing questions.
+IF OBJECT_ID(N'dbo.FAQ', N'U') IS NOT NULL
+BEGIN
+    DECLARE @ContextualFAQAdditions TABLE
+    (
+        question NVARCHAR(500) NOT NULL,
+        answer NVARCHAR(MAX) NOT NULL,
+        category NVARCHAR(100) NULL,
+        keywords NVARCHAR(1000) NULL,
+        status NVARCHAR(20) NOT NULL
+    );
+
+    INSERT INTO @ContextualFAQAdditions (question, answer, category, keywords, status)
+    VALUES
+    (
+        N'Cầu thủ bóng đá có tập gym không?',
+        N'Có. Cầu thủ bóng đá thường tập gym để tăng sức mạnh, sức bền, tốc độ, khả năng bật nhảy và hạn chế chấn thương. Nếu bạn tập gym để hỗ trợ đá bóng, nên kết hợp bài tập chân, core, sức bền và linh hoạt. Bạn có thể đăng ký gói gym hoặc thuê PT để được hướng dẫn lịch tập phù hợp với mục tiêu.',
+        N'Training Advice',
+        N'cầu thủ bóng đá, cau thu bong da, bóng đá tập gym, bong da tap gym, đá bóng tập gym, da bong tap gym, football, soccer, sức mạnh, sức bền, tốc độ, chấn thương',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn đăng ký gói tập 1 tháng với 36 buổi tập có được không?',
+        N'Hiện cấu hình gói trong hệ thống không có gói 1 tháng gồm 36 buổi. Gói Gym Cơ bản 1 Tháng là gói tập gym theo thời hạn 1 tháng. Với PT, gói PT Cơ bản 1 Tháng gồm 12 buổi, còn gói PT Cao cấp 3 Tháng gồm 36 buổi. Nếu bạn muốn 36 buổi, vui lòng chọn gói PT 3 tháng hoặc liên hệ lễ tân để được tư vấn.',
+        N'Personal Trainer',
+        N'1 tháng 36 buổi, 1 thang 36 buoi, 36 buổi trong 1 tháng, 36 buoi trong 1 thang, pt 36 buổi, pt cao cấp, gym 1 tháng 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Gói gym 1 tháng có 36 buổi không?',
+        N'Không. Gói Gym Cơ bản 1 Tháng là gói gym theo thời hạn 1 tháng, không phải gói 36 buổi. Số buổi 36 thuộc gói PT Cao cấp 3 Tháng. Nếu bạn muốn tập 36 buổi với PT, bạn nên chọn gói PT 3 tháng hoặc liên hệ lễ tân để kiểm tra thêm.',
+        N'Membership Package',
+        N'gói gym 1 tháng 36 buổi, goi gym 1 thang 36 buoi, gym 36 buổi, gói gym cơ bản, gói pt cao cấp, pt 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Gói PT 1 tháng có 36 buổi không?',
+        N'Không. Theo cấu hình hiện tại, gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng mới gồm 36 buổi. Nếu bạn cần 36 buổi tập với PT, hãy chọn gói PT 3 tháng hoặc liên hệ lễ tân để được tư vấn.',
+        N'Membership Package',
+        N'gói pt 1 tháng 36 buổi, goi pt 1 thang 36 buoi, pt 1 tháng, pt 36 buổi, 12 buổi, 36 buổi, personal trainer, pt cơ bản, pt cao cấp',
+        N'Active'
+    ),
+    (
+        N'Gói 1 tháng 36 buổi có tồn tại trong hệ thống không?',
+        N'Hiện hệ thống có Gói Gym Cơ bản 1 Tháng và Gói Gym Cao cấp 3 Tháng. Gói 1 tháng 36 buổi không có trong cấu hình hiện tại. Nếu bạn đang hỏi về PT thì gói PT Cơ bản 1 Tháng gồm 12 buổi, còn gói PT Cao cấp 3 Tháng gồm 36 buổi. Bạn vui lòng chọn đúng gói hoặc liên hệ lễ tân để được hỗ trợ.',
+        N'Personal Trainer',
+        N'1 tháng 36 buổi, 1 thang 36 buoi, gym 1 tháng 36 buổi, pt 36 buổi, không có gói 1 tháng 36 buổi, 12 buổi, 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Người chơi bóng đá nên tập gym như thế nào?',
+        N'Người chơi bóng đá nên tập gym để hỗ trợ sức mạnh chân, core, sức bền, tốc độ và khả năng phòng tránh chấn thương. Nên ưu tiên bài tập chân, core, sức bền, linh hoạt và không tập quá nặng sát ngày đá bóng. Nếu cần lịch tập phù hợp hơn, bạn có thể đăng ký gói gym hoặc thuê PT để được hướng dẫn.',
+        N'Training Advice',
+        N'người chơi bóng đá, nguoi choi bong da, đá bóng tập gym, da bong tap gym, gym cho bóng đá, football gym, soccer gym, sức mạnh chân, core, sức bền, tốc độ, chấn thương',
+        N'Active'
+    ),
+    (
+        N'Tập gym có làm chậm tốc độ đá bóng không?',
+        N'Không nhất thiết. Nếu tập đúng cách, gym có thể hỗ trợ tốc độ, sức mạnh và sức bền khi đá bóng. Người tập nên tránh tập quá tải hoặc tập nặng sát ngày thi đấu. Nếu bạn cần lịch tập cân bằng giữa gym và bóng đá, có thể tham khảo PT tại phòng gym.',
+        N'Training Advice',
+        N'tập gym làm chậm, tap gym lam cham, tốc độ đá bóng, toc do da bong, bóng đá, football, soccer, tập chân, tập nặng, lịch tập bóng đá',
+        N'Active'
+    ),
+    (
+        N'Chơi bóng rổ có nên tập gym không?',
+        N'Có. Người chơi bóng rổ có thể tập gym để cải thiện sức mạnh chân, core, sức bật, sức bền và khả năng kiểm soát cơ thể. Nên kết hợp bài tập sức mạnh, linh hoạt và phục hồi. Nếu bạn muốn tập theo mục tiêu bóng rổ, có thể đăng ký gói gym hoặc thuê PT để được hướng dẫn.',
+        N'Training Advice',
+        N'bóng rổ, bong ro, basketball, tập gym bóng rổ, sức bật, bật nhảy, core, sức mạnh chân, thể lực',
+        N'Active'
+    ),
+    (
+        N'Người chạy bộ có nên tập gym không?',
+        N'Có. Người chạy bộ có thể tập gym để cải thiện sức mạnh cơ chân, core, độ ổn định khớp và hạn chế chấn thương. Nên chọn bài tập bổ trợ thay vì chỉ tập nặng. Nếu cần lịch tập phù hợp với chạy bộ, bạn có thể tham khảo PT.',
+        N'Training Advice',
+        N'chạy bộ, chay bo, running, runner, tập gym chạy bộ, core, cơ chân, sức bền, chấn thương, bổ trợ chạy bộ',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tăng thể lực thì nên chọn gói nào?',
+        N'Nếu mục tiêu là tăng thể lực chung, bạn có thể bắt đầu với Gói Gym Cơ bản 1 Tháng để làm quen. Nếu cần người hướng dẫn bài tập, theo dõi tiến độ và điều chỉnh lịch tập, bạn có thể chọn thêm gói PT. Gói PT Cơ bản 1 Tháng gồm 12 buổi, gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+        N'Membership Package',
+        N'tăng thể lực, tang the luc, cải thiện thể lực, sức bền, chọn gói nào, gói gym, gói pt, 12 buổi, 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Người mới bắt đầu nên chọn gói gym nào?',
+        N'Người mới bắt đầu có thể chọn Gói Gym Cơ bản 1 Tháng để làm quen với phòng tập và thiết bị. Nếu bạn chưa biết kỹ thuật hoặc muốn có lịch tập rõ ràng, có thể thuê PT; gói PT Cơ bản 1 Tháng gồm 12 buổi.',
+        N'Membership Package',
+        N'người mới bắt đầu, nguoi moi bat dau, mới tập gym, beginner, chọn gói gym, gói cơ bản, gói pt cơ bản, chưa biết tập',
+        N'Active'
+    ),
+    (
+        N'Tôi chưa biết dùng máy tập thì nên đăng ký gì?',
+        N'Nếu bạn chưa biết dùng máy tập, bạn có thể đăng ký gói gym để sử dụng phòng tập và cân nhắc thuê PT để được hướng dẫn kỹ thuật an toàn. Gói PT Cơ bản 1 Tháng gồm 12 buổi, phù hợp cho người mới cần được hướng dẫn.',
+        N'Equipment',
+        N'chưa biết dùng máy, máy tập, người mới, hướng dẫn kỹ thuật, dùng thiết bị, an toàn tập luyện',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn giảm cân thì nên chọn gói gym hay PT?',
+        N'Nếu bạn muốn tự tập để giảm cân, có thể bắt đầu với gói gym. Nếu cần lịch tập, kỹ thuật và theo dõi sát hơn, bạn nên cân nhắc thuê PT. PT có thể hỗ trợ xây dựng lịch tập phù hợp với mục tiêu giảm cân của bạn.',
+        N'Membership Package',
+        N'giảm cân, giam can, chọn gói gym hay PT, gói gym, gói pt, thuê pt, lịch tập giảm cân',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tăng cơ thì nên chọn gói gym hay PT?',
+        N'Nếu bạn đã biết kỹ thuật và có thể tự tập, gói gym có thể phù hợp. Nếu bạn cần người hướng dẫn bài tập, chỉnh kỹ thuật và theo dõi tiến độ tăng cơ, nên cân nhắc thuê PT.',
+        N'Membership Package',
+        N'tăng cơ, tang co, chọn gói gym hay PT, gói gym, gói pt, thuê pt, lịch tập tăng cơ',
+        N'Active'
+    ),
+    (
+        N'Thể lực yếu thì có nên thuê PT không?',
+        N'Bạn có thể tự tập nhẹ nhàng với gói gym nếu đã biết cách tập. Nếu cần lịch tập phù hợp với thể lực, tránh tập sai kỹ thuật hoặc muốn được theo dõi sát hơn, bạn có thể thuê PT.',
+        N'Training Advice',
+        N'thể lực yếu, the luc yeu, tập nhẹ có PT, tap nhe co PT, thuê PT khi yếu, người mới, lịch tập nhẹ, an toàn tập luyện',
+        N'Active'
+    ),
+    (
+        N'Nghỉ tập lâu rồi quay lại gym nên bắt đầu thế nào?',
+        N'Bạn có thể tập gym để phục hồi thể lực sau thời gian nghỉ, nhưng nên bắt đầu với cường độ vừa phải và tăng dần. Nếu đã nghỉ lâu hoặc có vấn đề sức khỏe, bạn nên hỏi ý kiến bác sĩ trước khi tập và có thể thuê PT để được hướng dẫn an toàn.',
+        N'Training Advice',
+        N'nghỉ tập lâu, nghi tap lau, quay lại gym, phục hồi sau nghỉ, tập lại, cường độ nhẹ, bác sĩ, PT hướng dẫn',
+        N'Active'
+    ),
+    (
+        N'Phụ nữ có nên tập gym không?',
+        N'Có. Phụ nữ có thể tập gym để cải thiện sức khỏe, vóc dáng, sức bền và thể lực. Nên chọn cường độ phù hợp với mục tiêu cá nhân. Nếu chưa biết bắt đầu, bạn có thể hỏi nhân viên hoặc thuê PT để được hướng dẫn.',
+        N'Training Advice',
+        N'phụ nữ tập gym, phu nu tap gym, nữ tập gym, sức khỏe, vóc dáng, giảm cân, tăng cơ, PT',
+        N'Active'
+    ),
+    (
+        N'Người lớn tuổi có tập gym được không?',
+        N'Người lớn tuổi có thể tập gym nếu sức khỏe phù hợp, nhưng nên chọn bài tập nhẹ, an toàn và hỏi ý kiến bác sĩ khi cần. PT có thể hỗ trợ điều chỉnh bài tập theo thể lực.',
+        N'Health Safety',
+        N'người lớn tuổi, nguoi lon tuoi, người già, tập gym, bài tập nhẹ, an toàn, bác sĩ, PT',
+        N'Active'
+    ),
+    (
+        N'Tôi bị đau lưng có nên tập gym không?',
+        N'Nếu bạn đang bị đau lưng hoặc có vấn đề sức khỏe, nên hỏi ý kiến bác sĩ trước khi tập. Phòng gym không thay thế tư vấn y tế. Sau khi được phép tập, bạn có thể nhờ PT hướng dẫn bài phù hợp và tránh các động tác gây đau.',
+        N'Health Safety',
+        N'đau lưng, dau lung, tập gym đau lưng, bác sĩ, chấn thương, an toàn, PT hướng dẫn',
+        N'Active'
+    ),
+    (
+        N'Tôi bị chấn thương có nên tập gym không?',
+        N'Nếu bạn đang bị chấn thương, nên hỏi ý kiến bác sĩ hoặc chuyên gia y tế trước khi tập. Chatbot và phòng gym không thay thế tư vấn y tế. Sau khi được phép tập, bạn có thể trao đổi với PT để chọn bài phù hợp.',
+        N'Health Safety',
+        N'chấn thương, chan thuong, bị thương, tập gym, bác sĩ, tư vấn y tế, PT hướng dẫn',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập thử một ngày được không?',
+        N'Chính sách tập thử có thể thay đổi theo thời điểm. Bạn vui lòng liên hệ lễ tân qua email hoặc số điện thoại để được xác nhận trước khi đến phòng tập.',
+        N'General Gym Information',
+        N'tập thử, tap thu, tập thử một ngày, trial, dùng thử phòng gym, trải nghiệm gym, liên hệ lễ tân',
+        N'Active'
+    ),
+    (
+        N'Tôi bận chỉ tập buổi tối thì đăng ký được không?',
+        N'Bạn có thể đăng ký gói tập nếu thời gian tập buổi tối phù hợp với giờ mở cửa của phòng gym. Vui lòng kiểm tra giờ hoạt động hoặc liên hệ lễ tân để được xác nhận lịch phù hợp.',
+        N'Opening Hours',
+        N'tập buổi tối, tap buoi toi, bận ban ngày, lịch tập tối, giờ mở cửa, gói tập buổi tối',
+        N'Active'
+    ),
+    (
+        N'Gói Gym và gói PT khác nhau thế nào?',
+        N'Gói Gym cho phép bạn sử dụng phòng tập theo thời hạn gói. Gói PT là gói tập với huấn luyện viên cá nhân và thường có số buổi cụ thể, ví dụ PT Cơ bản 1 Tháng gồm 12 buổi và PT Cao cấp 3 Tháng gồm 36 buổi.',
+        N'Membership Package',
+        N'gói gym và gói pt, gym khác pt, khác nhau, sử dụng phòng tập, huấn luyện viên cá nhân, 12 buổi, 36 buổi',
+        N'Active'
+    ),
+    (
+	N'Có gói tập với PT nào?',
+        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Personal Trainer',
+        N'có gói tập với PT nào, co goi tap voi PT nao, gói PT nào, goi PT nao, gói tập PT, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Có gói PT nào?',
+        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Personal Trainer',
+        N'có gói PT nào, co goi PT nao, gói PT nào, goi PT nao, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Có những gói PT nào?',
+        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Personal Trainer',
+        N'có những gói PT nào, co nhung goi PT nao, các gói PT, cac goi PT, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
+        N'Active'
+    ),
+    (
+        N'36 buổi là gói Gym hay gói PT?',
+        N'36 buổi là số buổi của gói PT Cao cấp 3 Tháng, không phải gói Gym. Gói Gym được quản lý theo thời hạn như 1 tháng hoặc 3 tháng, còn gói PT được quản lý theo số buổi tập với huấn luyện viên cá nhân.',
+        N'Personal Trainer',
+        N'36 buổi, 36 buoi, gói nào, gói gym hay pt, pt cao cấp, gym theo tháng, pt theo buổi',
+        N'Active'
+    ),
+    (
+        N'12 buổi là gói gì?',
+        N'12 buổi là số buổi của gói PT Cơ bản 1 Tháng. Đây là gói tập với huấn luyện viên cá nhân, không phải gói Gym sử dụng phòng tập thông thường.',
+        N'Personal Trainer',
+        N'12 buổi, 12 buoi, gói gì, gói PT cơ bản, PT 1 tháng, huấn luyện viên cá nhân',
+        N'Active'
+    ),
+    (
+        N'Gói 1 tháng là Gym hay PT?',
+        N'Hệ thống có cả gói Gym Cơ bản 1 Tháng và gói PT Cơ bản 1 Tháng. Gói Gym là sử dụng phòng tập theo thời hạn; gói PT là tập với huấn luyện viên cá nhân và gồm 12 buổi.',
+        N'Membership Package',
+        N'gói 1 tháng, goi 1 thang, gym 1 tháng, pt 1 tháng, gói gym cơ bản, gói pt cơ bản, 12 buổi',
+        N'Active'
+    ),
+    (
+        N'Loại cao cấp 3 tháng là Gym hay PT?',
+        N'Hệ thống có Gói Gym Cao cấp 3 Tháng và Gói PT Cao cấp 3 Tháng. Gói Gym là sử dụng phòng tập theo thời hạn, còn gói PT Cao cấp 3 Tháng gồm 36 buổi tập với huấn luyện viên cá nhân.',
+        N'General Gym Information',
+        N'cao cấp 3 tháng, gym cao cấp, pt cao cấp, 36 buổi, 3 tháng, gym hay pt',
+        N'Active'
+    ),
+    (
+        N'Có thể dùng 36 buổi PT trong 1 tháng không?',
+        N'Hiện gói 36 buổi thuộc gói PT Cao cấp 3 Tháng. Việc tập dồn trong 1 tháng có thể phụ thuộc vào lịch PT và chính sách của phòng gym. Bạn nên liên hệ lễ tân để được kiểm tra và tư vấn trước khi đăng ký.',
+        N'Membership Management',
+        N'dùng 36 buổi PT trong 1 tháng, 36 buổi PT 1 tháng, tập dồn, PT 36 buổi, PT cao cấp 3 tháng, lịch PT, chính sách',
+        N'Active'
+    ),
+    (
+        N'Gói PT 3 tháng có thể tập dồn trong 1 tháng không?',
+        N'Gói PT Cao cấp 3 Tháng gồm 36 buổi và được thiết kế theo thời hạn 3 tháng. Việc tập dồn trong 1 tháng cần được kiểm tra theo lịch PT và chính sách hiện tại. Bạn vui lòng liên hệ lễ tân để được xác nhận.',
+        N'Membership Management',
+        N'pt 3 tháng tập dồn, tập dồn 1 tháng, 36 buổi, lịch PT, chính sách PT, lễ tân',
+        N'Active'
+    ),
+    (
+        N'Không chọn loại cao cấp thì dùng loại cơ bản 1 tháng được không?',
+        N'Bạn có thể đăng ký Gói Gym Cơ bản 1 Tháng nếu muốn sử dụng phòng tập trong 1 tháng. Nếu bạn hỏi về số buổi PT, gói PT Cơ bản 1 Tháng gồm 12 buổi, còn 36 buổi thuộc gói PT Cao cấp 3 Tháng.',
+        N'General Gym Information',
+        N'không chọn cao cấp, loại cơ bản 1 tháng, gym cơ bản, pt cơ bản, 12 buổi, 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn đổi từ gói cao cấp sang gói cơ bản được không?',
+        N'Việc đổi gói phụ thuộc vào tình trạng gói hiện tại và chính sách của phòng gym. Bạn vui lòng liên hệ lễ tân để được kiểm tra gói đang dùng và hỗ trợ nếu đủ điều kiện.',
+        N'Membership Management',
+        N'đổi gói cao cấp sang cơ bản, đổi gói, downgrade, gói cao cấp, gói cơ bản, chính sách, lễ tân',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn nâng cấp từ gói cơ bản lên gói cao cấp được không?',
+        N'Việc nâng cấp gói có thể thực hiện tùy theo tình trạng gói hiện tại và chính sách của phòng gym. Bạn vui lòng liên hệ lễ tân để được kiểm tra và hỗ trợ nâng cấp nếu đủ điều kiện.',
+        N'Membership Management',
+        N'nâng cấp gói, nang cap goi, gói cơ bản lên cao cấp, upgrade, chính sách, lễ tân',
+        N'Active'
+    ),
+    (
+        N'Tôi có thể vừa mua gói Gym vừa thuê PT không?',
+        N'Có. Bạn có thể sử dụng gói Gym để vào phòng tập và thuê thêm PT nếu muốn được huấn luyện viên cá nhân hướng dẫn bài tập, kỹ thuật và theo dõi tiến độ.',
+        N'Membership Package',
+        N'vừa mua gói gym vừa thuê pt, gym và pt, thuê PT, huấn luyện viên cá nhân, sử dụng phòng tập',
+        N'Active'
+    ),
+    (
+        N'Tôi chưa có gói Gym thì có đăng ký PT được không?',
+        N'Bạn nên liên hệ lễ tân để kiểm tra điều kiện đăng ký theo chính sách hiện tại. Thông thường gói Gym dùng để sử dụng phòng tập, còn gói PT là dịch vụ huấn luyện viên cá nhân theo số buổi.',
+        N'Personal Trainer',
+        N'chưa có gói gym đăng ký PT, đăng ký PT, điều kiện đăng ký PT, gói gym, gói PT, lễ tân',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập với PT để đá bóng tốt hơn được không?',
+        N'Có. Bạn có thể thuê PT để được hướng dẫn bài tập bổ trợ cho bóng đá như chân, core, sức bền, tốc độ và linh hoạt. PT sẽ hỗ trợ điều chỉnh bài tập theo mục tiêu của bạn.',
+        N'Training Advice',
+        N'PT đá bóng, PT bóng đá, tập với PT để đá bóng tốt hơn, sức mạnh chân, core, tốc độ, linh hoạt',
+        N'Active'
+    ),
+    (
+        N'Tôi chỉ muốn tập cardio thì chọn gói nào?',
+        N'Nếu bạn chỉ muốn tự tập cardio, có thể chọn gói Gym để sử dụng khu vực tập. Nếu cần lịch cardio theo mục tiêu giảm cân hoặc thể lực, bạn có thể thuê PT để được hướng dẫn.',
+        N'Training Advice',
+        N'cardio, chỉ tập cardio, tập cardio, thuê PT cardio, giảm cân, thể lực',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập yoga thì phòng gym có hỗ trợ không?',
+        N'Hệ thống có thông tin khu vực hoặc nhu cầu tập yoga trong FAQ. Bạn vui lòng liên hệ lễ tân để kiểm tra lịch lớp, khu vực tập hoặc PT phù hợp nếu muốn được hướng dẫn cụ thể.',
+        N'Facilities',
+        N'yoga, tập yoga, khu yoga, lớp yoga, lịch yoga, PT yoga, lễ tân',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập boxing thì chọn PT như thế nào?',
+        N'Bạn có thể liên hệ lễ tân hoặc xem hồ sơ PT nếu hệ thống có hiển thị để chọn PT phù hợp với mục tiêu boxing. Nhân viên sẽ hỗ trợ kiểm tra lịch và khả năng sắp xếp PT.',
+        N'Training Advice',
+        N'boxing, tập boxing, chọn PT boxing, PT phù hợp, hồ sơ PT, lịch PT',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập để đi thi đấu thì phòng gym có tư vấn không?',
+        N'Phòng gym có thể hỗ trợ tư vấn tập luyện ở mức thông tin chung hoặc qua PT. Nếu bạn chuẩn bị thi đấu, nên trao đổi trực tiếp với PT để có lịch tập phù hợp mục tiêu và thể trạng.',
+        N'Training Advice',
+        N'tập để thi đấu, thi đấu, competition, PT tư vấn, lịch tập, mục tiêu tập luyện',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập ở nhà thì chatbot có lên lịch tập được không?',
+        N'Chatbot chỉ trả lời theo FAQ có sẵn và không tạo lịch tập cá nhân hóa. Nếu bạn cần lịch tập cụ thể, vui lòng liên hệ lễ tân hoặc thuê PT để được tư vấn phù hợp.',
+        N'Chat Bot',
+        N'tập ở nhà, lịch tập ở nhà, chatbot lên lịch tập, giáo án tập, cá nhân hóa, FAQ, PT tư vấn',
+        N'Active'
+    ),
+    (
+        N'Tập gym có giúp ích cho cầu thủ bóng đá không?',
+        N'Có. Tập gym đúng cách có thể giúp cầu thủ bóng đá cải thiện sức mạnh, sức bền, tốc độ, core và khả năng hạn chế chấn thương. Người chơi bóng đá nên kết hợp bài tập chân, core, linh hoạt và phục hồi, đồng thời tránh tập quá nặng sát ngày đá bóng.',
+        N'Training Advice',
+        N'tập gym giúp ích bóng đá, cầu thủ bóng đá, football, soccer, sức mạnh, sức bền, tốc độ, core, chấn thương',
+        N'Active'
+    ),
+    (
+        N'Tôi chơi bóng đá thì nên tập gym như thế nào?',
+        N'Nếu bạn chơi bóng đá, nên tập gym theo hướng bổ trợ: chân, core, sức bền, linh hoạt và phục hồi. Không nên chỉ tập nặng để tăng cơ, vì lịch tập cần cân bằng với lịch đá bóng. Bạn có thể đăng ký gói gym hoặc thuê PT để được hướng dẫn phù hợp hơn.',
+        N'Training Advice',
+        N'tôi chơi bóng đá, đá bóng tập gym, lịch tập bóng đá, chân, core, sức bền, linh hoạt',
+        N'Active'
+    ),
+    (
+        N'Đá bóng rồi có cần tập chân ở gym nữa không?',
+        N'Có thể cần, nhưng nên tập chân đúng cường độ. Bài tập chân trong gym giúp tăng sức mạnh và độ ổn định, còn đá bóng thiên về kỹ năng và sức bền. Bạn nên tránh tập chân quá nặng trước ngày đá bóng để không ảnh hưởng hiệu suất.',
+        N'Training Advice',
+        N'đá bóng tập chân, tập chân gym, chân, leg day, sức mạnh chân, trước ngày đá bóng',
+        N'Active'
+    ),
+    (
+        N'Trước ngày đá bóng có nên tập gym không?',
+        N'Bạn nên tránh tập gym quá nặng trước ngày đá bóng, đặc biệt là bài chân cường độ cao. Có thể chọn bài nhẹ, giãn cơ hoặc phục hồi để giữ thể lực. Nếu cần lịch tập cân bằng giữa gym và bóng đá, bạn có thể hỏi PT để được tư vấn.',
+        N'Training Advice',
+        N'trước ngày đá bóng, tập gym trước trận, tập nhẹ, phục hồi, giãn cơ, leg day',
+        N'Active'
+    ),
+    (
+        N'Tập gym có giúp chạy nhanh hơn không?',
+        N'Tập gym đúng cách có thể hỗ trợ tốc độ chạy nhờ cải thiện sức mạnh chân, core và khả năng ổn định cơ thể. Tuy nhiên, người tập vẫn cần kết hợp bài chạy, linh hoạt và phục hồi. PT có thể hướng dẫn lịch tập phù hợp với mục tiêu tốc độ.',
+        N'Training Advice',
+        N'chạy nhanh hơn, tốc độ chạy, speed, sức mạnh chân, core, tập gym tăng tốc độ',
+        N'Active'
+    ),
+    (
+        N'Tập gym có giúp bật nhảy cao hơn không?',
+        N'Tập gym có thể hỗ trợ bật nhảy nếu tập đúng bài cho chân, core, sức mạnh và độ linh hoạt. Người tập nên kết hợp bài sức mạnh với bài kiểm soát kỹ thuật, không chỉ tập nặng. Nếu bạn cần lộ trình cụ thể, có thể thuê PT để được hướng dẫn.',
+        N'Training Advice',
+        N'bật nhảy cao, jumping, vertical jump, sức bật, bóng rổ, bóng chuyền, tập chân, core',
+        N'Active'
+    ),
+    (
+        N'Người chơi cầu lông có nên tập gym không?',
+        N'Có. Người chơi cầu lông có thể tập gym để cải thiện sức mạnh chân, vai, core, tốc độ di chuyển và hạn chế chấn thương. Nên ưu tiên bài bổ trợ, linh hoạt và phục hồi để phù hợp với môn cầu lông.',
+        N'Training Advice',
+        N'cầu lông, badminton, tập gym cầu lông, vai, core, tốc độ, di chuyển, chấn thương',
+        N'Active'
+    ),
+    (
+        N'Người bơi lội có nên tập gym không?',
+        N'Có. Người bơi lội có thể tập gym để tăng sức mạnh thân trên, core, độ ổn định vai và sức bền. Nên tập các bài bổ trợ an toàn, không tập quá tải phần vai. Nếu cần lịch tập phù hợp với bơi lội, bạn có thể tham khảo PT.',
+        N'Training Advice',
+        N'bơi lội, swimming, tập gym bơi lội, vai, core, thân trên, sức bền',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập 36 buổi thì chọn gói nào?',
+        N'Nếu bạn muốn tập 36 buổi với huấn luyện viên cá nhân, bạn nên chọn gói PT Cao cấp 3 Tháng. Gói Gym được tính theo thời hạn sử dụng phòng tập, không phải theo số buổi. Nếu cần xác nhận trước khi đăng ký, vui lòng liên hệ lễ tân.',
+        N'Personal Trainer',
+        N'tập 36 buổi, chọn gói 36 buổi, gói PT cao cấp, 3 tháng, personal trainer',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập 12 buổi trong 1 tháng thì chọn gói nào?',
+        N'Gói PT Cơ bản 1 Tháng gồm 12 buổi, phù hợp nếu bạn muốn tập với huấn luyện viên cá nhân trong 1 tháng. Nếu bạn chỉ muốn sử dụng phòng tập, hãy chọn gói Gym theo thời hạn.',
+        N'Personal Trainer',
+        N'12 buổi 1 tháng, gói PT cơ bản, PT 1 tháng, personal trainer, huấn luyện viên cá nhân',
+        N'Active'
+    ),
+    (
+        N'Gói Gym có tính theo số buổi không?',
+        N'Gói Gym trong hệ thống được quản lý theo thời hạn sử dụng phòng tập, ví dụ 1 tháng hoặc 3 tháng. Số buổi như 12 buổi hoặc 36 buổi thuộc gói PT với huấn luyện viên cá nhân.',
+        N'Membership Package',
+        N'gói gym tính theo số buổi, gym theo buổi, gym theo tháng, 12 buổi, 36 buổi, gói pt',
+        N'Active'
+    ),
+    (
+        N'Gói PT có tính theo tháng hay số buổi?',
+        N'Gói PT trong hệ thống có cả thời hạn và số buổi. Gói PT Cơ bản 1 Tháng gồm 12 buổi, còn gói PT Cao cấp 3 Tháng gồm 36 buổi. Bạn nên chọn gói theo nhu cầu tập với huấn luyện viên cá nhân.',
+        N'Personal Trainer',
+        N'gói PT tính theo tháng hay số buổi, PT theo buổi, PT theo tháng, 12 buổi, 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Gói gym cao cấp có phải 36 buổi không?',
+        N'Không. Gói Gym Cao cấp 3 Tháng là gói sử dụng phòng tập theo thời hạn 3 tháng. Số buổi 36 thuộc gói PT Cao cấp 3 Tháng, dành cho tập với huấn luyện viên cá nhân.',
+        N'General Gym Information',
+        N'gym cao cấp 36 buổi, gym cao cấp, 36 buổi, PT cao cấp 3 tháng',
+        N'Active'
+    ),
+    (
+        N'Tập hằng ngày trong 1 tháng có được không?',
+        N'Với gói Gym Cơ bản 1 Tháng, bạn sử dụng phòng tập trong thời hạn 1 tháng theo quy định của phòng gym. Nếu bạn hỏi về PT, gói PT Cơ bản 1 Tháng gồm 12 buổi, không phải buổi PT mỗi ngày.',
+        N'General Gym Information',
+        N'1 tháng tập mỗi ngày, tap hang ngay 1 thang, gym 1 tháng, PT 12 buổi, tập hằng ngày',
+        N'Active'
+    ),
+    (
+        N'Có thể tập hơn 12 buổi PT trong 1 tháng không?',
+        N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Nếu bạn cần số buổi PT nhiều hơn, bạn có thể cân nhắc gói PT Cao cấp 3 Tháng gồm 36 buổi hoặc liên hệ lễ tân để được tư vấn theo nhu cầu.',
+        N'Personal Trainer',
+        N'hơn 12 buổi PT, PT 1 tháng, PT 12 buổi, PT 36 buổi, gói PT cao cấp',
+        N'Active'
+    ),
+    (
+        N'Tập gym trong 3 tháng thì chọn loại nào?',
+        N'Nếu bạn muốn sử dụng phòng tập trong 3 tháng, bạn có thể chọn Gói Gym Cao cấp 3 Tháng. Nếu cần tập với huấn luyện viên cá nhân, gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+        N'General Gym Information',
+        N'tập gym 3 tháng, tap gym 3 thang, gym 3 tháng, loại 3 tháng, PT cao cấp 36 buổi',
+        N'Active'
+    ),
+    (
+        N'Tập gym trong 1 tháng thì chọn loại nào?',
+        N'Nếu bạn muốn sử dụng phòng tập trong 1 tháng, bạn có thể chọn Gói Gym Cơ bản 1 Tháng. Nếu muốn tập với huấn luyện viên cá nhân trong 1 tháng, gói PT Cơ bản 1 Tháng gồm 12 buổi.',
+        N'General Gym Information',
+        N'tập gym 1 tháng, tap gym 1 thang, gym cơ bản 1 tháng, PT cơ bản 12 buổi, 1 tháng',
+        N'Active'
+    ),
+    (
+        N'Muốn thử tập với chi phí thấp thì chọn gì?',
+        N'Bạn có thể bắt đầu với Gói Gym Cơ bản 1 Tháng để làm quen với phòng tập. Chính sách tập thử hoặc ưu đãi có thể thay đổi theo thời điểm, vì vậy bạn nên liên hệ lễ tân để được xác nhận trước khi đăng ký.',
+        N'General Gym Information',
+        N'gói rẻ nhất, chi phí thấp, thử tập, người mới, gym cơ bản 1 tháng, tập thử',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn nhiều buổi PT nhất thì chọn gói nào?',
+        N'Trong các gói PT hiện có, gói PT Cao cấp 3 Tháng gồm 36 buổi là gói có nhiều buổi hơn gói PT Cơ bản 1 Tháng gồm 12 buổi. Bạn có thể chọn gói này nếu muốn được PT hỗ trợ dài hơn.',
+        N'Personal Trainer',
+        N'nhiều buổi PT nhất, PT nhiều buổi, PT 36 buổi, PT cao cấp, huấn luyện viên cá nhân',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập cùng PT nhưng chưa biết chọn PT nào?',
+        N'Bạn có thể liên hệ lễ tân hoặc xem thông tin PT nếu hệ thống hiển thị hồ sơ PT. Nhân viên có thể hỗ trợ bạn chọn PT phù hợp với mục tiêu như giảm cân, tăng cơ, cardio, yoga hoặc boxing.',
+        N'General Gym Information',
+        N'chọn người hướng dẫn, chọn PT theo mục tiêu, PT phù hợp mục tiêu, giảm cân, tăng cơ, cardio, yoga, boxing',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn đổi PT nếu không phù hợp có được không?',
+        N'Bạn nên liên hệ lễ tân để kiểm tra tình trạng gói PT và được hỗ trợ đổi PT theo chính sách hiện tại. Việc đổi PT phụ thuộc vào lịch PT, gói đã đăng ký và khả năng sắp xếp của phòng gym.',
+        N'Membership Management',
+        N'đổi PT, không phù hợp, đổi huấn luyện viên, đổi người hướng dẫn, chính sách PT',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn giảm mỡ bụng thì nên chọn gói nào?',
+        N'Nếu bạn muốn tự tập để giảm mỡ bụng, có thể bắt đầu với gói Gym. Nếu cần lịch tập, kỹ thuật và theo dõi sát hơn, bạn nên cân nhắc gói PT để được hướng dẫn theo mục tiêu giảm cân.',
+        N'Membership Package',
+        N'giảm mỡ bụng, giảm cân, chọn gói, gói gym, gói PT, PT giảm cân',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tăng cân tăng cơ thì nên chọn gói nào?',
+        N'Nếu bạn muốn tăng cân và tăng cơ, có thể đăng ký gói Gym để tập luyện thường xuyên. Nếu cần hướng dẫn kỹ thuật, lịch tập và theo dõi tiến độ, bạn nên cân nhắc thuê PT.',
+        N'Membership Package',
+        N'tăng cân tăng cơ, tăng cơ, bulk, chọn gói, gói gym, gói PT, PT tăng cơ',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn tập cho đẹp dáng thì nên chọn gym hay PT?',
+        N'Nếu bạn đã biết cách tập, gói Gym có thể phù hợp để duy trì luyện tập. Nếu bạn cần lịch tập rõ ràng, chỉnh kỹ thuật và theo dõi mục tiêu vóc dáng, bạn nên cân nhắc thuê PT.',
+        N'Membership Package',
+        N'đẹp dáng, vóc dáng, body shape, chọn gym hay PT, gói gym, thuê PT',
+        N'Active'
+    ),
+    (
+        N'Tôi tập yếu có sợ không theo kịp không?',
+        N'Người mới hoặc người có thể lực yếu nên bắt đầu với cường độ vừa phải và tăng dần. Bạn có thể hỏi nhân viên hoặc thuê PT để được hướng dẫn kỹ thuật an toàn, tránh tập quá sức.',
+        N'Training Advice',
+        N'tập yếu, không theo kịp, người mới, thể lực yếu, tập nhẹ, an toàn tập luyện',
+        N'Active'
+    ),
+    (
+        N'Chưa từng tập gym thì có cần người hướng dẫn ban đầu không?',
+        N'Bạn không bắt buộc phải thuê PT, nhưng nếu chưa từng tập gym, PT có thể giúp hướng dẫn kỹ thuật, cách dùng máy và lịch tập phù hợp. Bạn cũng có thể bắt đầu với gói Gym Cơ bản 1 Tháng để làm quen.',
+        N'Training Advice',
+        N'chưa từng tập gym, người mới, người hướng dẫn ban đầu, hướng dẫn kỹ thuật, dùng máy tập, làm quen phòng tập',
+        N'Active'
+    ),
+    (
+        N'Chatbot có tư vấn dinh dưỡng chi tiết không?',
+        N'Chatbot chỉ trả lời theo FAQ có sẵn và không tư vấn dinh dưỡng cá nhân hóa. Nếu bạn cần tư vấn chi tiết theo thể trạng hoặc mục tiêu, vui lòng liên hệ lễ tân hoặc PT để được hỗ trợ.',
+        N'Chat Bot',
+        N'chatbot tư vấn dinh dưỡng, dinh dưỡng chi tiết, FAQ, không cá nhân hóa, PT tư vấn',
+        N'Active'
+    ),
+    (
+        N'Chatbot có lên giáo án tập cá nhân không?',
+        N'Chatbot không tạo giáo án tập cá nhân hóa. Chatbot chỉ tìm câu hỏi trong FAQ và trả lời bằng nội dung có sẵn. Nếu bạn cần giáo án cụ thể, vui lòng liên hệ lễ tân hoặc thuê PT.',
+        N'Chat Bot',
+        N'chatbot giáo án, lên lịch tập, giáo án cá nhân, cá nhân hóa, FAQ, PT',
+        N'Active'
+    ),
+    (
+        N'Chatbot có tư vấn bệnh lý hoặc chấn thương không?',
+        N'Chatbot không thay thế tư vấn y tế và không tư vấn bệnh lý cá nhân. Nếu bạn có chấn thương hoặc vấn đề sức khỏe, nên hỏi ý kiến bác sĩ trước khi tập và trao đổi với PT sau khi được phép tập.',
+        N'Health Safety',
+        N'chatbot bệnh lý, chấn thương, tư vấn y tế, bác sĩ, an toàn tập luyện',
+        N'Active'
+    ),
+    (
+        N'Tôi có thể xem thông báo ở đâu?',
+        N'Hội viên có thể xem thông báo trong khu vực thông báo của Member Portal sau khi đăng nhập. Nếu bạn không thấy thông báo cần tìm, vui lòng liên hệ nhân viên để được hỗ trợ.',
+        N'Member Portal',
+        N'xem thông báo, thông báo hội viên, member portal, member notification, đăng nhập, hội viên',
+        N'Active'
+    ),
+    (
+        N'Tôi có thể xem thông tin gói tập ở đâu?',
+        N'Hội viên có thể xem thông tin gói tập của mình trong Member Portal sau khi đăng nhập. Nếu thông tin chưa đúng hoặc cần hỗ trợ thay đổi gói, vui lòng liên hệ nhân viên hoặc lễ tân.',
+        N'Member Portal',
+        N'xem thông tin gói tập, gói của tôi, member portal, membership, đăng nhập',
+        N'Active'
+    ),
+    (
+        N'Tôi muốn hỏi ngoài FAQ thì phải làm sao?',
+        N'Nếu câu hỏi nằm ngoài phạm vi FAQ, chatbot sẽ không tự tạo câu trả lời mới. Bạn vui lòng liên hệ phòng gym qua email hoặc số điện thoại để được hỗ trợ thêm.',
+        N'Chat Bot',
+        N'hỏi ngoài FAQ, ngoài phạm vi, chatbot không trả lời, email, điện thoại, liên hệ',
+        N'Active'
+    );
+
+    INSERT INTO dbo.FAQ
+    (
+        question,
+        answer,
+        category,
+        keywords,
+        status
+    )
+    SELECT
+        faq.question,
+        faq.answer,
+        faq.category,
+        faq.keywords,
+        faq.status
+    FROM @ContextualFAQAdditions faq
+    WHERE NOT EXISTS
+    (
+        SELECT 1
+        FROM dbo.FAQ existing
+        WHERE existing.question = faq.question
+    );
+END;
+GO
