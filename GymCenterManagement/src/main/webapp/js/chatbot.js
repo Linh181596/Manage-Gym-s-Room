@@ -42,23 +42,23 @@
         const visibleQuestionLimit = 60;
         const supportsPointerEvents = "PointerEvent" in window;
         const categoryLabels = {
-            "account": "Tài khoản",
-            "contact": "Liên hệ",
-            "equipment": "Thiết bị",
-            "facilities": "Cơ sở vật chất",
-            "feedback": "Góp ý/Khiếu nại",
-            "general gym information": "Thông tin phòng gym",
-            "goodbye": "Kết thúc",
-            "greeting": "Chào hỏi",
-            "invoice": "Hóa đơn",
-            "membership management": "Quản lý hội viên",
-            "membership package": "Gói hội viên",
-            "membership registration": "Đăng ký hội viên",
-            "opening hours": "Giờ mở cửa",
-            "payment": "Thanh toán",
-            "personal trainer": "Huấn luyện viên cá nhân",
-            "policies": "Chính sách/Nội quy",
-            "training advice": "Tư vấn tập luyện"
+            "account": "T\u00e0i kho\u1ea3n",
+            "contact": "Li\u00ean h\u1ec7",
+            "equipment": "Thi\u1ebft b\u1ecb",
+            "facilities": "C\u01a1 s\u1edf v\u1eadt ch\u1ea5t",
+            "feedback": "G\u00f3p \u00fd/Khi\u1ebfu n\u1ea1i",
+            "general gym information": "Th\u00f4ng tin ph\u00f2ng gym",
+            "goodbye": "K\u1ebft th\u00fac",
+            "greeting": "Ch\u00e0o h\u1ecfi",
+            "invoice": "H\u00f3a \u0111\u01a1n",
+            "membership management": "Qu\u1ea3n l\u00fd h\u1ed9i vi\u00ean",
+            "membership package": "G\u00f3i h\u1ed9i vi\u00ean",
+            "membership registration": "\u0110\u0103ng k\u00fd h\u1ed9i vi\u00ean",
+            "opening hours": "Gi\u1edd m\u1edf c\u1eeda",
+            "payment": "Thanh to\u00e1n",
+            "personal trainer": "Hu\u1ea5n luy\u1ec7n vi\u00ean c\u00e1 nh\u00e2n",
+            "policies": "Ch\u00ednh s\u00e1ch/N\u1ed9i quy",
+            "training advice": "T\u01b0 v\u1ea5n t\u1eadp luy\u1ec7n"
         };
         let historyLoaded = false;
         let faqsLoaded = false;
@@ -280,7 +280,7 @@
             if (!errorBox) {
                 return;
             }
-            errorBox.textContent = message || "Có lỗi xảy ra.";
+            errorBox.textContent = message || "C\u00f3 l\u1ed7i x\u1ea3y ra.";
             errorBox.classList.remove("d-none");
         }
 
@@ -339,7 +339,7 @@
             }
             renderMessage({
                 vaiTro: "bot",
-                noiDung: "Xin chào!\n\nVui lòng chọn một câu hỏi trong database FAQ bên dưới để xem câu trả lời từ hệ thống.",
+                noiDung: "Xin ch\u00e0o!\n\nVui l\u00f2ng ch\u1ecdn m\u1ed9t c\u00e2u h\u1ecfi trong database FAQ b\u00ean d\u01b0\u1edbi \u0111\u1ec3 xem c\u00e2u tr\u1ea3 l\u1eddi t\u1eeb h\u1ec7 th\u1ed1ng.",
                 thoiGian: getLocalTime(),
                 laNguoiDung: false
             });
@@ -356,7 +356,7 @@
 
             const content = document.createElement("p");
             content.className = "chatbot__content";
-            content.textContent = "Đang lấy câu trả lời từ database...";
+            content.textContent = "\u0110ang l\u1ea5y c\u00e2u tr\u1ea3 l\u1eddi t\u1eeb database...";
 
             const typing = document.createElement("span");
             typing.className = "chatbot__typing";
@@ -388,7 +388,7 @@
         function normalizeText(value) {
             return (value || "")
                     .toLowerCase()
-                    .replace(/đ/g, "d")
+                    .replace(/\u0111/g, "d")
                     .normalize("NFD")
                     .replace(/[\u0300-\u036f]/g, "")
                     .replace(/[^a-z0-9\s]/g, " ")
@@ -402,7 +402,7 @@
 
         function getFAQCategoryValue(faq) {
             const category = faq ? (faq.danhMuc || faq.category || "") : "";
-            return category && category.trim() ? category.trim() : "Khác";
+            return category && category.trim() ? category.trim() : "Kh\u00e1c";
         }
 
         function getFAQCategory(faq) {
@@ -410,7 +410,7 @@
         }
 
         function getCategoryLabel(category) {
-            const safeCategory = category && category.trim() ? category.trim() : "Khác";
+            const safeCategory = category && category.trim() ? category.trim() : "Kh\u00e1c";
             const normalizedCategory = normalizeText(safeCategory);
             return categoryLabels[normalizedCategory] || safeCategory;
         }
@@ -436,7 +436,7 @@
             questionsContainer.innerHTML = "";
             const loading = document.createElement("div");
             loading.className = "chatbot__question-empty";
-            loading.textContent = "Đang tải câu hỏi từ database...";
+            loading.textContent = "\u0110ang t\u1ea3i c\u00e2u h\u1ecfi t\u1eeb database...";
             questionsContainer.appendChild(loading);
             if (questionCount) {
                 questionCount.textContent = "";
@@ -459,7 +459,7 @@
             });
 
             categoriesContainer.innerHTML = "";
-            appendCategoryButton("Tất cả", "all", faqs.length);
+            appendCategoryButton("T\u1ea5t c\u1ea3", "all", faqs.length);
             Array.from(counts.keys())
                     .sort(function (first, second) {
                         return getCategoryLabel(first).localeCompare(getCategoryLabel(second), "vi");
@@ -528,7 +528,7 @@
                 if (questionCount) {
                     questionCount.textContent = "";
                 }
-                renderQuestionEmpty("Chưa có câu hỏi FAQ Active trong database.");
+                renderQuestionEmpty("Ch\u01b0a c\u00f3 c\u00e2u h\u1ecfi FAQ Active trong database.");
                 return;
             }
 
@@ -538,14 +538,14 @@
 
             if (questionCount) {
                 if (filteredFAQs.length > 0) {
-                    questionCount.textContent = "Hiển thị " + visibleFAQs.length + "/" + filteredFAQs.length + " câu hỏi";
+                    questionCount.textContent = "Hi\u1ec3n th\u1ecb " + visibleFAQs.length + "/" + filteredFAQs.length + " c\u00e2u h\u1ecfi";
                 } else {
-                    questionCount.textContent = "Không có câu hỏi phù hợp";
+                    questionCount.textContent = "Kh\u00f4ng c\u00f3 c\u00e2u h\u1ecfi ph\u00f9 h\u1ee3p";
                 }
             }
 
             if (filteredFAQs.length === 0) {
-                renderQuestionEmpty("Không tìm thấy câu hỏi phù hợp.");
+                renderQuestionEmpty("Kh\u00f4ng t\u00ecm th\u1ea5y c\u00e2u h\u1ecfi ph\u00f9 h\u1ee3p.");
                 return;
             }
 
@@ -575,7 +575,7 @@
                 const hint = document.createElement("button");
                 hint.type = "button";
                 hint.className = "chatbot__question-hint";
-                hint.textContent = "Bấm vào đây để nhập từ khóa ở ô Bộ lọc.";
+                hint.textContent = "B\u1ea5m v\u00e0o \u0111\u00e2y \u0111\u1ec3 nh\u1eadp t\u1eeb kh\u00f3a \u1edf \u00f4 B\u1ed9 l\u1ecdc.";
                 hint.addEventListener("click", function () {
                     searchInput.focus();
                 });
@@ -626,7 +626,7 @@
                 faqs = data.thanhCong && Array.isArray(data.faqs) ? data.faqs : [];
             } catch (error) {
                 faqs = [];
-                showError("Không thể tải danh sách câu hỏi FAQ.");
+                showError("Kh\u00f4ng th\u1ec3 t\u1ea3i danh s\u00e1ch c\u00e2u h\u1ecfi FAQ.");
             } finally {
                 faqsLoaded = true;
                 buildCategories();
@@ -642,7 +642,7 @@
             const faqId = getFAQId(faq);
             const question = getFAQQuestion(faq);
             if (!faqId || !question) {
-                showError("Câu hỏi không hợp lệ.");
+                showError("C\u00e2u h\u1ecfi kh\u00f4ng h\u1ee3p l\u1ec7.");
                 return;
             }
 
@@ -675,13 +675,13 @@
                 if (data.thanhCong && data.tinNhan) {
                     renderMessage(data.tinNhan);
                 } else {
-                    showError(data.thongBao || "Có lỗi xảy ra.");
+                    showError(data.thongBao || "C\u00f3 l\u1ed7i x\u1ea3y ra.");
                 }
             } catch (error) {
                 removeSearching();
                 renderMessage({
                     vaiTro: "bot",
-                    noiDung: "Có lỗi xảy ra khi lấy câu trả lời. Vui lòng thử lại sau.",
+                    noiDung: "C\u00f3 l\u1ed7i x\u1ea3y ra khi l\u1ea5y c\u00e2u tr\u1ea3 l\u1eddi. Vui l\u00f2ng th\u1eed l\u1ea1i sau.",
                     thoiGian: getLocalTime(),
                     laNguoiDung: false
                 });
