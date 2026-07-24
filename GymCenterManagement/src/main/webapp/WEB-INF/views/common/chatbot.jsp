@@ -60,5 +60,5 @@ Description : Reusable FAQ chat box powered by database questions
     </section>
 </div>
 
-<script src="${pageContext.request.contextPath}/js/chatbot.js?v=faq-chatbox-20260723-4"></script>
+<script charset="UTF-8" src="${pageContext.request.contextPath}/js/chatbot.js?v=faq-chatbox-20260724-6"></script>
 </c:if>
