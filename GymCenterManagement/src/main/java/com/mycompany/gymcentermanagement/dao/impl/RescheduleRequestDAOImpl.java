@@ -12,8 +12,16 @@ import java.util.List;
 
 public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
 
+    /**
+     * Tạo một yêu cầu đổi lịch / học bù mới.
+     * Luồng nghiệp vụ: Insert dữ liệu vào RescheduleRequests.
+     * 
+     * @param request Đối tượng yêu cầu
+     * @return true nếu insert thành công
+     */
     @Override
     public boolean create(RescheduleRequest request) {
+        // SQL: Thêm mới một yêu cầu đổi lịch với trạng thái truyền vào (Pending hoặc Escalated)
         String sql = """
                 INSERT INTO RescheduleRequests (
                     PTScheduleID,
@@ -27,9 +35,10 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                     ProposedEndTime,
                     Status,
                     Reason,
+                    EscalationReason,
                     CreatedDate
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, SYSDATETIME())
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME())
                 """;
 
         try (Connection conn = DBContext.getConnection();
@@ -43,7 +52,9 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
             ps.setDate(7, Date.valueOf(request.getProposedDate()));
             ps.setTime(8, request.getProposedStartTime());
             ps.setTime(9, request.getProposedEndTime());
-            ps.setString(10, request.getReason());
+            ps.setString(10, request.getStatus());
+            ps.setString(11, request.getReason());
+            ps.setString(12, request.getEscalationReason());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,7 +68,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                 SELECT 1
                 FROM RescheduleRequests
                 WHERE PTScheduleID = ?
-                  AND Status = 'Pending'
+                  AND (Status = 'Pending' OR Status = 'Escalated')
                 """;
 
         try (Connection conn = DBContext.getConnection();
@@ -122,11 +133,31 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
         }
     }
 
+    /**
+     * Duyệt yêu cầu đổi lịch và cập nhật/thêm mới lịch học.
+     * Luồng nghiệp vụ:
+     * 1. Lấy thông tin lịch học hiện tại.
+     * 2. Nếu lịch cũ là Cancelled -> Insert lịch học mới (học bù) và trỏ lại PT gốc nếu có.
+     * 3. Nếu lịch cũ là Upcoming -> Cập nhật trực tiếp ngày/giờ trên record cũ.
+     * 4. [BR-CONS-48]: Các lịch trong quá khứ không được đổi (đã bị chặn ở bước validate của Service).
+     * 
+     * @param requestId ID yêu cầu
+     * @param scheduleId ID lịch học
+     * @param newDate Ngày mới
+     * @param newStart Giờ bắt đầu mới
+     * @param newEnd Giờ kết thúc mới
+     * @param responderUserId Người duyệt (PT/Member/Staff)
+     * @return true nếu duyệt và cập nhật thành công
+     */
     @Override
     public boolean approveAndUpdateSchedule(int requestId, int scheduleId, LocalDate newDate, Time newStart, Time newEnd, int responderUserId) {
+        // SQL: Lấy thông tin lịch cũ để kiểm tra trạng thái
         String selectSql = "SELECT SessionStatus, PTID, PTRegistrationID, MemberID, OriginalPTID, SessionDate FROM PTSchedules WHERE PTScheduleID = ?";
+        // SQL: Cập nhật trạng thái yêu cầu
         String updateReqSql = "UPDATE RescheduleRequests SET Status = 'Approved', RespondedByUserID = ?, RespondedAt = SYSDATETIME(), UpdatedDate = SYSDATETIME() WHERE RequestID = ?";
+        // SQL: Cập nhật lịch cũ nếu là Upcoming
         String updateSchedSql = "UPDATE PTSchedules SET SessionDate = ?, StartTime = ?, EndTime = ?, UpdatedDate = GETDATE(), UpdatedBy = 'System (Reschedule)' WHERE PTScheduleID = ?";
+        // SQL: Insert lịch mới nếu lịch cũ là Cancelled (Học bù)
         String insertSchedSql = """
                 INSERT INTO PTSchedules (PTID, PTRegistrationID, MemberID, SessionDate, StartTime, EndTime, SessionStatus, PTAttendanceResult, CreatedByUserID, CreatedDate, IsDeleted, OriginalPTID, Note) 
                 VALUES (?, ?, ?, ?, ?, ?, 'Upcoming', 'Pending', ?, GETDATE(), 0, ?, ?)
@@ -240,9 +271,15 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
         }
     }
 
+    /**
+     * Lấy danh sách các yêu cầu đang bị Escalated để Staff/Admin giải quyết.
+     * 
+     * @return Danh sách RescheduleRequestDetailDTO
+     */
     @Override
     public List<RescheduleRequestDetailDTO> getEscalatedRequests() {
         List<RescheduleRequestDetailDTO> list = new ArrayList<>();
+        // SQL: Lấy thông tin Escalated kết hợp với thông tin Sender, Receiver, PT, Member, Package
         String sql = "SELECT "
                 + "  r.RequestID, "
                 + "  r.PTScheduleID, "
@@ -264,7 +301,8 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                 + "  u_recv.DisplayName AS ReceiverName, "
                 + "  u_pt.DisplayName AS PTName, "
                 + "  u_memb.DisplayName AS MemberName, "
-                + "  p.PackageName "
+                + "  p.PackageName, "
+                + "  s.SessionStatus AS OriginalSessionStatus "
                 + "FROM RescheduleRequests r "
                 + "INNER JOIN Users u_send ON r.SenderUserID = u_send.UserID "
                 + "INNER JOIN Users u_recv ON r.ReceiverUserID = u_recv.UserID "
@@ -321,6 +359,7 @@ public class RescheduleRequestDAOImpl implements RescheduleRequestDAO {
                 dto.setPtName(rs.getString("PTName"));
                 dto.setMemberName(rs.getString("MemberName"));
                 dto.setPackageName(rs.getString("PackageName"));
+                dto.setOriginalSessionStatus(rs.getString("OriginalSessionStatus"));
                 
                 list.add(dto);
             }

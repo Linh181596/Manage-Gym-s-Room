@@ -33,8 +33,20 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * Kiểm tra xem nhân viên/PT đã check-in trong ca làm việc của ngày đó chưa.
+     * Luồng nghiệp vụ:
+     * - [BR-CONS-62]: Mỗi Staff/PT chỉ có tối đa 1 check-in record mỗi shift block trong một ngày.
+     * 
+     * @param userId ID nhân viên
+     * @param shiftBlock Ca làm việc
+     * @param date Ngày
+     * @return true nếu đã check-in
+     * @throws SQLException 
+     */
     @Override
     public boolean existsCheckinForShift(int userId, String shiftBlock, LocalDate date) throws SQLException {
+        // SQL: Đếm số record Active, chưa bị xóa cho user trong ca và ngày đó
         String sql = """
                 SELECT COUNT(*) AS Total
                 FROM StaffPTAttendance
@@ -91,8 +103,18 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * Checkout điểm danh.
+     * Luồng nghiệp vụ: Cập nhật giờ checkout cho record đang Active.
+     * 
+     * @param attendanceId ID điểm danh
+     * @param checkedBy ID người checkout (Staff/Admin)
+     * @return true nếu checkout thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean checkout(int attendanceId, int checkedBy) throws SQLException {
+        // SQL: Cập nhật CheckedOutAt = SYSDATETIME() cho các record chưa checkout
         String sql = """
                 UPDATE StaffPTAttendance
                 SET CheckedOutAt = SYSDATETIME(),
@@ -223,7 +245,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     @Override
-    public List<StaffPTAttendance> searchHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate,
+    public List<StaffPTAttendance> searchHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate,
             String keyword, int offset, int limit) throws SQLException {
         StringBuilder sql = new StringBuilder("""
                 SELECT
@@ -250,7 +272,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                 """);
 
         List<Object> params = new ArrayList<>();
-        appendFilters(sql, params, userId, userRole, fromDate, toDate, keyword);
+        appendFilters(sql, params, userId, userRole, shiftBlock, fromDate, toDate, keyword);
 
         sql.append(" ORDER BY a.CheckedInAt DESC, a.AttendanceID DESC");
         sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
@@ -276,7 +298,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     @Override
-    public int countHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword)
+    public int countHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword)
             throws SQLException {
         StringBuilder sql = new StringBuilder("""
                 SELECT COUNT(*) AS Total
@@ -285,7 +307,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
                 WHERE a.IsDeleted = 0
                 """);
         List<Object> params = new ArrayList<>();
-        appendFilters(sql, params, userId, userRole, fromDate, toDate, keyword);
+        appendFilters(sql, params, userId, userRole, shiftBlock, fromDate, toDate, keyword);
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -331,7 +353,7 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     private void appendFilters(StringBuilder sql, List<Object> params,
-            int userId, String userRole,
+            int userId, String userRole, String shiftBlock,
             LocalDate fromDate, LocalDate toDate,
             String keyword) {
         if (userId > 0) {
@@ -341,6 +363,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         if (userRole != null && !userRole.isBlank()) {
             sql.append(" AND a.UserRole = ?");
             params.add(userRole);
+        }
+        if (shiftBlock != null && !shiftBlock.isBlank()) {
+            sql.append(" AND a.ShiftBlock = ?");
+            params.add(shiftBlock);
         }
         if (fromDate != null) {
             sql.append(" AND a.AttendanceDate >= ?");

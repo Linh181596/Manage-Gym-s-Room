@@ -54,6 +54,7 @@
                             </div>
                         </c:if>
 
+                        <%-- Form submit yêu cầu đổi mật khẩu (POST) --%>
                         <form id="changePasswordForm" action="${pageContext.request.contextPath}/change-password" method="POST" novalidate>
                             <div class="form-floating mb-3">
                                 <input type="password" class="form-control" id="currentPassword" name="currentPassword"
@@ -101,6 +102,7 @@
 
     <script>
         $(document).ready(function() {
+            // Validate form đổi mật khẩu ở phía máy khách
             $('#changePasswordForm').on('submit', function(e) {
                 const currentPassword = $('#currentPassword').val();
                 const newPassword = $('#newPassword').val();
@@ -109,14 +111,17 @@
                 const hasDigit = /\d/.test(newPassword);
                 const $clientError = $('#clientError');
 
+                // Reset thông báo lỗi
                 $clientError.addClass('d-none').text('');
 
+                // Kiểm tra người dùng đã điền đủ hay chưa
                 if (!currentPassword || !newPassword || !confirmPassword) {
                     e.preventDefault();
                     $clientError.removeClass('d-none').text('Vui lòng nhập đầy đủ các trường mật khẩu.');
                     return;
                 }
 
+                // Kiểm tra mật khẩu mới có đạt yêu cầu về độ phức tạp hay không
                 if (newPassword.length < 8 || !hasLetter || !hasDigit) {
                     e.preventDefault();
                     $clientError.removeClass('d-none').text('Mật khẩu mới phải có ít nhất 8 ký tự và bao gồm cả chữ lẫn số.');
@@ -124,6 +129,7 @@
                     return;
                 }
 
+                // Kiểm tra mật khẩu mới và xác nhận mật khẩu có trùng khớp không
                 if (newPassword !== confirmPassword) {
                     e.preventDefault();
                     $clientError.removeClass('d-none').text('Mật khẩu xác nhận không khớp.');

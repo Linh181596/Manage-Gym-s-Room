@@ -22,6 +22,7 @@
             <h4 class="mb-1 text-dark fw-bold"><i class="fa fa-home me-2 text-primary"></i>Chào mừng quay trở lại, ${sessionScope.currentUser.fullName}!</h4>
             <small class="text-muted">GCMS cung cấp cái nhìn tổng quan về lịch tập, các gói dịch vụ và chi tiêu của bạn</small>
         </div>
+        <%-- Nút tải lại dữ liệu bảng điều khiển (Dashboard) cho hội viên --%>
         <a href="${pageContext.request.contextPath}/member/dashboard" class="btn btn-sm btn-primary shadow-sm">
             <i class="fa fa-sync-alt me-1"></i> Làm mới
         </a>
@@ -164,6 +165,7 @@
                                             <td>${empty s.packageName ? 'Thuê PT cá nhân' : s.packageName}</td>
                                             <td><span class="text-primary fw-semibold"><i class="fa fa-user-tie me-1"></i>${s.ptName}</span></td>
                                             <td class="text-center">
+                                                <%-- Nút mở modal yêu cầu đổi lịch tập cho buổi tập tương ứng --%>
                                                 <button type="button"
                                                         class="btn btn-sm btn-outline-primary"
                                                         data-bs-toggle="modal"
@@ -275,6 +277,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <%-- Nút submit form gửi yêu cầu đổi lịch lên server --%>
                             <button type="submit" class="btn btn-primary">Gửi request</button>
                         </div>
                     </form>
@@ -322,14 +325,17 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Lấy element biểu đồ chi tiêu
         const chartElement = document.getElementById("member-spend-chart");
         if (!chartElement || typeof Chart === "undefined") {
             return;
         }
 
+        // Lấy dữ liệu nhãn (tháng) và số tiền chi tiêu từ thuộc tính data của element
         const labelsData = JSON.parse(chartElement.getAttribute("data-labels") || "[]");
         const valuesData = JSON.parse(chartElement.getAttribute("data-values") || "[]");
 
+        // Vẽ biểu đồ dạng line chart hiển thị lịch sử chi tiêu bằng thư viện Chart.js
         new Chart(chartElement.getContext("2d"), {
             type: "line",
             data: {

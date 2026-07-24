@@ -79,6 +79,7 @@
                     <!-- Actions -->
                     <div class="d-flex gap-3 justify-content-end border-top pt-4">
                         <a href="${pageContext.request.contextPath}/staff/dashboard" class="btn btn-lg btn-outline-secondary px-4">Hủy bỏ</a>
+                        <%-- Nút submit form gửi thông tin đăng ký gói tập và tạo hóa đơn thanh toán mới --%>
                         <button type="submit" class="btn btn-lg btn-primary px-5 shadow-sm">
                             Tiếp theo: Ghi nhận thanh toán <i class="fa fa-arrow-right ms-2"></i>
                         </button>
@@ -134,7 +135,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const form = document.getElementById("registrationForm");
         
-        // Form Validation styling
+        // Form Validation styling (Ngăn chặn hành vi mặc định nếu form không hợp lệ)
         form.addEventListener("submit", function(event) {
             if (!form.checkValidity()) {
                 event.preventDefault();

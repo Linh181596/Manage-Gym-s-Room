@@ -54,6 +54,7 @@
                                     <td>${reg.packageName} (${reg.purchasedSessions} buổi)</td>
                                     <td>${reg.preferredStartDate}</td>
                                     <td>
+                                        <%-- Nút chuyển hướng sang màn hình xếp lịch dạy cho gói tập --%>
                                         <a href="${pageContext.request.contextPath}/admin/pt/schedule-setup?regId=${reg.ptRegistrationId}"
                                            class="btn btn-sm btn-warning fw-bold text-dark border border-warning shadow-sm">
                                             <i class="fa fa-calendar-plus me-1"></i> Xếp lịch dạy ngay
@@ -117,9 +118,9 @@
                                         <div>
                                             <span class="badge bg-${borderColor}">
                                                 <c:choose>
-                                                    <c:when test="${s.sessionStatus == 'Completed'}">Completed</c:when>
-                                                    <c:when test="${s.sessionStatus == 'Cancelled'}">Cancelled</c:when>
-                                                    <c:otherwise>Upcoming</c:otherwise>
+                                                    <c:when test="${s.sessionStatus == 'Completed'}">Đã hoàn thành</c:when>
+                                                    <c:when test="${s.sessionStatus == 'Cancelled'}">Đã hủy</c:when>
+                                                    <c:otherwise>Sắp diễn ra</c:otherwise>
                                                 </c:choose>
                                             </span>
                                             <c:choose>
@@ -189,6 +190,7 @@
                                                 <c:when test="${empty s.rescheduleRequestId}">
                                                     <c:choose>
                                                         <c:when test="${s.sessionStatus == 'Upcoming'}">
+                                                            <%-- Nút mở modal gửi yêu cầu đổi lịch đối với ca học bình thường --%>
                                                             <button type="button"
                                                                     class="btn btn-sm btn-outline-primary mt-3 w-100 fw-bold"
                                                                     data-bs-toggle="modal"
@@ -197,6 +199,7 @@
                                                             </button>
                                                         </c:when>
                                                         <c:when test="${s.sessionStatus == 'Cancelled'}">
+                                                            <%-- Nút mở modal gửi yêu cầu xếp bù đối với ca học bị hủy --%>
                                                             <button type="button"
                                                                     class="btn btn-sm btn-outline-danger mt-3 w-100 fw-bold"
                                                                     data-bs-toggle="modal"
@@ -315,6 +318,8 @@
                                            data-schedule-id="${s.scheduleId}" 
                                            data-pt-id="${s.ptId}" 
                                            data-member-id="${s.memberId}" 
+                                           data-original-date="${s.sessionDate}"
+                                           data-original-slot="${s.startTime.toString().substring(0,5)}-${s.endTime.toString().substring(0,5)}"
                                            required>
                                 </div>
 
@@ -338,6 +343,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <%-- Nút submit form gửi yêu cầu đổi lịch/xếp bù --%>
                                 <button type="submit" class="btn btn-primary fw-bold">Gửi request</button>
                             </div>
                         </form>
@@ -396,7 +402,13 @@
                             <div class="d-flex align-items-center mb-3">
                                 <div class="fw-semibold me-2">Trạng thái:</div>
                                 <span class="badge bg-${s.rescheduleStatus == 'Pending' ? 'info' : (s.rescheduleStatus == 'Approved' ? 'success' : (s.rescheduleStatus == 'Rejected' ? 'danger' : 'warning'))} px-3 py-2 fs-7">
-                                    ${s.rescheduleStatus}
+                                    <c:choose>
+                                        <c:when test="${s.rescheduleStatus == 'Pending'}">Đang chờ</c:when>
+                                        <c:when test="${s.rescheduleStatus == 'Approved'}">Đã duyệt</c:when>
+                                        <c:when test="${s.rescheduleStatus == 'Rejected'}">Bị từ chối</c:when>
+                                        <c:when test="${s.rescheduleStatus == 'Escalated'}">Yêu cầu hỗ trợ (Gửi lên Admin)</c:when>
+                                        <c:otherwise>${s.rescheduleStatus}</c:otherwise>
+                                    </c:choose>
                                 </span>
                             </div>
 
@@ -412,6 +424,8 @@
                                                data-schedule-id="${s.scheduleId}" 
                                                data-pt-id="${s.ptId}" 
                                                data-member-id="${s.memberId}" 
+                                               data-original-date="${s.sessionDate}"
+                                               data-original-slot="${s.startTime.toString().substring(0,5)}-${s.endTime.toString().substring(0,5)}"
                                                required>
                                     </div>
                                     <div class="mb-2">
@@ -515,9 +529,11 @@
                                             </c:otherwise>
                                         </c:choose>
                                         <div>
+                                            <%-- Nút submit hành động từ chối yêu cầu đổi lịch --%>
                                             <button type="submit" name="action" value="reject" class="btn btn-danger fw-bold me-2">
                                                 <i class="fa fa-times me-1"></i> Từ chối
                                             </button>
+                                            <%-- Nút submit hành động đồng ý yêu cầu đổi lịch --%>
                                             <button type="submit" name="action" value="approve" class="btn btn-success fw-bold">
                                                 <i class="fa fa-check me-1"></i> Đồng ý đổi
                                             </button>
@@ -586,6 +602,7 @@
         });
 
         // Validation for reschedule response form (Từ chối / Yêu cầu hỗ trợ)
+        // Bắt buộc nhập lý do khi chọn action là 'Từ chối' hoặc 'Yêu cầu hỗ trợ'
         document.querySelectorAll('form[action$="/reschedule-request/respond"]').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 const actionBtn = e.submitter;
@@ -616,11 +633,24 @@
         </c:forEach>
     ];
 
+    const massCancelledSlots = [
+        <c:forEach var="mc" items="${massCancelledSlots}">
+        {
+            date: "${mc.date}",
+            slot: "${mc.slot}",
+            isAllDay: ${mc.isAllDay}
+        },
+        </c:forEach>
+    ];
+
     document.addEventListener("DOMContentLoaded", function () {
+        // Lắng nghe sự kiện thay đổi ngày đề xuất để lọc các khung giờ bị bận (Busy) hoặc hủy hàng loạt (Mass Cancelled)
         document.querySelectorAll('.reschedule-date-input').forEach(function (input) {
             input.addEventListener('change', function () {
                 const date = this.value;
                 const scheduleId = this.getAttribute('data-schedule-id');
+                const originalDate = this.getAttribute('data-original-date');
+                const originalSlot = this.getAttribute('data-original-slot');
 
                 const selects = document.querySelectorAll(
                     '#rescheduleProposedSlot_' + scheduleId + 
@@ -641,6 +671,12 @@
                     .filter(item => item.date === date)
                     .map(item => item.slot);
 
+                // Check mass cancellations
+                const activeMcSlots = massCancelledSlots
+                    .filter(item => item.date === date);
+                const isAllDayMc = activeMcSlots.some(item => item.isAllDay);
+                const mcSlotsList = activeMcSlots.map(item => item.slot);
+
                 selects.forEach(function (select) {
                     Array.from(select.options).forEach(function (opt) {
                         if (!opt.value) return;
@@ -651,11 +687,21 @@
                             opt.setAttribute('data-original-text', originalText);
                         }
 
-                        let isBusy = activeBusySlots.includes(opt.value);
+                        let isOriginalSlot = (date === originalDate && opt.value === originalSlot);
+                        let isBusy = activeBusySlots.includes(opt.value) || isOriginalSlot;
+                        let isMc = isAllDayMc || mcSlotsList.includes(opt.value);
 
-                        if (isBusy) {
+                        if (isBusy || isMc) {
                             opt.disabled = true;
-                            opt.text = originalText + ' (Trùng lịch ❌)';
+                            if (isAllDayMc) {
+                                opt.text = originalText + ' (Phòng tập đóng cửa/Hủy cả ngày ❌)';
+                            } else if (isMc) {
+                                opt.text = originalText + ' (Lịch đã bị Admin hủy ❌)';
+                            } else if (isOriginalSlot) {
+                                opt.text = originalText + ' (Trùng lịch gốc đã bị hủy ❌)';
+                            } else {
+                                opt.text = originalText + ' (Trùng lịch ❌)';
+                            }
                         } else {
                             opt.disabled = false;
                             opt.text = originalText;

@@ -61,6 +61,7 @@
                                     </p>
                                 </c:if>
 
+                                <%-- Form submit cập nhật mật khẩu mới, gửi phương thức POST kèm token xác minh --%>
                                 <form id="resetPasswordForm" action="${pageContext.request.contextPath}/reset-password" method="POST" novalidate>
                                     <input type="hidden" name="token" value="${requestScope.token}">
 
@@ -104,6 +105,7 @@
 
     <script>
         $(document).ready(function() {
+            // Validate dữ liệu mật khẩu ở máy khách trước khi submit
             $('#resetPasswordForm').on('submit', function(e) {
                 const newPassword = $('#newPassword').val();
                 const confirmPassword = $('#confirmPassword').val();
@@ -111,14 +113,17 @@
                 const hasDigit = /\d/.test(newPassword);
                 const $clientError = $('#clientError');
 
+                // Reset thông báo lỗi
                 $clientError.addClass('d-none').text('');
 
+                // Kiểm tra người dùng đã điền đủ hay chưa
                 if (!newPassword || !confirmPassword) {
                     e.preventDefault();
                     $clientError.removeClass('d-none').text('Vui lòng nhập đầy đủ mật khẩu mới.');
                     return;
                 }
 
+                // Kiểm tra định dạng mật khẩu mới (tối thiểu 8 ký tự, có chữ và số)
                 if (newPassword.length < 8 || !hasLetter || !hasDigit) {
                     e.preventDefault();
                     $clientError.removeClass('d-none').text('Mật khẩu mới phải có ít nhất 8 ký tự và bao gồm cả chữ lẫn số.');
@@ -126,6 +131,7 @@
                     return;
                 }
 
+                // Kiểm tra mật khẩu mới và xác nhận mật khẩu có khớp nhau không
                 if (newPassword !== confirmPassword) {
                     e.preventDefault();
                     $clientError.removeClass('d-none').text('Mật khẩu xác nhận không khớp.');

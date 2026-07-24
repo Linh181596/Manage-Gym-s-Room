@@ -32,6 +32,7 @@
             <h5 class="mb-1 text-primary fw-bold"><i class="fa fa-id-card me-2"></i>Cổng thông tin hội viên (Portal)</h5>
             <small class="text-muted">Theo dõi và kiểm tra thời hạn các gói tập của bạn tại trung tâm</small>
         </div>
+        <%-- Nút quay lại trang danh sách hội viên (dành cho Staff/Admin) hoặc Dashboard (dành cho Member) --%>
         <a href="<%= backLink %>" class="btn btn-outline-primary py-2 px-3 fw-bold">
             <i class="fa fa-arrow-left me-2"></i><%= backText %>
         </a>

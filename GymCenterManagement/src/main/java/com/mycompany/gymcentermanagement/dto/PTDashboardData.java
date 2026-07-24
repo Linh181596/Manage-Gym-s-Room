@@ -3,6 +3,10 @@ package com.mycompany.gymcentermanagement.dto;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * DTO chứa toàn bộ dữ liệu cần thiết để hiển thị trên Dashboard của Huấn luyện viên (PT).
+ * Gói gọn thông tin số hội viên đang quản lý, số ca tập trong tuần, giờ đào tạo và lịch tập hôm nay.
+ */
 public class PTDashboardData {
     private int activeMembersCount;
     private int weeklySessionsCount;

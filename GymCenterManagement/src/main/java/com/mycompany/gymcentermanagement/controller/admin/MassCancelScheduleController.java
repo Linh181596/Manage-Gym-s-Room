@@ -63,7 +63,11 @@ public class MassCancelScheduleController extends HttpServlet {
                 }
             }
 
-            String updatedBy = currentUser.getFullName() + " (Admin - Hủy hàng loạt " + slotLabel + ")";
+            String prefix = (cancelSlot == null || cancelSlot.isBlank() || "All".equalsIgnoreCase(cancelSlot)) ? "MC_ALL: " : "MC_SLOT: ";
+            String updatedBy = prefix + currentUser.getFullName();
+            if (updatedBy.length() > 50) {
+                updatedBy = updatedBy.substring(0, 50);
+            }
             
             int cancelledCount = ptScheduleService.massCancelSessions(
                     cancelDate,

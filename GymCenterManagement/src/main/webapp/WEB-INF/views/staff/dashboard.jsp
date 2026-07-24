@@ -53,6 +53,7 @@
             <div class="bg-light text-center rounded p-4 h-100">
                 <div class="d-flex align-items-center justify-content-between mb-4">
                     <h6 class="mb-0">Thành viên check-in gần đây</h6>
+                    <%-- Liên kết (Link) chuyển đến trang hiển thị đầy đủ lịch sử check-in --%>
                     <a href="#">Xem lịch sử check-in</a>
                 </div>
                 <div class="table-responsive">
@@ -95,6 +96,7 @@
             <div class="bg-light rounded p-4 h-100">
                 <h6 class="mb-4">Thao tác quầy lễ tân nhanh</h6>
                 <div class="d-grid gap-3">
+                    <%-- Các nút thao tác nhanh trên dashboard dành cho Lễ tân (Staff) --%>
                     <button class="btn btn-primary py-3" type="button"><i class="fa fa-qrcode me-2"></i>Quét mã QR hội viên</button>
                     <button class="btn btn-outline-primary py-3" type="button"><i class="fa fa-user-plus me-2"></i>Đăng ký hội viên mới</button>
                     <button class="btn btn-outline-primary py-3" type="button"><i class="fa fa-receipt me-2"></i>Xử lý thanh toán</button>

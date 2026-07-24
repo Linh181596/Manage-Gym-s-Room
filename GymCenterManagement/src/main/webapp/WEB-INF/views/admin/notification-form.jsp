@@ -74,7 +74,6 @@
                         <select class="form-select form-select-lg border-2" id="targetRole" name="targetRole">
                             <option value="" disabled ${empty notification.targetRole || notification.targetRole == 'Specific' ? 'selected' : ''}>-- Chọn vai trò nhận --</option>
                             <option value="All" ${notification.targetRole == 'All' ? 'selected' : ''}>Tất cả người dùng</option>
-                            <option value="Admin" ${notification.targetRole == 'Admin' ? 'selected' : ''}>Quản trị viên</option>
                             <option value="Staff" ${notification.targetRole == 'Staff' ? 'selected' : ''}>Nhân viên</option>
                             <option value="Member" ${notification.targetRole == 'Member' ? 'selected' : ''}>Hội viên</option>
                             <option value="PT" ${notification.targetRole == 'PT' ? 'selected' : ''}>Huấn luyện viên</option>

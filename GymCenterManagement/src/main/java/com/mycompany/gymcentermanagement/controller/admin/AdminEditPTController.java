@@ -209,10 +209,8 @@ public class AdminEditPTController extends HttpServlet {
             pt.setDisplayName(displayName);
             pt.setSpecialization(specialization);
             pt.setDescription(description);
-            if (currentUser.getRole() == User.Role.Staff) {
-                status = ptFromDb.getStatus();
-            }
-            pt.setStatus(status);
+            // Giữ nguyên trạng thái PT hiện tại từ CSDL (trạng thái được quản lý độc lập tại Quản lý Tài khoản)
+            pt.setStatus(ptFromDb.getStatus());
             pt.setAvatarPath(avatarPath);
             pt.setCertificateFilePath(certPath);
             pt.setCertificateFileName(certName);

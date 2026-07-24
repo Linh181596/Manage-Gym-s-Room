@@ -24,6 +24,7 @@
         </div>
     </c:if>
 
+    <%-- Form gửi dữ liệu tạo mới/cập nhật nội dung (POST), cho phép upload ảnh (multipart) --%>
     <form method="post" action="${pageContext.request.contextPath}/staff/public-content"
           enctype="multipart/form-data" class="row g-4">
         <input type="hidden" name="contentId" value="${content.contentId}" />
@@ -118,6 +119,7 @@
             <div class="bg-light rounded p-4 shadow-sm">
                 <h5 class="fw-bold text-dark mb-3">Xuất bản</h5>
                 <div class="d-grid gap-2">
+                    <%-- Nút submit form lưu dữ liệu bài viết --%>
                     <button type="submit" class="btn btn-primary py-2">
                         <i class="fa fa-save me-2"></i>Lưu nội dung
                     </button>
@@ -166,6 +168,7 @@
             ]
         };
 
+        // Render động danh sách danh mục tương ứng (Blog hoặc Policy)
         function renderCategories() {
             const selectedType = typeSelect.value || "BLOG";
             const options = categories[selectedType] || [];
@@ -182,6 +185,7 @@
             });
         }
 
+        // Ẩn/Hiện panel upload ảnh đại diện (Chính sách không cần ảnh)
         function toggleThumbnailPanel() {
             const isPolicy = typeSelect.value === "POLICY";
             thumbnailPanel.classList.toggle("d-none", isPolicy);

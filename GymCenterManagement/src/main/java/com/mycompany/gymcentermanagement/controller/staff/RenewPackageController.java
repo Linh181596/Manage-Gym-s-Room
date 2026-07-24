@@ -50,15 +50,33 @@ public class RenewPackageController extends HttpServlet {
                 return;
             }
 
-            // Tìm gói tập đang hoạt động hiện tại
-            MemberPackage activePkg = memberPackageService.getActivePackageByMemberId(member.getMemberId());
+            // Tìm gói tập mới nhất của hội viên (bất kể trạng thái)
+            MemberPackage latestPkg = memberPackageService.getLatestPackageByMemberId(member.getMemberId());
             
-            // Lấy danh sách tất cả các gói tập đang active
-            List<GymPackage> packages = gymPackageService.getActivePackages();
+            if (latestPkg == null || latestPkg.getGymPackage() == null) {
+                request.setAttribute("errorMessage", "Hội viên chưa có gói tập nào để gia hạn. Vui lòng hướng dẫn hội viên đăng ký mới.");
+                request.getRequestDispatcher("/WEB-INF/views/staff/members.jsp").forward(request, response);
+                return;
+            }
+
+            // Kiểm tra điều kiện gia hạn <= 3 ngày nếu đã hết hạn
+            if ("Expired".equalsIgnoreCase(latestPkg.getStatus())) {
+                java.time.LocalDate endDate = latestPkg.getEndDate();
+                java.time.LocalDate now = java.time.LocalDate.now();
+                long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(endDate, now);
+                if (daysBetween > 3) {
+                    request.setAttribute("errorMessage", "Gói tập đã hết hạn quá 3 ngày. Vui lòng hướng dẫn hội viên đăng ký mới.");
+                    request.getRequestDispatcher("/WEB-INF/views/staff/members.jsp").forward(request, response);
+                    return;
+                }
+            }
+
+            // Gói tập được phép gia hạn chính là gói tập gần nhất của hội viên
+            GymPackage allowedPackage = latestPkg.getGymPackage();
 
             request.setAttribute("member", member);
-            request.setAttribute("activePkg", activePkg);
-            request.setAttribute("packages", packages);
+            request.setAttribute("latestPkg", latestPkg);
+            request.setAttribute("allowedPackage", allowedPackage);
             
             request.getRequestDispatcher("/WEB-INF/views/staff/package-renew.jsp").forward(request, response);
         } catch (SQLException | NumberFormatException ex) {
@@ -94,6 +112,26 @@ public class RenewPackageController extends HttpServlet {
                 request.setAttribute("errorMessage", "Hội viên không tồn tại.");
                 doGet(request, response);
                 return;
+            }
+
+            // Bảo mật: Kiểm tra xem packageId muốn gia hạn có khớp với gói gần nhất không
+            MemberPackage latestPkg = memberPackageService.getLatestPackageByMemberId(member.getMemberId());
+            if (latestPkg == null || latestPkg.getGymPackage() == null || latestPkg.getGymPackage().getPackageId() != packageId) {
+                request.setAttribute("errorMessage", "Yêu cầu gia hạn không hợp lệ. Chỉ có thể gia hạn đúng gói tập hiện tại.");
+                doGet(request, response);
+                return;
+            }
+
+            // Kiểm tra điều kiện gia hạn <= 3 ngày nếu đã hết hạn
+            if ("Expired".equalsIgnoreCase(latestPkg.getStatus())) {
+                java.time.LocalDate endDate = latestPkg.getEndDate();
+                java.time.LocalDate now = java.time.LocalDate.now();
+                long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(endDate, now);
+                if (daysBetween > 3) {
+                    request.setAttribute("errorMessage", "Yêu cầu gia hạn không hợp lệ do gói tập đã hết hạn quá 3 ngày.");
+                    doGet(request, response);
+                    return;
+                }
             }
 
             Invoice pendingInvoice = memberPackageService.renewMemberPackage(member.getMemberId(), packageId, staffUserId);

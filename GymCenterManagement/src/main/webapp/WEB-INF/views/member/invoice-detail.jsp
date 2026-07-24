@@ -279,6 +279,7 @@
                 
                 <c:choose>
                     <c:when test="${invoice.status == 'Paid'}">
+                        <%-- Nút thực thi lệnh in (window.print) để in hóa đơn đã thanh toán --%>
                         <button type="button" class="btn btn-primary py-2 px-4 fw-bold" onclick="window.print()">
                             <i class="fa fa-print me-1"></i> In biên lai / Hóa đơn
                         </button>

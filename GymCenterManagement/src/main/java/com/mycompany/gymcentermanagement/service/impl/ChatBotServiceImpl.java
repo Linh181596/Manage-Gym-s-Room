@@ -37,8 +37,8 @@ public class ChatBotServiceImpl implements ChatBotService {
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
             "a", "ai", "anh", "ban", "bang", "bao", "bi", "biet", "cac", "cai", "can", "cho", "co",
             "cua", "duoc", "em", "gi", "giup", "hoi", "khong", "khi", "la", "lam", "luc", "may",
-            "minh", "muon", "nao", "nay", "nhung", "noi", "o", "phai", "phong", "ra", "sao", "the",
-            "thi", "toi", "trong", "tu", "ve", "vui", "xin"
+            "hay", "minh", "muon", "nao", "nay", "nen", "nhu", "nhung", "noi", "o", "phai", "phong",
+            "ra", "sao", "the", "thi", "toi", "trong", "tu", "va", "ve", "voi", "vui", "xin"
     ));
 
     private final ChatBotDAO chatBotDAO = new ChatBotDAOImpl();
@@ -46,6 +46,16 @@ public class ChatBotServiceImpl implements ChatBotService {
     @Override
     public List<ChatMessageModel> getChatHistory(HttpSession session) {
         return resolveChatHistory(session);
+    }
+
+    @Override
+    public List<FAQModel> getAvailableFAQs() {
+        try {
+            return chatBotDAO.getActiveFAQs(ChatBotConstant.FAQ_LIST_LIMIT);
+        } catch (SQLException ex) {
+            LOGGER.log(Level.WARNING, "Không thể tải danh sách FAQ cho chat box.", ex);
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -71,6 +81,30 @@ public class ChatBotServiceImpl implements ChatBotService {
         ChatMessageModel botMessage = ChatMessageModel.bot(findAnswer(normalizedInput));
         addMessage(history, botMessage);
         return botMessage;
+    }
+
+    @Override
+    public ChatMessageModel answerFAQ(int faqId, HttpSession session) {
+        List<ChatMessageModel> history = resolveChatHistory(session);
+
+        try {
+            FAQModel faq = chatBotDAO.getActiveFAQById(faqId);
+            if (faq == null) {
+                ChatMessageModel botMessage = ChatMessageModel.bot(ChatBotConstant.FAQ_NOT_AVAILABLE_MESSAGE);
+                addMessage(history, botMessage);
+                return botMessage;
+            }
+
+            addMessage(history, ChatMessageModel.user(faq.getQuestion()));
+            ChatMessageModel botMessage = ChatMessageModel.bot(faq.getAnswer());
+            addMessage(history, botMessage);
+            return botMessage;
+        } catch (SQLException ex) {
+            LOGGER.log(Level.WARNING, "Không thể lấy câu trả lời FAQ cho chat box.", ex);
+            ChatMessageModel botMessage = ChatMessageModel.bot(ChatBotConstant.SYSTEM_ERROR_MESSAGE);
+            addMessage(history, botMessage);
+            return botMessage;
+        }
     }
 
     @Override
@@ -137,7 +171,11 @@ public class ChatBotServiceImpl implements ChatBotService {
         String searchableText = (question + " " + faqKeywords + " " + category).trim();
         int score = 0;
 
-        if (!normalizedQuestion.isBlank() && searchableText.contains(normalizedQuestion)) {
+        if (!normalizedQuestion.isBlank() && question.equals(normalizedQuestion)) {
+            score += 300;
+        }
+
+        if (!normalizedQuestion.isBlank() && containsSearchPhrase(searchableText, normalizedQuestion)) {
             score += 80;
         }
 
@@ -145,13 +183,13 @@ public class ChatBotServiceImpl implements ChatBotService {
             if (keyword.length() < 2) {
                 continue;
             }
-            if (question.contains(keyword)) {
+            if (containsSearchToken(question, keyword)) {
                 score += 14;
             }
-            if (faqKeywords.contains(keyword)) {
+            if (containsSearchToken(faqKeywords, keyword)) {
                 score += 18;
             }
-            if (category.contains(keyword)) {
+            if (containsSearchToken(category, keyword)) {
                 score += 6;
             }
             if (keyword.equals(question) || keyword.equals(category) || keyword.equals(faqKeywords)) {
@@ -200,11 +238,12 @@ public class ChatBotServiceImpl implements ChatBotService {
         if (containsAny(normalizedQuestion, "hoan tien", "chinh sach", "noi quy", "bao luu", "chuyen nhuong")) {
             return "policies";
         }
+        if (containsAny(normalizedQuestion, "gia han", "het han", "han goi", "han goi tap", "xem han", "ngay het han",
+                "con may ngay", "thoi han", "doi goi", "nang cap", "huy goi", "membership renewal", "membership expiration")) {
+            return "membership management";
+        }
         if (containsAny(normalizedQuestion, "goi tap", "package", "membership package", "gia goi", "chi phi goi", "goi thang", "goi nam", "khuyen mai", "giam gia")) {
             return "membership package";
-        }
-        if (containsAny(normalizedQuestion, "gia han", "het han", "doi goi", "nang cap", "huy goi", "membership renewal", "membership expiration")) {
-            return "membership management";
         }
         if (containsAny(normalizedQuestion, "dang ky", "dang ki", "hoi vien", "membership registration", "join gym", "tham gia", "tao tai khoan", "mo tai khoan")) {
             return "membership registration";
@@ -220,7 +259,39 @@ public class ChatBotServiceImpl implements ChatBotService {
 
     private boolean containsAny(String value, String... keywords) {
         for (String keyword : keywords) {
-            if (value.contains(keyword)) {
+            if (containsSearchToken(value, keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsSearchPhrase(String value, String phrase) {
+        if (value == null || phrase == null || phrase.isBlank()) {
+            return false;
+        }
+        if (!phrase.contains(" ") && phrase.length() <= 2) {
+            return containsWholeToken(value, phrase);
+        }
+        return value.contains(phrase);
+    }
+
+    private boolean containsSearchToken(String value, String token) {
+        if (value == null || token == null || token.isBlank()) {
+            return false;
+        }
+        if (token.contains(" ") || token.length() > 2) {
+            return value.contains(token);
+        }
+        return containsWholeToken(value, token);
+    }
+
+    private boolean containsWholeToken(String value, String token) {
+        if (value == null || token == null || token.isBlank()) {
+            return false;
+        }
+        for (String currentToken : value.split(" ")) {
+            if (token.equals(currentToken)) {
                 return true;
             }
         }

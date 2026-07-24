@@ -57,7 +57,7 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         metric.setActiveTrainers(queryInt(
                 "SELECT COUNT(*) FROM PersonalTrainers pt "
                 + "INNER JOIN Users u ON pt.UserID = u.UserID "
-                + "WHERE pt.Status = 'Active' AND pt.IsDeleted = 0 "
+                + "WHERE pt.IsDeleted = 0 "
                 + "AND u.Status = 'Active' AND u.IsDeleted = 0"));
         metric.setTodayPtSessions(queryInt(
                 "SELECT COUNT(*) FROM PTSchedules "

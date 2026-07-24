@@ -70,6 +70,7 @@
             </p>
         </div>
 
+        <%-- Form thêm mới/cập nhật thông tin sự cố (POST) có đính kèm file ảnh --%>
         <form method="post" action="${pageContext.request.contextPath}/staff/equipment-issues?action=${issue.issueId > 0 ? 'edit' : 'create'}" enctype="multipart/form-data">
             <input type="hidden" name="id" value="${issue.issueId}">
             <input type="hidden" name="reportedBy" value="${issue.reportedBy}">
@@ -146,6 +147,7 @@
                         <a class="btn btn-outline-secondary" href="${pageContext.request.contextPath}/staff/equipment-issues?action=list">Hủy bỏ</a>
                     </c:otherwise>
                 </c:choose>
+                <%-- Nút lưu dữ liệu báo cáo sự cố --%>
                 <button type="submit" class="btn btn-danger">
                     <i class="fa fa-save me-2"></i> ${issue.issueId > 0 ? 'Cập nhật sự cố' : 'Gửi báo cáo'}
                 </button>

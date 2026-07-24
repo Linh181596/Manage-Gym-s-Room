@@ -49,8 +49,18 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         return content;
     }
 
+    /**
+     * Tìm danh sách nội dung nổi bật (Featured).
+     * Luồng nghiệp vụ: Lấy các nội dung mới nhất đã được Publish để hiển thị (ví dụ: Trang chủ).
+     * 
+     * @param type Loại nội dung
+     * @param limit Số lượng muốn lấy
+     * @return Danh sách nội dung
+     * @throws SQLException 
+     */
     @Override
     public List<PublicContent> findFeaturedPublished(ContentType type, int limit) throws SQLException {
+        // SQL: Lấy TOP(limit) nội dung có trạng thái Published, ưu tiên ngày PublishedAt
         String sql = """
                 SELECT TOP (?) *
                 FROM PublicContents
@@ -223,12 +233,22 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         }
     }
 
+    /**
+     * Xóa mềm một nội dung.
+     * Luồng nghiệp vụ:
+     * 1. [BR-COMP-55]: Nội dung khi xóa sẽ không mất khỏi DB mà được đánh dấu 'IsDeleted = 1'.
+     * 
+     * @param contentId ID
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean softDelete(int contentId) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
         try {
             conn = getActiveConnection();
+            // SQL: Đánh dấu IsDeleted = 1 để xóa mềm
             stmt = conn.prepareStatement("UPDATE PublicContents SET IsDeleted = 1, UpdatedAt = SYSDATETIME() WHERE ContentID = ?");
             stmt.setInt(1, contentId);
             return stmt.executeUpdate() > 0;

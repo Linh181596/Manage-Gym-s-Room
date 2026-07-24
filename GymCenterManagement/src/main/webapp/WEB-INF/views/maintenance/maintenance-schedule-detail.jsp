@@ -17,6 +17,7 @@
                 <a class="btn btn-warning" href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=edit&id=${schedule.maintenanceScheduleId}">
                     <i class="fa fa-edit me-2"></i>Cập nhật
                 </a>
+                <%-- Form ẩn xử lý hủy lịch bảo trì (chỉ Admin mới có quyền) --%>
                 <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=cancel"
                       onsubmit="return confirm('Bạn có chắc muốn hủy lịch #MT-${schedule.maintenanceScheduleId}?');">
                     <input type="hidden" name="id" value="${schedule.maintenanceScheduleId}">
@@ -29,6 +30,7 @@
                 </a>
             </c:if>
             <c:if test="${sessionScope.currentUser.role == 'Admin' && schedule.status == 'PendingApproval'}">
+                <%-- Form duyệt lịch bảo trì đã hoàn thành (Admin) --%>
                 <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=approve">
                     <input type="hidden" name="id" value="${schedule.maintenanceScheduleId}">
                     <button class="btn btn-success" type="submit"><i class="fa fa-check me-2"></i>Duyệt</button>
@@ -106,6 +108,7 @@
             <c:if test="${sessionScope.currentUser.role == 'Admin' && schedule.status == 'PendingApproval'}">
                 <div class="bg-light rounded p-4 shadow-sm mb-4">
                     <h5 class="text-primary border-bottom pb-3 mb-4"><i class="fa fa-user-check me-2"></i>Duyệt bảo trì</h5>
+                    <%-- Form từ chối duyệt lịch bảo trì (Admin yêu cầu làm lại) --%>
                     <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=reject">
                         <input type="hidden" name="id" value="${schedule.maintenanceScheduleId}">
                         <div class="mb-3">

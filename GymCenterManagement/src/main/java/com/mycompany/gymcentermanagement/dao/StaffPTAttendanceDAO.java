@@ -46,7 +46,7 @@ public interface StaffPTAttendanceDAO {
          * Lấy lịch sử điểm danh với phân trang và bộ lọc.
          */
         List<StaffPTAttendance> searchHistory(
-                        int userId, String userRole,
+                        int userId, String userRole, String shiftBlock,
                         LocalDate fromDate, LocalDate toDate,
                         String keyword,
                         int offset, int limit) throws SQLException;
@@ -55,7 +55,7 @@ public interface StaffPTAttendanceDAO {
          * Đếm tổng số bản ghi theo điều kiện lọc.
          */
         int countHistory(
-                        int userId, String userRole,
+                        int userId, String userRole, String shiftBlock,
                         LocalDate fromDate, LocalDate toDate,
                         String keyword) throws SQLException;
 

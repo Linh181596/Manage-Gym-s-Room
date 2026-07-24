@@ -55,12 +55,14 @@
 
                         <p class="text-muted text-center mb-4">Vui lòng điền mã token xác thực nhận được trong email để kích hoạt tài khoản của bạn.</p>
 
+                        <%-- Form xác thực email bằng token (POST) --%>
                         <form action="${pageContext.request.contextPath}/verify" method="POST">
                             <div class="form-floating mb-4">
                                 <input type="text" class="form-control" id="token" name="token" required placeholder="Mã token">
                                 <label for="token">Mã Token kích hoạt</label>
                             </div>
                             
+                            <%-- Nút submit dữ liệu mã token để kích hoạt tài khoản --%>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-4 fw-bold">Kích hoạt tài khoản</button>
                         </form>
                         

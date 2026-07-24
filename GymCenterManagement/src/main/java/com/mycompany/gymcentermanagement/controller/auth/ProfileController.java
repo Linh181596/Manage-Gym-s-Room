@@ -26,6 +26,7 @@ import jakarta.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
 
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 2, // 2MB
@@ -199,9 +200,17 @@ public class ProfileController extends HttpServlet {
                         Date selectedDob = Date.valueOf(dobStr); // Ép kiểu chuỗi lịch sang java.sql.Date
                         Date today = new Date(System.currentTimeMillis()); // Lấy ngày hiện tại chính xác của hệ thống
                         
-                        // Nếu ngày sinh sau ngày hôm nay -> Kích hoạt bẫy chặn dữ liệu logic
+                        // Ngày sinh không được ở tương lai.
                         if (selectedDob.after(today)) {
                             request.setAttribute("errorMessage", "Cập nhật thất bại: Ngày tháng năm sinh không thể vượt quá ngày hiện tại!");
+                            request.setAttribute("profile", currentProfile);
+                            request.getRequestDispatcher("/WEB-INF/views/auth/profile.jsp").forward(request, response);
+                            return;
+                        }
+
+                        // Đồng nhất với luồng đăng ký: hội viên phải đủ 14 tuổi tại ngày cập nhật.
+                        if (selectedDob.toLocalDate().plusYears(14).isAfter(LocalDate.now())) {
+                            request.setAttribute("errorMessage", "Bạn chưa đủ tuổi để đăng kí tập gym.");
                             request.setAttribute("profile", currentProfile);
                             request.getRequestDispatcher("/WEB-INF/views/auth/profile.jsp").forward(request, response);
                             return;

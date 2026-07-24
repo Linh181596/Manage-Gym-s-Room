@@ -52,6 +52,7 @@
                             Nhập email tài khoản để nhận liên kết đặt lại mật khẩu.
                         </p>
 
+                        <%-- Form yêu cầu gửi liên kết đặt lại mật khẩu (nhập email) --%>
                         <form action="${pageContext.request.contextPath}/forgot-password" method="POST">
                             <div class="form-floating mb-4">
                                 <input type="email" class="form-control" id="email" name="email"
@@ -59,6 +60,7 @@
                                 <label for="email">Địa chỉ Email <span class="text-danger">*</span></label>
                             </div>
 
+                            <%-- Nút submit dữ liệu yêu cầu quên mật khẩu --%>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-3 fw-bold">
                                 Gửi liên kết đặt lại mật khẩu
                             </button>

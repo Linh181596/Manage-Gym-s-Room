@@ -31,6 +31,7 @@
                 <c:if test="${edit}">
                     <c:set var="formAction" value="update" />
                 </c:if>
+                <%-- Form tạo/sửa lịch bảo trì cho Admin --%>
                 <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=${formAction}">
                     <input type="hidden" name="id" value="${schedule.maintenanceScheduleId}">
                     <div class="row g-3">
@@ -99,6 +100,7 @@
                     <div class="col-md-6"><small class="text-muted d-block">Loại bảo trì</small><strong><c:out value="${schedule.maintenanceTypeDisplay}" /></strong></div>
                     <div class="col-12"><small class="text-muted d-block">Mô tả công việc</small><div class="border rounded p-3 bg-white"><c:out value="${schedule.description}" /></div></div>
                 </div>
+                <%-- Form cập nhật tiến độ lịch bảo trì cho Staff (từ Scheduled -> InProgress -> PendingApproval) --%>
                 <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=update" enctype="multipart/form-data">
                     <input type="hidden" name="id" value="${schedule.maintenanceScheduleId}">
                     <c:choose>
@@ -156,6 +158,7 @@
 
             function refreshIssues() {
                 const equipmentId = equipment.value;
+                // Nếu loại bảo trì là định kỳ (phòng ngừa), ẩn chọn sự cố liên quan
                 const preventive = type.value === 'Preventive';
                 issueGroup.classList.toggle('d-none', preventive);
                 options.forEach(function (option, index) {
@@ -164,9 +167,11 @@
                         option.disabled = false;
                         return;
                     }
+                    // Lọc hiển thị danh sách sự cố phù hợp với thiết bị đã chọn
                     const valid = !preventive && option.dataset.equipmentId === equipmentId;
                     option.hidden = !valid;
                     option.disabled = !valid;
+                    // Reset giá trị nếu tùy chọn cũ không còn hợp lệ
                     if (!valid && option.selected) {
                         issue.value = '';
                     }

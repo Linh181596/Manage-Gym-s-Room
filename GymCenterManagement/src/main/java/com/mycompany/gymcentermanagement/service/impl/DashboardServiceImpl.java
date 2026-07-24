@@ -32,6 +32,19 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final DashboardDAO dashboardDAO = new DashboardDAOImpl();
 
+    /**
+     * Lấy dữ liệu tổng hợp cho Admin Dashboard.
+     * Luồng nghiệp vụ:
+     * 1. Nhận bộ lọc doanh thu, nếu null thì tạo bộ lọc mặc định.
+     * 2. Lấy các chỉ số KPI tổng quan.
+     * 3. Lấy dữ liệu xu hướng doanh thu và xử lý điền đầy các khoảng thời gian bị thiếu (fill zero).
+     * 4. Lấy danh sách hóa đơn gần đây và các cảnh báo vận hành.
+     * 5. Chuẩn hóa dữ liệu biểu đồ thành định dạng JSON để hiển thị.
+     * 
+     * @param revenueFilter Bộ lọc doanh thu
+     * @return Dữ liệu dashboard cho Admin
+     * @throws SQLException Nếu có lỗi truy xuất CSDL
+     */
     @Override
     public AdminDashboardData getAdminDashboardData(RevenueChartFilter revenueFilter) throws SQLException {
         RevenueChartFilter filter = revenueFilter != null

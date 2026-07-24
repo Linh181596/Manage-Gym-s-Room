@@ -17,4 +17,8 @@ import java.util.List;
 public interface ChatBotDAO {
 
     List<FAQModel> searchFAQs(String originalQuestion, List<String> keywords, int limit) throws SQLException;
+
+    List<FAQModel> getActiveFAQs(int limit) throws SQLException;
+
+    FAQModel getActiveFAQById(int faqId) throws SQLException;
 }

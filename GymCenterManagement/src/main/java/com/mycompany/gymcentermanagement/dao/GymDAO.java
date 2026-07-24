@@ -606,6 +606,92 @@ public class GymDAO {
         }
     }
 
+    /**
+     * Marks every notification that is currently visible to the user as read.
+     * Visibility is checked in the query so a client cannot mark notifications
+     * intended for a different role.
+     */
+    public boolean markAllNotificationsAsRead(int userId) {
+        return markVisibleNotificationsAsRead(userId, null);
+    }
+
+    /**
+     * Marks only the selected notifications as read, provided they are visible
+     * to the current user.
+     */
+    public boolean markNotificationsAsRead(int userId, List<Integer> notificationIds) {
+        return markVisibleNotificationsAsRead(userId, notificationIds);
+    }
+
+    private boolean markVisibleNotificationsAsRead(int userId, List<Integer> notificationIds) {
+        List<Integer> validIds = new ArrayList<>();
+        if (notificationIds != null) {
+            for (Integer notificationId : notificationIds) {
+                if (notificationId != null && notificationId > 0 && !validIds.contains(notificationId)) {
+                    validIds.add(notificationId);
+                }
+            }
+            if (validIds.isEmpty()) {
+                return false;
+            }
+        }
+
+        String role = getUserRole(userId);
+        String notificationFilter = "";
+        if (notificationIds != null) {
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < validIds.size(); i++) {
+                if (i > 0) {
+                    placeholders.append(", ");
+                }
+                placeholders.append("?");
+            }
+            notificationFilter = " AND n.NotificationID IN (" + placeholders + ")";
+        }
+
+        String sql = """
+                MERGE [dbo].[NotificationRecipients] AS target
+                USING (
+                    SELECT DISTINCT n.NotificationID, ? AS UserID
+                    FROM [dbo].[Notifications] n
+                    LEFT JOIN [dbo].[NotificationRecipients] existingRecipient
+                        ON existingRecipient.NotificationID = n.NotificationID
+                        AND existingRecipient.UserID = ?
+                    WHERE n.IsDeleted = 0
+                      AND n.PublishDate <= SYSDATETIME()
+                      AND (n.ExpiryDate IS NULL OR n.ExpiryDate > SYSDATETIME())
+                      AND (
+                          n.TargetRole = ?
+                          OR n.TargetRole = 'All'
+                          OR existingRecipient.UserID IS NOT NULL
+                      )
+                """ + notificationFilter + """
+                ) AS source
+                ON target.NotificationID = source.NotificationID
+                   AND target.UserID = source.UserID
+                WHEN MATCHED AND target.IsRead = 0 THEN
+                    UPDATE SET IsRead = 1, ReadAt = SYSDATETIME()
+                WHEN NOT MATCHED THEN
+                    INSERT (NotificationID, UserID, IsRead, ReadAt, CreatedDate)
+                    VALUES (source.NotificationID, source.UserID, 1, SYSDATETIME(), SYSDATETIME());
+                """;
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, userId);
+            ps.setString(3, role);
+            for (int i = 0; i < validIds.size(); i++) {
+                ps.setInt(4 + i, validIds.get(i));
+            }
+            ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private String getUserRole(int userId) {
         String sql = """
                 SELECT TOP 1 r.RoleName

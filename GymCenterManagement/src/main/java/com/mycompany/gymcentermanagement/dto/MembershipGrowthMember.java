@@ -12,7 +12,12 @@ package com.mycompany.gymcentermanagement.dto;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * DTO lưu trữ thông tin chi tiết của một hội viên trong báo cáo tăng trưởng.
+ * Dùng để hiển thị danh sách hội viên mới đăng ký trong một khoảng thời gian được lọc.
+ */
 public class MembershipGrowthMember {
+    // Định dạng ngày hiển thị trên View
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private int memberId;

@@ -9,6 +9,10 @@
  */
 package com.mycompany.gymcentermanagement.dto;
 
+/**
+ * DTO đại diện cho một điểm dữ liệu (data point) trên biểu đồ tăng trưởng hội viên.
+ * Chứa thông tin về nhãn trục X (ví dụ: tháng/năm) và giá trị số lượng hội viên (trục Y).
+ */
 public class MembershipGrowthChartPoint {
     private int periodNumber;
     private String label;

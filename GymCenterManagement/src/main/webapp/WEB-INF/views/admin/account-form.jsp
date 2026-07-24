@@ -14,6 +14,7 @@
 
 <c:set var="isSelf" value="${not isCreate && account.userId == sessionScope.currentUser.userId}" />
 <c:set var="isManagedRole" value="${account.role == 'Staff' || account.role == 'Member'}" />
+<c:set var="isInactive" value="${not isCreate && account.accountStatus == 'Inactive'}" />
 
 <div class="container-fluid pt-4 px-4">
     <div class="mb-4">
@@ -41,6 +42,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </c:if>
+                <c:if test="${isInactive}">
+                    <div class="alert alert-secondary shadow-sm mb-4" role="alert">
+                        <i class="fa fa-eye me-2"></i>Tài khoản đã vô hiệu hóa. Bạn chỉ có thể xem thông tin.
+                    </div>
+                </c:if>
 
                 <form action="${pageContext.request.contextPath}/admin/accounts" method="post" id="accountForm" class="needs-validation" novalidate>
                     <input type="hidden" name="action" value="save">
@@ -58,7 +64,7 @@
                             <i class="fa fa-user me-1 text-muted"></i>Họ và tên <span class="text-danger">*</span>
                         </label>
                         <input type="text" class="form-control form-control-lg border-2" id="fullName" name="fullName"
-                               value="${account.fullName}" maxlength="100" required>
+                               value="${account.fullName}" maxlength="100" required ${isInactive ? 'readonly' : ''}>
                         <div class="invalid-feedback">Vui lòng nhập họ và tên.</div>
                     </div>
 
@@ -68,7 +74,7 @@
                                 <i class="fa fa-envelope me-1 text-muted"></i>Email <span class="text-danger">*</span>
                             </label>
                             <input type="email" class="form-control form-control-lg border-2" id="email" name="email"
-                                   value="${account.email}" maxlength="100" required>
+                                    value="${account.email}" maxlength="100" required ${isInactive ? 'readonly' : ''}>
                             <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
                         </div>
                         <div class="col-md-6">
@@ -76,7 +82,7 @@
                                 <i class="fa fa-phone me-1 text-muted"></i>Số điện thoại <span class="text-danger">*</span>
                             </label>
                             <input type="text" class="form-control form-control-lg border-2" id="phone" name="phone"
-                                   value="${account.phoneNumber}" pattern="^0[0-9]{9}$" maxlength="10" required>
+                                    value="${account.phoneNumber}" pattern="^0[0-9]{9}$" maxlength="10" required ${isInactive ? 'readonly' : ''}>
                             <div class="invalid-feedback">Số điện thoại phải bắt đầu bằng 0 và gồm đúng 10 chữ số.</div>
                         </div>
                     </div>
@@ -87,7 +93,7 @@
                                 <i class="fa fa-user-tag me-1 text-muted"></i>Vai trò <span class="text-danger">*</span>
                             </label>
                             <c:choose>
-                                <c:when test="${isCreate || (isManagedRole && !isSelf)}">
+                                <c:when test="${(isCreate || (isManagedRole && !isSelf)) && !isInactive}">
                                     <select class="form-select form-select-lg border-2" id="role" name="role" required>
                                         <option value="Staff" ${account.role == 'Staff' ? 'selected' : ''}>Staff</option>
                                         <option value="Member" ${account.role == 'Member' ? 'selected' : ''}>Member</option>
@@ -106,7 +112,7 @@
                                 <i class="fa fa-toggle-on me-1 text-muted"></i>Trạng thái <span class="text-danger">*</span>
                             </label>
                             <c:choose>
-                                <c:when test="${isSelf}">
+                                <c:when test="${isSelf || isInactive}">
                                     <input type="text" class="form-control form-control-lg border-2" value="${account.accountStatus}" readonly>
                                     <input type="hidden" name="status" value="${account.accountStatus}">
                                 </c:when>
@@ -122,10 +128,17 @@
                     </div>
 
                     <div class="d-flex gap-3 justify-content-end border-top pt-4">
-                        <a href="${pageContext.request.contextPath}/admin/accounts" class="btn btn-lg btn-outline-secondary px-5">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-lg btn-primary px-5 shadow-sm">
-                            <i class="fa fa-save me-2"></i>Lưu
-                        </button>
+                        <c:choose>
+                            <c:when test="${isInactive}">
+                                <a href="${pageContext.request.contextPath}/admin/accounts" class="btn btn-lg btn-outline-secondary px-5">Quay lại danh sách</a>
+                            </c:when>
+                            <c:otherwise>
+                                <a href="${pageContext.request.contextPath}/admin/accounts" class="btn btn-lg btn-outline-secondary px-5">Hủy bỏ</a>
+                                <button type="submit" class="btn btn-lg btn-primary px-5 shadow-sm">
+                                    <i class="fa fa-save me-2"></i>Lưu
+                                </button>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </form>
             </div>

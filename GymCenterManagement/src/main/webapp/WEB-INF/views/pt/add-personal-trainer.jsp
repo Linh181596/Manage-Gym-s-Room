@@ -128,6 +128,7 @@
                             <!-- Action Buttons -->
                             <div class="d-flex justify-content-end gap-2 border-top pt-3">
                                 <a href="${pageContext.request.contextPath}/pt/list" class="btn btn-outline-secondary px-4 py-2">Hủy bỏ</a>
+                                <%-- Nút submit form gửi thông tin đăng ký tạo tài khoản PT mới lên server --%>
                                 <button type="submit" class="btn btn-primary px-5 py-2 shadow-sm"><i class="fa fa-save me-1"></i> Tạo tài khoản PT</button>
                             </div>
                         </form>
@@ -138,6 +139,7 @@
     </div>
 
     <script>
+        // Bắt sự kiện submit form, kiểm tra số lượng từ của đoạn mô tả bản thân không được vượt quá 500 từ
         document.querySelector('form').addEventListener('submit', function(e) {
             const descTextarea = document.getElementById('description');
             if (descTextarea) {

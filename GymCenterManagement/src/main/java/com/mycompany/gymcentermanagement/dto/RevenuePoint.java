@@ -12,6 +12,10 @@ package com.mycompany.gymcentermanagement.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * DTO biểu diễn một điểm dữ liệu (tọa độ) duy nhất trên biểu đồ doanh thu.
+ * Trục X là ngày (revenueDate), trục Y là tổng tiền thu được trong ngày đó (amount).
+ */
 public class RevenuePoint {
     private LocalDate revenueDate;
     private BigDecimal amount = BigDecimal.ZERO;

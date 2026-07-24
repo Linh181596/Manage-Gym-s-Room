@@ -2,6 +2,10 @@ package com.mycompany.gymcentermanagement.dto;
 
 import java.time.LocalDate;
 
+/**
+ * DTO đại diện cho một hội viên đang được quản lý bởi một Huấn luyện viên (PT).
+ * Chứa các thông tin về gói tập PT, tiến độ số buổi tập (đã hoàn thành / tổng số buổi) và thời gian học.
+ */
 public class PTMemberDTO {
     private int ptRegistrationId;
     private String memberName;

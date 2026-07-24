@@ -57,6 +57,7 @@ public class MembershipGrowthReportController extends HttpServlet {
             MembershipGrowthSummary summary = reportService.getSummary(selectedYear, selectedMonth);
             List<MembershipGrowthChartPoint> chartPoints = reportService.getGrowthChart(selectedYear, selectedMonth);
 
+            // Tính toán tổng số lượng bản ghi để phục vụ phân trang (Pagination)
             int page = PaginationHelper.parseInt(request.getParameter("page"), 1);
             int totalItems = reportService.countMembers(selectedYear, selectedMonth, tableStatus, searchKeyword);
             int totalPages = PaginationHelper.totalPages(totalItems, PAGE_SIZE);
@@ -120,6 +121,7 @@ public class MembershipGrowthReportController extends HttpServlet {
         request.setAttribute("searchKeyword", searchKeyword);
         request.setAttribute("summary", summary);
         request.setAttribute("members", members);
+        // Inject dữ liệu biểu đồ dưới dạng chuỗi JSON thẳng vào JSP để render Chart.js / Google Charts
         request.setAttribute("chartLabelsJson", buildChartLabelsJson(chartPoints));
         request.setAttribute("chartValuesJson", buildChartValuesJson(chartPoints));
         request.setAttribute("selectedPeriodText", buildPeriodText(selectedYear, selectedMonth));
@@ -200,6 +202,7 @@ public class MembershipGrowthReportController extends HttpServlet {
         return "Tháng " + selectedMonth + "/" + selectedYear;
     }
 
+    // Chuyển đổi nhãn (Label) của Chart sang mảng JSON (vd: ["Tháng 1", "Tháng 2"])
     private String buildChartLabelsJson(List<MembershipGrowthChartPoint> points) {
         return points.stream()
                 .map(point -> "\"" + escapeJson(point.getLabel()) + "\"")
@@ -212,6 +215,7 @@ public class MembershipGrowthReportController extends HttpServlet {
                 .collect(Collectors.joining(",", "[", "]"));
     }
 
+    // Chống lỗi cú pháp JSON do chứa các ký tự đặc biệt như ngoặc kép hoặc gạch chéo
     private String escapeJson(String value) {
         if (value == null) {
             return "";

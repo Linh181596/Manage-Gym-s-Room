@@ -168,6 +168,7 @@
 
                                             <c:choose>
                                                 <c:when test="${sessionScope.currentUser.role == 'Member'}">
+                                                    <%-- Nút chuyển hướng sang màn hình đăng ký mua gói tập PT dành cho Hội viên (Member) --%>
                                                     <a href="${pageContext.request.contextPath}/member/pt/register?priceId=${price.ptServicePriceId}"
                                                        class="btn btn-primary w-100 mt-auto py-2 fw-semibold shadow-sm">
                                                         Đăng ký gói tập này
@@ -190,11 +191,13 @@
 
                 <c:if test="${sessionScope.currentUser.role == 'Admin' or sessionScope.currentUser.role == 'Staff'}">
                     <div class="mt-4 d-flex gap-2">
+                        <%-- Nút chuyển hướng sang form chỉnh sửa thông tin PT dành cho Admin/Staff --%>
                         <a href="${pageContext.request.contextPath}/admin/pt/edit?id=${trainer.ptId}" 
                            class="btn btn-warning flex-fill py-2 fw-bold shadow-sm text-dark">
                             <i class="fa fa-edit me-2"></i>Chỉnh sửa thông tin PT
                         </a>
                         <c:if test="${sessionScope.currentUser.role == 'Admin'}">
+                            <%-- Nút chuyển hướng sang màn hình quản lý bảng giá dịch vụ PT dành riêng cho Admin --%>
                             <a href="${pageContext.request.contextPath}/admin/pt/service-prices?id=${trainer.ptId}" 
                                class="btn btn-primary flex-fill py-2 fw-bold shadow-sm text-white">
                                 <i class="fa fa-hand-holding-usd me-2"></i>Quản lý giá dịch vụ

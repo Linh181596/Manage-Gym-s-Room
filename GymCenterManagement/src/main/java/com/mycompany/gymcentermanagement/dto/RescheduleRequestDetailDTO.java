@@ -5,6 +5,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * DTO lưu chi tiết một yêu cầu dời lịch tập (Reschedule Request).
+ * Bao gồm thông tin về ca tập gốc, thời gian đề xuất mới, lý do dời lịch, 
+ * và lý do từ chối/báo cáo lên quản lý nếu có mâu thuẫn giữa PT và Hội viên.
+ */
 public class RescheduleRequestDetailDTO {
     private int requestId;
     private int scheduleId;
@@ -29,6 +34,7 @@ public class RescheduleRequestDetailDTO {
     private LocalDateTime updatedDate;
     private boolean ptConflict;
     private boolean memberConflict;
+    private String originalSessionStatus;
 
     public boolean isPtConflict() {
         return ptConflict;
@@ -252,5 +258,13 @@ public class RescheduleRequestDetailDTO {
     public String getFormattedCreatedDate() {
         if (createdDate == null) return "";
         return createdDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    public String getOriginalSessionStatus() {
+        return originalSessionStatus;
+    }
+
+    public void setOriginalSessionStatus(String originalSessionStatus) {
+        this.originalSessionStatus = originalSessionStatus;
     }
 }

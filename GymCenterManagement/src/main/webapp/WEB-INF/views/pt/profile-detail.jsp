@@ -29,7 +29,19 @@
                 <p><strong>Họ và tên:</strong> ${pt.fullName}</p>
                 <p><strong>Số điện thoại:</strong> ${pt.phone}</p>
                 <p><strong>Ngày bắt đầu sự nghiệp:</strong> ${pt.careerStartDate}</p>
-                <p><strong>Trạng thái tài khoản:</strong> <span class="badge bg-success">${pt.status}</span></p>
+                <p><strong>Trạng thái tài khoản:</strong> 
+                    <c:choose>
+                        <c:when test="${pt.status == 'Active'}">
+                            <span class="badge bg-success">Đang hoạt động</span>
+                        </c:when>
+                        <c:when test="${pt.status == 'Locked'}">
+                            <span class="badge bg-warning text-dark">Bị khóa</span>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="badge bg-danger">Ngừng hoạt động</span>
+                        </c:otherwise>
+                    </c:choose>
+                </p>
                 <p><strong>Bằng cấp/Chứng chỉ:</strong>
                     <c:set var="rawCertPath" value="${pt.certificateFilePath}"/>
                     <c:set var="finalCertPath" value="${rawCertPath}"/>

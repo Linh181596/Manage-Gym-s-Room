@@ -144,11 +144,22 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                            <a href="${pageContext.request.contextPath}/admin/accounts?action=edit&id=${account.userId}"
-                                               class="btn btn-sm btn-outline-primary" title="Xem hoặc sửa tài khoản">
-                                                <i class="fa fa-edit"></i>
-                                            </a>
+                                            <c:choose>
+                                                <c:when test="${account.accountStatus == 'Inactive'}">
+                                                    <a href="${pageContext.request.contextPath}/admin/accounts?action=edit&id=${account.userId}"
+                                                       class="btn btn-sm btn-outline-secondary" title="Xem thông tin tài khoản">
+                                                        <i class="fa fa-eye"></i>
+                                                    </a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <a href="${pageContext.request.contextPath}/admin/accounts?action=edit&id=${account.userId}"
+                                                       class="btn btn-sm btn-outline-primary" title="Xem hoặc sửa tài khoản">
+                                                        <i class="fa fa-edit"></i>
+                                                    </a>
+                                                </c:otherwise>
+                                            </c:choose>
 
+                                            <c:if test="${account.accountStatus != 'Inactive'}">
                                             <c:choose>
                                                 <c:when test="${account.accountStatus == 'Locked'}">
                                                     <form method="post" action="${pageContext.request.contextPath}/admin/accounts" class="d-inline">
@@ -159,11 +170,6 @@
                                                             <i class="fa fa-unlock"></i>
                                                         </button>
                                                     </form>
-                                                </c:when>
-                                                <c:when test="${account.accountStatus == 'Inactive'}">
-                                                    <button type="button" class="btn btn-sm btn-outline-warning" title="Tài khoản đã vô hiệu hóa không thể khóa" disabled>
-                                                        <i class="fa fa-lock"></i>
-                                                    </button>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <form method="post" action="${pageContext.request.contextPath}/admin/accounts" class="d-inline">
@@ -196,6 +202,7 @@
                                                     <i class="fa fa-user-slash"></i>
                                                 </button>
                                             </form>
+                                            </c:if>
                                         </div>
                                     </td>
                                 </tr>

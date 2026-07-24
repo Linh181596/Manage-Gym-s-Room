@@ -128,6 +128,7 @@
             <small class="text-muted">Lựa chọn huấn luyện viên chuyên nghiệp phù hợp với mục tiêu tập luyện của bạn</small>
         </div>
         <c:if test="${sessionScope.currentUser.role == 'Admin' || sessionScope.currentUser.role == 'Staff'}">
+            <%-- Nút chuyển hướng đến trang thêm tài khoản PT mới dành cho Admin/Staff --%>
             <a href="${pageContext.request.contextPath}/staff/pt/add" class="btn btn-primary d-flex align-items-center shadow-sm">
                 <i class="fa fa-plus-circle me-2"></i> Thêm tài khoản PT mới
             </a>
@@ -193,7 +194,9 @@
                     </div>
                 </div>
                 <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                    <%-- Nút reset form tìm kiếm (bỏ các bộ lọc đang chọn) --%>
                     <a href="${pageContext.request.contextPath}/pt/list" class="btn btn-outline-secondary px-4"><i class="fa fa-undo me-1"></i> Xóa bộ lọc</a>
+                    <%-- Nút submit form tìm kiếm và lọc danh sách PT --%>
                     <button type="submit" class="btn btn-primary px-5 shadow-sm"><i class="fa fa-filter me-1"></i> Lọc kết quả</button>
                 </div>
             </div>
@@ -301,6 +304,7 @@
                                 <!-- Action Button -->
                                 <c:choose>
                                     <c:when test="${sessionScope.currentUser != null}">
+                                        <%-- Nút chuyển hướng xem chi tiết hồ sơ PT đối với user đã đăng nhập --%>
                                         <a href="${pageContext.request.contextPath}/pt/detail?id=${trainer.ptId}" 
                                            class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
                                                 Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>

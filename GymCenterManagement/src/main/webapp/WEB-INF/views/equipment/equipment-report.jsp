@@ -252,6 +252,7 @@
 </div>
 
 <script>
+    // Cập nhật giá trị chiều rộng cho các thanh progress bar hiển thị tỷ lệ thống kê
     document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
         var width = bar.getAttribute('data-width');
         bar.style.width = width + '%';

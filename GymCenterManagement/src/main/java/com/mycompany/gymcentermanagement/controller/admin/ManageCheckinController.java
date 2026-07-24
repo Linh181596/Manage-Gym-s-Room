@@ -7,7 +7,7 @@
  * @last_modified : 2026-06-26 bởi LinhNT
  * =========================================================================
  */
-package com.mycompany.gymcentermanagement.controller.staff;
+package com.mycompany.gymcentermanagement.controller.admin;
 
 import com.mycompany.gymcentermanagement.model.entity.StaffPTAttendance;
 import com.mycompany.gymcentermanagement.model.entity.User;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet(name = "ManageCheckinController", urlPatterns = {"/staff/checkin"})
+@WebServlet(name = "ManageCheckinController", urlPatterns = {"/admin/checkin"})
 public class ManageCheckinController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ManageCheckinController.class.getName());
@@ -66,7 +66,7 @@ public class ManageCheckinController extends HttpServlet {
             request.setAttribute("errorMessage", "Không thể tải danh sách điểm danh. Vui lòng thử lại.");
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/staff/checkin-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/checkin-list.jsp").forward(request, response);
     }
 
     @Override
@@ -318,7 +318,7 @@ public class ManageCheckinController extends HttpServlet {
             return false;
         }
         User.Role role = user.getRole();
-        return role == User.Role.Staff || role == User.Role.Admin;
+        return role == User.Role.Admin;
     }
 
     private void setFlash(HttpSession session, String type, String message) {
@@ -329,7 +329,7 @@ public class ManageCheckinController extends HttpServlet {
     private void redirectBack(HttpServletResponse response, HttpServletRequest request,
                               String shift, LocalDate date, String keyword) throws IOException {
         response.sendRedirect(request.getContextPath()
-                + "/staff/checkin?shift=" + shift
+                + "/admin/checkin?shift=" + shift
                 + "&date=" + date
                 + "&keyword=" + URLEncoder.encode(keyword, StandardCharsets.UTF_8));
     }

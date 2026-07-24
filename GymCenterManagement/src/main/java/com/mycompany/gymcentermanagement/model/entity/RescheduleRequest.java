@@ -19,6 +19,7 @@ public class RescheduleRequest {
     private String reason;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private String escalationReason;
 
     public int getRequestId() {
         return requestId;
@@ -130,5 +131,13 @@ public class RescheduleRequest {
 
     public void setUpdatedDate(LocalDateTime updatedDate) {
         this.updatedDate = updatedDate;
+    }
+
+    public String getEscalationReason() {
+        return escalationReason;
+    }
+
+    public void setEscalationReason(String escalationReason) {
+        this.escalationReason = escalationReason;
     }
 }

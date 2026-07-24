@@ -87,6 +87,7 @@
     </div>
 
     <div class="bg-light rounded p-4 mb-4 shadow-sm">
+        <%-- Form lọc danh sách lịch bảo trì (GET) --%>
         <form method="get" action="${pageContext.request.contextPath}/staff/maintenance-schedules" class="row g-3">
             <input type="hidden" name="action" value="list">
             <div class="col-12 col-xl-4">
@@ -124,6 +125,7 @@
                 </select>
             </div>
             <div class="col-12 col-sm-6 col-xl-1 d-grid">
+                <%-- Nút submit form tìm kiếm/lọc --%>
                 <button class="btn btn-secondary" type="submit"><i class="fa fa-filter"></i></button>
             </div>
         </form>
@@ -189,6 +191,7 @@
                                         <a class="btn btn-sm btn-outline-warning"
                                            href="${pageContext.request.contextPath}/staff/maintenance-schedules?action=edit&id=${item.maintenanceScheduleId}&returnUrl=${encodedReturnUrl}"
                                            title="Cập nhật kế hoạch"><i class="fa fa-edit"></i></a>
+                                        <%-- Form ẩn xử lý hủy lịch bảo trì (chỉ Admin mới có quyền) --%>
                                         <form method="post" action="${pageContext.request.contextPath}/staff/maintenance-schedules?action=cancel"
                                               onsubmit="return confirm('Bạn có chắc muốn hủy lịch #MT-${item.maintenanceScheduleId}?');">
                                             <input type="hidden" name="id" value="${item.maintenanceScheduleId}">
@@ -223,6 +226,7 @@
 </div>
 
 <script>
+    // Tự động cuộn trang xuống phần bảng danh sách khi tải lại trang qua link bộ lọc có anchor (hashtag)
     document.addEventListener('DOMContentLoaded', function () {
         if (window.location.hash === '#maintenance-table') {
             var target = document.getElementById('maintenance-table');

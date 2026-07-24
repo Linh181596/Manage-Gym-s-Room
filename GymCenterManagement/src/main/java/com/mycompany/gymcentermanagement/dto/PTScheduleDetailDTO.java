@@ -3,6 +3,10 @@ package com.mycompany.gymcentermanagement.dto;
 import java.sql.Time;
 import java.time.LocalDate;
 
+/**
+ * DTO chứa thông tin chi tiết của một lịch tập PT (1 ca tập cụ thể).
+ * Bao gồm thời gian, trạng thái điểm danh, thông tin hội viên, PT phụ trách và các yêu cầu dời lịch (reschedule).
+ */
 public class PTScheduleDetailDTO {
     private int scheduleId; // Thêm mã lịch để điểm danh
     private LocalDate sessionDate;

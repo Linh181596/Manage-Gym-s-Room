@@ -35,11 +35,31 @@ public class StaffPTAttendanceServiceImpl implements StaffPTAttendanceService {
         return attendanceDAO.existsCheckinForShift(userId, shiftBlock, date);
     }
 
+    /**
+     * Điểm danh vào ca (Check-in).
+     * Luồng nghiệp vụ:
+     * 1. [BR-CONS-61]: Staff/PT phải có trạng thái Active mới được check-in (Nên validate ở Controller).
+     * 2. [BR-CONS-62]: Chỉ cho phép 1 check-in record per shift block per day (Controller gọi existsCheckinForShift trước).
+     * 
+     * @param attendance Dữ liệu check-in
+     * @return ID record vừa tạo
+     * @throws SQLException 
+     */
     @Override
     public int checkinUser(StaffPTAttendance attendance) throws SQLException {
         return attendanceDAO.create(attendance);
     }
 
+    /**
+     * Xác nhận hết ca (Check-out).
+     * Luồng nghiệp vụ:
+     * 1. [BR-CONS-60]: Sau khi checkout xong thì không được phép thay đổi giờ check-in (Update trực tiếp).
+     * 
+     * @param attendanceId ID điểm danh
+     * @param checkedBy Người xác nhận
+     * @return true nếu thành công
+     * @throws SQLException 
+     */
     @Override
     public boolean checkoutAttendance(int attendanceId, int checkedBy) throws SQLException {
         return attendanceDAO.checkout(attendanceId, checkedBy);
@@ -61,13 +81,13 @@ public class StaffPTAttendanceServiceImpl implements StaffPTAttendanceService {
     }
 
     @Override
-    public List<StaffPTAttendance> searchHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException {
-        return attendanceDAO.searchHistory(userId, userRole, fromDate, toDate, keyword, offset, limit);
+    public List<StaffPTAttendance> searchHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException {
+        return attendanceDAO.searchHistory(userId, userRole, shiftBlock, fromDate, toDate, keyword, offset, limit);
     }
 
     @Override
-    public int countHistory(int userId, String userRole, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException {
-        return attendanceDAO.countHistory(userId, userRole, fromDate, toDate, keyword);
+    public int countHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException {
+        return attendanceDAO.countHistory(userId, userRole, shiftBlock, fromDate, toDate, keyword);
     }
 
     @Override

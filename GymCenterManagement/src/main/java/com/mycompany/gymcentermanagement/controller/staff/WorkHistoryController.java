@@ -1,13 +1,3 @@
-/**
- * =========================================================================
- * @file          : WorkHistoryController.java
- * @description   : Controller điều phối xem lịch sử làm việc của Staff và PT
- *                  (UC 2.3.5).
- * @author        : Nguyễn Trí Linh (linhnt)
- * @created       : 2026-06-26
- * @last_modified : 2026-06-26 bởi Antigravity Agent
- * =========================================================================
- */
 package com.mycompany.gymcentermanagement.controller.staff;
 
 import com.mycompany.gymcentermanagement.model.entity.StaffPTAttendance;
@@ -27,20 +17,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Controller for UC 2.3.5 – View Staff & PT Work History.
- * URL: /staff/work-history
- *
- * Quyền truy cập:
- *   - Admin: xem tất cả mọi người
- *   - Staff: xem tất cả mọi người
- *   - PT: chỉ xem lịch sử của chính mình (A2: Access Denied nếu cố xem người khác)
- */
-@WebServlet(name = "WorkHistoryController", urlPatterns = {"/staff/work-history"})
+@WebServlet(name = "WorkHistoryController", urlPatterns = {"/admin/work-history", "/staff/work-history", "/pt/work-history"})
 public class WorkHistoryController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(WorkHistoryController.class.getName());
     private static final int PAGE_SIZE = 20;
+
     private final StaffPTAttendanceService attendanceService = new StaffPTAttendanceServiceImpl();
 
     @Override
@@ -50,92 +32,138 @@ public class WorkHistoryController extends HttpServlet {
         HttpSession session = request.getSession(false);
         User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
         if (currentUser == null) {
-            response.sendRedirect(request.getContextPath() + "/auth/login");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        // ---- Đọc bộ lọc từ request ------------------------------------ //
+        String relativePath = request.getRequestURI().substring(request.getContextPath().length());
+        if (!canAccessPath(relativePath, currentUser.getRole())) {
+            request.getRequestDispatcher("/WEB-INF/views/common/error-403.jsp").forward(request, response);
+            return;
+        }
+
         int filterUserId = parseIntParam(request, "userId", 0);
-        String filterRole = request.getParameter("role");    // 'Staff' | 'PT' | null
-        String fromStr    = request.getParameter("from");
-        String toStr      = request.getParameter("to");
-        String keyword    = request.getParameter("keyword");
-        int page          = Math.max(1, parseIntParam(request, "page", 1));
+        String filterRole = normalizeRole(request.getParameter("role"));
+        String filterShift = normalizeShift(request.getParameter("shift"));
+        String fromStr = trimToEmpty(request.getParameter("from"));
+        String toStr = trimToEmpty(request.getParameter("to"));
+        String keyword = trimToEmpty(request.getParameter("keyword"));
+        int page = Math.max(1, parseIntParam(request, "page", 1));
 
         LocalDate fromDate = parseDate(fromStr);
-        LocalDate toDate   = parseDate(toStr);
+        LocalDate toDate = parseDate(toStr);
         boolean validDateRange = isValidDateRange(fromDate, toDate);
+        boolean adminView = currentUser.getRole() == User.Role.Admin;
 
-        // A2: PT chỉ được xem lịch sử của chính mình
-        if (currentUser.getRole() == User.Role.PT) {
-            if (filterUserId != 0 && filterUserId != currentUser.getUserId()) {
+        if (adminView) {
+            filterUserId = 0;
+        } else {
+            if ((filterUserId != 0 && filterUserId != currentUser.getUserId())
+                    || (filterRole != null && !filterRole.equals(currentUser.getRole().name()))) {
                 request.getRequestDispatcher("/WEB-INF/views/common/error-403.jsp").forward(request, response);
                 return;
             }
-            filterUserId = currentUser.getUserId(); // force filter về chính mình
+            filterUserId = currentUser.getUserId();
+            filterRole = currentUser.getRole().name();
+            keyword = "";
         }
 
-        // ---- Truy vấn DB ---------------------------------------------- //
         if (!validDateRange) {
             request.setAttribute("errorMessage", "Từ ngày phải trước hoặc bằng đến ngày.");
-            request.setAttribute("historyList", List.of());
-            request.setAttribute("total", 0);
-            request.setAttribute("totalPages", 1);
-            request.setAttribute("currentPage", 1);
+            setEmptyResultAttributes(request);
         } else {
-        try {
-            int total = attendanceService.countHistory(
-                    filterUserId, filterRole, fromDate, toDate, keyword);
+            try {
+                int total = attendanceService.countHistory(
+                        filterUserId, filterRole, filterShift, fromDate, toDate, keyword);
+                int totalPages = total == 0 ? 1 : (int) Math.ceil((double) total / PAGE_SIZE);
+                int currentPage = Math.min(page, totalPages);
+                int offset = (currentPage - 1) * PAGE_SIZE;
 
-            int totalPages = (total == 0) ? 1 : (int) Math.ceil((double) total / PAGE_SIZE);
-            int offset     = (page - 1) * PAGE_SIZE;
+                List<StaffPTAttendance> records = attendanceService.searchHistory(
+                        filterUserId, filterRole, filterShift, fromDate, toDate, keyword, offset, PAGE_SIZE);
 
-            List<StaffPTAttendance> records = attendanceService.searchHistory(
-                    filterUserId, filterRole, fromDate, toDate, keyword, offset, PAGE_SIZE);
+                if (records.isEmpty()) {
+                    request.setAttribute("emptyMessage", "Không tìm thấy lịch sử phù hợp với bộ lọc.");
+                }
 
-            // A1: Empty state
-            if (records.isEmpty()) {
-                request.setAttribute("emptyMessage", "Không tìm thấy lịch sử phù hợp với bộ lọc.");
+                request.setAttribute("historyList", records);
+                request.setAttribute("total", total);
+                request.setAttribute("totalPages", totalPages);
+                request.setAttribute("currentPage", currentPage);
+            } catch (SQLException ex) {
+                LOGGER.log(Level.SEVERE, "Error loading work history", ex);
+                request.setAttribute("errorMessage", "Lỗi tải dữ liệu lịch sử. Vui lòng thử lại.");
+                setEmptyResultAttributes(request);
             }
-
-            request.setAttribute("historyList", records);
-            request.setAttribute("total",       total);
-            request.setAttribute("totalPages",  totalPages);
-            request.setAttribute("currentPage", page);
-
-        } catch (SQLException ex) {
-            // A3: Data Retrieval Error
-            LOGGER.log(Level.SEVERE, "Error loading work history", ex);
-            request.setAttribute("errorMessage",
-                    "Lỗi tải dữ liệu lịch sử. Vui lòng thử lại.");
         }
 
-        // Trả lại các tham số lọc để form hiển thị đúng giá trị đã chọn
-        }
         request.setAttribute("filterUserId", filterUserId);
-        request.setAttribute("filterRole",   filterRole);
-        request.setAttribute("filterFrom",   fromStr);
-        request.setAttribute("filterTo",     toStr);
+        request.setAttribute("filterRole", filterRole);
+        request.setAttribute("filterShift", filterShift);
+        request.setAttribute("filterFrom", fromStr);
+        request.setAttribute("filterTo", toStr);
         request.setAttribute("filterKeyword", keyword);
-        request.setAttribute("currentUser",  currentUser);
+        request.setAttribute("currentUser", currentUser);
+        request.setAttribute("adminView", adminView);
+        request.setAttribute("canManageAttendance", adminView);
+        request.setAttribute("historyBasePath", relativePath);
 
-        request.getRequestDispatcher("/WEB-INF/views/staff/work-history.jsp")
-               .forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/common/work-history.jsp")
+                .forward(request, response);
     }
 
-    // ------------------------------------------------------------------ //
-    //  Helpers
-    // ------------------------------------------------------------------ //
+    private void setEmptyResultAttributes(HttpServletRequest request) {
+        request.setAttribute("historyList", List.of());
+        request.setAttribute("total", 0);
+        request.setAttribute("totalPages", 1);
+        request.setAttribute("currentPage", 1);
+    }
 
     private int parseIntParam(HttpServletRequest req, String name, int defaultValue) {
         String val = req.getParameter(name);
-        if (val == null || val.isBlank()) return defaultValue;
-        try { return Integer.parseInt(val); } catch (NumberFormatException e) { return defaultValue; }
+        if (val == null || val.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(val);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     private LocalDate parseDate(String dateStr) {
-        if (dateStr == null || dateStr.isBlank()) return null;
-        try { return LocalDate.parse(dateStr); } catch (Exception e) { return null; }
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(dateStr);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private String normalizeRole(String role) {
+        if ("Staff".equals(role) || "PT".equals(role)) {
+            return role;
+        }
+        return null;
+    }
+
+    private String normalizeShift(String shift) {
+        if ("Morning".equals(shift) || "Afternoon".equals(shift) || "Evening".equals(shift)) {
+            return shift;
+        }
+        return null;
+    }
+
+    private boolean canAccessPath(String relativePath, User.Role role) {
+        return ("/admin/work-history".equals(relativePath) && role == User.Role.Admin)
+                || ("/staff/work-history".equals(relativePath) && role == User.Role.Staff)
+                || ("/pt/work-history".equals(relativePath) && role == User.Role.PT);
     }
 
     static boolean isValidDateRange(LocalDate fromDate, LocalDate toDate) {

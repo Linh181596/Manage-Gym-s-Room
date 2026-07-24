@@ -6,6 +6,7 @@
     <div class="error-code">403</div>
     <div class="error-title">Truy cập bị từ chối</div>
     <p class="error-message">Bạn không có quyền truy cập vào tài nguyên này. Vui lòng xác thực vai trò tài khoản hoặc thử đăng nhập lại.</p>
+    <%-- Nút quay về trang đăng nhập để người dùng xác thực lại quyền truy cập --%>
     <a href="${pageContext.request.contextPath}/login" class="back-btn">Quay lại trang Đăng nhập</a>
 </div>
 

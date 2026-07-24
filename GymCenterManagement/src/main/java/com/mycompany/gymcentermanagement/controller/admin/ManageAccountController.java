@@ -9,10 +9,14 @@
  */
 package com.mycompany.gymcentermanagement.controller.admin;
 
+import com.mycompany.gymcentermanagement.dao.UserDAO;
+import com.mycompany.gymcentermanagement.dao.impl.UserDAOImpl;
 import com.mycompany.gymcentermanagement.dto.AccountOperationResult;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.UserService;
 import com.mycompany.gymcentermanagement.service.impl.UserServiceImpl;
+import com.mycompany.gymcentermanagement.utils.EmailUtils;
+import com.mycompany.gymcentermanagement.utils.SessionRegistry;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -34,6 +38,7 @@ public class ManageAccountController extends HttpServlet {
     };
 
     private final UserService userService = new UserServiceImpl();
+    private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -132,7 +137,7 @@ public class ManageAccountController extends HttpServlet {
         List<User> accounts = userService.searchAccounts(keyword, role, status, offset, pageSize);
         request.setAttribute("accounts", accounts);
         request.setAttribute("statuses", MANAGED_STATUSES);
-        request.setAttribute("roles", new User.Role[]{User.Role.Staff, User.Role.Member});
+        request.setAttribute("roles", new User.Role[]{User.Role.Staff, User.Role.Member, User.Role.PT});
         request.setAttribute("selectedRole", roleStr);
         request.setAttribute("selectedStatus", statusStr);
         request.setAttribute("keyword", keyword);
@@ -171,7 +176,8 @@ public class ManageAccountController extends HttpServlet {
             return;
         }
 
-        prepareForm(request, account, false, "Cập nhật tài khoản");
+        prepareForm(request, account, false,
+                account.getAccountStatus() == User.AccountStatus.Inactive ? "Thông tin tài khoản" : "Cập nhật tài khoản");
         request.getRequestDispatcher(FORM_VIEW).forward(request, response);
     }
 
@@ -179,6 +185,20 @@ public class ManageAccountController extends HttpServlet {
             throws ServletException, IOException {
         Integer userId = parseUserIdFromValue(request.getParameter("userId"));
         boolean isCreate = userId == null || userId <= 0;
+
+        if (!isCreate) {
+            User existingAccount = userService.getAccountById(userId);
+            if (existingAccount == null) {
+                setFlash(request, "errorMessage", "Không tìm thấy tài khoản.");
+                response.sendRedirect(request.getContextPath() + "/admin/accounts");
+                return;
+            }
+            if (existingAccount.getAccountStatus() == User.AccountStatus.Inactive) {
+                setFlash(request, "errorMessage", "Tài khoản đã vô hiệu hóa chỉ có thể xem thông tin.");
+                response.sendRedirect(request.getContextPath() + "/admin/accounts?action=edit&id=" + userId);
+                return;
+            }
+        }
 
         User account = new User();
         account.setUserId(isCreate ? 0 : userId);
@@ -206,11 +226,22 @@ public class ManageAccountController extends HttpServlet {
             return;
         }
 
-        setFlash(request, "successMessage", result.getMessage());
+        String successMessage = result.getMessage();
         if (result.getTemporaryPassword() != null) {
+            boolean emailSent = EmailUtils.sendTemporaryPasswordEmail(
+                    account.getEmail(), account.getFullName(), result.getTemporaryPassword(), true);
             setFlash(request, "temporaryPassword", result.getTemporaryPassword());
             setFlash(request, "temporaryPasswordEmail", account.getEmail());
+            successMessage += emailSent
+                    ? " Mật khẩu tạm thời đã được gửi đến email người dùng."
+                    : " Không thể gửi email mật khẩu tạm thời; vui lòng thử lại hoặc cung cấp mật khẩu tạm cho người dùng theo cách an toàn.";
+        } else if (!isCreate) {
+            boolean emailSent = EmailUtils.sendAccountUpdatedEmail(account.getEmail(), account.getFullName());
+            successMessage += emailSent
+                    ? " Email thông báo cập nhật đã được gửi đến người dùng."
+                    : " Không thể gửi email thông báo cập nhật đến người dùng.";
         }
+        setFlash(request, "successMessage", successMessage);
 
         response.sendRedirect(request.getContextPath() + "/admin/accounts");
     }
@@ -220,6 +251,18 @@ public class ManageAccountController extends HttpServlet {
         Integer userId = parseUserId(request);
         if (userId == null) {
             setFlash(request, "errorMessage", "Mã tài khoản không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+
+        User targetAccount = userService.getAccountById(userId);
+        if (targetAccount == null) {
+            setFlash(request, "errorMessage", "Không tìm thấy tài khoản.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+        if (targetAccount.getAccountStatus() == User.AccountStatus.Inactive) {
+            setFlash(request, "errorMessage", "Tài khoản đã vô hiệu hóa không thể thực hiện thao tác này.");
             response.sendRedirect(request.getContextPath() + "/admin/accounts");
             return;
         }
@@ -248,12 +291,39 @@ public class ManageAccountController extends HttpServlet {
         }
 
         if (result.isSuccess()) {
-            setFlash(request, "successMessage", result.getMessage());
-            if (result.getTemporaryPassword() != null) {
-                User account = userService.getAccountById(userId);
-                setFlash(request, "temporaryPassword", result.getTemporaryPassword());
-                setFlash(request, "temporaryPasswordEmail", account != null ? account.getEmail() : "");
+            String successMessage = result.getMessage();
+            if ("lock".equals(action) || "deactivate".equals(action)) {
+                // Kết thúc ngay các phiên đang mở và chặn đăng nhập lại từ cookie Remember Me.
+                SessionRegistry.invalidateAllSessions(userId);
+                try {
+                    userDAO.revokeRememberMeTokensByUserId(userId);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
+
+            if (result.getTemporaryPassword() != null) {
+                boolean emailSent = EmailUtils.sendTemporaryPasswordEmail(
+                        targetAccount.getEmail(), targetAccount.getFullName(), result.getTemporaryPassword(), false);
+                setFlash(request, "temporaryPassword", result.getTemporaryPassword());
+                setFlash(request, "temporaryPasswordEmail", targetAccount.getEmail());
+                successMessage += emailSent
+                        ? " Mật khẩu tạm thời đã được gửi đến email người dùng."
+                        : " Không thể gửi email mật khẩu tạm thời; vui lòng cung cấp mật khẩu tạm cho người dùng theo cách an toàn.";
+            } else if ("lock".equals(action) || "unlock".equals(action)) {
+                boolean emailSent = EmailUtils.sendAccountStatusEmail(
+                        targetAccount.getEmail(), targetAccount.getFullName(), "lock".equals(action));
+                successMessage += emailSent
+                        ? " Email thông báo đã được gửi đến người dùng."
+                        : " Không thể gửi email thông báo đến người dùng.";
+            } else if ("deactivate".equals(action)) {
+                boolean emailSent = EmailUtils.sendAccountDeactivatedEmail(
+                        targetAccount.getEmail(), targetAccount.getFullName());
+                successMessage += emailSent
+                        ? " Email thông báo đã được gửi đến người dùng."
+                        : " Không thể gửi email thông báo đến người dùng.";
+            }
+            setFlash(request, "successMessage", successMessage);
         } else {
             setFlash(request, "errorMessage", result.getMessage());
         }
@@ -267,6 +337,18 @@ public class ManageAccountController extends HttpServlet {
         User.Role newRole = parseRole(request.getParameter("role"));
         if (userId == null || newRole == null) {
             setFlash(request, "errorMessage", "Yêu cầu đổi vai trò không hợp lệ.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+
+        User targetAccount = userService.getAccountById(userId);
+        if (targetAccount == null) {
+            setFlash(request, "errorMessage", "Không tìm thấy tài khoản.");
+            response.sendRedirect(request.getContextPath() + "/admin/accounts");
+            return;
+        }
+        if (targetAccount.getAccountStatus() == User.AccountStatus.Inactive) {
+            setFlash(request, "errorMessage", "Tài khoản đã vô hiệu hóa không thể thay đổi vai trò.");
             response.sendRedirect(request.getContextPath() + "/admin/accounts");
             return;
         }
