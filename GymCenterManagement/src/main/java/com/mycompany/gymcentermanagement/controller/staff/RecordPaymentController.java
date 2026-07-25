@@ -34,19 +34,33 @@ public class RecordPaymentController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute("currentUser") : null;
+        int staffUserId = (currentUser != null) ? currentUser.getUserId() : 2;
+
         String invoiceIdStr = request.getParameter("invoiceId");
+        String ptRegIdStr = request.getParameter("ptRegId");
         
         try {
-            if (invoiceIdStr != null && !invoiceIdStr.trim().isEmpty()) {
+            Invoice inv = null;
+            if (ptRegIdStr != null && !ptRegIdStr.trim().isEmpty()) {
+                int ptRegId = Integer.parseInt(ptRegIdStr);
+                inv = invoiceService.getOrCreateInvoiceForPTRegistration(ptRegId, staffUserId);
+            } else if (invoiceIdStr != null && !invoiceIdStr.trim().isEmpty()) {
                 int invoiceId = Integer.parseInt(invoiceIdStr);
-                Invoice inv = invoiceService.getInvoiceById(invoiceId);
-                if (inv != null) {
-                    request.setAttribute("invoice", inv);
-                    request.getRequestDispatcher("/WEB-INF/views/staff/payment-record-detail.jsp").forward(request, response);
-                    return;
-                } else {
-                    request.setAttribute("errorMessage", "Không tìm thấy hóa đơn.");
+                inv = invoiceService.getInvoiceById(invoiceId);
+            }
+
+            if (inv != null) {
+                request.setAttribute("invoice", inv);
+                if (inv.getPtRegistrationId() != null) {
+                    com.mycompany.gymcentermanagement.service.PTRegistrationService ptService = new com.mycompany.gymcentermanagement.service.impl.PTRegistrationServiceImpl();
+                    request.setAttribute("ptRegistrationDTO", ptService.getRegistrationById(inv.getPtRegistrationId()));
                 }
+                request.getRequestDispatcher("/WEB-INF/views/staff/payment-record-detail.jsp").forward(request, response);
+                return;
+            } else if (invoiceIdStr != null || ptRegIdStr != null) {
+                request.setAttribute("errorMessage", "Không tìm thấy hóa đơn.");
             }
             
             // Calculate KPI aggregates on server side from all invoices
@@ -54,11 +68,11 @@ public class RecordPaymentController extends HttpServlet {
             java.math.BigDecimal totalRevenue = java.math.BigDecimal.ZERO;
             int pendingCount = 0;
             int paidCount = 0;
-            for (Invoice inv : allInvoices) {
-                if ("Paid".equals(inv.getStatus())) {
-                    totalRevenue = totalRevenue.add(inv.getAmount());
+            for (Invoice invoiceItem : allInvoices) {
+                if ("Paid".equals(invoiceItem.getStatus())) {
+                    totalRevenue = totalRevenue.add(invoiceItem.getAmount());
                     paidCount++;
-                } else if ("Pending".equals(inv.getStatus())) {
+                } else if ("Pending".equals(invoiceItem.getStatus())) {
                     pendingCount++;
                 }
             }
