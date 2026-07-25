@@ -21,4 +21,5 @@ public interface InvoiceService {
     boolean recordCashPayment(int invoiceId, int staffUserId) throws SQLException;
     boolean recordOnlinePayment(int invoiceId) throws SQLException;
     boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException;
+    Invoice getOrCreateInvoiceForPTRegistration(int ptRegId, int staffUserId) throws SQLException;
 }
