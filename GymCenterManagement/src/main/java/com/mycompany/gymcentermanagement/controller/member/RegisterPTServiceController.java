@@ -185,7 +185,7 @@ public class RegisterPTServiceController extends HttpServlet {
         boolean inserted = registrationService.registerPTService(registration);
 
         if (!inserted) {
-            request.setAttribute("error", "Không thể đăng ký gói PT. Vui lòng thử lại.");
+            request.setAttribute("error", "Không thể đăng ký gói PT với PT " + servicePrice.getTrainerName() + ". Bạn đang có đơn chờ duyệt với PT này. Vui lòng kiểm tra lại.");
             request.setAttribute("servicePrice", servicePrice);
             request.getRequestDispatcher("/WEB-INF/views/pt/register-pt-service.jsp").forward(request, response);
             return;
