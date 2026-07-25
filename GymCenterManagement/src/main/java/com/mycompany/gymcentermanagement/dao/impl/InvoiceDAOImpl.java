@@ -336,4 +336,33 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         }
         return list;
     }
+
+    @Override
+    public Invoice findByPtRegistrationId(int ptRegistrationId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        Invoice inv = null;
+        
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName " +
+                         "FROM Invoices i " +
+                         "INNER JOIN Members m ON i.MemberID = m.MemberID " +
+                         "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
+                         "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
+                         "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
+                         "WHERE i.PTRegistrationID = ? AND i.IsDeleted = 0";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, ptRegistrationId);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                inv = mapResultSetToInvoice(rs);
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return inv;
+    }
 }
