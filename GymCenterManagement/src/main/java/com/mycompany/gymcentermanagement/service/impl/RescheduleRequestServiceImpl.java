@@ -18,6 +18,10 @@ import com.mycompany.gymcentermanagement.model.entity.RescheduleRequest;
 import com.mycompany.gymcentermanagement.model.entity.User;
 import com.mycompany.gymcentermanagement.service.RescheduleRequestService;
 import com.mycompany.gymcentermanagement.utils.PTFixedSlotHelper;
+import com.mycompany.gymcentermanagement.dao.NotificationDAO;
+import com.mycompany.gymcentermanagement.dao.impl.NotificationDAOImpl;
+import com.mycompany.gymcentermanagement.model.entity.Notification;
+import java.time.LocalDateTime;
 
 import java.sql.SQLException;
 import java.sql.Time;
@@ -177,6 +181,36 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
         request.setReason(reason.trim());
 
         boolean created = rescheduleRequestDAO.create(request);
+        if (created) {
+            try {
+                NotificationDAO notifDAO = new NotificationDAOImpl();
+                Notification notif = new Notification();
+                
+                // Lấy tên của người gửi (PT hoặc Hội viên) để hiển thị trong nội dung
+                User senderUser = userDAO.findById(senderUserId);
+                String senderName = (senderUser != null) ? senderUser.getFullName() : "Đối tác";
+                
+                if (actorRole == User.Role.PT) {
+                    notif.setTitle("Yêu cầu đổi lịch học mới từ HLV");
+                    notif.setContent("HLV " + senderName + " đề xuất đổi ca học ngày " 
+                            + schedule.getSessionDate() + " sang ngày " + proposedDate + " ca " + proposedSlot + ".");
+                } else {
+                    notif.setTitle("Yêu cầu đổi lịch học mới từ Hội viên");
+                    notif.setContent("Hội viên " + senderName + " đề xuất đổi ca học ngày " 
+                            + schedule.getSessionDate() + " sang ngày " + proposedDate + " ca " + proposedSlot + ".");
+                }
+                
+                notif.setCreatedBy(senderUserId);
+                notif.setTargetRole("Specific");
+                notif.setCreatedByRole(actorRole.name());
+                notif.setCreatedDate(LocalDateTime.now());
+                notif.setPublishDate(LocalDateTime.now());
+                notif.setRecipientUserId(receiverUserId); // Gửi cho người nhận yêu cầu
+                notifDAO.insert(notif);
+            } catch (Exception e) {
+                System.err.println("Lỗi gửi thông báo khi tạo yêu cầu đổi lịch: " + e.getMessage());
+            }
+        }
         return created ? "SUCCESS" : "Không thể tạo yêu cầu đổi lịch lúc này.";
     }
 
@@ -258,19 +292,31 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                     req.getProposedEndTime(),
                     responderUserId
             );
-            return success ? "SUCCESS" : "Lỗi hệ thống khi cập nhật lịch mới.";
+            if (success) {
+                sendRespondNotification(req, "Approved", responderUserId, null);
+                return "SUCCESS";
+            }
+            return "Lỗi hệ thống khi cập nhật lịch mới.";
         } else if ("reject".equalsIgnoreCase(action)) {
             if (responseReason == null || responseReason.trim().isEmpty()) {
                 return "Vui lòng nhập lý do từ chối.";
             }
             boolean success = rescheduleRequestDAO.rejectRequest(requestId, responderUserId, responseReason);
-            return success ? "SUCCESS" : "Lỗi hệ thống khi từ chối yêu cầu.";
+            if (success) {
+                sendRespondNotification(req, "Rejected", responderUserId, responseReason);
+                return "SUCCESS";
+            }
+            return "Lỗi hệ thống khi từ chối yêu cầu.";
         } else if ("escalate".equalsIgnoreCase(action)) {
             if (responseReason == null || responseReason.trim().isEmpty()) {
                 return "Vui lòng nhập lý do yêu cầu hỗ trợ.";
             }
             boolean success = rescheduleRequestDAO.escalateRequest(requestId, responderUserId, responseReason);
-            return success ? "SUCCESS" : "Lỗi hệ thống khi gửi yêu cầu hỗ trợ.";
+            if (success) {
+                sendRespondNotification(req, "Escalated", responderUserId, responseReason);
+                return "SUCCESS";
+            }
+            return "Lỗi hệ thống khi gửi yêu cầu hỗ trợ.";
         }
 
         return "Hành động không hợp lệ.";
@@ -301,5 +347,34 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             }
         }
         return list;
+    }
+
+    private void sendRespondNotification(RescheduleRequest req, String action, int responderUserId, String reason) {
+        try {
+            NotificationDAO notifDAO = new NotificationDAOImpl();
+            Notification notif = new Notification();
+            if ("Approved".equals(action)) {
+                notif.setTitle("Yêu cầu đổi lịch/học bù đã được đồng ý");
+                notif.setContent("Yêu cầu đổi/bù ca tập ngày " + req.getOriginalDate() 
+                        + " sang ngày " + req.getProposedDate() + " đã được đồng ý.");
+            } else if ("Rejected".equals(action)) {
+                notif.setTitle("Yêu cầu đổi lịch/học bù đã bị từ chối");
+                notif.setContent("Yêu cầu đổi/bù ca tập ngày " + req.getOriginalDate() 
+                        + " sang ngày " + req.getProposedDate() + " đã bị từ chối. Lý do: " + reason);
+            } else if ("Escalated".equals(action)) {
+                notif.setTitle("Yêu cầu đổi lịch được gửi hỗ trợ");
+                notif.setContent("Yêu cầu đổi lịch ca tập ngày " + req.getOriginalDate() 
+                        + " đã được gửi lên Staff/Admin hỗ trợ xử lý.");
+            }
+            notif.setCreatedBy(responderUserId);
+            notif.setTargetRole("Specific");
+            notif.setCreatedByRole("System");
+            notif.setCreatedDate(LocalDateTime.now());
+            notif.setPublishDate(LocalDateTime.now());
+            notif.setRecipientUserId(req.getSenderUserId());
+            notifDAO.insert(notif);
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi thông báo phản hồi yêu cầu đổi lịch: " + e.getMessage());
+        }
     }
 }
