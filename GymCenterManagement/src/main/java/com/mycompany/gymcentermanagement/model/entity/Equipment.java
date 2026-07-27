@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 
 public class Equipment {
     private static final DateTimeFormatter DATE_DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private int equipmentId;
     private String equipmentCode;
@@ -154,6 +155,10 @@ public class Equipment {
         this.createdDate = createdDate;
     }
 
+    public String getCreatedDateDisplay() {
+        return createdDate == null ? "" : createdDate.format(DATE_TIME_DISPLAY_FORMAT);
+    }
+
     public String getUpdatedBy() {
         return updatedBy;
     }
@@ -168,6 +173,10 @@ public class Equipment {
 
     public void setUpdatedDate(LocalDateTime updatedDate) {
         this.updatedDate = updatedDate;
+    }
+
+    public String getUpdatedDateDisplay() {
+        return updatedDate == null ? "" : updatedDate.format(DATE_TIME_DISPLAY_FORMAT);
     }
 
     public boolean isDeleted() {
