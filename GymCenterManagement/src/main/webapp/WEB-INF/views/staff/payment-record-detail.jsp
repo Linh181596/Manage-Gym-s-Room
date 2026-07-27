@@ -9,6 +9,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
@@ -192,7 +193,16 @@
                                 <c:choose>
                                     <c:when test="${not empty invoice.memberPackage}">
                                         <td>
-                                            <div class="fw-bold text-dark">${invoice.memberPackage.gymPackage.packageName}</div>
+                                            <div class="fw-bold text-dark">
+                                                <c:choose>
+                                                    <c:when test="${fn:startsWith(invoice.createdBy, 'Transfer')}">
+                                                        Chuyển nhượng - ${invoice.memberPackage.calculatedDurationMonths} Tháng
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        Đăng ký / Gia hạn - ${invoice.memberPackage.gymPackage.packageName}
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
                                             <div class="small text-muted italic">${invoice.memberPackage.gymPackage.description}</div>
                                             <div class="small text-primary mt-1 fw-medium">
                                                 <i class="fa fa-calendar-check me-1"></i> Thời gian hiệu lực: 
@@ -200,7 +210,16 @@
                                                 ${invoice.memberPackage.endDate.dayOfMonth}/${invoice.memberPackage.endDate.monthValue}/${invoice.memberPackage.endDate.year}
                                             </div>
                                         </td>
-                                        <td class="text-center fw-semibold text-dark">${invoice.memberPackage.gymPackage.durationMonths} Tháng</td>
+                                        <td class="text-center fw-semibold text-dark">
+                                            <c:choose>
+                                                <c:when test="${fn:startsWith(invoice.createdBy, 'Transfer')}">
+                                                    ${invoice.memberPackage.calculatedDurationMonths} Tháng
+                                                </c:when>
+                                                <c:otherwise>
+                                                    ${invoice.memberPackage.gymPackage.durationMonths} Tháng
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
                                     </c:when>
                                     <c:when test="${not empty ptRegistrationDTO}">
                                         <td>

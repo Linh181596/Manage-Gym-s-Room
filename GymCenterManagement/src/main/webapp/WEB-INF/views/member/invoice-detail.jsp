@@ -211,7 +211,7 @@
                                     <div class="fw-bold text-dark">
                                         <c:choose>
                                             <c:when test="${fn:startsWith(invoice.createdBy, 'Transfer')}">
-                                                Chuyển nhượng - ${invoice.memberPackage.gymPackage.packageName}
+                                                Chuyển nhượng - ${invoice.memberPackage.calculatedDurationMonths} Tháng
                                             </c:when>
                                             <c:otherwise>
                                                 Đăng ký / Gia hạn - ${invoice.memberPackage.gymPackage.packageName}
@@ -225,7 +225,16 @@
                                         ${invoice.memberPackage.endDate.dayOfMonth}/${invoice.memberPackage.endDate.monthValue}/${invoice.memberPackage.endDate.year}
                                     </div>
                                 </td>
-                                <td class="text-center fw-semibold text-dark">${invoice.memberPackage.gymPackage.durationMonths} Tháng</td>
+                                <td class="text-center fw-semibold text-dark">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(invoice.createdBy, 'Transfer')}">
+                                            ${invoice.memberPackage.calculatedDurationMonths} Tháng
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${invoice.memberPackage.gymPackage.durationMonths} Tháng
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
                                 <td class="text-end fw-bold text-primary fs-6">
                                     <fmt:formatNumber value="${invoice.amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                 </td>
