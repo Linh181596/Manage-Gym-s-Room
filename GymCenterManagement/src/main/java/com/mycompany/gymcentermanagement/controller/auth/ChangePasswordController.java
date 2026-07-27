@@ -101,7 +101,7 @@ public class ChangePasswordController extends HttpServlet {
         }
 
         if (!PasswordUtils.checkPassword(currentPassword, user.getPasswordHash())) {
-            forwardWithError(request, response, user, "Current password is incorrect.");
+            forwardWithError(request, response, user, "Mật khẩu hiện tại không chính xác.");
             return;
         }
 
