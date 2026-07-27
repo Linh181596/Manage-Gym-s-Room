@@ -670,9 +670,9 @@ SET IDENTITY_INSERT [dbo].[PersonalTrainers] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PTPackageTypes] ON 
 
-INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Gói PT Cơ bản 1 Tháng', N'Khóa học cơ bản trong 1 tháng gồm 12 buổi tập với PT, giúp làm quen với các thiết bị phòng tập, xây dựng thói quen tập luyện và định hình tư thế tập chuẩn.', 1, 12, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'Gói PT Cao cấp 3 Tháng', N'Khóa học cao cấp trong 3 tháng gồm 36 buổi tập với PT, tập trung vào mục tiêu tăng cơ, giảm mỡ, cải thiện sức bền và kiểm soát vóc dáng tối ưu.', 3, 36, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (3, N'Gói PT VIP 6 Tháng', N'Huấn luyện chuyên nghiệp toàn diện trong 6 tháng với PT gồm 77 buổi tập cùng lộ trình tập luyện và dinh dưỡng cá nhân hóa.', 6, 77, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Gói PT 12 Buổi', N'Khóa học cơ bản gồm 12 buổi tập với PT, giúp làm quen với các thiết bị phòng tập, xây dựng thói quen tập luyện và định hình tư thế tập chuẩn.', 1, 12, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'Gói PT 36 Buổi', N'Khóa học cao cấp gồm 36 buổi tập với PT, tập trung vào mục tiêu tăng cơ, giảm mỡ, cải thiện sức bền và kiểm soát vóc dáng tối ưu.', 3, 36, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[PTPackageTypes] ([PTPackageTypeID], [PackageName], [Description], [DurationMonths], [NumberOfSessions], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (3, N'Gói PT 77 Buổi', N'Huấn luyện chuyên nghiệp toàn diện với PT gồm 77 buổi tập cùng lộ trình tập luyện và dinh dưỡng cá nhân hóa.', 6, 77, N'Active', N'System', CAST(N'2026-05-31T18:27:47.4670592' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[PTPackageTypes] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PTRegistrations] ON 
@@ -7622,7 +7622,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Giá PT bao nhiêu?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7645,7 +7645,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Thuê PT bao nhiêu tiền?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7668,7 +7668,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Bảng giá PT?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7691,7 +7691,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Chi phí thuê PT?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7714,7 +7714,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT price là bao nhiêu?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7723,7 +7723,7 @@ VALUES
 END;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Giá PT 1 tháng bao nhiêu?')
+IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Giá PT 12 buổi bao nhiêu?')
 BEGIN
 
 INSERT INTO dbo.FAQ
@@ -7736,8 +7736,8 @@ INSERT INTO dbo.FAQ
 )
 VALUES
 (
-    N'Giá PT 1 tháng bao nhiêu?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT 12 buổi bao nhiêu?',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7746,7 +7746,7 @@ VALUES
 END;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 1 tháng giá bao nhiêu?')
+IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 12 buổi giá bao nhiêu?')
 BEGIN
 
 INSERT INTO dbo.FAQ
@@ -7759,8 +7759,8 @@ INSERT INTO dbo.FAQ
 )
 VALUES
 (
-    N'Gói PT 1 tháng giá bao nhiêu?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Gói PT 12 buổi giá bao nhiêu?',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7783,7 +7783,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Gói PT cơ bản bao nhiêu tiền?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7806,7 +7806,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT 12 buổi bao nhiêu tiền?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7815,7 +7815,7 @@ VALUES
 END;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Giá PT 3 tháng bao nhiêu?')
+IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Giá PT 36 buổi bao nhiêu?')
 BEGIN
 
 INSERT INTO dbo.FAQ
@@ -7828,8 +7828,8 @@ INSERT INTO dbo.FAQ
 )
 VALUES
 (
-    N'Giá PT 3 tháng bao nhiêu?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT 36 buổi bao nhiêu?',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7838,7 +7838,7 @@ VALUES
 END;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 3 tháng giá bao nhiêu?')
+IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 36 buổi giá bao nhiêu?')
 BEGIN
 
 INSERT INTO dbo.FAQ
@@ -7851,8 +7851,8 @@ INSERT INTO dbo.FAQ
 )
 VALUES
 (
-    N'Gói PT 3 tháng giá bao nhiêu?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Gói PT 36 buổi giá bao nhiêu?',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7875,7 +7875,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Gói PT cao cấp bao nhiêu tiền?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7898,7 +7898,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT 36 buổi bao nhiêu tiền?',
-    N'Giá PT tùy theo PT và gói. Gói PT 1 tháng hiện từ 999.000đ đến 1.500.000đ; gói PT 3 tháng hiện từ 2.700.000đ đến 4.200.000đ.',
+    N'Giá PT tùy theo PT và gói. Gói PT 12 buổi hiện từ 999.000đ đến 1.500.000đ; gói PT 36 buổi hiện từ 2.700.000đ đến 4.200.000đ.',
     N'Personal Trainer',
     N'giá pt, gia pt, thuê pt bao nhiêu, thue pt bao nhieu, pt price, personal trainer price, 1 tháng, 3 tháng, 12 buổi, 36 buổi',
     N'Active'
@@ -7921,7 +7921,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Gói PT có bao nhiêu buổi?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -7930,7 +7930,7 @@ VALUES
 END;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 1 tháng có mấy buổi?')
+IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 12 buổi có mấy buổi?')
 BEGIN
 
 INSERT INTO dbo.FAQ
@@ -7943,8 +7943,8 @@ INSERT INTO dbo.FAQ
 )
 VALUES
 (
-    N'Gói PT 1 tháng có mấy buổi?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 buổi có mấy buổi?',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -7953,7 +7953,7 @@ VALUES
 END;
 GO
 
-IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 3 tháng có mấy buổi?')
+IF NOT EXISTS (SELECT 1 FROM dbo.FAQ WHERE question = N'Gói PT 36 buổi có mấy buổi?')
 BEGIN
 
 INSERT INTO dbo.FAQ
@@ -7966,8 +7966,8 @@ INSERT INTO dbo.FAQ
 )
 VALUES
 (
-    N'Gói PT 3 tháng có mấy buổi?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 36 buổi có mấy buổi?',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -7990,7 +7990,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT cơ bản có bao nhiêu buổi?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8013,7 +8013,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT cao cấp có bao nhiêu buổi?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8036,7 +8036,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Một tháng PT tập bao nhiêu buổi?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8059,7 +8059,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Ba tháng PT tập bao nhiêu buổi?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8082,7 +8082,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Số buổi tập với PT là bao nhiêu?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8105,7 +8105,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT package gồm bao nhiêu session?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8128,7 +8128,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'PT sessions là gì?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8151,7 +8151,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Có gói PT 12 buổi không?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -8174,7 +8174,7 @@ INSERT INTO dbo.FAQ
 VALUES
 (
     N'Có gói PT 36 buổi không?',
-    N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+    N'Gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi gồm 36 buổi.',
     N'Personal Trainer',
     N'gói pt, goi pt, số buổi, so buoi, sessions, 12 buổi, 36 buổi, basic pt, premium pt, pt package',
     N'Active'
@@ -15755,28 +15755,28 @@ BEGIN
     ),
     (
         N'Tôi muốn đăng ký gói tập 1 tháng với 36 buổi tập có được không?',
-        N'Hiện cấu hình gói trong hệ thống không có gói 1 tháng gồm 36 buổi. Gói Gym Cơ bản 1 Tháng là gói tập gym theo thời hạn 1 tháng. Với PT, gói PT Cơ bản 1 Tháng gồm 12 buổi, còn gói PT Cao cấp 3 Tháng gồm 36 buổi. Nếu bạn muốn 36 buổi, vui lòng chọn gói PT 3 tháng hoặc liên hệ lễ tân để được tư vấn.',
+        N'Hiện cấu hình gói trong hệ thống không có gói 1 tháng gồm 36 buổi. Gói Gym Cơ bản 1 Tháng là gói tập gym theo thời hạn 1 tháng. Với PT, gói PT 12 Buổi gồm 12 buổi, còn gói PT 36 Buổi gồm 36 buổi. Nếu bạn muốn 36 buổi, vui lòng chọn gói PT 36 buổi hoặc liên hệ lễ tân để được tư vấn.',
         N'Personal Trainer',
         N'1 tháng 36 buổi, 1 thang 36 buoi, 36 buổi trong 1 tháng, 36 buoi trong 1 thang, pt 36 buổi, pt cao cấp, gym 1 tháng 36 buổi',
         N'Active'
     ),
     (
         N'Gói gym 1 tháng có 36 buổi không?',
-        N'Không. Gói Gym Cơ bản 1 Tháng là gói gym theo thời hạn 1 tháng, không phải gói 36 buổi. Số buổi 36 thuộc gói PT Cao cấp 3 Tháng. Nếu bạn muốn tập 36 buổi với PT, bạn nên chọn gói PT 3 tháng hoặc liên hệ lễ tân để kiểm tra thêm.',
+        N'Không. Gói Gym Cơ bản 1 Tháng là gói gym theo thời hạn 1 tháng, không phải gói 36 buổi. Số buổi 36 thuộc gói PT 36 Buổi. Nếu bạn muốn tập 36 buổi với PT, bạn nên chọn gói PT 36 buổi hoặc liên hệ lễ tân để kiểm tra thêm.',
         N'Membership Package',
         N'gói gym 1 tháng 36 buổi, goi gym 1 thang 36 buoi, gym 36 buổi, gói gym cơ bản, gói pt cao cấp, pt 36 buổi',
         N'Active'
     ),
     (
-        N'Gói PT 1 tháng có 36 buổi không?',
-        N'Không. Theo cấu hình hiện tại, gói PT Cơ bản 1 Tháng gồm 12 buổi. Gói PT Cao cấp 3 Tháng mới gồm 36 buổi. Nếu bạn cần 36 buổi tập với PT, hãy chọn gói PT 3 tháng hoặc liên hệ lễ tân để được tư vấn.',
+        N'Gói PT 12 buổi có 36 buổi không?',
+        N'Không. Theo cấu hình hiện tại, gói PT 12 Buổi gồm 12 buổi. Gói PT 36 Buổi mới gồm 36 buổi. Nếu bạn cần 36 buổi tập với PT, hãy chọn gói PT 36 buổi hoặc liên hệ lễ tân để được tư vấn.',
         N'Membership Package',
-        N'gói pt 1 tháng 36 buổi, goi pt 1 thang 36 buoi, pt 1 tháng, pt 36 buổi, 12 buổi, 36 buổi, personal trainer, pt cơ bản, pt cao cấp',
+        N'gói pt 12 buổi 36 buổi, goi pt 1 thang 36 buoi, pt 12 buổi, pt 36 buổi, 12 buổi, 36 buổi, personal trainer, pt cơ bản, pt cao cấp',
         N'Active'
     ),
     (
         N'Gói 1 tháng 36 buổi có tồn tại trong hệ thống không?',
-        N'Hiện hệ thống có Gói Gym Cơ bản 1 Tháng và Gói Gym Cao cấp 3 Tháng. Gói 1 tháng 36 buổi không có trong cấu hình hiện tại. Nếu bạn đang hỏi về PT thì gói PT Cơ bản 1 Tháng gồm 12 buổi, còn gói PT Cao cấp 3 Tháng gồm 36 buổi. Bạn vui lòng chọn đúng gói hoặc liên hệ lễ tân để được hỗ trợ.',
+        N'Hiện hệ thống có Gói Gym Cơ bản 1 Tháng và Gói Gym Cao cấp 3 Tháng. Gói 1 tháng 36 buổi không có trong cấu hình hiện tại. Nếu bạn đang hỏi về PT thì gói PT 12 Buổi gồm 12 buổi, còn gói PT 36 Buổi gồm 36 buổi. Bạn vui lòng chọn đúng gói hoặc liên hệ lễ tân để được hỗ trợ.',
         N'Personal Trainer',
         N'1 tháng 36 buổi, 1 thang 36 buoi, gym 1 tháng 36 buổi, pt 36 buổi, không có gói 1 tháng 36 buổi, 12 buổi, 36 buổi',
         N'Active'
@@ -15811,21 +15811,21 @@ BEGIN
     ),
     (
         N'Tôi muốn tăng thể lực thì nên chọn gói nào?',
-        N'Nếu mục tiêu là tăng thể lực chung, bạn có thể bắt đầu với Gói Gym Cơ bản 1 Tháng để làm quen. Nếu cần người hướng dẫn bài tập, theo dõi tiến độ và điều chỉnh lịch tập, bạn có thể chọn thêm gói PT. Gói PT Cơ bản 1 Tháng gồm 12 buổi, gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+        N'Nếu mục tiêu là tăng thể lực chung, bạn có thể bắt đầu với Gói Gym Cơ bản 1 Tháng để làm quen. Nếu cần người hướng dẫn bài tập, theo dõi tiến độ và điều chỉnh lịch tập, bạn có thể chọn thêm gói PT. Gói PT 12 Buổi gồm 12 buổi, gói PT 36 Buổi gồm 36 buổi.',
         N'Membership Package',
         N'tăng thể lực, tang the luc, cải thiện thể lực, sức bền, chọn gói nào, gói gym, gói pt, 12 buổi, 36 buổi',
         N'Active'
     ),
     (
         N'Người mới bắt đầu nên chọn gói gym nào?',
-        N'Người mới bắt đầu có thể chọn Gói Gym Cơ bản 1 Tháng để làm quen với phòng tập và thiết bị. Nếu bạn chưa biết kỹ thuật hoặc muốn có lịch tập rõ ràng, có thể thuê PT; gói PT Cơ bản 1 Tháng gồm 12 buổi.',
+        N'Người mới bắt đầu có thể chọn Gói Gym Cơ bản 1 Tháng để làm quen với phòng tập và thiết bị. Nếu bạn chưa biết kỹ thuật hoặc muốn có lịch tập rõ ràng, có thể thuê PT; gói PT 12 Buổi gồm 12 buổi.',
         N'Membership Package',
         N'người mới bắt đầu, nguoi moi bat dau, mới tập gym, beginner, chọn gói gym, gói cơ bản, gói pt cơ bản, chưa biết tập',
         N'Active'
     ),
     (
         N'Tôi chưa biết dùng máy tập thì nên đăng ký gì?',
-        N'Nếu bạn chưa biết dùng máy tập, bạn có thể đăng ký gói gym để sử dụng phòng tập và cân nhắc thuê PT để được hướng dẫn kỹ thuật an toàn. Gói PT Cơ bản 1 Tháng gồm 12 buổi, phù hợp cho người mới cần được hướng dẫn.',
+        N'Nếu bạn chưa biết dùng máy tập, bạn có thể đăng ký gói gym để sử dụng phòng tập và cân nhắc thuê PT để được hướng dẫn kỹ thuật an toàn. Gói PT 12 Buổi gồm 12 buổi, phù hợp cho người mới cần được hướng dẫn.',
         N'Equipment',
         N'chưa biết dùng máy, máy tập, người mới, hướng dẫn kỹ thuật, dùng thiết bị, an toàn tập luyện',
         N'Active'
@@ -15909,70 +15909,70 @@ BEGIN
     ),
     (
 	N'Có gói tập với PT nào?',
-        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Hiện hệ thống có Gói PT 12 Buổi gồm 12 buổi và Gói PT 36 Buổi gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
         N'Personal Trainer',
         N'có gói tập với PT nào, co goi tap voi PT nao, gói PT nào, goi PT nao, gói tập PT, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
         N'Active'
     ),
     (
         N'Có gói PT nào?',
-        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Hiện hệ thống có Gói PT 12 Buổi gồm 12 buổi và Gói PT 36 Buổi gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
         N'Personal Trainer',
         N'có gói PT nào, co goi PT nao, gói PT nào, goi PT nao, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
         N'Active'
     ),
     (
         N'Có những gói PT nào?',
-        N'Hiện hệ thống có Gói PT Cơ bản 1 Tháng gồm 12 buổi và Gói PT Cao cấp 3 Tháng gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
+        N'Hiện hệ thống có Gói PT 12 Buổi gồm 12 buổi và Gói PT 36 Buổi gồm 36 buổi. Gói PT là dịch vụ tập với huấn luyện viên cá nhân. Nếu cần chọn gói phù hợp, bạn có thể liên hệ lễ tân để được tư vấn thêm.',
         N'Personal Trainer',
         N'có những gói PT nào, co nhung goi PT nao, các gói PT, cac goi PT, danh sách gói PT, PT cơ bản 12 buổi, PT cao cấp 36 buổi',
         N'Active'
     ),
     (
         N'36 buổi là gói Gym hay gói PT?',
-        N'36 buổi là số buổi của gói PT Cao cấp 3 Tháng, không phải gói Gym. Gói Gym được quản lý theo thời hạn như 1 tháng hoặc 3 tháng, còn gói PT được quản lý theo số buổi tập với huấn luyện viên cá nhân.',
+        N'36 buổi là số buổi của gói PT 36 Buổi, không phải gói Gym. Gói Gym được quản lý theo thời hạn như 1 tháng hoặc 3 tháng, còn gói PT được quản lý theo số buổi tập với huấn luyện viên cá nhân.',
         N'Personal Trainer',
         N'36 buổi, 36 buoi, gói nào, gói gym hay pt, pt cao cấp, gym theo tháng, pt theo buổi',
         N'Active'
     ),
     (
         N'12 buổi là gói gì?',
-        N'12 buổi là số buổi của gói PT Cơ bản 1 Tháng. Đây là gói tập với huấn luyện viên cá nhân, không phải gói Gym sử dụng phòng tập thông thường.',
+        N'12 buổi là số buổi của gói PT 12 Buổi. Đây là gói tập với huấn luyện viên cá nhân, không phải gói Gym sử dụng phòng tập thông thường.',
         N'Personal Trainer',
-        N'12 buổi, 12 buoi, gói gì, gói PT cơ bản, PT 1 tháng, huấn luyện viên cá nhân',
+        N'12 buổi, 12 buoi, gói gì, gói PT cơ bản, PT 12 buổi, huấn luyện viên cá nhân',
         N'Active'
     ),
     (
         N'Gói 1 tháng là Gym hay PT?',
-        N'Hệ thống có cả gói Gym Cơ bản 1 Tháng và gói PT Cơ bản 1 Tháng. Gói Gym là sử dụng phòng tập theo thời hạn; gói PT là tập với huấn luyện viên cá nhân và gồm 12 buổi.',
+        N'Hệ thống có cả gói Gym Cơ bản 1 Tháng và gói PT 12 Buổi. Gói Gym là sử dụng phòng tập theo thời hạn; gói PT là tập với huấn luyện viên cá nhân và gồm 12 buổi.',
         N'Membership Package',
-        N'gói 1 tháng, goi 1 thang, gym 1 tháng, pt 1 tháng, gói gym cơ bản, gói pt cơ bản, 12 buổi',
+        N'gói 1 tháng, goi 1 thang, gym 1 tháng, pt 12 buổi, gói gym cơ bản, gói pt cơ bản, 12 buổi',
         N'Active'
     ),
     (
         N'Loại cao cấp 3 tháng là Gym hay PT?',
-        N'Hệ thống có Gói Gym Cao cấp 3 Tháng và Gói PT Cao cấp 3 Tháng. Gói Gym là sử dụng phòng tập theo thời hạn, còn gói PT Cao cấp 3 Tháng gồm 36 buổi tập với huấn luyện viên cá nhân.',
+        N'Hệ thống có Gói Gym Cao cấp 3 Tháng và Gói PT 36 Buổi. Gói Gym là sử dụng phòng tập theo thời hạn, còn gói PT 36 Buổi gồm 36 buổi tập với huấn luyện viên cá nhân.',
         N'General Gym Information',
         N'cao cấp 3 tháng, gym cao cấp, pt cao cấp, 36 buổi, 3 tháng, gym hay pt',
         N'Active'
     ),
     (
         N'Có thể dùng 36 buổi PT trong 1 tháng không?',
-        N'Hiện gói 36 buổi thuộc gói PT Cao cấp 3 Tháng. Việc tập dồn trong 1 tháng có thể phụ thuộc vào lịch PT và chính sách của phòng gym. Bạn nên liên hệ lễ tân để được kiểm tra và tư vấn trước khi đăng ký.',
+        N'Hiện gói 36 buổi thuộc gói PT 36 Buổi. Việc tập dồn trong 1 tháng có thể phụ thuộc vào lịch PT và chính sách của phòng gym. Bạn nên liên hệ lễ tân để được kiểm tra và tư vấn trước khi đăng ký.',
         N'Membership Management',
-        N'dùng 36 buổi PT trong 1 tháng, 36 buổi PT 1 tháng, tập dồn, PT 36 buổi, PT cao cấp 3 tháng, lịch PT, chính sách',
+        N'dùng 36 buổi PT trong 1 tháng, 36 buổi PT 12 buổi, tập dồn, PT 36 buổi, PT cao cấp 3 tháng, lịch PT, chính sách',
         N'Active'
     ),
     (
-        N'Gói PT 3 tháng có thể tập dồn trong 1 tháng không?',
-        N'Gói PT Cao cấp 3 Tháng gồm 36 buổi và được thiết kế theo thời hạn 3 tháng. Việc tập dồn trong 1 tháng cần được kiểm tra theo lịch PT và chính sách hiện tại. Bạn vui lòng liên hệ lễ tân để được xác nhận.',
+        N'Gói PT 36 buổi có thể tập dồn trong 1 tháng không?',
+        N'Gói PT 36 Buổi gồm 36 buổi và được thiết kế theo thời hạn 3 tháng. Việc tập dồn trong 1 tháng cần được kiểm tra theo lịch PT và chính sách hiện tại. Bạn vui lòng liên hệ lễ tân để được xác nhận.',
         N'Membership Management',
-        N'pt 3 tháng tập dồn, tập dồn 1 tháng, 36 buổi, lịch PT, chính sách PT, lễ tân',
+        N'pt 36 buổi tập dồn, tập dồn 1 tháng, 36 buổi, lịch PT, chính sách PT, lễ tân',
         N'Active'
     ),
     (
         N'Không chọn loại cao cấp thì dùng loại cơ bản 1 tháng được không?',
-        N'Bạn có thể đăng ký Gói Gym Cơ bản 1 Tháng nếu muốn sử dụng phòng tập trong 1 tháng. Nếu bạn hỏi về số buổi PT, gói PT Cơ bản 1 Tháng gồm 12 buổi, còn 36 buổi thuộc gói PT Cao cấp 3 Tháng.',
+        N'Bạn có thể đăng ký Gói Gym Cơ bản 1 Tháng nếu muốn sử dụng phòng tập trong 1 tháng. Nếu bạn hỏi về số buổi PT, gói PT 12 Buổi gồm 12 buổi, còn 36 buổi thuộc gói PT 36 Buổi.',
         N'General Gym Information',
         N'không chọn cao cấp, loại cơ bản 1 tháng, gym cơ bản, pt cơ bản, 12 buổi, 36 buổi',
         N'Active'
@@ -16105,16 +16105,16 @@ BEGIN
     ),
     (
         N'Tôi muốn tập 36 buổi thì chọn gói nào?',
-        N'Nếu bạn muốn tập 36 buổi với huấn luyện viên cá nhân, bạn nên chọn gói PT Cao cấp 3 Tháng. Gói Gym được tính theo thời hạn sử dụng phòng tập, không phải theo số buổi. Nếu cần xác nhận trước khi đăng ký, vui lòng liên hệ lễ tân.',
+        N'Nếu bạn muốn tập 36 buổi với huấn luyện viên cá nhân, bạn nên chọn gói PT 36 Buổi. Gói Gym được tính theo thời hạn sử dụng phòng tập, không phải theo số buổi. Nếu cần xác nhận trước khi đăng ký, vui lòng liên hệ lễ tân.',
         N'Personal Trainer',
         N'tập 36 buổi, chọn gói 36 buổi, gói PT cao cấp, 3 tháng, personal trainer',
         N'Active'
     ),
     (
         N'Tôi muốn tập 12 buổi trong 1 tháng thì chọn gói nào?',
-        N'Gói PT Cơ bản 1 Tháng gồm 12 buổi, phù hợp nếu bạn muốn tập với huấn luyện viên cá nhân trong 1 tháng. Nếu bạn chỉ muốn sử dụng phòng tập, hãy chọn gói Gym theo thời hạn.',
+        N'Gói PT 12 Buổi gồm 12 buổi, phù hợp nếu bạn muốn tập với huấn luyện viên cá nhân trong 1 tháng. Nếu bạn chỉ muốn sử dụng phòng tập, hãy chọn gói Gym theo thời hạn.',
         N'Personal Trainer',
-        N'12 buổi 1 tháng, gói PT cơ bản, PT 1 tháng, personal trainer, huấn luyện viên cá nhân',
+        N'12 buổi 1 tháng, gói PT cơ bản, PT 12 buổi, personal trainer, huấn luyện viên cá nhân',
         N'Active'
     ),
     (
@@ -16126,42 +16126,42 @@ BEGIN
     ),
     (
         N'Gói PT có tính theo tháng hay số buổi?',
-        N'Gói PT trong hệ thống có cả thời hạn và số buổi. Gói PT Cơ bản 1 Tháng gồm 12 buổi, còn gói PT Cao cấp 3 Tháng gồm 36 buổi. Bạn nên chọn gói theo nhu cầu tập với huấn luyện viên cá nhân.',
+        N'Gói PT trong hệ thống có cả thời hạn và số buổi. Gói PT 12 Buổi gồm 12 buổi, còn gói PT 36 Buổi gồm 36 buổi. Bạn nên chọn gói theo nhu cầu tập với huấn luyện viên cá nhân.',
         N'Personal Trainer',
         N'gói PT tính theo tháng hay số buổi, PT theo buổi, PT theo tháng, 12 buổi, 36 buổi',
         N'Active'
     ),
     (
         N'Gói gym cao cấp có phải 36 buổi không?',
-        N'Không. Gói Gym Cao cấp 3 Tháng là gói sử dụng phòng tập theo thời hạn 3 tháng. Số buổi 36 thuộc gói PT Cao cấp 3 Tháng, dành cho tập với huấn luyện viên cá nhân.',
+        N'Không. Gói Gym Cao cấp 3 Tháng là gói sử dụng phòng tập theo thời hạn 3 tháng. Số buổi 36 thuộc gói PT 36 Buổi, dành cho tập với huấn luyện viên cá nhân.',
         N'General Gym Information',
         N'gym cao cấp 36 buổi, gym cao cấp, 36 buổi, PT cao cấp 3 tháng',
         N'Active'
     ),
     (
         N'Tập hằng ngày trong 1 tháng có được không?',
-        N'Với gói Gym Cơ bản 1 Tháng, bạn sử dụng phòng tập trong thời hạn 1 tháng theo quy định của phòng gym. Nếu bạn hỏi về PT, gói PT Cơ bản 1 Tháng gồm 12 buổi, không phải buổi PT mỗi ngày.',
+        N'Với gói Gym Cơ bản 1 Tháng, bạn sử dụng phòng tập trong thời hạn 1 tháng theo quy định của phòng gym. Nếu bạn hỏi về PT, gói PT 12 Buổi gồm 12 buổi, không phải buổi PT mỗi ngày.',
         N'General Gym Information',
         N'1 tháng tập mỗi ngày, tap hang ngay 1 thang, gym 1 tháng, PT 12 buổi, tập hằng ngày',
         N'Active'
     ),
     (
         N'Có thể tập hơn 12 buổi PT trong 1 tháng không?',
-        N'Gói PT Cơ bản 1 Tháng gồm 12 buổi. Nếu bạn cần số buổi PT nhiều hơn, bạn có thể cân nhắc gói PT Cao cấp 3 Tháng gồm 36 buổi hoặc liên hệ lễ tân để được tư vấn theo nhu cầu.',
+        N'Gói PT 12 Buổi gồm 12 buổi. Nếu bạn cần số buổi PT nhiều hơn, bạn có thể cân nhắc gói PT 36 Buổi gồm 36 buổi hoặc liên hệ lễ tân để được tư vấn theo nhu cầu.',
         N'Personal Trainer',
-        N'hơn 12 buổi PT, PT 1 tháng, PT 12 buổi, PT 36 buổi, gói PT cao cấp',
+        N'hơn 12 buổi PT, PT 12 buổi, PT 12 buổi, PT 36 buổi, gói PT cao cấp',
         N'Active'
     ),
     (
         N'Tập gym trong 3 tháng thì chọn loại nào?',
-        N'Nếu bạn muốn sử dụng phòng tập trong 3 tháng, bạn có thể chọn Gói Gym Cao cấp 3 Tháng. Nếu cần tập với huấn luyện viên cá nhân, gói PT Cao cấp 3 Tháng gồm 36 buổi.',
+        N'Nếu bạn muốn sử dụng phòng tập trong 3 tháng, bạn có thể chọn Gói Gym Cao cấp 3 Tháng. Nếu cần tập với huấn luyện viên cá nhân, gói PT 36 Buổi gồm 36 buổi.',
         N'General Gym Information',
         N'tập gym 3 tháng, tap gym 3 thang, gym 3 tháng, loại 3 tháng, PT cao cấp 36 buổi',
         N'Active'
     ),
     (
         N'Tập gym trong 1 tháng thì chọn loại nào?',
-        N'Nếu bạn muốn sử dụng phòng tập trong 1 tháng, bạn có thể chọn Gói Gym Cơ bản 1 Tháng. Nếu muốn tập với huấn luyện viên cá nhân trong 1 tháng, gói PT Cơ bản 1 Tháng gồm 12 buổi.',
+        N'Nếu bạn muốn sử dụng phòng tập trong 1 tháng, bạn có thể chọn Gói Gym Cơ bản 1 Tháng. Nếu muốn tập với huấn luyện viên cá nhân trong 1 tháng, gói PT 12 Buổi gồm 12 buổi.',
         N'General Gym Information',
         N'tập gym 1 tháng, tap gym 1 thang, gym cơ bản 1 tháng, PT cơ bản 12 buổi, 1 tháng',
         N'Active'
@@ -16175,7 +16175,7 @@ BEGIN
     ),
     (
         N'Tôi muốn nhiều buổi PT nhất thì chọn gói nào?',
-        N'Trong các gói PT hiện có, gói PT Cao cấp 3 Tháng gồm 36 buổi là gói có nhiều buổi hơn gói PT Cơ bản 1 Tháng gồm 12 buổi. Bạn có thể chọn gói này nếu muốn được PT hỗ trợ dài hơn.',
+        N'Trong các gói PT hiện có, gói PT 36 Buổi gồm 36 buổi là gói có nhiều buổi hơn gói PT 12 Buổi gồm 12 buổi. Bạn có thể chọn gói này nếu muốn được PT hỗ trợ dài hơn.',
         N'Personal Trainer',
         N'nhiều buổi PT nhất, PT nhiều buổi, PT 36 buổi, PT cao cấp, huấn luyện viên cá nhân',
         N'Active'
