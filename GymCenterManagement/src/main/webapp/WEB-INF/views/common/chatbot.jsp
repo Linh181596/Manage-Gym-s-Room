@@ -1,8 +1,8 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <c:if test="${empty sessionScope.currentUser || sessionScope.currentUser.role == 'Member'}">
-<link href="${pageContext.request.contextPath}/css/chatbot.css" rel="stylesheet">
+<link href="${pageContext.request.contextPath}/css/chatbot.css?v=faq-select-utf8-20260727" rel="stylesheet">
 
 <div id="chatBot" class="chatbot" data-context-path="${pageContext.request.contextPath}">
     <button type="button" id="chatBotToggle" class="chatbot__toggle"
@@ -45,5 +45,5 @@
     </section>
 </div>
 
-<script src="${pageContext.request.contextPath}/js/chatbot.js"></script>
+<script charset="UTF-8" src="${pageContext.request.contextPath}/js/chatbot.js?v=faq-select-utf8-20260727"></script>
 </c:if>
