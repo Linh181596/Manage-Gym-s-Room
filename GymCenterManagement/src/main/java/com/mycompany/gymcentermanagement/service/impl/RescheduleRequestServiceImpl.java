@@ -43,7 +43,7 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
      * 2. [BR-CONS-48]: Validate ngày không được ở trong quá khứ.
      * 3. [BR-ACT-49], [BR-ACT-50], [BR-CONS-15]: PT và Hội viên có thể gửi yêu cầu đổi lịch.
      * 4. Check khung giờ hợp lệ, không trùng lịch, không trùng ca bị hủy hàng loạt.
-     * 5. Lưu vào Database (Trạng thái Pending hoặc Escalated nếu ca cũ bị Cancelled).
+     * 5. Lưu vào Database (Trạng thái Pending).
      * 
      * @param actorUserId UserID của người gửi
      * @param actorRole Role của người gửi
@@ -172,12 +172,7 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
         request.setProposedDate(proposedDate);
         request.setProposedStartTime(proposedStartTime);
         request.setProposedEndTime(proposedEndTime);
-        if ("Cancelled".equalsIgnoreCase(schedule.getSessionStatus())) {
-            request.setStatus("Escalated");
-            request.setEscalationReason("Yêu cầu xếp lịch bù cho ca tập bị hủy bởi Admin/Hệ thống.");
-        } else {
-            request.setStatus("Pending");
-        }
+        request.setStatus("Pending");
         request.setReason(reason.trim());
 
         boolean created = rescheduleRequestDAO.create(request);
@@ -190,13 +185,16 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 User senderUser = userDAO.findById(senderUserId);
                 String senderName = (senderUser != null) ? senderUser.getFullName() : "Đối tác";
                 
+                boolean isCancelled = "Cancelled".equalsIgnoreCase(schedule.getSessionStatus());
                 if (actorRole == User.Role.PT) {
-                    notif.setTitle("Yêu cầu đổi lịch học mới từ HLV");
-                    notif.setContent("HLV " + senderName + " đề xuất đổi ca học ngày " 
+                    notif.setTitle(isCancelled ? "Yêu cầu xếp lịch học bù từ HLV" : "Yêu cầu đổi lịch học mới từ HLV");
+                    notif.setContent("HLV " + senderName + " đề xuất " 
+                            + (isCancelled ? "xếp ca học bù" : "đổi ca học") + " ngày " 
                             + schedule.getSessionDate() + " sang ngày " + proposedDate + " ca " + proposedSlot + ".");
                 } else {
-                    notif.setTitle("Yêu cầu đổi lịch học mới từ Hội viên");
-                    notif.setContent("Hội viên " + senderName + " đề xuất đổi ca học ngày " 
+                    notif.setTitle(isCancelled ? "Yêu cầu xếp lịch học bù từ Hội viên" : "Yêu cầu đổi lịch học mới từ Hội viên");
+                    notif.setContent("Hội viên " + senderName + " đề xuất " 
+                            + (isCancelled ? "xếp ca học bù" : "đổi ca học") + " ngày " 
                             + schedule.getSessionDate() + " sang ngày " + proposedDate + " ca " + proposedSlot + ".");
                 }
                 
@@ -215,14 +213,13 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
     }
 
     /**
-     * Xử lý (Duyệt/Từ chối/Escalate) một yêu cầu đổi lịch.
+     * Xử lý (Duyệt/Từ chối) một yêu cầu đổi lịch.
      * Luồng nghiệp vụ:
      * - Approve: Check lại trùng lịch, update lịch học cũ hoặc tạo lịch học bù.
      * - Reject: Cập nhật trạng thái Rejected kèm lý do.
-     * - Escalate: Chuyển lên Staff/Admin kèm lý do (Thường do PT/Member không tự thỏa thuận được).
      * 
      * @param requestId ID yêu cầu
-     * @param action Hành động (approve, reject, escalate)
+     * @param action Hành động (approve, reject)
      * @param responderUserId Người thực hiện
      * @param responseReason Lý do phản hồi
      * @return Chuỗi kết quả
@@ -234,23 +231,11 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
             return "Yêu cầu đổi lịch không tồn tại.";
         }
 
-        if (!"Pending".equalsIgnoreCase(req.getStatus()) && !"Escalated".equalsIgnoreCase(req.getStatus())) {
+        if (!"Pending".equalsIgnoreCase(req.getStatus())) {
             return "Yêu cầu này đã được xử lý từ trước.";
         }
 
-        User responder = null;
-        try {
-            responder = userDAO.findById(responderUserId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        if (responder == null) {
-            return "Người thực hiện không tồn tại.";
-        }
-
-        boolean isStaffOrAdmin = (responder.getRole() == User.Role.Staff || responder.getRole() == User.Role.Admin);
-        if (!isStaffOrAdmin && req.getReceiverUserId() != responderUserId) {
+        if (req.getReceiverUserId() != responderUserId) {
             return "Bạn không có quyền phản hồi yêu cầu này.";
         }
 
@@ -307,46 +292,9 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 return "SUCCESS";
             }
             return "Lỗi hệ thống khi từ chối yêu cầu.";
-        } else if ("escalate".equalsIgnoreCase(action)) {
-            if (responseReason == null || responseReason.trim().isEmpty()) {
-                return "Vui lòng nhập lý do yêu cầu hỗ trợ.";
-            }
-            boolean success = rescheduleRequestDAO.escalateRequest(requestId, responderUserId, responseReason);
-            if (success) {
-                sendRespondNotification(req, "Escalated", responderUserId, responseReason);
-                return "SUCCESS";
-            }
-            return "Lỗi hệ thống khi gửi yêu cầu hỗ trợ.";
         }
 
         return "Hành động không hợp lệ.";
-    }
-
-    @Override
-    public List<RescheduleRequestDetailDTO> getEscalatedRequests() {
-        List<RescheduleRequestDetailDTO> list = rescheduleRequestDAO.getEscalatedRequests();
-        for (RescheduleRequestDetailDTO req : list) {
-            PTSchedule schedule = ptScheduleDAO.getScheduleById(req.getScheduleId());
-            if (schedule != null) {
-                boolean ptConflict = ptScheduleDAO.isScheduleConflictExcluding(
-                        schedule.getPtId(),
-                        req.getProposedDate(),
-                        req.getProposedStartTime(),
-                        req.getProposedEndTime(),
-                        req.getScheduleId()
-                );
-                boolean memberConflict = ptScheduleDAO.isMemberScheduleConflictExcluding(
-                        schedule.getMemberId(),
-                        req.getProposedDate(),
-                        req.getProposedStartTime(),
-                        req.getProposedEndTime(),
-                        req.getScheduleId()
-                );
-                req.setPtConflict(ptConflict);
-                req.setMemberConflict(memberConflict);
-            }
-        }
-        return list;
     }
 
     private void sendRespondNotification(RescheduleRequest req, String action, int responderUserId, String reason) {
@@ -361,10 +309,6 @@ public class RescheduleRequestServiceImpl implements RescheduleRequestService {
                 notif.setTitle("Yêu cầu đổi lịch/học bù đã bị từ chối");
                 notif.setContent("Yêu cầu đổi/bù ca tập ngày " + req.getOriginalDate() 
                         + " sang ngày " + req.getProposedDate() + " đã bị từ chối. Lý do: " + reason);
-            } else if ("Escalated".equals(action)) {
-                notif.setTitle("Yêu cầu đổi lịch được gửi hỗ trợ");
-                notif.setContent("Yêu cầu đổi lịch ca tập ngày " + req.getOriginalDate() 
-                        + " đã được gửi lên Staff/Admin hỗ trợ xử lý.");
             }
             notif.setCreatedBy(responderUserId);
             notif.setTargetRole("Specific");

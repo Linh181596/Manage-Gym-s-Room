@@ -13,6 +13,4 @@ public interface RescheduleRequestDAO {
     boolean updateStatus(int requestId, String status);
     boolean approveAndUpdateSchedule(int requestId, int scheduleId, LocalDate newDate, Time newStart, Time newEnd, int responderUserId);
     boolean rejectRequest(int requestId, int responderUserId, String responseReason);
-    boolean escalateRequest(int requestId, int escalatorUserId, String escalationReason);
-    List<RescheduleRequestDetailDTO> getEscalatedRequests();
 }

@@ -8,5 +8,4 @@ import java.util.List;
 public interface RescheduleRequestService {
     String createRequest(int actorUserId, User.Role actorRole, int scheduleId, LocalDate proposedDate, String proposedSlot, String reason);
     String respondToRequest(int requestId, String action, int responderUserId, String responseReason);
-    List<RescheduleRequestDetailDTO> getEscalatedRequests();
 }
