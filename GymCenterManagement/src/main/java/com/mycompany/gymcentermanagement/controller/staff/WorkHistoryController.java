@@ -37,6 +37,10 @@ public class WorkHistoryController extends HttpServlet {
 
     private final StaffPTAttendanceService attendanceService = new StaffPTAttendanceServiceImpl();
 
+    /**
+     * Kiểm tra đăng nhập và quyền truy cập, sau đó tải lịch sử điểm danh theo
+     * đúng vai trò Admin/Staff/PT và các bộ lọc trên request.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -148,6 +152,10 @@ public class WorkHistoryController extends HttpServlet {
                 .forward(request, response);
     }
 
+    /**
+     * Tải lịch sử điểm danh dạng quản trị cho Admin, gồm danh sách Staff/PT theo
+     * ngày, ca, vai trò, từ khóa, trạng thái công và phân trang.
+     */
     private void showAdminWorkHistory(HttpServletRequest request, HttpServletResponse response,
                                       String relativePath, User currentUser)
             throws ServletException, IOException {
@@ -224,6 +232,10 @@ public class WorkHistoryController extends HttpServlet {
                 .forward(request, response);
     }
 
+    /**
+     * Lọc danh sách điểm danh theo vai trò Staff hoặc PT khi Admin chọn bộ lọc
+     * vai trò.
+     */
     private List<StaffPTAttendance> filterByRole(List<StaffPTAttendance> records, String filterRole) {
         if (filterRole == null || filterRole.isBlank()) {
             return records;
@@ -238,6 +250,10 @@ public class WorkHistoryController extends HttpServlet {
         return filtered;
     }
 
+    /**
+     * Lọc danh sách điểm danh theo trạng thái công đã được tính toán như đang
+     * trong ca, đi muộn, về sớm hoặc quên check-out.
+     */
     private List<StaffPTAttendance> filterByWorkStatus(List<StaffPTAttendance> records, String selectedWorkStatus) {
         if (selectedWorkStatus == null || selectedWorkStatus.isBlank()) {
             return records;
@@ -252,6 +268,10 @@ public class WorkHistoryController extends HttpServlet {
         return filtered;
     }
 
+    /**
+     * Tạo các thẻ thống kê trạng thái công cho màn hình Admin, kèm URL lọc theo
+     * từng trạng thái.
+     */
     private List<WorkStatusSummary> buildStatusStats(HttpServletRequest request, String relativePath,
                                                      List<StaffPTAttendance> records,
                                                      String filterRole, String selectedShift,
@@ -284,6 +304,10 @@ public class WorkHistoryController extends HttpServlet {
         return stats;
     }
 
+    /**
+     * Tạo một mục thống kê trạng thái công cho Admin, gồm nhãn, số lượng, style,
+     * URL lọc và trạng thái đang được chọn.
+     */
     private WorkStatusSummary createStatusSummary(HttpServletRequest request, String relativePath,
                                                   String key, String label, int count,
                                                   String badgeClass, String iconClass,
@@ -305,6 +329,9 @@ public class WorkHistoryController extends HttpServlet {
         return new WorkStatusSummary(key, label, count, badgeClass, iconClass, queryBase + "page=1", active);
     }
 
+    /**
+     * Đếm số bản ghi trong danh sách có chứa một mã trạng thái công cụ thể.
+     */
     private int countStatus(List<StaffPTAttendance> records, String key) {
         int count = 0;
         for (StaffPTAttendance record : records) {
@@ -315,12 +342,20 @@ public class WorkHistoryController extends HttpServlet {
         return count;
     }
 
+    /**
+     * Kiểm tra một bản ghi điểm danh có chứa mã trạng thái công đang cần lọc hay
+     * không.
+     */
     private boolean hasWorkStatus(StaffPTAttendance record, String key) {
         return key != null
                 && record.getWorkStatusKeys() != null
                 && record.getWorkStatusKeys().contains("," + key + ",");
     }
 
+    /**
+     * Gán trạng thái công cho danh sách Staff/PT của Admin theo ngày và ca đang
+     * chọn.
+     */
     private void applyWorkStatuses(List<StaffPTAttendance> records, LocalDate selectedDate, String selectedShift) {
         ShiftWindow window = getShiftWindow(selectedShift);
         LocalDateTime now = LocalDateTime.now();
@@ -336,6 +371,10 @@ public class WorkHistoryController extends HttpServlet {
         }
     }
 
+    /**
+     * Gán trạng thái công cho lịch sử cá nhân dựa trên ngày và ca có sẵn trong
+     * từng bản ghi điểm danh.
+     */
     private void applyWorkStatuses(List<StaffPTAttendance> records) {
         LocalDateTime now = LocalDateTime.now();
         for (StaffPTAttendance record : records) {
@@ -360,6 +399,10 @@ public class WorkHistoryController extends HttpServlet {
         }
     }
 
+    /**
+     * Tạo các thẻ thống kê trạng thái công cho Staff/PT đang xem lịch sử của
+     * chính mình.
+     */
     private List<WorkStatusSummary> buildSelfStatusStats(HttpServletRequest request, String relativePath,
                                                          List<StaffPTAttendance> records,
                                                          String filterShift, String fromStr, String toStr,
@@ -385,6 +428,10 @@ public class WorkHistoryController extends HttpServlet {
         return stats;
     }
 
+    /**
+     * Tạo một mục thống kê trạng thái công cho màn hình lịch sử cá nhân, gồm URL
+     * lọc theo ca, khoảng ngày và trạng thái.
+     */
     private WorkStatusSummary createSelfStatusSummary(HttpServletRequest request, String relativePath,
                                                       String key, String label, int count,
                                                       String badgeClass, String iconClass,
@@ -404,6 +451,10 @@ public class WorkHistoryController extends HttpServlet {
         return new WorkStatusSummary(key, label, count, badgeClass, iconClass, queryBase + "page=1", active);
     }
 
+    /**
+     * Tính trạng thái công cho một bản ghi dựa trên giờ vào, giờ ra và khung giờ
+     * ca làm việc.
+     */
     private void applyWorkStatus(StaffPTAttendance record, ShiftWindow window, LocalDateTime now,
                                  LocalDateTime shiftStartAt, LocalDateTime shiftEndAt) {
         if (record.getAttendanceId() <= 0) {
@@ -444,6 +495,10 @@ public class WorkHistoryController extends HttpServlet {
         }
     }
 
+    /**
+     * Ghi thông tin trạng thái công đã tính vào đối tượng điểm danh để JSP hiển
+     * thị nhãn, màu và biểu tượng.
+     */
     private void setWorkStatus(StaffPTAttendance record, String key, String label, String badgeClass, String iconClass) {
         record.setWorkStatusKey(key);
         record.setWorkStatusKeys("," + key + ",");
@@ -452,6 +507,10 @@ public class WorkHistoryController extends HttpServlet {
         record.setWorkStatusIconClass(iconClass);
     }
 
+    /**
+     * Gán dữ liệu rỗng cho request khi không có kết quả hoặc khi xảy ra lỗi tải
+     * lịch sử.
+     */
     private void setEmptyResultAttributes(HttpServletRequest request) {
         request.setAttribute("historyList", List.of());
         request.setAttribute("total", 0);
@@ -459,6 +518,10 @@ public class WorkHistoryController extends HttpServlet {
         request.setAttribute("currentPage", 1);
     }
 
+    /**
+     * Đọc tham số số nguyên từ request và trả về giá trị mặc định nếu thiếu hoặc
+     * sai định dạng.
+     */
     private int parseIntParam(HttpServletRequest req, String name, int defaultValue) {
         String val = req.getParameter(name);
         if (val == null || val.isBlank()) {
@@ -471,6 +534,10 @@ public class WorkHistoryController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuyển chuỗi ngày dạng ISO yyyy-MM-dd thành LocalDate; trả về null khi
+     * chuỗi rỗng hoặc sai định dạng.
+     */
     private LocalDate parseDate(String dateStr) {
         if (dateStr == null || dateStr.isBlank()) {
             return null;
@@ -482,10 +549,16 @@ public class WorkHistoryController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuẩn hóa chuỗi null thành chuỗi rỗng và loại bỏ khoảng trắng đầu/cuối.
+     */
     private String trimToEmpty(String value) {
         return value == null ? "" : value.trim();
     }
 
+    /**
+     * Chỉ chấp nhận vai trò Staff hoặc PT cho bộ lọc lịch sử điểm danh.
+     */
     private String normalizeRole(String role) {
         if ("Staff".equals(role) || "PT".equals(role)) {
             return role;
@@ -493,6 +566,9 @@ public class WorkHistoryController extends HttpServlet {
         return null;
     }
 
+    /**
+     * Chỉ chấp nhận các mã ca Morning, Afternoon hoặc Evening cho bộ lọc ca.
+     */
     private String normalizeShift(String shift) {
         if ("Morning".equals(shift) || "Afternoon".equals(shift) || "Evening".equals(shift)) {
             return shift;
@@ -500,6 +576,9 @@ public class WorkHistoryController extends HttpServlet {
         return null;
     }
 
+    /**
+     * Chỉ chấp nhận các mã trạng thái công hợp lệ để tránh lọc theo giá trị lạ.
+     */
     private String normalizeWorkStatus(String status) {
         if (STATUS_IN_SHIFT.equals(status)
                 || STATUS_COMPLETED.equals(status)
@@ -513,6 +592,9 @@ public class WorkHistoryController extends HttpServlet {
         return null;
     }
 
+    /**
+     * Trả về giờ bắt đầu và kết thúc chuẩn của từng ca làm việc.
+     */
     private static ShiftWindow getShiftWindow(String shift) {
         return switch (shift) {
             case "Afternoon" -> new ShiftWindow(LocalTime.of(13, 15), LocalTime.of(16, 45));
@@ -521,11 +603,17 @@ public class WorkHistoryController extends HttpServlet {
         };
     }
 
+    /**
+     * Tạo nhãn khung giờ ca làm việc dạng HH:mm-HH:mm để hiển thị trên màn hình.
+     */
     private static String getShiftWindowLabel(String shift) {
         ShiftWindow window = getShiftWindow(shift);
         return formatTime(window.shiftStart()) + "-" + formatTime(window.shiftEnd());
     }
 
+    /**
+     * Định dạng LocalTime thành chuỗi HH:mm.
+     */
     private static String formatTime(LocalTime time) {
         return String.format("%02d:%02d", time.getHour(), time.getMinute());
     }
@@ -533,12 +621,20 @@ public class WorkHistoryController extends HttpServlet {
     private record ShiftWindow(LocalTime shiftStart, LocalTime shiftEnd) {
     }
 
+    /**
+     * Kiểm tra vai trò hiện tại có được mở đúng đường dẫn lịch sử tương ứng hay
+     * không.
+     */
     private boolean canAccessPath(String relativePath, User.Role role) {
         return ("/admin/work-history".equals(relativePath) && role == User.Role.Admin)
                 || ("/staff/work-history".equals(relativePath) && role == User.Role.Staff)
                 || ("/pt/work-history".equals(relativePath) && role == User.Role.PT);
     }
 
+    /**
+     * Kiểm tra khoảng ngày lọc hợp lệ khi ngày bắt đầu không được sau ngày kết
+     * thúc.
+     */
     static boolean isValidDateRange(LocalDate fromDate, LocalDate toDate) {
         return fromDate == null || toDate == null || !fromDate.isAfter(toDate);
     }
@@ -552,6 +648,10 @@ public class WorkHistoryController extends HttpServlet {
         private final String url;
         private final boolean active;
 
+        /**
+         * Tạo dữ liệu tóm tắt một trạng thái công để JSP hiển thị dưới dạng thẻ
+         * lọc/thống kê.
+         */
         public WorkStatusSummary(String key, String label, int count, String badgeClass,
                                  String iconClass, String url, boolean active) {
             this.key = key;
@@ -563,30 +663,51 @@ public class WorkHistoryController extends HttpServlet {
             this.active = active;
         }
 
+        /**
+         * Trả về mã trạng thái công dùng cho bộ lọc.
+         */
         public String getKey() {
             return key;
         }
 
+        /**
+         * Trả về nhãn trạng thái công để hiển thị.
+         */
         public String getLabel() {
             return label;
         }
 
+        /**
+         * Trả về số lượng bản ghi thuộc trạng thái công này.
+         */
         public int getCount() {
             return count;
         }
 
+        /**
+         * Trả về class CSS cho màu badge của trạng thái công.
+         */
         public String getBadgeClass() {
             return badgeClass;
         }
 
+        /**
+         * Trả về class icon dùng để hiển thị trạng thái công.
+         */
         public String getIconClass() {
             return iconClass;
         }
 
+        /**
+         * Trả về URL lọc danh sách theo trạng thái công này.
+         */
         public String getUrl() {
             return url;
         }
 
+        /**
+         * Cho biết trạng thái công này có đang là bộ lọc được chọn hay không.
+         */
         public boolean isActive() {
             return active;
         }

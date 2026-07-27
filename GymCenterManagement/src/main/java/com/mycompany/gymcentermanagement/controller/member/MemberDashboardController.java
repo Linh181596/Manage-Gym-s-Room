@@ -35,6 +35,10 @@ public class MemberDashboardController extends HttpServlet {
     private final MemberDAO memberDAO = new MemberDAOImpl();
     private final MemberDashboardService dashboardService = new MemberDashboardServiceImpl();
 
+    /**
+     * Kiểm tra đăng nhập và role Member, tìm hồ sơ hội viên rồi tải dữ liệu tổng
+     * quan để hiển thị dashboard.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

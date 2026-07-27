@@ -39,6 +39,10 @@ public class MembershipGrowthReportController extends HttpServlet {
 
     private final MembershipGrowthReportService reportService = new MembershipGrowthReportServiceImpl();
 
+    /**
+     * Kiểm tra quyền Admin, đọc bộ lọc năm/tháng/trạng thái/từ khóa, tải dữ
+     * liệu tổng quan, biểu đồ, danh sách hội viên và thiết lập phân trang.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -57,7 +61,6 @@ public class MembershipGrowthReportController extends HttpServlet {
             MembershipGrowthSummary summary = reportService.getSummary(selectedYear, selectedMonth);
             List<MembershipGrowthChartPoint> chartPoints = reportService.getGrowthChart(selectedYear, selectedMonth);
 
-            // Tính toán tổng số lượng bản ghi để phục vụ phân trang (Pagination)
             int page = PaginationHelper.parseInt(request.getParameter("page"), 1);
             int totalItems = reportService.countMembers(selectedYear, selectedMonth, tableStatus, searchKeyword);
             int totalPages = PaginationHelper.totalPages(totalItems, PAGE_SIZE);
@@ -94,6 +97,9 @@ public class MembershipGrowthReportController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/membership-growth-report.jsp").forward(request, response);
     }
 
+    /**
+     * Kiểm tra người dùng đã đăng nhập và có quyền Admin trước khi xem báo cáo.
+     */
     private boolean ensureAdmin(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
         HttpSession session = request.getSession(false);
@@ -110,6 +116,10 @@ public class MembershipGrowthReportController extends HttpServlet {
         return true;
     }
 
+    /**
+     * Gán toàn bộ dữ liệu báo cáo, bộ lọc đang chọn và dữ liệu biểu đồ vào
+     * request để JSP hiển thị.
+     */
     private void setReportAttributes(HttpServletRequest request, List<Integer> availableYears, int selectedYear,
             Integer selectedMonth, String tableStatus, String searchKeyword, MembershipGrowthSummary summary,
             List<MembershipGrowthChartPoint> chartPoints, List<MembershipGrowthMember> members) {
@@ -121,18 +131,25 @@ public class MembershipGrowthReportController extends HttpServlet {
         request.setAttribute("searchKeyword", searchKeyword);
         request.setAttribute("summary", summary);
         request.setAttribute("members", members);
-        // Inject dữ liệu biểu đồ dưới dạng chuỗi JSON thẳng vào JSP để render Chart.js / Google Charts
         request.setAttribute("chartLabelsJson", buildChartLabelsJson(chartPoints));
         request.setAttribute("chartValuesJson", buildChartValuesJson(chartPoints));
         request.setAttribute("selectedPeriodText", buildPeriodText(selectedYear, selectedMonth));
     }
 
+    /**
+     * Xác định năm báo cáo hợp lệ từ request; nếu không hợp lệ thì dùng năm mặc
+     * định trong danh sách năm có sẵn.
+     */
     private int resolveYear(String value, List<Integer> availableYears) {
         int defaultYear = availableYears.isEmpty() ? LocalDate.now().getYear() : availableYears.get(0);
         int parsedYear = PaginationHelper.parseInt(value, defaultYear);
         return availableYears.contains(parsedYear) ? parsedYear : defaultYear;
     }
 
+    /**
+     * Tạo danh sách năm để chọn, gồm 10 năm gần nhất và các năm thật sự có dữ
+     * liệu trong database.
+     */
     private List<Integer> buildYearOptions(List<Integer> dataYears) {
         List<Integer> years = new ArrayList<>();
         int currentYear = LocalDate.now().getYear();
@@ -152,6 +169,10 @@ public class MembershipGrowthReportController extends HttpServlet {
         return years;
     }
 
+    /**
+     * Xác định tháng báo cáo hợp lệ từ request; trả về null khi xem toàn năm
+     * hoặc khi giá trị tháng không hợp lệ.
+     */
     private Integer resolveMonth(String value) {
         String normalized = normalizeBlank(value);
         if (normalized == null) {
@@ -162,6 +183,10 @@ public class MembershipGrowthReportController extends HttpServlet {
         return month >= 1 && month <= 12 ? month : null;
     }
 
+    /**
+     * Chuẩn hóa trạng thái bảng về new, active hoặc expired; trả về null với
+     * trạng thái không hợp lệ.
+     */
     private String normalizeStatus(String value) {
         String normalized = normalizeBlank(value);
         if (normalized == null) {
@@ -175,6 +200,9 @@ public class MembershipGrowthReportController extends HttpServlet {
         return null;
     }
 
+    /**
+     * Chuẩn hóa chuỗi null hoặc rỗng thành null, ngược lại trả về chuỗi đã trim.
+     */
     private String normalizeBlank(String value) {
         if (value == null || value.isBlank()) {
             return null;
@@ -182,6 +210,10 @@ public class MembershipGrowthReportController extends HttpServlet {
         return value.trim();
     }
 
+    /**
+     * Chuyển mã trạng thái bảng thành nhãn tiếng Việt để hiển thị tiêu đề danh
+     * sách hội viên.
+     */
     private String getStatusLabel(String tableStatus) {
         if (STATUS_ACTIVE.equals(tableStatus)) {
             return "Thành viên đang hoạt động";
@@ -195,6 +227,9 @@ public class MembershipGrowthReportController extends HttpServlet {
         return "Dữ liệu tăng trưởng thành viên";
     }
 
+    /**
+     * Tạo chuỗi mô tả kỳ báo cáo theo năm hoặc theo tháng/năm.
+     */
     private String buildPeriodText(int selectedYear, Integer selectedMonth) {
         if (selectedMonth == null) {
             return "Năm " + selectedYear;
@@ -202,20 +237,28 @@ public class MembershipGrowthReportController extends HttpServlet {
         return "Tháng " + selectedMonth + "/" + selectedYear;
     }
 
-    // Chuyển đổi nhãn (Label) của Chart sang mảng JSON (vd: ["Tháng 1", "Tháng 2"])
+    /**
+     * Chuyển danh sách nhãn biểu đồ thành chuỗi JSON array để JSP dùng cho biểu
+     * đồ.
+     */
     private String buildChartLabelsJson(List<MembershipGrowthChartPoint> points) {
         return points.stream()
                 .map(point -> "\"" + escapeJson(point.getLabel()) + "\"")
                 .collect(Collectors.joining(",", "[", "]"));
     }
 
+    /**
+     * Chuyển danh sách số lượng hội viên trong biểu đồ thành chuỗi JSON array.
+     */
     private String buildChartValuesJson(List<MembershipGrowthChartPoint> points) {
         return points.stream()
                 .map(point -> String.valueOf(point.getMemberCount()))
                 .collect(Collectors.joining(",", "[", "]"));
     }
 
-    // Chống lỗi cú pháp JSON do chứa các ký tự đặc biệt như ngoặc kép hoặc gạch chéo
+    /**
+     * Escape các ký tự đặc biệt trong chuỗi để không làm hỏng cú pháp JSON.
+     */
     private String escapeJson(String value) {
         if (value == null) {
             return "";

@@ -42,6 +42,10 @@ public class ManageMemberController extends HttpServlet {
     private static final String ACTIVE_PACKAGE_DELETE_MESSAGE =
             "Không thể xóa tài khoản hội viên vì hội viên đang có gói tập còn hạn.";
 
+    /**
+     * Nhận request GET và điều hướng sang xem danh sách, khóa/mở khóa, xóa hoặc
+     * gửi nhắc nhở nhanh cho hội viên.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -59,6 +63,10 @@ public class ManageMemberController extends HttpServlet {
         }
     }
 
+    /**
+     * Nhận request POST; hiện tại chỉ xử lý thao tác thêm hội viên mới từ form
+     * quản lý hội viên.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -72,6 +80,10 @@ public class ManageMemberController extends HttpServlet {
         }
     }
 
+    /**
+     * Hiển thị danh sách hội viên cho Staff, áp dụng tìm kiếm, lọc loại gói và
+     * phân trang trước khi forward sang trang members.jsp.
+     */
     private void showMemberList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         consumeFlashMessages(request);
@@ -101,6 +113,10 @@ public class ManageMemberController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/staff/members.jsp").forward(request, response);
     }
 
+    /**
+     * Thêm hội viên mới: kiểm tra dữ liệu nhập, kiểm tra trùng email/số điện
+     * thoại, sau đó gọi DAO để tạo User, Member, role Member và gói tập nếu có.
+     */
     private void addMember(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -109,7 +125,6 @@ public class ManageMemberController extends HttpServlet {
         String email = request.getParameter("email");
         String phone = request.getParameter("phone");
         String type = request.getParameter("type");
-        // Server-side validation
         if (name == null || name.trim().isEmpty() || email == null || email.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Không thể thêm hội viên mới. Họ tên và email không được để trống.");
             showMemberList(request, response);
@@ -125,7 +140,6 @@ public class ManageMemberController extends HttpServlet {
             }
         }
 
-        // Check duplicate email and phone
         try {
             UserDAO userDAO = new UserDAOImpl();
             if (userDAO.checkEmailExists(email)) {
@@ -154,6 +168,10 @@ public class ManageMemberController extends HttpServlet {
         }
     }
 
+    /**
+     * Khóa hoặc mở khóa tài khoản hội viên; nếu hội viên còn gói tập đang hiệu
+     * lực thì không cho khóa để tránh chặn người vẫn còn quyền sử dụng dịch vụ.
+     */
     private void toggleMemberStatus(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -182,6 +200,10 @@ public class ManageMemberController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/members");
     }
 
+    /**
+     * Xóa mềm tài khoản hội viên khỏi danh sách quản lý; trước khi xóa kiểm tra
+     * hội viên không còn gói tập active.
+     */
     private void deleteMember(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -206,6 +228,10 @@ public class ManageMemberController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/members");
     }
 
+    /**
+     * Gửi thông báo nhắc gia hạn gói tập cho một hội viên cụ thể từ màn hình
+     * quản lý hội viên.
+     */
     private void sendQuickNotification(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -225,6 +251,10 @@ public class ManageMemberController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/members");
     }
 
+    /**
+     * Lấy các flash message trong session và chuyển sang request để hiển thị một
+     * lần trên trang danh sách hội viên.
+     */
     private void consumeFlashMessages(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -234,6 +264,10 @@ public class ManageMemberController extends HttpServlet {
         transferFlashMessage(request, session, "successMessage");
     }
 
+    /**
+     * Chuyển một flash message theo key từ session sang request rồi xóa khỏi
+     * session để tránh hiển thị lặp lại.
+     */
     private void transferFlashMessage(HttpServletRequest request, HttpSession session, String key) {
         Object value = session.getAttribute(key);
         if (value != null) {
@@ -242,6 +276,10 @@ public class ManageMemberController extends HttpServlet {
         }
     }
 
+    /**
+     * Lưu thông báo thao tác vào session để request sau khi redirect có thể hiển
+     * thị kết quả cho người dùng.
+     */
     private void setFlash(HttpServletRequest request, String key, String message) {
         request.getSession().setAttribute(key, message);
     }

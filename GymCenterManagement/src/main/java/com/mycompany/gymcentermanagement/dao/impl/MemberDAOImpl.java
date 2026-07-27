@@ -26,18 +26,32 @@ import java.util.List;
 
 public class MemberDAOImpl extends BaseDAO implements MemberDAO {
 
+    /**
+     * Khởi tạo DAO với cơ chế tự mở connection từ DBContext.
+     */
     public MemberDAOImpl() {
         super();
     }
 
+    /**
+     * Khởi tạo DAO với connection có sẵn để dùng chung transaction hoặc phục vụ
+     * kiểm thử.
+     */
     public MemberDAOImpl(Connection connection) {
         super(connection);
     }
 
+    /**
+     * Trả về connection được truyền vào DAO hoặc tự mở connection mới từ
+     * DBContext.
+     */
     private Connection getActiveConnection() throws SQLException {
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * Chuyển dữ liệu ResultSet của bảng Members và Users thành đối tượng Member.
+     */
     private Member mapResultSetToMember(ResultSet rs) throws SQLException {
         Member m = new Member();
         m.setMemberId(rs.getInt("MemberID"));
@@ -63,7 +77,6 @@ public class MemberDAOImpl extends BaseDAO implements MemberDAO {
         
         m.setDeleted(rs.getBoolean("IsDeleted"));
         
-        // Map related user info if it exists in the result set
         try {
             User u = new User();
             u.setUserId(rs.getInt("UserID"));
@@ -72,12 +85,15 @@ public class MemberDAOImpl extends BaseDAO implements MemberDAO {
             u.setPhoneNumber(rs.getString("Phone"));
             m.setUserDetails(u);
         } catch (SQLException ex) {
-            // Joined columns might not be present in basic query, ignore
         }
         
         return m;
     }
 
+    /**
+     * SQL lấy một hội viên theo MemberID, join Users để kèm email, tên và số
+     * điện thoại.
+     */
     @Override
     public Member findById(int memberId) throws SQLException {
         Connection conn = null;
@@ -102,6 +118,10 @@ public class MemberDAOImpl extends BaseDAO implements MemberDAO {
         return m;
     }
 
+    /**
+     * SQL lấy một hội viên theo UserID, join Users để phục vụ màn hình dashboard
+     * hoặc portal của hội viên.
+     */
     @Override
     public Member findByUserId(int userId) throws SQLException {
         Connection conn = null;
@@ -126,6 +146,10 @@ public class MemberDAOImpl extends BaseDAO implements MemberDAO {
         return m;
     }
 
+    /**
+     * SQL lấy toàn bộ hội viên và user chưa bị xóa để dùng cho các danh sách cần
+     * hội viên active trong hệ thống.
+     */
     @Override
     public List<Member> findAllActive() throws SQLException {
         Connection conn = null;

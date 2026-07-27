@@ -9,14 +9,26 @@ import java.util.Map;
 
 public class GymDAO {
 
+    /**
+     * Lấy toàn bộ danh sách hội viên bằng cách gọi lại hàm lấy hội viên không
+     * có bộ lọc.
+     */
     public List<Map<String, String>> getAllMembers() {
         return getMembers(null, null);
     }
 
+    /**
+     * Lấy danh sách hội viên theo từ khóa và loại gói mà không giới hạn phân
+     * trang.
+     */
     public List<Map<String, String>> getMembers(String keyword, String memberType) {
         return getMembers(keyword, memberType, 0, Integer.MAX_VALUE);
     }
 
+    /**
+     * SQL đếm số hội viên từ Users, Members, MemberPackages và GymPackages theo
+     * từ khóa/loại gói để tính phân trang cho màn hình quản lý hội viên.
+     */
     public int getMembersCount(String keyword, String memberType) {
         String sql = """
                 SELECT COUNT(*) FROM (
@@ -58,10 +70,13 @@ public class GymDAO {
         return 0;
     }
 
+    /**
+     * SQL lấy danh sách hội viên từ Users và Members, kèm gói tập active mới
+     * nhất nếu có, rồi áp dụng tìm kiếm, lọc loại gói và phân trang.
+     */
     public List<Map<String, String>> getMembers(String keyword, String memberType, int offset, int limit) {
         List<Map<String, String>> list = new ArrayList<>();
         
-        // When offset is 0 and limit is Integer.MAX_VALUE, we can skip the OFFSET/FETCH NEXT to avoid SQL syntax issue or pagination overhead
         boolean usePagination = (limit != Integer.MAX_VALUE);
         
         String sql = """
@@ -123,13 +138,16 @@ public class GymDAO {
         return list;
     }
 
+    /**
+     * SQL tạo hội viên mới theo transaction: kiểm tra trùng Users, thêm Users,
+     * thêm Members, gán role Member và tạo MemberPackages nếu chọn được gói tập.
+     */
     public boolean addMember(String fullName, String email, String phone, String membershipType) {
         Connection conn = null;
         try {
             conn = DBContext.getConnection();
             conn.setAutoCommit(false);
 
-            // Defensive check for duplicate email
             String sqlCheckEmail = "SELECT COUNT(*) FROM [dbo].[Users] WHERE Email = ? AND IsDeleted = 0";
             try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckEmail)) {
                 psCheck.setString(1, email);
@@ -140,7 +158,6 @@ public class GymDAO {
                 }
             }
 
-            // Defensive check for duplicate phone
             if (phone != null && !phone.trim().isEmpty()) {
                 String sqlCheckPhone = "SELECT COUNT(*) FROM [dbo].[Users] WHERE Phone = ? AND IsDeleted = 0";
                 try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckPhone)) {
@@ -252,6 +269,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL xóa mềm hội viên bằng cách cập nhật IsDeleted ở Members và Users sau
+     * khi kiểm tra hội viên không còn gói tập active.
+     */
     public boolean deleteMember(int userId) {
         Connection conn = null;
         try {
@@ -290,6 +311,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL lấy hồ sơ hội viên từ Users/Members và gói tập mới nhất từ
+     * MemberPackages/GymPackages để hiển thị trang portal.
+     */
     public Map<String, String> getMemberProfile(int userId) {
         Map<String, String> profile = new HashMap<>();
         String sql = """
@@ -342,6 +367,10 @@ public class GymDAO {
         return profile;
     }
 
+    /**
+     * SQL lấy các gói dịch vụ của hội viên từ MemberPackages, GymPackages và hóa
+     * đơn liên quan để hiển thị lịch sử dịch vụ trong portal.
+     */
     public List<Map<String, String>> getMemberServices(int userId) {
         List<Map<String, String>> services = new ArrayList<>();
         String sql = """
@@ -374,6 +403,10 @@ public class GymDAO {
         return services;
     }
 
+    /**
+     * SQL cập nhật trạng thái tài khoản trong Users; khi khóa tài khoản thì kiểm
+     * tra trước hội viên không còn gói tập active.
+     */
     public boolean updateMemberStatus(int userId, String status) {
         if (!"Active".equals(status) && !"Locked".equals(status) && !"Inactive".equals(status)) {
             return false;
@@ -399,6 +432,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * Kiểm tra hội viên có gói tập active còn hạn hay không bằng connection mới
+     * từ DBContext.
+     */
     public boolean hasActiveMemberGymPackage(int userId) {
         try (Connection conn = DBContext.getConnection()) {
             return hasActiveMemberGymPackage(conn, userId);
@@ -408,6 +445,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL kiểm tra Members và MemberPackages để xác định hội viên có gói tập
+     * active còn hạn tại ngày hiện tại hay không.
+     */
     private boolean hasActiveMemberGymPackage(Connection conn, int userId) throws SQLException {
         String sql = """
                 SELECT 1
@@ -427,6 +468,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL thêm thông báo chung vào Notifications cho một vai trò hoặc toàn bộ
+     * người dùng.
+     */
     public boolean createNotification(int createdByUserId, String title, String content, String targetRole) {
         String sql = """
                 INSERT INTO [dbo].[Notifications]
@@ -446,6 +491,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL tạo thông báo gửi riêng cho một hội viên: thêm Notifications và thêm
+     * dòng NotificationRecipients trong cùng transaction.
+     */
     public boolean createNotificationForUser(int createdByUserId, String title, String content, int recipientUserId) {
         Connection conn = null;
         try {
@@ -514,6 +563,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL kiểm tra userId có tồn tại trong Users và Members chưa bị xóa trước
+     * khi gửi thông báo riêng.
+     */
     private boolean isActiveMemberUser(Connection conn, int userId) throws SQLException {
         String sql = """
                 SELECT 1
@@ -531,6 +584,10 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL lấy các thông báo còn hiệu lực mà người dùng được phép xem theo role,
+     * TargetRole hoặc NotificationRecipients, kèm trạng thái đã đọc.
+     */
     public List<Map<String, String>> getNotifications(int userId) {
         List<Map<String, String>> list = new ArrayList<>();
         String role = getUserRole(userId);
@@ -572,18 +629,32 @@ public class GymDAO {
         return list;
     }
 
+    /**
+     * Lấy chi tiết thông báo theo mã thông báo với phạm vi mặc định là Member.
+     */
     public Map<String, String> getNotificationById(int notificationId) {
         return getNotificationById(notificationId, "Member");
     }
 
+    /**
+     * Lấy chi tiết thông báo theo mã thông báo và userId, tự xác định role của
+     * người dùng để kiểm tra quyền xem.
+     */
     public Map<String, String> getNotificationById(int notificationId, int userId) {
         return getNotificationById(notificationId, userId, getUserRole(userId));
     }
 
+    /**
+     * Lấy chi tiết thông báo theo mã thông báo và role mục tiêu.
+     */
     private Map<String, String> getNotificationById(int notificationId, String targetRole) {
         return getNotificationById(notificationId, 0, targetRole);
     }
 
+    /**
+     * SQL lấy chi tiết một thông báo còn hiệu lực nếu người dùng có quyền xem
+     * qua TargetRole, All hoặc NotificationRecipients.
+     */
     private Map<String, String> getNotificationById(int notificationId, int userId, String targetRole) {
         String sql = """
                 SELECT n.NotificationID, n.Title, n.Content, n.CreatedDate, n.PublishDate, n.NotificationImageURL
@@ -622,6 +693,10 @@ public class GymDAO {
         return null;
     }
 
+    /**
+     * SQL MERGE NotificationRecipients để đánh dấu một thông báo là đã đọc; nếu
+     * chưa có dòng recipient thì tạo mới dòng đã đọc.
+     */
     public void markAsRead(int notificationId, int userId) {
         String sql = """
                 MERGE [dbo].[NotificationRecipients] AS target
@@ -647,22 +722,24 @@ public class GymDAO {
     }
 
     /**
-     * Marks every notification that is currently visible to the user as read.
-     * Visibility is checked in the query so a client cannot mark notifications
-     * intended for a different role.
+     * Đánh dấu toàn bộ thông báo đang hiển thị với người dùng là đã đọc.
      */
     public boolean markAllNotificationsAsRead(int userId) {
         return markVisibleNotificationsAsRead(userId, null);
     }
 
     /**
-     * Marks only the selected notifications as read, provided they are visible
-     * to the current user.
+     * Đánh dấu một nhóm thông báo được chọn là đã đọc nếu người dùng có quyền
+     * xem các thông báo đó.
      */
     public boolean markNotificationsAsRead(int userId, List<Integer> notificationIds) {
         return markVisibleNotificationsAsRead(userId, notificationIds);
     }
 
+    /**
+     * SQL MERGE các thông báo còn hiệu lực và được phép xem vào
+     * NotificationRecipients để cập nhật trạng thái đã đọc hàng loạt.
+     */
     private boolean markVisibleNotificationsAsRead(int userId, List<Integer> notificationIds) {
         List<Integer> validIds = new ArrayList<>();
         if (notificationIds != null) {
@@ -732,6 +809,9 @@ public class GymDAO {
         }
     }
 
+    /**
+     * SQL lấy role ưu tiên cao nhất của người dùng từ UserRoles và Roles.
+     */
     private String getUserRole(int userId) {
         String sql = """
                 SELECT TOP 1 r.RoleName
@@ -754,6 +834,9 @@ public class GymDAO {
         return "Member";
     }
 
+    /**
+     * SQL tìm RoleID theo RoleName để gán role cho hội viên mới.
+     */
     private Integer findRoleId(Connection conn, String roleName) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT RoleID FROM [dbo].[Roles] WHERE RoleName = ? AND IsDeleted = 0")) {
@@ -766,6 +849,9 @@ public class GymDAO {
 
 
 
+    /**
+     * SQL tìm MemberID theo UserID sau khi tạo hội viên để liên kết gói tập.
+     */
     private int findMemberId(Connection conn, int userId) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("SELECT MemberID FROM [dbo].[Members] WHERE UserID = ?")) {
             ps.setInt(1, userId);
@@ -778,6 +864,9 @@ public class GymDAO {
         throw new SQLException("Member not found for user " + userId);
     }
 
+    /**
+     * Chuẩn hóa chuỗi null hoặc rỗng thành null, ngược lại trả về chuỗi đã trim.
+     */
     private String blankToNull(String value) {
         if (value == null || value.trim().isEmpty()) {
             return null;
@@ -785,14 +874,23 @@ public class GymDAO {
         return value.trim();
     }
 
+    /**
+     * Chuẩn hóa chuỗi null thành chuỗi rỗng để tránh lỗi khi đưa dữ liệu lên JSP.
+     */
     private String safe(String value) {
         return value == null ? "" : value;
     }
 
+    /**
+     * Chọn chuỗi đầu tiên nếu có giá trị, nếu không thì dùng chuỗi dự phòng.
+     */
     private String coalesce(String first, String second) {
         return first == null || first.isBlank() ? safe(second) : first;
     }
 
+    /**
+     * Trả về hash mật khẩu mặc định dùng khi Staff tạo tài khoản hội viên mới.
+     */
     private String defaultPasswordHash() {
         return "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
     }

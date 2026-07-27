@@ -21,32 +21,35 @@ import java.util.List;
 
 public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendanceDAO {
 
+    /**
+     * Khởi tạo DAO với cơ chế tự mở connection từ DBContext.
+     */
     public StaffPTAttendanceDAOImpl() {
         super();
     }
 
+    /**
+     * Khởi tạo DAO với connection có sẵn để dùng chung transaction hoặc phục vụ
+     * kiểm thử.
+     */
     public StaffPTAttendanceDAOImpl(Connection connection) {
         super(connection);
     }
 
+    /**
+     * Trả về connection đang được truyền vào DAO hoặc tự mở connection mới từ
+     * DBContext.
+     */
     private Connection getActiveConnection() throws SQLException {
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
     /**
-     * Kiểm tra xem nhân viên/PT đã check-in trong ca làm việc của ngày đó chưa.
-     * Luồng nghiệp vụ:
-     * - [BR-CONS-62]: Mỗi Staff/PT chỉ có tối đa 1 check-in record mỗi shift block trong một ngày.
-     * 
-     * @param userId ID nhân viên
-     * @param shiftBlock Ca làm việc
-     * @param date Ngày
-     * @return true nếu đã check-in
-     * @throws SQLException 
+     * SQL đếm bản ghi trong StaffPTAttendance để biết Staff/PT đã check-in ca
+     * và ngày được chọn hay chưa.
      */
     @Override
     public boolean existsCheckinForShift(int userId, String shiftBlock, LocalDate date) throws SQLException {
-        // SQL: Đếm số record Active, chưa bị xóa cho user trong ca và ngày đó
         String sql = """
                 SELECT COUNT(*) AS Total
                 FROM StaffPTAttendance
@@ -72,6 +75,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * SQL thêm bản ghi StaffPTAttendance mới, lấy giờ vào bằng SYSDATETIME() của
+     * SQL Server và trả về khóa tự tăng vừa tạo.
+     */
     @Override
     public int create(StaffPTAttendance attendance) throws SQLException {
         String sql = """
@@ -104,17 +111,11 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
     }
 
     /**
-     * Checkout điểm danh.
-     * Luồng nghiệp vụ: Cập nhật giờ checkout cho record đang Active.
-     * 
-     * @param attendanceId ID điểm danh
-     * @param checkedBy ID người checkout (Staff/Admin)
-     * @return true nếu checkout thành công
-     * @throws SQLException 
+     * SQL cập nhật CheckedOutAt cho bản ghi StaffPTAttendance active chưa có giờ
+     * ra, dùng khi Staff/PT kết thúc ca.
      */
     @Override
     public boolean checkout(int attendanceId, int checkedBy) throws SQLException {
-        // SQL: Cập nhật CheckedOutAt = SYSDATETIME() cho các record chưa checkout
         String sql = """
                 UPDATE StaffPTAttendance
                 SET CheckedOutAt = SYSDATETIME(),
@@ -138,6 +139,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * SQL xóa CheckedOutAt của bản ghi StaffPTAttendance active đã có giờ ra,
+     * dùng để hoàn tác thao tác check-out.
+     */
     @Override
     public boolean undoCheckout(int attendanceId, int updatedBy) throws SQLException {
         String sql = """
@@ -163,6 +168,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * SQL hủy mềm bản ghi StaffPTAttendance bằng cách chuyển Status sang
+     * Cancelled và đặt IsDeleted = 1.
+     */
     @Override
     public boolean cancel(int attendanceId, int cancelledBy) throws SQLException {
         String sql = """
@@ -188,6 +197,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * SQL lấy toàn bộ Staff/PT active từ Users/UserRoles/Roles và LEFT JOIN
+     * StaffPTAttendance để biết từng người đã check-in trong ca/ngày đó chưa.
+     */
     @Override
     public List<StaffPTAttendance> listUsersWithCheckinStatus(String shiftBlock, LocalDate date, String keyword) throws SQLException {
         String sql = """
@@ -244,6 +257,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         return results;
     }
 
+    /**
+     * SQL lấy lịch sử StaffPTAttendance theo bộ lọc người dùng, vai trò, ca,
+     * khoảng ngày, từ khóa và phân trang bằng OFFSET/FETCH.
+     */
     @Override
     public List<StaffPTAttendance> searchHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate,
             String keyword, int offset, int limit) throws SQLException {
@@ -297,6 +314,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         return results;
     }
 
+    /**
+     * SQL đếm số bản ghi StaffPTAttendance thỏa bộ lọc để tính tổng số trang
+     * lịch sử.
+     */
     @Override
     public int countHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword)
             throws SQLException {
@@ -323,6 +344,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * SQL lấy chi tiết một bản ghi StaffPTAttendance theo AttendanceID kèm tên
+     * người được điểm danh và người thực hiện điểm danh.
+     */
     @Override
     public StaffPTAttendance findById(int attendanceId) throws SQLException {
         String sql = """
@@ -352,6 +377,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * Bổ sung các điều kiện WHERE động và danh sách tham số tương ứng cho các
+     * truy vấn lịch sử điểm danh.
+     */
     private void appendFilters(StringBuilder sql, List<Object> params,
             int userId, String userRole, String shiftBlock,
             LocalDate fromDate, LocalDate toDate,
@@ -384,12 +413,19 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         }
     }
 
+    /**
+     * Gán lần lượt các tham số đã gom vào PreparedStatement.
+     */
     private void bindParams(PreparedStatement ps, List<Object> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
             ps.setObject(i + 1, params.get(i));
         }
     }
 
+    /**
+     * Chuyển một dòng ResultSet của danh sách trạng thái check-in thành đối
+     * tượng StaffPTAttendance.
+     */
     private StaffPTAttendance mapStatusRow(ResultSet rs) throws SQLException {
         StaffPTAttendance a = new StaffPTAttendance();
         a.setAttendanceId(rs.getInt("AttendanceID"));
@@ -436,6 +472,10 @@ public class StaffPTAttendanceDAOImpl extends BaseDAO implements StaffPTAttendan
         return a;
     }
 
+    /**
+     * Chuyển một dòng ResultSet của lịch sử điểm danh thành đối tượng
+     * StaffPTAttendance đầy đủ thông tin hiển thị.
+     */
     private StaffPTAttendance mapHistoryRow(ResultSet rs) throws SQLException {
         StaffPTAttendance a = new StaffPTAttendance();
         a.setAttendanceId(rs.getInt("AttendanceID"));
