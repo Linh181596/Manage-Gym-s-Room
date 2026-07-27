@@ -67,6 +67,20 @@
                             </div>
                         </div>
                         <div class="col-12">
+                            <div class="p-3 bg-white rounded border">
+                                <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Thời gian hiệu lực (Gói Gym)</small>
+                                <%
+                                    String pkgStart = profile.get("packageStartDate");
+                                    String pkgEnd = profile.get("packageEndDate");
+                                    if (pkgStart != null && !pkgStart.isEmpty()) {
+                                %>
+                                <span class="fw-bold text-success fs-6"><%= pkgStart %> đến <%= pkgEnd %></span>
+                                <%  } else { %>
+                                <span class="fw-bold text-muted fs-6">Không có gói khả dụng</span>
+                                <%  } %>
+                            </div>
+                        </div>
+                        <div class="col-12">
                             <div class="p-3 bg-white rounded border h-100">
                                 <small class="text-muted fw-semibold text-uppercase d-block" style="font-size: 11px;">Địa chỉ Email</small>
                                 <span class="fw-semibold text-dark fs-6 text-break"><%= profile.get("email") %></span>
@@ -114,25 +128,30 @@
                         <table class="table text-start align-middle table-bordered table-hover mb-0">
                             <thead>
                                 <tr class="text-dark bg-white">
-                                    <th scope="col">Tên Gói Dịch Vụ Gym</th>
-                                    <th scope="col">Ngày Kích Hoạt</th>
-                                    <th scope="col">Ngày Hết Hạn</th>
-                                    <th scope="col">Trạng Thái Gói</th>
+                                    <th scope="col">Tên Dịch Vụ</th>
+                                    <th scope="col">Loại Giao Dịch</th>
+                                    <th scope="col">Ngày Giao Dịch</th>
+                                    <th scope="col">Số Tiền</th>
+                                    <th scope="col">Trạng Thái</th>
                                     <th scope="col" class="text-center">Hóa đơn</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% 
-                                    java.time.LocalDate today = java.time.LocalDate.now();
                                     for (Map<String, String> service : services) { 
+                                        String serviceName = service.get("serviceName");
+                                        String transType = service.get("transactionType");
+                                        String transDate = service.get("transactionDate");
+                                        if (transDate != null && transDate.length() > 19) {
+                                            transDate = transDate.substring(0, 19);
+                                        }
+                                        String amountStr = service.get("amount");
+                                        if (amountStr != null && amountStr.endsWith(".00")) {
+                                            amountStr = amountStr.substring(0, amountStr.length() - 3);
+                                        }
                                         String sStatus = service.get("status");
-                                        String startStr = service.get("startDate");
-                                        String endStr = service.get("endDate");
                                         
-                                        java.time.LocalDate startDate = java.time.LocalDate.parse(startStr);
-                                        java.time.LocalDate endDate = java.time.LocalDate.parse(endStr);
-                                        
-                                        String statusText = "Hết hạn / Hủy";
+                                        String statusText = "Đã hủy";
                                         String badgeClass = "bg-secondary";
                                         String iconClass = "fa-times-circle";
                                         
@@ -140,30 +159,17 @@
                                             statusText = "Chờ thanh toán";
                                             badgeClass = "bg-warning text-dark";
                                             iconClass = "fa-hourglass-half";
-                                        } else if ("Active".equalsIgnoreCase(sStatus)) {
-                                            if (today.isBefore(startDate)) {
-                                                statusText = "Chờ kích hoạt";
-                                                badgeClass = "bg-info text-white";
-                                                iconClass = "fa-clock";
-                                            } else if (today.isAfter(endDate)) {
-                                                statusText = "Hết hạn";
-                                                badgeClass = "bg-secondary";
-                                                iconClass = "fa-times-circle";
-                                            } else {
-                                                statusText = "Còn hạn dùng";
-                                                badgeClass = "bg-success";
-                                                iconClass = "fa-check-circle";
-                                            }
-                                        } else if ("Locked".equalsIgnoreCase(sStatus) || "Inactive".equalsIgnoreCase(sStatus)) {
-                                            statusText = "Bị hủy / Khóa";
-                                            badgeClass = "bg-danger";
-                                            iconClass = "fa-ban";
+                                        } else if ("Paid".equalsIgnoreCase(sStatus) || "Active".equalsIgnoreCase(sStatus)) {
+                                            statusText = "Thành công";
+                                            badgeClass = "bg-success";
+                                            iconClass = "fa-check-circle";
                                         }
                                 %>
                                     <tr>
-                                        <td><strong><%= service.get("serviceName") %></strong></td>
-                                        <td class="text-muted small"><%= service.get("startDate") %></td>
-                                        <td class="text-dark fw-bold small"><%= service.get("endDate") %></td>
+                                        <td><strong><%= serviceName %></strong></td>
+                                        <td class="text-muted small"><%= transType %></td>
+                                        <td class="text-muted small"><%= transDate %></td>
+                                        <td class="text-dark fw-bold small"><%= amountStr %> VNĐ</td>
                                         <td>
                                             <span class="badge <%= badgeClass %>"><i class="fa <%= iconClass %> me-1"></i><%= statusText %></span>
                                         </td>

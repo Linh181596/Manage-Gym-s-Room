@@ -204,9 +204,11 @@
                 const duration = selectedOpt.getAttribute("data-duration");
                 const desc = selectedOpt.getAttribute("data-desc") || "Không có mô tả chi tiết.";
 
+                const today = new Date().toLocaleDateString('vi-VN');
                 summaryPackage.innerHTML = `
                     <div class="fw-bold text-dark fs-6">\${name}</div>
-                    <div class="small text-primary fw-semibold"><i class="fa fa-calendar-alt me-1"></i> Thời hạn: \${duration} Tháng</div>
+                    <div class="small text-success fw-bold mt-2"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu: Hôm nay (\${today})</div>
+                    <div class="small text-primary fw-semibold"><i class="fa fa-hourglass-half me-1"></i> Thời hạn: \${duration} Tháng</div>
                     <div class="small text-dark fw-bold mt-1"><i class="fa fa-tag me-1"></i> Giá tiền: \${formatVND(price)}</div>
                     <p class="small text-muted mt-2 mb-0 italic" style="font-size: 0.85rem;">\${desc}</p>
                 `;
