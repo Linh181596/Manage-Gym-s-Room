@@ -86,7 +86,7 @@
                             <input type="text" class="form-control" value="${issue.equipmentCode} - ${issue.equipmentName}" readonly>
                         </c:when>
                         <c:otherwise>
-                            <select class="form-select" name="equipmentId" required>
+                            <select class="form-select" name="equipmentId" required data-required-message="Vui lòng chọn thiết bị gặp sự cố.">
                                 <option value="">Chọn thiết bị</option>
                                 <c:forEach var="equip" items="${equipments}">
                                     <c:choose>
@@ -120,12 +120,17 @@
                 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Mô tả chi tiết sự cố <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="description" rows="4" required placeholder="Mô tả cụ thể biểu hiện hỏng hóc hoặc lý do cần sửa chữa...">${issue.description}</textarea>
+                    <textarea class="form-control" name="description" rows="4" required
+                              data-required-message="Vui lòng nhập mô tả chi tiết sự cố."
+                              placeholder="Mô tả cụ thể biểu hiện hỏng hóc hoặc lý do cần sửa chữa...">${issue.description}</textarea>
                 </div>
                 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Ảnh chụp hiện trạng</label>
-                    <input type="file" class="form-control" name="issueImageFile" accept="image/*">
+                    <input type="file" class="form-control" name="issueImageFile"
+                           accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+                           data-allowed-extensions="jpg,jpeg,png,gif,webp"
+                           data-file-message="Chỉ cho phép tải lên ảnh định dạng jpg, jpeg, png, gif hoặc webp.">
                     
                     <c:if test="${not empty issue.issueImageUrl}">
                         <div class="mt-3">
@@ -156,5 +161,6 @@
     </div>
 </div>
 
+<script src="${pageContext.request.contextPath}/js/vietnamese-validation.js"></script>
 <jsp:include page="../common/dashboard_footer.jsp" />
 

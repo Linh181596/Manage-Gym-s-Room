@@ -42,11 +42,12 @@
                     <div class="col-md-8">
                         <label class="form-label fw-bold" for="title">Tiêu đề *</label>
                         <input id="title" name="title" class="form-control" maxlength="200" required
+                               data-required-message="Vui lòng nhập tiêu đề."
                                value="${fn:escapeXml(content.title)}" placeholder="Nhập tiêu đề hiển thị">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold" for="contentType">Loại nội dung *</label>
-                        <select id="contentType" name="contentType" class="form-select" required>
+                        <select id="contentType" name="contentType" class="form-select" required data-required-message="Vui lòng chọn loại nội dung.">
                             <option value="BLOG" ${content.contentType == 'BLOG' ? 'selected' : ''}>Blog</option>
                             <option value="POLICY" ${content.contentType == 'POLICY' ? 'selected' : ''}>Chính sách</option>
                         </select>
@@ -54,7 +55,9 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-bold" for="category">Danh mục *</label>
-                        <select id="category" name="category" class="form-select" required data-current="${fn:escapeXml(content.category)}">
+                        <select id="category" name="category" class="form-select" required
+                                data-required-message="Vui lòng chọn danh mục."
+                                data-current="${fn:escapeXml(content.category)}">
                             <option value="">Chọn danh mục</option>
                         </select>
                     </div>
@@ -78,12 +81,14 @@
                     <div class="col-12">
                         <label class="form-label fw-bold" for="summary">Mô tả ngắn *</label>
                         <textarea id="summary" name="summary" class="form-control" rows="3" maxlength="500"
-                                  required placeholder="Tóm tắt nội dung trong 1-2 câu"><c:out value="${content.summary}" /></textarea>
+                                  required data-required-message="Vui lòng nhập mô tả ngắn."
+                                  placeholder="Tóm tắt nội dung trong 1-2 câu"><c:out value="${content.summary}" /></textarea>
                     </div>
 
                     <div class="col-12">
                         <label class="form-label fw-bold" for="body">Nội dung chi tiết *</label>
                         <textarea id="body" name="body" class="form-control" rows="13" required
+                                  data-required-message="Vui lòng nhập nội dung chi tiết."
                                   placeholder="Nhập nội dung chi tiết hiển thị cho người dùng"><c:out value="${content.body}" /></textarea>
                     </div>
                 </div>
@@ -113,7 +118,9 @@
                 </div>
                 <label for="thumbnailFile" class="form-label fw-bold">Chọn ảnh từ máy</label>
                 <input id="thumbnailFile" name="thumbnailFile" type="file" class="form-control"
-                       accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp">
+                       accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+                       data-allowed-extensions="jpg,jpeg,png,gif,webp"
+                       data-file-message="Ảnh đại diện chỉ hỗ trợ jpg, jpeg, png, gif hoặc webp.">
             </div>
 
             <div class="bg-light rounded p-4 shadow-sm">
@@ -132,6 +139,7 @@
     </form>
 </div>
 
+<script src="${pageContext.request.contextPath}/js/vietnamese-validation.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const typeSelect = document.getElementById("contentType");

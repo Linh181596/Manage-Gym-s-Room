@@ -134,19 +134,19 @@ public class PublicContentServiceImpl implements PublicContentService {
      */
     private void validateContent(PublicContent content) {
         if (content == null) {
-            throw new IllegalArgumentException("Noi dung khong hop le.");
+            throw new IllegalArgumentException("Nội dung không hợp lệ.");
         }
         if (isBlank(content.getTitle())) {
-            throw new IllegalArgumentException("Vui long nhap tieu de.");
+            throw new IllegalArgumentException("Vui lòng nhập tiêu đề.");
         }
         if (isBlank(content.getSummary())) {
-            throw new IllegalArgumentException("Vui long nhap mo ta ngan.");
+            throw new IllegalArgumentException("Vui lòng nhập mô tả ngắn.");
         }
         if (isBlank(content.getBody())) {
-            throw new IllegalArgumentException("Vui long nhap noi dung chi tiet.");
+            throw new IllegalArgumentException("Vui lòng nhập nội dung chi tiết.");
         }
         if (content.getContentType() == null) {
-            throw new IllegalArgumentException("Vui long chon loai noi dung.");
+            throw new IllegalArgumentException("Vui lòng chọn loại nội dung.");
         }
         if (content.getStatus() == null) {
             content.setStatus(ContentStatus.Draft);
@@ -161,7 +161,7 @@ public class PublicContentServiceImpl implements PublicContentService {
      */
     private void normalizePermissions(PublicContent content, User currentUser) {
         if (currentUser == null || (currentUser.getRole() != User.Role.Admin && currentUser.getRole() != User.Role.Staff)) {
-            throw new SecurityException("Ban khong co quyen quan ly noi dung.");
+            throw new SecurityException("Bạn không có quyền quản lý nội dung.");
         }
         if (currentUser.getRole() == User.Role.Staff) {
             content.setStatus(ContentStatus.Draft);
@@ -173,7 +173,7 @@ public class PublicContentServiceImpl implements PublicContentService {
      */
     private void requireAdmin(User currentUser) {
         if (currentUser == null || currentUser.getRole() != User.Role.Admin) {
-            throw new SecurityException("Chi Admin moi duoc xoa noi dung.");
+            throw new SecurityException("Chỉ Admin mới được xóa nội dung.");
         }
     }
 
