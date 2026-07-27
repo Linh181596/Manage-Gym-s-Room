@@ -50,6 +50,8 @@ public class AddPersonalTrainerController extends HttpServlet {
     private final UserService userService = new UserServiceImpl();
     private final PersonalTrainerService personalTrainerService = new PersonalTrainerServiceImpl();
 
+    //Flow: Add PT Account.
+    //Step 1. Call doGet() foward to add-personal-trainer.jsp to show form.
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -66,6 +68,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         request.getRequestDispatcher(ADD_PT_VIEW).forward(request, response);
     }
 
+    //Step 3: Get input data from form, validate and save to database. If success, forward to result page.
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -90,6 +93,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         String careerStartDateRaw = trimToNull(request.getParameter("careerStartDate"));
         String description = trimToNull(request.getParameter("description"));
 
+        //Step 4: Validate input, if error, forward to form with error message and data has typed.
         if (description != null && countWords(description) > 500) {
             forwardBackWithError(request, response, "Mô tả giới thiệu bản thân không được vượt quá 500 từ.");
             return;
@@ -138,6 +142,7 @@ public class AddPersonalTrainerController extends HttpServlet {
             return;
         }
 
+        //Step 5: Check not duplicate i4
         try {
             if (userService.getUserByEmail(email) != null) {
                 forwardBackWithError(request, response, "Email này đã được sử dụng bởi tài khoản khác.");
@@ -158,6 +163,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         String certificateFileName;
         String avatarPath;
 
+        //Step 6: Save certificate and avatar
         try {
             UploadedFile certificateFile = saveUploadedFile(
                     request,
@@ -183,6 +189,7 @@ public class AddPersonalTrainerController extends HttpServlet {
             return;
         }
 
+        //Step 7: Create User account
         String temporaryPassword = PasswordUtils.generateTemporaryPassword(10);
         String passwordHash = PasswordUtils.hashPassword(temporaryPassword);
 
@@ -214,6 +221,7 @@ public class AddPersonalTrainerController extends HttpServlet {
             return;
         }
 
+        //Step 8: Create Personal Trainer profile
         PersonalTrainer trainer = new PersonalTrainer();
         trainer.setUserId(newUser.getUserId());
         trainer.setFullName(fullName);
@@ -241,6 +249,7 @@ public class AddPersonalTrainerController extends HttpServlet {
         request.setAttribute("temporaryPassword", temporaryPassword);
         request.setAttribute("mustChangePassword", true);
 
+        //Step 9: Forward to pt-account-creation-result.jsp
         request.getRequestDispatcher(RESULT_VIEW).forward(request, response);
     }
 
@@ -303,6 +312,7 @@ public class AddPersonalTrainerController extends HttpServlet {
                     + String.join(", ", allowedExtensions).toUpperCase() + ".");
         }
 
+        //Avoid overwrite file name -> + timeMillis
         String uniqueFileName = System.currentTimeMillis() + "_" + originalFileName;
         String realUploadPath = getServletContext().getRealPath("/") + uploadDirectory;
 
