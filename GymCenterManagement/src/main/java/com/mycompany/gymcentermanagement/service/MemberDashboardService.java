@@ -15,9 +15,6 @@ import java.sql.SQLException;
 public interface MemberDashboardService {
     /**
      * Tổng hợp toàn bộ dữ liệu cần thiết cho dashboard hội viên.
-     * @param memberId Mã hội viên
-     * @param userId Mã người dùng (dùng để đếm thông báo)
-     * @return DTO chứa dữ liệu đã được xử lý và định dạng JSON
      */
     MemberDashboardData getMemberDashboardData(int memberId, int userId) throws SQLException;
 }
