@@ -25,6 +25,9 @@ public class MaintenanceScheduleDAO {
             LEFT JOIN EquipmentIssues i ON i.IssueID = ms.IssueID
             """;
 
+    /**
+     * SQL trong hàm này dùng để tìm lịch bảo trì theo bộ lọc, kèm thông tin thiết bị và sự cố liên quan.
+     */
     public List<MaintenanceSchedule> search(String keyword, String status, Integer equipmentId,
             String maintenanceType, int offset, int limit) throws SQLException {
         StringBuilder sql = new StringBuilder(SELECT_WITH_RELATIONS);
@@ -49,6 +52,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm số lịch bảo trì thỏa bộ lọc cho phân trang.
+     */
     public int countSearch(String keyword, String status, Integer equipmentId,
             String maintenanceType) throws SQLException {
         StringBuilder sql = new StringBuilder("""
@@ -69,6 +75,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm số lịch bảo trì theo từng trạng thái cho thống kê.
+     */
     public Map<String, Integer> countByStatus() throws SQLException {
         String sql = """
                 SELECT Status, COUNT(*) AS Total
@@ -87,12 +96,18 @@ public class MaintenanceScheduleDAO {
         return counts;
     }
 
+    /**
+     * SQL trong hàm này dùng để mở kết nối và lấy chi tiết lịch bảo trì theo id.
+     */
     public MaintenanceSchedule findById(int id) throws SQLException {
         try (Connection connection = DBContext.getConnection()) {
             return findById(connection, id);
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy chi tiết lịch bảo trì theo id trên kết nối có sẵn.
+     */
     public MaintenanceSchedule findById(Connection connection, int id) throws SQLException {
         String sql = SELECT_WITH_RELATIONS
                 + " WHERE ms.MaintenanceScheduleID = ? AND ms.IsDeleted = 0 AND e.IsDeleted = 0";
@@ -104,6 +119,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để kiểm tra thiết bị đã có lịch bảo trì chưa hủy trong cùng ngày hay chưa.
+     */
     public boolean existsDuplicate(Connection connection, int equipmentId, Date scheduledDate,
             int excludedScheduleId) throws SQLException {
         String sql = """
@@ -123,6 +141,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để kiểm tra sự cố còn lịch bảo trì mở nào khác hay không.
+     */
     public boolean existsOpenScheduleForIssue(Connection connection, int issueId,
             int excludedScheduleId) throws SQLException {
         String sql = """
@@ -142,6 +163,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để tạo lịch bảo trì mới ở trạng thái đã lên lịch và lấy khóa chính vừa sinh.
+     */
     public int create(Connection connection, MaintenanceSchedule schedule) throws SQLException {
         String sql = """
                 INSERT INTO MaintenanceSchedules
@@ -162,6 +186,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để cập nhật thông tin kế hoạch của lịch bảo trì còn ở trạng thái đã lên lịch.
+     */
     public boolean updatePlanned(Connection connection, MaintenanceSchedule schedule) throws SQLException {
         String sql = """
                 UPDATE MaintenanceSchedules
@@ -177,6 +204,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để cập nhật trạng thái tiến độ bảo trì và người cập nhật.
+     */
     public boolean updateProgress(Connection connection, int id, String nextStatus,
             String completionNote, String updatedBy) throws SQLException {
         String sql = """
@@ -192,6 +222,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để gửi kết quả bảo trì sang trạng thái chờ duyệt, lưu ghi chú và ảnh minh chứng.
+     */
     public boolean submitForApproval(Connection connection, int id, String completionNote,
             String completionImageUrl, boolean resolveRelatedIssue, String updatedBy) throws SQLException {
         String sql = """
@@ -221,6 +254,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để duyệt lịch bảo trì chờ duyệt và chuyển sang trạng thái hoàn tất.
+     */
     public boolean approveCompletion(Connection connection, int id, String approvalNote, String updatedBy)
             throws SQLException {
         String sql = """
@@ -242,6 +278,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để từ chối kết quả bảo trì và đưa lịch về trạng thái đang thực hiện.
+     */
     public boolean rejectCompletion(Connection connection, int id, String rejectionNote, String updatedBy)
             throws SQLException {
         String sql = """
@@ -260,6 +299,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để hủy lịch bảo trì còn ở trạng thái đã lên lịch.
+     */
     public boolean cancel(Connection connection, int id, String updatedBy) throws SQLException {
         String sql = """
                 UPDATE MaintenanceSchedules
@@ -273,6 +315,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * Bổ sung điều kiện lọc động vào SQL tìm kiếm lịch bảo trì.
+     */
     private void appendFilters(StringBuilder sql, List<Object> params, String keyword,
             String status, Integer equipmentId, String maintenanceType) {
         if (keyword != null && !keyword.isBlank()) {
@@ -308,6 +353,9 @@ public class MaintenanceScheduleDAO {
         }
     }
 
+    /**
+     * Gán các trường kế hoạch bảo trì vào PreparedStatement dùng chung cho INSERT và UPDATE.
+     */
     private void fillPlannedFields(PreparedStatement statement, MaintenanceSchedule schedule) throws SQLException {
         statement.setInt(1, schedule.getEquipmentId());
         if (schedule.getIssueId() == null) {
@@ -320,12 +368,18 @@ public class MaintenanceScheduleDAO {
         statement.setString(5, schedule.getDescription());
     }
 
+    /**
+     * Gán danh sách tham số động vào PreparedStatement theo đúng thứ tự điều kiện lọc.
+     */
     private void bind(PreparedStatement statement, List<Object> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
             statement.setObject(i + 1, params.get(i));
         }
     }
 
+    /**
+     * Chuyển một dòng ResultSet thành đối tượng MaintenanceSchedule kèm thông tin thiết bị và sự cố.
+     */
     private MaintenanceSchedule mapSchedule(ResultSet resultSet) throws SQLException {
         MaintenanceSchedule schedule = new MaintenanceSchedule();
         schedule.setMaintenanceScheduleId(resultSet.getInt("MaintenanceScheduleID"));
