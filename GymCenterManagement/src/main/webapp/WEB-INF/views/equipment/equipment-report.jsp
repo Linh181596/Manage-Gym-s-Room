@@ -81,6 +81,50 @@
         </div>
     </div>
 
+    <!-- Quick Insights Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                <i class="fa fa-tools fa-3x text-warning"></i>
+                <div class="ms-3 text-end">
+                    <p class="mb-1 text-muted">Thiết bị cần xử lý</p>
+                    <h5 class="mb-1 fw-bold">${report.needsAttentionEquipment}/${report.totalEquipment}</h5>
+                    <span class="small text-muted">${report.needsAttentionRateDisplay}% bảo trì hoặc hỏng</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                <i class="fa fa-exclamation-circle fa-3x text-danger"></i>
+                <div class="ms-3 text-end">
+                    <p class="mb-1 text-muted">Sự cố đang mở</p>
+                    <h5 class="mb-1 fw-bold">${report.openIssues}</h5>
+                    <span class="small text-muted">${report.pendingIssues} chờ, ${report.inProgressIssues} đang xử lý</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                <i class="fa fa-check-circle fa-3x text-success"></i>
+                <div class="ms-3 text-end">
+                    <p class="mb-1 text-muted">Tỷ lệ khắc phục</p>
+                    <h5 class="mb-1 fw-bold">${report.resolvedIssueRateDisplay}%</h5>
+                    <span class="small text-muted">${report.resolvedIssues}/${report.totalIssues} sự cố đã xử lý</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="bg-light rounded d-flex align-items-center justify-content-between p-4 shadow-sm h-100">
+                <i class="fa fa-chart-line fa-3x text-info"></i>
+                <div class="ms-3 text-end">
+                    <p class="mb-1 text-muted">Sự cố / thiết bị</p>
+                    <h5 class="mb-1 fw-bold">${report.issuesPerEquipmentDisplay}</h5>
+                    <span class="small text-muted">Trung bình toàn hệ thống</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Charts & Analytics Section -->
     <div class="row g-4 mb-4">
         <!-- Chart 1: Issue status distribution -->
@@ -173,7 +217,6 @@
                         <th scope="col" style="width: 12%;" class="text-center">Số lần sự cố</th>
                         <th scope="col" style="width: 15%;">Cập nhật gần nhất</th>
                         <th scope="col" style="width: 13%;">Trạng thái</th>
-                        <th scope="col" style="width: 13%;">Chỉ số khả dụng</th>
                         <th scope="col" class="text-center" style="width: 10%;">Chi tiết</th>
                     </tr>
                 </thead>
@@ -184,7 +227,7 @@
                             <td><span class="fw-bold">${item.equipmentName}</span></td>
                             <td><span class="badge bg-secondary-subtle text-secondary border">${item.equipmentTypeDisplay}</span></td>
                             <td class="text-center"><span class="badge bg-danger-subtle text-danger fs-6">${item.issueCount}</span></td>
-                            <td class="small">${item.updatedDate}</td>
+                            <td class="small">${item.updatedDateDisplay}</td>
                             <td>
                                 <c:choose>
                                     <c:when test="${item.status == 'Available'}">
@@ -201,34 +244,6 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td>
-                                <c:choose>
-                                    <c:when test="${item.status == 'Available'}">
-                                        <div class="d-flex align-items-center">
-                                            <span class="me-2 small fw-bold text-success">100%</span>
-                                            <div class="progress flex-grow-1" style="height: 4px; width: 50px;">
-                                                <div class="progress-bar bg-success" style="width: 100%"></div>
-                                            </div>
-                                        </div>
-                                    </c:when>
-                                    <c:when test="${item.status == 'Maintenance'}">
-                                        <div class="d-flex align-items-center">
-                                            <span class="me-2 small fw-bold text-warning">60%</span>
-                                            <div class="progress flex-grow-1" style="height: 4px; width: 50px;">
-                                                <div class="progress-bar bg-warning" style="width: 60%"></div>
-                                            </div>
-                                        </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="d-flex align-items-center">
-                                            <span class="me-2 small fw-bold text-danger">0%</span>
-                                            <div class="progress flex-grow-1" style="height: 4px; width: 50px;">
-                                                <div class="progress-bar bg-danger" style="width: 0%"></div>
-                                            </div>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
                             <td class="text-center">
                                 <a class="btn btn-outline-primary btn-sm" href="${pageContext.request.contextPath}/staff/equipment?action=detail&id=${item.equipmentId}&from=report" title="Xem chi tiết thiết bị">
                                     <i class="fa fa-eye"></i>
@@ -238,7 +253,7 @@
                     </c:forEach>
                     <c:if test="${empty report.equipments}">
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
+                            <td colspan="7" class="text-center py-4 text-muted">
                                 <i class="fa fa-info-circle fa-2x mb-2 d-block"></i> Chưa có trang thiết bị nào được ghi nhận.
                             </td>
                         </tr>

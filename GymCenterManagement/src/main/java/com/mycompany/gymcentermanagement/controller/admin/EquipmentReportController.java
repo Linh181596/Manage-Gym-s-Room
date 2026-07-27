@@ -23,6 +23,9 @@ public class EquipmentReportController extends HttpServlet {
     private static final int DEFAULT_PAGE_SIZE = 10;
     private final EquipmentService service = new EquipmentService();
 
+    /**
+     * Xử lý yêu cầu xem báo cáo thiết bị, gồm thống kê tổng quan và danh sách thiết bị phân trang.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
