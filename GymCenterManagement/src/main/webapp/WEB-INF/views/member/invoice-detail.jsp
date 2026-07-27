@@ -9,6 +9,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="../common/dashboard_header.jsp" />
 <jsp:include page="../common/dashboard_navbar.jsp" />
 
@@ -207,7 +208,16 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <div class="fw-bold text-dark">${invoice.memberPackage.gymPackage.packageName}</div>
+                                    <div class="fw-bold text-dark">
+                                        <c:choose>
+                                            <c:when test="${fn:startsWith(invoice.createdBy, 'Transfer')}">
+                                                Chuyển nhượng - ${invoice.memberPackage.gymPackage.packageName}
+                                            </c:when>
+                                            <c:otherwise>
+                                                Đăng ký / Gia hạn - ${invoice.memberPackage.gymPackage.packageName}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
                                     <div class="small text-muted italic">${invoice.memberPackage.gymPackage.description}</div>
                                     <div class="small text-primary mt-1 fw-medium">
                                         <i class="fa fa-calendar-alt me-1"></i> Hiệu lực từ: 

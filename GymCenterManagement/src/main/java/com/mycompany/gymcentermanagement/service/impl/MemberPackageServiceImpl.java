@@ -97,9 +97,9 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             }
 
             // Kỹ thuật nối ngày (Concatenate Dates).
-            // [BR-COMP-07]: The system must automatically concatenate the date if the member registers for a package when the current one is still active.
+            // [BR-COMP-07]: The system must automatically concatenate the date if the member registers for a package when the current one is still active or pending.
             LocalDate startDate = LocalDate.now();
-            String checkActiveSql = "SELECT TOP 1 EndDate FROM MemberPackages WHERE MemberID = ? AND Status = 'Active' AND IsDeleted = 0 ORDER BY EndDate DESC";
+            String checkActiveSql = "SELECT TOP 1 EndDate FROM MemberPackages WHERE MemberID = ? AND Status IN ('Active', 'Pending') AND IsDeleted = 0 ORDER BY EndDate DESC";
             try (PreparedStatement checkStmt = conn.prepareStatement(checkActiveSql)) {
                 checkStmt.setInt(1, memberId);
                 try (ResultSet rs = checkStmt.executeQuery()) {
@@ -107,8 +107,7 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                         java.sql.Date activeEndDate = rs.getDate("EndDate");
                         if (activeEndDate != null) {
                             LocalDate latestEndDate = activeEndDate.toLocalDate();
-                            // If latest active package expires in the future, start the new one the day
-                            // after
+                            // If latest active/pending package expires in the future, start the new one the day after
                             if (latestEndDate.isAfter(LocalDate.now()) || latestEndDate.isEqual(LocalDate.now())) {
                                 startDate = latestEndDate.plusDays(1);
                             }
@@ -298,13 +297,32 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 }
             }
 
-            // Tính ngày bắt đầu cho người nhận (nối tiếp nếu người nhận đã có gói đang hoạt
-            // động)
-            MemberPackage receiverActive = mpDAO.findActiveByMemberId(receiverMemberId);
+            // Validate: Người nhận không được có hóa đơn Pending chưa thanh toán [BR-COMP-12]
+            String checkReceiverPendingSql = "SELECT TOP 1 1 FROM Invoices WHERE MemberID = ? AND Status = 'Pending' AND IsDeleted = 0";
+            try (PreparedStatement checkRcvrStmt = conn.prepareStatement(checkReceiverPendingSql)) {
+                checkRcvrStmt.setInt(1, receiverMemberId);
+                try (ResultSet rs = checkRcvrStmt.executeQuery()) {
+                    if (rs.next()) {
+                        throw new SQLException("Người nhận đang có hóa đơn chờ thanh toán. Không thể chuyển nhượng.");
+                    }
+                }
+            }
+
+            // Tính ngày bắt đầu cho người nhận (nối tiếp nếu người nhận đã có gói đang hoạt động hoặc Pending)
             LocalDate receiverStartDate = today;
-            if (receiverActive != null) {
-                if (receiverActive.getEndDate().isAfter(today) || receiverActive.getEndDate().isEqual(today)) {
-                    receiverStartDate = receiverActive.getEndDate().plusDays(1);
+            String checkActiveSql = "SELECT TOP 1 EndDate FROM MemberPackages WHERE MemberID = ? AND Status IN ('Active', 'Pending') AND IsDeleted = 0 ORDER BY EndDate DESC";
+            try (PreparedStatement checkActiveStmt = conn.prepareStatement(checkActiveSql)) {
+                checkActiveStmt.setInt(1, receiverMemberId);
+                try (ResultSet rs = checkActiveStmt.executeQuery()) {
+                    if (rs.next()) {
+                        java.sql.Date activeEndDate = rs.getDate("EndDate");
+                        if (activeEndDate != null) {
+                            LocalDate latestEndDate = activeEndDate.toLocalDate();
+                            if (latestEndDate.isAfter(today) || latestEndDate.isEqual(today)) {
+                                receiverStartDate = latestEndDate.plusDays(1);
+                            }
+                        }
+                    }
                 }
             }
             LocalDate receiverEndDate = receiverStartDate.plusDays(remainingDays);
@@ -316,8 +334,11 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             receiverPackage.setStartDate(receiverStartDate);
             receiverPackage.setEndDate(receiverEndDate);
             receiverPackage.setStatus("Pending");
-            receiverPackage.setCreatedBy(
-                    "Transfer from Member ID: " + senderPackage.getMemberId() + ". Staff ID: " + staffUserId);
+            
+            // Limit createdBy string to 50 characters to prevent truncation error
+            String pkgCreatedBy = "Transfer from ID: " + senderPackage.getMemberId() + " (Staff: " + staffUserId + ")";
+            if (pkgCreatedBy.length() > 50) pkgCreatedBy = pkgCreatedBy.substring(0, 50);
+            receiverPackage.setCreatedBy(pkgCreatedBy);
             receiverPackage.setCreatedDate(LocalDateTime.now());
 
             boolean insertPackageSuccess = mpDAO.insert(receiverPackage);
@@ -333,8 +354,10 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             pendingInvoice.setAmount(java.math.BigDecimal.valueOf(transferFee));
             pendingInvoice.setPaymentMethod("Cash");
             pendingInvoice.setStatus("Pending");
-            pendingInvoice.setCreatedBy("Transfer;SenderPackageID:" + senderPackage.getMemberPackageId() + ";StaffId:"
-                    + staffUserId + ";Note:" + note);
+            
+            // CreatedBy on Invoice is limited to 50 chars
+            String invCreatedBy = "Transfer;SenderPackageID:" + senderPackage.getMemberPackageId();
+            pendingInvoice.setCreatedBy(invCreatedBy);
             pendingInvoice.setCreatedDate(LocalDateTime.now());
 
             boolean insertInvoiceSuccess = invDAO.insert(pendingInvoice);
