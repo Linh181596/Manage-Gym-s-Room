@@ -44,11 +44,13 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         super(connection);
     }
 
+    // Lấy kết nối JDBC cho truy vấn đăng nhập; ưu tiên kết nối dùng chung nếu đang ở transaction.
     private Connection getActiveConnection() throws SQLException {
         // Use the shared connection if it exists, otherwise get a new connection.
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    // Chuyển một dòng kết quả Users/Roles thành User để Controller dùng xác thực và phân quyền.
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setUserId(rs.getInt("UserID"));
@@ -114,6 +116,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
      * @throws SQLException nếu có lỗi truy vấn CSDL
      */
     @Override
+    // Truy vấn user chưa bị xóa theo email, đồng thời lấy role, trạng thái và cờ bắt buộc đổi mật khẩu.
     public User findByEmail(String email) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -150,6 +153,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
      * @throws SQLException nếu có lỗi truy vấn CSDL
      */
     @Override
+    // Tải lại user theo ID để AuthenticationFilter xác nhận tài khoản vẫn còn Active ở mỗi request bảo vệ.
     public User findById(int userId) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -427,6 +431,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return success;
     }
 
+    /**
+     * Cập nhật trực tiếp mật khẩu đã băm và cờ bắt buộc đổi mật khẩu cho một tài khoản chưa bị xóa.
+     */
     @Override
     public boolean updatePassword(int userId, String newPasswordHash, boolean mustChangePassword) throws SQLException {
         Connection conn = null;
@@ -456,6 +463,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Đánh dấu toàn bộ token Remember Me còn hiệu lực của tài khoản là đã dùng để chặn đăng nhập lại tự động.
+     */
     @Override
     public int revokeRememberMeTokensByUserId(int userId) throws SQLException {
         Connection conn = null;
@@ -482,6 +492,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Đổi mật khẩu và đánh dấu token Remember Me là đã dùng trong cùng một transaction.
+     */
     @Override
     public boolean changePasswordAndRevokeTokens(int userId, String newPasswordHash, boolean mustChangePassword)
             throws SQLException {
@@ -548,6 +561,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Thu hồi các token reset cũ chưa dùng rồi lưu token đặt lại mật khẩu mới trong cùng một transaction.
+     */
     @Override
     public boolean savePasswordResetToken(UserToken token) throws SQLException {
         Connection conn = null;
@@ -618,6 +634,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Tìm tài khoản Active tương ứng với token reset chưa dùng và chưa hết hạn.
+     */
     @Override
     public User getUserByPasswordResetToken(String tokenValue) throws SQLException {
         Connection conn = null;
@@ -655,6 +674,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return user;
     }
 
+    /**
+     * Xác thực token reset, cập nhật mật khẩu, vô hiệu token reset và thu hồi token Remember Me trong một transaction.
+     */
     @Override
     public boolean resetPasswordByToken(String tokenValue, String newPasswordHash) throws SQLException {
         Connection conn = null;
@@ -768,6 +790,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
      * @throws SQLException nếu có lỗi CSDL
      */
     @Override
+    // Kiểm tra email đã được dùng bởi một tài khoản chưa xóa trước khi cho phép đăng ký mới.
     public boolean checkEmailExists(String email) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -805,6 +828,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
      * @throws SQLException nếu có lỗi CSDL
      */
     @Override
+    // Kiểm tra số điện thoại đã được dùng bởi một tài khoản chưa xóa trước khi đăng ký hoặc cập nhật hồ sơ.
     public boolean checkPhoneExists(String phone) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -845,6 +869,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    // Lưu đồng thời User Inactive, role Member, hồ sơ Member Pending và token VERIFICATION trong một transaction.
     public boolean registerMember(User user, Member member, UserToken token) throws SQLException {
         Connection conn = null;
         PreparedStatement stmtUser = null;
@@ -1073,6 +1098,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    // Xác minh token một lần còn hạn, sau đó kích hoạt Users và Members rồi trả email để hiển thị tại trang Login.
     public String verifyAccountAndGetEmail(String tokenValue) throws SQLException {
         Connection conn = null;
         PreparedStatement stmtFind = null;
@@ -1176,6 +1202,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    // Lưu token Remember Me mới, liên kết token với user và thời điểm hết hạn bảy ngày.
     public boolean saveRememberMeToken(UserToken token) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -1214,6 +1241,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    // Kiểm tra token Remember Me còn hiệu lực rồi trả về user kèm role để tự động đăng nhập.
     public User getUserByRememberMeToken(String tokenValue) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -1254,6 +1282,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    // Xóa token Remember Me khi logout để cookie cũ không thể tự động đăng nhập lại.
     public boolean deleteRememberMeToken(String tokenValue) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -1302,11 +1331,17 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return list;
     }
 
+    /**
+     * Tìm toàn bộ tài khoản theo điều kiện lọc bằng cách dùng truy vấn phân trang với giới hạn tối đa.
+     */
     @Override
     public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException {
         return searchAccounts(keyword, role, status, 0, Integer.MAX_VALUE);
     }
 
+    /**
+     * Truy vấn danh sách tài khoản đã lọc theo từ khóa, vai trò, trạng thái và khoảng phân trang.
+     */
     @Override
     public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit)
             throws SQLException {
@@ -1374,6 +1409,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return list;
     }
 
+    /**
+     * Đếm số bản ghi tài khoản phù hợp với bộ lọc hiện tại để phục vụ phân trang.
+     */
     @Override
     public int countAccounts(String keyword, User.Role role, User.AccountStatus status) throws SQLException {
         Connection conn = null;
@@ -1446,6 +1484,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
      * @return true nếu tồn tại
      * @throws SQLException nếu có lỗi CSDL
      */
+    /**
+     * Kiểm tra email đã thuộc về người dùng khác, ngoại trừ chính tài khoản đang được cập nhật.
+     */
     @Override
     public boolean checkEmailExistsForOtherUser(String email, int excludedUserId) throws SQLException {
         Connection conn = null;
@@ -1476,6 +1517,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
      * @return true nếu tồn tại
      * @throws SQLException nếu có lỗi CSDL
      */
+    /**
+     * Kiểm tra số điện thoại đã thuộc về người dùng khác, ngoại trừ chính tài khoản đang được cập nhật.
+     */
     @Override
     public boolean checkPhoneExistsForOtherUser(String phone, int excludedUserId) throws SQLException {
         if (normalizeBlank(phone) == null) {
@@ -1500,6 +1544,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Tạo tài khoản được Admin quản lý, gán role và tạo profile Member hoặc Staff trong cùng transaction.
+     */
     @Override
     public boolean insertManagedAccount(User user) throws SQLException {
         Connection conn = null;
@@ -1574,6 +1621,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Cập nhật Users, đồng bộ role và chuyển đổi profile Staff/Member nếu vai trò đã thay đổi.
+     */
     @Override
     public boolean updateManagedAccount(User user) throws SQLException {
         Connection conn = null;
@@ -1640,6 +1690,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Chỉ đổi role giữa Staff và Member, đồng thời tạo profile mới và vô hiệu profile cũ.
+     */
     @Override
     public boolean changeManagedAccountRole(int userId, User.Role newRole, String updatedBy) throws SQLException {
         if (!isStaffOrMember(newRole)) {
@@ -1689,6 +1742,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Cập nhật trạng thái Users và đồng bộ trạng thái profile đối với Member hoặc Staff.
+     */
     @Override
     public boolean updateAccountStatus(int userId, User.AccountStatus status, String updatedBy) throws SQLException {
         Connection conn = null;
@@ -1741,11 +1797,17 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Vô hiệu hóa mềm tài khoản bằng cách tái sử dụng quy trình cập nhật trạng thái Inactive.
+     */
     @Override
     public boolean deactivateAccount(int userId, String updatedBy) throws SQLException {
         return updateAccountStatus(userId, User.AccountStatus.Inactive, updatedBy);
     }
 
+    /**
+     * Kiểm tra PT còn buổi dạy chưa hủy hoặc chưa hoàn tất để chặn khóa và vô hiệu hóa tài khoản.
+     */
     @Override
     public boolean hasBlockingPTSchedule(int userId) throws SQLException {
         Connection conn = null;
@@ -1776,6 +1838,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Kiểm tra Member còn lịch PT chưa hủy hoặc chưa hoàn tất để chặn vô hiệu hóa tài khoản.
+     */
     @Override
     public boolean hasBlockingMemberSchedule(int userId) throws SQLException {
         Connection conn = null;
@@ -1806,6 +1871,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Kiểm tra Member còn gói Gym Pending hoặc Active chưa hết hạn để áp dụng ràng buộc trạng thái.
+     */
     @Override
     public boolean hasBlockingMemberGymPackage(int userId) throws SQLException {
         Connection conn = null;
@@ -1835,6 +1903,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Cập nhật mật khẩu đã băm, bật cờ bắt buộc đổi mật khẩu và thu hồi token Remember Me trong một transaction.
+     */
     @Override
     public boolean resetPassword(int userId, String newPasswordHash, String updatedBy) throws SQLException {
         Connection conn = null;
@@ -1896,6 +1967,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Lấy role ưu tiên hiện tại của người dùng trong transaction để quyết định cách đồng bộ profile.
+     */
     private User.Role findCurrentRole(Connection conn, int userId) throws SQLException {
         String sql = """
                     SELECT TOP 1 r.RoleName
@@ -1920,6 +1994,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return null;
     }
 
+    /**
+     * Lấy trạng thái hiện tại của Users để áp dụng khi tạo hoặc cập nhật profile theo role mới.
+     */
     private String findUserStatus(Connection conn, int userId) throws SQLException {
         String sql = "SELECT Status FROM Users WHERE UserID = ? AND IsDeleted = 0";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -1933,6 +2010,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return User.AccountStatus.Inactive.name();
     }
 
+    /**
+     * Tra cứu RoleID còn hiệu lực từ tên role trước khi cập nhật bảng UserRoles.
+     */
     private int findRoleId(Connection conn, User.Role role) throws SQLException {
         String sql = "SELECT RoleID FROM Roles WHERE RoleName = ? AND IsDeleted = 0";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -1946,6 +2026,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         throw new SQLException("Role not found: " + role.name());
     }
 
+    /**
+     * Gán role cho người dùng bằng cách cập nhật bản ghi UserRoles hoặc thêm mới khi chưa có.
+     */
     private void setUserRole(Connection conn, int userId, User.Role role) throws SQLException {
         int roleId = findRoleId(conn, role);
         String updateSql = "UPDATE UserRoles SET RoleID = ? WHERE UserID = ?";
@@ -1965,6 +2048,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Tạo hoặc kích hoạt profile Members/Staffs phù hợp với role và trạng thái tài khoản.
+     */
     private void ensureManagedProfile(Connection conn, int userId, User.Role role, String status, String actor)
             throws SQLException {
         String profileStatus = profileStatusForRole(role, status);
@@ -2028,6 +2114,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Quy đổi trạng thái Users sang trạng thái nghiệp vụ tương ứng của profile Member hoặc Staff.
+     */
     private String profileStatusForRole(User.Role role, String accountStatus) {
         if (role == User.Role.Member && User.AccountStatus.Pending.name().equals(accountStatus)) {
             return "Pending";
@@ -2035,6 +2124,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return User.AccountStatus.Active.name().equals(accountStatus) ? "Active" : "Inactive";
     }
 
+    /**
+     * Vô hiệu hóa profile Member hoặc Staff cũ khi tài khoản chuyển sang role còn lại.
+     */
     private void disableManagedProfile(Connection conn, int userId, User.Role role, String actor) throws SQLException {
         if (role == User.Role.Member) {
             String sql = """
@@ -2067,6 +2159,9 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Kiểm tra profile Member hoặc Staff đã tồn tại trước khi quyết định cập nhật hay tạo mới.
+     */
     private boolean profileExists(Connection conn, String tableName, int userId) throws SQLException {
         String sql = "SELECT 1 FROM " + tableName + " WHERE UserID = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -2077,10 +2172,16 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         }
     }
 
+    /**
+     * Kiểm tra role có thuộc hai role được phép quản lý trực tiếp trong Manage Accounts hay không.
+     */
     private boolean isStaffOrMember(User.Role role) {
         return role == User.Role.Staff || role == User.Role.Member;
     }
 
+    /**
+     * Chuẩn hóa giá trị lọc hoặc dữ liệu đầu vào bằng cách bỏ khoảng trắng và trả về null khi rỗng.
+     */
     private String normalizeBlank(String value) {
         if (value == null) {
             return null;
@@ -2091,6 +2192,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
     // --- Profile Methods (UC-03) ---
     @Override
+    // Lấy role có mức ưu tiên cao nhất của user để quyết định loại profile cần đọc hoặc cập nhật.
     public String getHighestPriorityRole(int userId) throws SQLException {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -2115,6 +2217,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    // Đọc Users và bảng phụ theo role, sau đó tạo DTO Profile phù hợp cho Admin, Staff, Member hoặc PT.
     public UserProfileBaseDTO getUserProfileById(int userId) throws SQLException {
         String roleName = getHighestPriorityRole(userId);
         if (roleName == null) {
@@ -2202,6 +2305,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         return null;
     }
 
+    // Gán các field dùng chung UserID, email, display name, phone và role vào mọi loại DTO profile.
     private void setBaseProfileData(UserProfileBaseDTO dto, ResultSet rs, String roleName) throws SQLException {
         dto.setUserId(rs.getInt("UserID"));
         dto.setEmail(rs.getString("Email"));
@@ -2211,6 +2315,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     @Override
+    // Cập nhật Users và dữ liệu riêng của Member/PT trong một transaction; Admin/Staff chỉ cập nhật Users.
     public boolean updateUserProfile(UserProfileBaseDTO profileDto, String roleName) throws SQLException {
         String sqlUser = "UPDATE Users SET DisplayName = ?, Phone = ?, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
         Connection conn = null;
@@ -2289,6 +2394,7 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
     /* Update phone method to update PT's info */
     @Override
+    // Cập nhật riêng số điện thoại; hàm hỗ trợ cũ này không được ProfileController /profile gọi.
     public boolean updateBasicUserInfo(User user) {
         String sql = """
                 UPDATE Users

@@ -33,6 +33,7 @@ public class LoginController extends HttpServlet {
     private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
+    // Xử lý khi người dùng mở /login: tái sử dụng session hiện có, thử Remember Me hoặc hiển thị form đăng nhập.
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -93,6 +94,7 @@ public class LoginController extends HttpServlet {
     }
 
     @Override
+    // Xử lý dữ liệu POST từ form: xác thực tài khoản, tạo session, lưu Remember Me và điều hướng theo role.
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -176,6 +178,7 @@ public class LoginController extends HttpServlet {
         }
     }
     
+    // Điều hướng người dùng đã xác thực đến dashboard tương ứng với vai trò được tải từ cơ sở dữ liệu.
     private void redirectToDashboard(User user, HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
         

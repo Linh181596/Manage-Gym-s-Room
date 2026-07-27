@@ -33,6 +33,7 @@ import java.io.IOException;
 public class AuthenticationFilter extends HttpFilter {
 
     @Override
+    // Bảo vệ các URL cần đăng nhập: khôi phục session từ Remember Me, kiểm tra trạng thái DB và phân quyền theo role.
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         

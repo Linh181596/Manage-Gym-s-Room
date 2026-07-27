@@ -30,6 +30,9 @@ public class ResetPasswordController extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Kiểm tra token trên liên kết và hiển thị biểu mẫu đặt lại mật khẩu tương ứng.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -38,6 +41,9 @@ public class ResetPasswordController extends HttpServlet {
         request.getRequestDispatcher(RESET_PASSWORD_VIEW).forward(request, response);
     }
 
+    /**
+     * Xác thực token, kiểm tra mật khẩu mới, cập nhật mật khẩu và kết thúc các phiên đăng nhập cũ.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -93,6 +99,9 @@ public class ResetPasswordController extends HttpServlet {
         }
     }
 
+    /**
+     * Kiểm tra token và chuẩn bị email/token cho biểu mẫu, hoặc đánh dấu liên kết không hợp lệ khi token hết hạn.
+     */
     private void prepareResetForm(HttpServletRequest request, String token) {
         User user = findUserByToken(token);
         if (user == null) {
@@ -105,6 +114,9 @@ public class ResetPasswordController extends HttpServlet {
         request.setAttribute("email", user.getEmail());
     }
 
+    /**
+     * Tìm tài khoản đang hoạt động sở hữu token đặt lại mật khẩu còn hiệu lực.
+     */
     private User findUserByToken(String token) {
         if (isBlank(token)) {
             return null;
@@ -118,6 +130,9 @@ public class ResetPasswordController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuyển về biểu mẫu đặt lại mật khẩu với thông báo token không hợp lệ hoặc đã hết hạn.
+     */
     private void forwardInvalidToken(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setAttribute("invalidToken", true);
@@ -125,16 +140,25 @@ public class ResetPasswordController extends HttpServlet {
         request.getRequestDispatcher(RESET_PASSWORD_VIEW).forward(request, response);
     }
 
+    /**
+     * Hiển thị lỗi kiểm tra mật khẩu mới trên trang đặt lại mật khẩu.
+     */
     private void forwardWithError(HttpServletRequest request, HttpServletResponse response, String message)
             throws ServletException, IOException {
         request.setAttribute("error", message);
         request.getRequestDispatcher(RESET_PASSWORD_VIEW).forward(request, response);
     }
 
+    /**
+     * Kiểm tra giá trị mật khẩu hoặc token có rỗng sau khi bỏ khoảng trắng hay không.
+     */
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
 
+    /**
+     * Kiểm tra mật khẩu mới có ít nhất 8 ký tự, gồm chữ cái và chữ số.
+     */
     private boolean isValidPassword(String password) {
         return password != null
                 && password.length() >= 8

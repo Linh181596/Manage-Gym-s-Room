@@ -29,10 +29,16 @@ import java.util.List;
 
 public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
 
+    /**
+     * Lấy kết nối đang dùng trong transaction hoặc tạo kết nối mới để truy vấn dữ liệu Dashboard.
+     */
     private Connection getActiveConnection() throws SQLException {
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * Truy vấn các KPI: hội viên, doanh thu, PT, buổi tập và số cảnh báo đang chờ xử lý.
+     */
     @Override
     public DashboardMetric getMetrics() throws SQLException {
         DashboardMetric metric = new DashboardMetric();
@@ -70,6 +76,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         return metric;
     }
 
+    /**
+     * Tổng hợp doanh thu đã thanh toán theo ngày, tuần hoặc tháng và theo loại dịch vụ được lọc.
+     */
     @Override
     public List<RevenuePoint> getRevenueTrend(RevenueChartFilter filter) throws SQLException {
         List<RevenuePoint> points = new ArrayList<>();
@@ -103,6 +112,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         return points;
     }
 
+    /**
+     * Trả về biểu thức SQL dùng để gom doanh thu theo ngày, tuần hoặc tháng.
+     */
     private String getRevenueBucketExpression(String groupBy) {
         if (RevenueChartFilter.GROUP_WEEK.equals(groupBy)) {
             return "DATEADD(day, -(DATEDIFF(day, '19000101', CAST(i.PaymentDate AS date)) % 7), CAST(i.PaymentDate AS date))";
@@ -113,6 +125,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         return "CAST(i.PaymentDate AS date)";
     }
 
+    /**
+     * Tạo điều kiện SQL giới hạn doanh thu theo gói Gym hoặc dịch vụ PT khi người dùng chọn lọc.
+     */
     private String getRevenueTypeCondition(String revenueType) {
         if (RevenueChartFilter.TYPE_GYM_PACKAGE.equals(revenueType)) {
             return "AND i.MemberPackageID IS NOT NULL ";
@@ -123,6 +138,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         return "";
     }
 
+    /**
+     * Lấy các hóa đơn mới nhất cùng tên khách hàng và thông tin dịch vụ để hiển thị trên Dashboard.
+     */
     @Override
     public List<DashboardInvoice> getRecentInvoices(int limit) throws SQLException {
         List<DashboardInvoice> invoices = new ArrayList<>();
@@ -169,6 +187,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         return invoices;
     }
 
+    /**
+     * Tổng hợp cảnh báo về thiết bị, đăng ký PT, gói sắp hết hạn và hóa đơn đang chờ thanh toán.
+     */
     @Override
     public List<DashboardAlert> getOperationalAlerts() throws SQLException {
         List<DashboardAlert> alerts = new ArrayList<>();
@@ -203,6 +224,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         return alerts;
     }
 
+    /**
+     * Đếm số bản ghi cảnh báo và chỉ thêm cảnh báo vào danh sách khi số lượng lớn hơn 0.
+     */
     private void addCountAlert(List<DashboardAlert> alerts, String type, String title, String suffix,
             String severity, String targetUrl, String sql) throws SQLException {
         int count = queryInt(sql);
@@ -211,6 +235,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         }
     }
 
+    /**
+     * Thực thi truy vấn đếm hoặc truy vấn số nguyên và trả về 0 nếu không có kết quả.
+     */
     private int queryInt(String sql) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -225,6 +252,9 @@ public class DashboardDAOImpl extends BaseDAO implements DashboardDAO {
         }
     }
 
+    /**
+     * Thực thi truy vấn số tiền và trả về BigDecimal.ZERO nếu không có kết quả.
+     */
     private BigDecimal queryDecimal(String sql) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;

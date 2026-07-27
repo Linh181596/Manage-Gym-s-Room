@@ -32,12 +32,18 @@ public class ForgotPasswordController extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Hiển thị biểu mẫu để người dùng nhập email yêu cầu đặt lại mật khẩu.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.getRequestDispatcher(FORGOT_PASSWORD_VIEW).forward(request, response);
     }
 
+    /**
+     * Tạo token đặt lại mật khẩu một lần, lưu token và gửi liên kết khôi phục qua email cho tài khoản đang hoạt động.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -87,10 +93,16 @@ public class ForgotPasswordController extends HttpServlet {
         }
     }
 
+    /**
+     * Kiểm tra email hoặc tham số đầu vào có rỗng sau khi bỏ khoảng trắng hay không.
+     */
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
 
+    /**
+     * Tạo URL gốc theo request hiện tại để liên kết đặt lại mật khẩu trỏ đúng đến ứng dụng.
+     */
     private String buildBaseUrl(HttpServletRequest request) {
         return request.getScheme() + "://"
                 + request.getServerName() + ":"

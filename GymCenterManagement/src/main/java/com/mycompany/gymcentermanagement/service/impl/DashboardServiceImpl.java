@@ -61,6 +61,9 @@ public class DashboardServiceImpl implements DashboardService {
         return data;
     }
 
+    /**
+     * Bổ sung các mốc thời gian không có doanh thu với giá trị 0 để biểu đồ liên tục.
+     */
     private List<RevenuePoint> fillMissingRevenuePeriods(List<RevenuePoint> rawPoints, RevenueChartFilter filter) {
         Map<LocalDate, BigDecimal> revenueByDate = rawPoints.stream()
                 .filter(point -> point.getRevenueDate() != null)
@@ -80,6 +83,9 @@ public class DashboardServiceImpl implements DashboardService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Xác định mốc đầu tiên của biểu đồ, căn theo đầu tuần hoặc đầu tháng khi cần.
+     */
     private LocalDate getFirstChartPeriod(RevenueChartFilter filter) {
         if (RevenueChartFilter.GROUP_WEEK.equals(filter.getGroupBy())) {
             return filter.getFromDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -90,6 +96,9 @@ public class DashboardServiceImpl implements DashboardService {
         return filter.getFromDate();
     }
 
+    /**
+     * Tính mốc kế tiếp của biểu đồ theo đơn vị ngày, tuần hoặc tháng.
+     */
     private LocalDate getNextChartPeriod(LocalDate current, RevenueChartFilter filter) {
         if (RevenueChartFilter.GROUP_WEEK.equals(filter.getGroupBy())) {
             return current.plusWeeks(1);
@@ -100,12 +109,18 @@ public class DashboardServiceImpl implements DashboardService {
         return current.plusDays(1);
     }
 
+    /**
+     * Chuyển các mốc doanh thu thành mảng JSON nhãn cho biểu đồ trên giao diện.
+     */
     private String buildLabelsJson(List<RevenuePoint> points, RevenueChartFilter filter) {
         return points.stream()
                 .map(point -> "\"" + buildLabel(point.getRevenueDate(), filter) + "\"")
                 .collect(Collectors.joining(",", "[", "]"));
     }
 
+    /**
+     * Định dạng một mốc ngày thành nhãn phù hợp với cách nhóm dữ liệu của biểu đồ.
+     */
     private String buildLabel(LocalDate date, RevenueChartFilter filter) {
         if (RevenueChartFilter.GROUP_WEEK.equals(filter.getGroupBy())) {
             return "Tuần " + date.format(DAY_CHART_DATE_FORMAT);
@@ -116,6 +131,9 @@ public class DashboardServiceImpl implements DashboardService {
         return date.format(DAY_CHART_DATE_FORMAT);
     }
 
+    /**
+     * Chuyển các giá trị doanh thu thành mảng JSON để JavaScript vẽ biểu đồ.
+     */
     private String buildValuesJson(List<RevenuePoint> points) {
         return points.stream()
                 .map(point -> point.getAmount().toPlainString())

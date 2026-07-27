@@ -16,6 +16,7 @@ public class UserToken {
 
     public UserToken() {}
 
+    // Tạo token xác thực; RegisterController dùng cho VERIFICATION, còn LoginController dùng cho REMEMBER_ME.
     public UserToken(int userID, String tokenValue, String tokenType, LocalDateTime expiresAt) {
         this.userID = userID;
         this.tokenValue = tokenValue;
@@ -31,6 +32,7 @@ public class UserToken {
         this.tokenID = tokenID;
     }
 
+    // Trả về user sở hữu token để ghi liên kết User_Tokens trong cơ sở dữ liệu.
     public int getUserID() {
         return userID;
     }
@@ -39,6 +41,7 @@ public class UserToken {
         this.userID = userID;
     }
 
+    // Trả về giá trị token để lưu DB hoặc dùng đối chiếu với cookie Remember Me.
     public String getTokenValue() {
         return tokenValue;
     }
@@ -47,6 +50,7 @@ public class UserToken {
         this.tokenValue = tokenValue;
     }
 
+    // Trả về loại token, ví dụ REMEMBER_ME, để tránh dùng nhầm token xác minh hoặc reset mật khẩu.
     public String getTokenType() {
         return tokenType;
     }
@@ -55,6 +59,7 @@ public class UserToken {
         this.tokenType = tokenType;
     }
 
+    // Trả về thời điểm hết hạn để DB chỉ chấp nhận token Remember Me còn hiệu lực.
     public LocalDateTime getExpiresAt() {
         return expiresAt;
     }

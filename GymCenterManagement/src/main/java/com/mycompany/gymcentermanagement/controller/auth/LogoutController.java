@@ -29,6 +29,7 @@ public class LogoutController extends HttpServlet {
     private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
+    // Xóa token Remember Me, cookie và session hiện tại để kết thúc phiên đăng nhập một cách đầy đủ.
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         

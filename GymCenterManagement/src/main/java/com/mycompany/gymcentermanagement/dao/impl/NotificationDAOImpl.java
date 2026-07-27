@@ -23,10 +23,16 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         super(connection);
     }
 
+    /**
+     * Lấy kết nối đang dùng trong transaction hoặc tạo kết nối mới để thao tác dữ liệu thông báo.
+     */
     private Connection getActiveConnection() throws SQLException {
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * Chuyển một dòng kết quả Notifications và người nhận thành đối tượng Notification.
+     */
     private Notification mapResultSetToNotification(ResultSet rs) throws SQLException {
         Notification notification = new Notification();
         notification.setNotificationId(rs.getInt("NotificationID"));
@@ -72,6 +78,9 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         return notification;
     }
 
+    /**
+     * Tạo câu SQL chung để lấy thông báo kèm thông tin một người nhận cụ thể nếu có.
+     */
     private String selectWithRecipientSql(String whereClause) {
         return """
                 SELECT n.*,
@@ -118,6 +127,9 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         return list;
     }
 
+    /**
+     * Truy vấn một trang thông báo chưa bị xóa, sắp xếp theo thời gian đăng mới nhất.
+     */
     @Override
     public List<Notification> findAllPaginated(int offset, int limit) throws SQLException {
         Connection conn = null;
@@ -142,6 +154,9 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         return list;
     }
 
+    /**
+     * Truy vấn một thông báo chưa bị xóa theo mã kèm thông tin người nhận cụ thể.
+     */
     @Override
     public Notification findById(int notificationId) throws SQLException {
         Connection conn = null;
@@ -231,6 +246,9 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         }
     }
 
+    /**
+     * Cập nhật thông báo và đồng bộ người nhận cụ thể trong cùng transaction.
+     */
     @Override
     public boolean update(Notification notification) throws SQLException {
         Connection conn = null;
@@ -308,6 +326,9 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         }
     }
 
+    /**
+     * Đếm số thông báo chưa bị xóa để phục vụ phân trang danh sách.
+     */
     @Override
     public int countAll() throws SQLException {
         Connection conn = null;
@@ -328,6 +349,9 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         return 0;
     }
 
+    /**
+     * Kiểm tra tài khoản nhận thông báo cụ thể có tồn tại và chưa bị xóa.
+     */
     @Override
     public boolean userExists(int userId) throws SQLException {
         Connection conn = null;
@@ -346,6 +370,9 @@ public class NotificationDAOImpl extends BaseDAO implements NotificationDAO {
         }
     }
 
+    /**
+     * Xóa người nhận cũ và chỉ tạo người nhận mới khi thông báo được gửi đến một tài khoản cụ thể.
+     */
     private void syncRecipient(Connection conn, Notification notification) throws SQLException {
         try (PreparedStatement deleteStmt = conn.prepareStatement(
                 "DELETE FROM NotificationRecipients WHERE NotificationID = ?")) {

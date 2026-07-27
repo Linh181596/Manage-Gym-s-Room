@@ -29,6 +29,9 @@ import java.sql.SQLException;
 public class AdminDashboardController extends HttpServlet {
     private final DashboardService dashboardService = new DashboardServiceImpl();
 
+    /**
+     * Nhận yêu cầu xem Dashboard, tạo bộ lọc doanh thu, tải dữ liệu tổng hợp và chuyển sang trang hiển thị.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

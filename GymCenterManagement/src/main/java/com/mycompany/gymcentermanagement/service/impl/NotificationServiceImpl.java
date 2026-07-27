@@ -18,16 +18,25 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationDAO notificationDAO = new NotificationDAOImpl();
 
+    /**
+     * Chuyển yêu cầu lấy toàn bộ thông báo chưa bị xóa xuống DAO.
+     */
     @Override
     public List<Notification> getAllNotifications() throws SQLException {
         return notificationDAO.findAll();
     }
 
+    /**
+     * Chuyển yêu cầu lấy một trang thông báo xuống DAO.
+     */
     @Override
     public List<Notification> getNotificationsPaginated(int offset, int limit) throws SQLException {
         return notificationDAO.findAllPaginated(offset, limit);
     }
 
+    /**
+     * Lấy một thông báo theo mã để phục vụ chỉnh sửa hoặc kiểm tra tồn tại.
+     */
     @Override
     public Notification getNotificationById(int id) throws SQLException {
         return notificationDAO.findById(id);
@@ -84,16 +93,25 @@ public class NotificationServiceImpl implements NotificationService {
         return notificationDAO.delete(id);
     }
 
+    /**
+     * Đếm số thông báo chưa bị xóa để controller thiết lập phân trang.
+     */
     @Override
     public int getNotificationsCount() throws SQLException {
         return notificationDAO.countAll();
     }
 
+    /**
+     * Kiểm tra role người nhận có hợp lệ theo các lựa chọn All, Staff, Member, PT hoặc Specific.
+     */
     @Override
     public boolean isValidTargetRole(String targetRole) {
         return targetRole != null && VALID_TARGET_ROLES.contains(targetRole.trim());
     }
 
+    /**
+     * Kiểm tra người nhận cụ thể còn tồn tại trước khi lưu thông báo.
+     */
     @Override
     public boolean userExists(int userId) throws SQLException {
         return notificationDAO.userExists(userId);
