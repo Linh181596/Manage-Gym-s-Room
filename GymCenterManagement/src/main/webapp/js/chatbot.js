@@ -129,7 +129,8 @@
 
         function focusMainControl() {
             if (hasQuestionPanel) {
-                const activeCategory = categoriesContainer.querySelector(".chatbot__category-button");
+                const activeCategory = categoriesContainer.querySelector(".chatbot__category-button.is-active") 
+                                     || categoriesContainer.querySelector(".chatbot__category-button");
                 if (activeCategory) {
                     activeCategory.focus();
                 }
@@ -551,8 +552,8 @@
             });
 
             if (!selectedCategory) {
-                questionCount.textContent = "Chọn một nhóm câu hỏi để xem các câu hỏi cụ thể.";
-                questionsContainer.innerHTML = "<div class=\"chatbot__empty\">Vui lòng chọn một nhóm câu hỏi.</div>";
+                questionCount.textContent = "Ch\u1ecdn m\u1ed9t nh\u00f3m c\u00e2u h\u1ecfi \u0111\u1ec3 xem c\u00e1c c\u00e2u h\u1ecfi c\u1ee5 th\u1ec3.";
+                questionsContainer.innerHTML = "<div class=\"chatbot__empty\">Vui l\u00f2ng ch\u1ecdn m\u1ed9t nh\u00f3m c\u00e2u h\u1ecfi.</div>";
             }
         }
 
@@ -562,7 +563,7 @@
             }
 
             clearElement(questionsContainer);
-            questionCount.textContent = "Có " + category.questions.length + " câu hỏi trong nhóm \"" + category.label + "\".";
+            questionCount.textContent = "C\u00f3 " + category.questions.length + " c\u00e2u h\u1ecfi trong nh\u00f3m \"" + category.label + "\".";
 
             category.questions.forEach(function (question) {
                 const button = document.createElement("button");
@@ -581,6 +582,55 @@
             if (!hasQuestionPanel || faqsLoaded) {
                 renderCategories();
                 return;
+            }
+
+            try {
+                const response = await fetch(contextPath + "/chatbot/faqs", {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                });
+                const data = await response.json();
+                if (data.thanhCong && Array.isArray(data.faqs) && data.faqs.length > 0) {
+                    allFAQs = data.faqs;
+                    
+                    // Clear the local static answers to enforce server-side clean answers
+                    for (let key in faqAnswers) {
+                        delete faqAnswers[key];
+                    }
+                    
+                    // Group faqs into categories dynamically!
+                    const categoriesMap = {};
+                    allFAQs.forEach(function (faq) {
+                        const cat = faq.danhMuc || "Khác";
+                        if (!categoriesMap[cat]) {
+                            categoriesMap[cat] = [];
+                        }
+                        categoriesMap[cat].push(faq.cauHoi);
+                    });
+                    
+                    // Clear existing elements in faqCategories array
+                    faqCategories.length = 0;
+                    
+                    // Map categories map to faqCategories structure
+                    const iconMap = {
+                        "Thông tin phòng gym": "fa-info-circle",
+                        "Hội viên": "fa-id-card",
+                        "Gói tập": "fa-dumbbell",
+                        "Thủ tục thanh toán": "fa-credit-card"
+                    };
+                    
+                    Object.keys(categoriesMap).forEach(function (catName) {
+                        faqCategories.push({
+                            label: catName,
+                            icon: iconMap[catName] || "fa-question-circle",
+                            questions: categoriesMap[catName]
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to load FAQs dynamically, using static fallback", error);
             }
 
             faqsLoaded = true;
@@ -636,13 +686,13 @@
                 if (data.thanhCong && data.tinNhan) {
                     renderMessage(data.tinNhan);
                 } else {
-                    showError(data.thongBao || "Có lỗi xảy ra.");
+                    showError(data.thongBao || "C\u00f3 l\u1ed7i x\u1ea3y ra.");
                 }
             } catch (error) {
                 removeSearching();
                 renderMessage({
                     vaiTro: "bot",
-                    noiDung: "Có lỗi xảy ra khi tìm câu trả lời. Vui lòng thử lại sau.",
+                    noiDung: "C\u00f3 l\u1ed7i x\u1ea3y ra khi t\u00ecm c\u00e2u tr\u1ea3 l\u1eddi. Vui l\u00f2ng th\u1eed l\u1ea1i sau.",
                     thoiGian: getLocalTime(),
                     laNguoiDung: false
                 });
@@ -698,7 +748,7 @@
 
         async function sendQuestionText(question) {
             if (!question) {
-                showError("Vui lòng nhập câu hỏi.");
+                showError("Vui l\u00f2ng nh\u1eadp c\u00e2u h\u1ecfi.");
                 focusMainControl();
                 return;
             }
