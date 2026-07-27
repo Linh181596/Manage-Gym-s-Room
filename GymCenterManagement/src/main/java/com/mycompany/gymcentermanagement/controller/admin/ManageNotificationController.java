@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(name = "ManageNotificationController", urlPatterns = {"/admin/notifications"})
@@ -126,7 +127,7 @@ public class ManageNotificationController extends HttpServlet {
             }
 
             String validationError = validateForm(title, content, deliveryMode, targetRole, recipientUserId,
-                    publishDate, expiryDate);
+                    publishDate, expiryDate, currentUser.getUserId());
             if (validationError != null) {
                 forwardFormWithError(request, response, formNotification, validationError, currentId == 0);
                 return;
@@ -245,7 +246,7 @@ public class ManageNotificationController extends HttpServlet {
      * Kiểm tra tiêu đề, nội dung, người nhận, thời gian đăng và thời gian hết hạn của thông báo.
      */
     private String validateForm(String title, String content, String deliveryMode, String targetRole,
-            Integer recipientUserId, LocalDateTime publishDate, LocalDateTime expiryDate) {
+            Integer recipientUserId, LocalDateTime publishDate, LocalDateTime expiryDate, int currentUserId) {
         if (title == null || title.isEmpty() || content == null || content.isEmpty()) {
             return "Vui lòng nhập đầy đủ tiêu đề và nội dung thông báo.";
         }
@@ -255,6 +256,9 @@ public class ManageNotificationController extends HttpServlet {
         if ("account".equals(deliveryMode)) {
             if (recipientUserId == null || recipientUserId <= 0) {
                 return "Vui lòng chọn tài khoản nhận thông báo.";
+            }
+            if (recipientUserId == currentUserId) {
+                return "Không thể gửi thông báo đến chính tài khoản đang đăng nhập.";
             }
             try {
                 if (!notificationService.userExists(recipientUserId)) {
@@ -334,11 +338,17 @@ public class ManageNotificationController extends HttpServlet {
     }
 
     /**
-     * Tải tối đa 500 tài khoản Active để Admin chọn người nhận cụ thể trong biểu mẫu.
+     * Tải tối đa 500 tài khoản Active, loại trừ tài khoản đang đăng nhập khỏi danh sách người nhận cụ thể.
      */
     private void loadFormData(HttpServletRequest request) throws SQLException {
-        request.setAttribute("recipientUsers",
+        List<User> recipientUsers = new ArrayList<>(
                 userDAO.searchAccounts(null, null, User.AccountStatus.Active, 0, 500));
+        HttpSession session = request.getSession(false);
+        User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
+        if (currentUser != null) {
+            recipientUsers.removeIf(user -> user.getUserId() == currentUser.getUserId());
+        }
+        request.setAttribute("recipientUsers", recipientUsers);
     }
 
     /**

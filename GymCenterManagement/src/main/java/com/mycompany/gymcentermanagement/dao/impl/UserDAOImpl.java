@@ -990,7 +990,11 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
 
             stmtMember = conn.prepareStatement(sqlMember);
             stmtMember.setInt(1, user.getUserId());
-            stmtMember.setString(2, member.getGender());
+            if (member.getGender() == null || member.getGender().isBlank()) {
+                stmtMember.setNull(2, Types.NVARCHAR);
+            } else {
+                stmtMember.setString(2, member.getGender());
+            }
 
             if (member.getDateOfBirth() != null) {
                 stmtMember.setDate(3, Date.valueOf(member.getDateOfBirth()));
