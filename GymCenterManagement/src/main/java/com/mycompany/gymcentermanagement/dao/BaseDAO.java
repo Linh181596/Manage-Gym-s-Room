@@ -44,6 +44,7 @@ public abstract class BaseDAO {
      * @param stmt The Statement (or PreparedStatement) used.
      * @param rs   The ResultSet obtained.
      */
+    // Đóng ResultSet, Statement và trả kết nối về pool sau mỗi truy vấn xác thực hoặc token.
     protected void closeResource(Connection conn, Statement stmt, ResultSet rs) {
         try {
             if (rs != null) {

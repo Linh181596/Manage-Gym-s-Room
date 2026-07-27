@@ -608,8 +608,8 @@ SET IDENTITY_INSERT [dbo].[Equipments] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GymPackages] ON 
 
-INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Gói Gym Cơ bản 1 Tháng', 1, CAST(300000.00 AS Decimal(12, 2)), N'Gói tập gym tiêu chuẩn trong 1 tháng.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
-INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'Gói Gym Cao cấp 3 Tháng', 3, CAST(800000.00 AS Decimal(12, 2)), N'Gói tập gym tiêu chuẩn trong 3 tháng.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, N'Gói Gym 1 Tháng', 1, CAST(300000.00 AS Decimal(12, 2)), N'Gói tập gym tiêu chuẩn trong 1 tháng.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[GymPackages] ([PackageID], [PackageName], [DurationMonths], [Price], [Description], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, N'Gói Gym 3 Tháng', 3, CAST(800000.00 AS Decimal(12, 2)), N'Gói tập gym tiêu chuẩn trong 3 tháng.', N'Active', N'System', CAST(N'2026-05-31T18:27:47.4753462' AS DateTime2), NULL, NULL, 0)
 SET IDENTITY_INSERT [dbo].[GymPackages] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Invoices] ON 
@@ -631,7 +631,7 @@ SET IDENTITY_INSERT [dbo].[Invoices] OFF
 GO
 SET IDENTITY_INSERT [dbo].[MemberPackages] ON 
 
-INSERT [dbo].[MemberPackages] ([MemberPackageID], [MemberID], [PackageID], [StartDate], [EndDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 1, 1, CAST(N'2026-05-01' AS Date), CAST(N'2026-06-01' AS Date), N'Active', N'System', CAST(N'2026-05-31T18:27:47.4782421' AS DateTime2), NULL, NULL, 0)
+INSERT [dbo].[MemberPackages] ([MemberPackageID], [MemberID], [PackageID], [StartDate], [EndDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (1, 1, 1, CAST(N'2026-05-01' AS Date), CAST(N'2026-06-01' AS Date), N'Expired', N'System', CAST(N'2026-05-31T18:27:47.4782421' AS DateTime2), NULL, NULL, 0)
 INSERT [dbo].[MemberPackages] ([MemberPackageID], [MemberID], [PackageID], [StartDate], [EndDate], [Status], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted]) VALUES (2, 6, 1, CAST(N'2026-07-08' AS Date), CAST(N'2026-08-08' AS Date), N'Active', N'StaffUserID: 2', CAST(N'2026-07-08T10:49:36.7660909' AS DateTime2), N'StaffUserID: 2', CAST(N'2026-07-08T10:49:40.6811133' AS DateTime2), 0)
 SET IDENTITY_INSERT [dbo].[MemberPackages] OFF
 GO
@@ -685,15 +685,15 @@ SET IDENTITY_INSERT [dbo].[PTRegistrations] ON
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (1, 1, 1, CAST(N'2026-06-01' AS Date), CAST(N'2026-06-01' AS Date), CAST(N'2026-06-30' AS Date), N'Cancelled', N'Đăng ký lần đầu | Lý do hủy: PT đã bị inactive', N'System', CAST(N'2026-05-31T18:27:47.4802560' AS DateTime2), N'Gym Administrator', CAST(N'2026-06-25T00:14:24.6449208' AS DateTime2), 0, CAST(1200000.00 AS Decimal(12, 2)), N'Cancelled', 1, CAST(N'2026-06-25T00:14:24.6449208' AS DateTime2), 12)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (2, 1, 1, CAST(N'2026-06-01' AS Date), CAST(N'2026-06-01' AS Date), CAST(N'2026-07-01' AS Date), N'Cancelled', N'Tôi muốn nhanh chóng giảm cân
 Tôi muốn thử trước 1 tháng | Lý do hủy: PT đã bị Inactive', N'System', CAST(N'2026-06-01T15:51:29.7900382' AS DateTime2), N'Gym Administrator', CAST(N'2026-06-25T00:14:37.5037305' AS DateTime2), 0, CAST(1200000.00 AS Decimal(12, 2)), N'Cancelled', 1, CAST(N'2026-06-25T00:14:37.5037305' AS DateTime2), 12)
-INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (3, 1, 3, CAST(N'2026-06-02' AS Date), CAST(N'2026-06-02' AS Date), CAST(N'2026-07-02' AS Date), N'Active', N'Tôi muốn giảm cân, hãy xếp lịch tập sớm cho tôi', N'System', CAST(N'2026-06-02T04:38:48.7290377' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
-INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (4, 1, 3, CAST(N'2026-06-02' AS Date), CAST(N'2026-06-02' AS Date), CAST(N'2026-07-02' AS Date), N'Active', N'Tôi thực sự muốn giảm cân. Bạn bè bảo tôi quá béo, tôi rất tự ti.', N'System', CAST(N'2026-06-02T04:39:23.1548789' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
-INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (5, 1, 7, CAST(N'2026-06-10' AS Date), CAST(N'2026-06-10' AS Date), CAST(N'2026-07-09' AS Date), N'Active', N'', N'Demo Member', CAST(N'2026-06-07T09:42:34.2420419' AS DateTime2), NULL, NULL, 0, CAST(1100000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
-INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (6, 1, 11, CAST(N'2026-06-15' AS Date), CAST(N'2026-06-15' AS Date), CAST(N'2026-07-14' AS Date), N'Active', N'', N'Demo Member', CAST(N'2026-06-14T00:08:42.3140381' AS DateTime2), NULL, NULL, 0, CAST(1350000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
+INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (3, 1, 3, CAST(N'2026-06-02' AS Date), CAST(N'2026-06-02' AS Date), CAST(N'2026-07-02' AS Date), N'Completed', N'Tôi muốn giảm cân, hãy xếp lịch tập sớm cho tôi', N'System', CAST(N'2026-06-02T04:38:48.7290377' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
+INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (4, 1, 3, CAST(N'2026-06-02' AS Date), CAST(N'2026-06-02' AS Date), CAST(N'2026-07-02' AS Date), N'Completed', N'Tôi thực sự muốn giảm cân. Bạn bè bảo tôi quá béo, tôi rất tự ti.', N'System', CAST(N'2026-06-02T04:39:23.1548789' AS DateTime2), NULL, NULL, 0, CAST(1200000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
+INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (5, 1, 7, CAST(N'2026-06-10' AS Date), CAST(N'2026-06-10' AS Date), CAST(N'2026-07-09' AS Date), N'Completed', N'', N'Demo Member', CAST(N'2026-06-07T09:42:34.2420419' AS DateTime2), NULL, NULL, 0, CAST(1100000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
+INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (6, 1, 11, CAST(N'2026-06-15' AS Date), CAST(N'2026-06-15' AS Date), CAST(N'2026-07-14' AS Date), N'Completed', N'', N'Demo Member', CAST(N'2026-06-14T00:08:42.3140381' AS DateTime2), NULL, NULL, 0, CAST(1350000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (7, 1, 8, CAST(N'2026-06-26' AS Date), CAST(N'2026-06-26' AS Date), CAST(N'2026-09-25' AS Date), N'Active', N'', N'Demo Member', CAST(N'2026-06-24T15:23:02.6051048' AS DateTime2), NULL, NULL, 0, CAST(2970000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 36)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (8, 5, 4, CAST(N'2026-07-01' AS Date), NULL, NULL, N'Cancelled', N'Khởi đầu tháng mới tôi muốn tập giữ cân nặng của tôi cho tới tháng 12 để đi đi thi boxing mức cân 60kg. | Lý do hủy: PT quá bận', N'Nguyễn Đình Phú', CAST(N'2026-06-25T10:16:40.4264412' AS DateTime2), N'Demo Staff', CAST(N'2026-06-26T02:46:08.4461538' AS DateTime2), 0, CAST(3240000.00 AS Decimal(12, 2)), N'Cancelled', 2, CAST(N'2026-06-26T02:46:08.4461538' AS DateTime2), 36)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (9, 5, 12, CAST(N'2026-07-01' AS Date), CAST(N'2026-07-01' AS Date), CAST(N'2026-09-30' AS Date), N'Cancelled', N'Tôi muốn tập boxing ca sáng
  | Lý do hủy: PT bận vkl', N'Nguyễn Đình Phú', CAST(N'2026-06-25T12:15:14.4783089' AS DateTime2), N'Demo Admin', CAST(N'2026-06-25T12:15:56.9338719' AS DateTime2), 0, CAST(3645000.00 AS Decimal(12, 2)), N'Cancelled', 1, CAST(N'2026-06-25T12:15:56.9338719' AS DateTime2), 36)
-INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (10, 1, 7, CAST(N'2026-06-25' AS Date), CAST(N'2026-06-25' AS Date), CAST(N'2026-07-24' AS Date), N'Active', N'', N'Demo Member', CAST(N'2026-06-25T23:47:33.3218669' AS DateTime2), NULL, NULL, 0, CAST(1100000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
+INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (10, 1, 7, CAST(N'2026-06-25' AS Date), CAST(N'2026-06-25' AS Date), CAST(N'2026-07-24' AS Date), N'Completed', N'', N'Demo Member', CAST(N'2026-06-25T23:47:33.3218669' AS DateTime2), NULL, NULL, 0, CAST(1100000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (11, 1, 17, CAST(N'2026-06-30' AS Date), CAST(N'2026-06-30' AS Date), CAST(N'2026-07-29' AS Date), N'Cancelled', N'Tôi muốn tập thử yoga! | Lý do hủy: Thành viên đăng ký quá nhiều lớp!', N'Demo Member', CAST(N'2026-06-30T10:34:30.1131562' AS DateTime2), N'Demo Admin', CAST(N'2026-06-30T10:35:13.7616447' AS DateTime2), 0, CAST(1500000.00 AS Decimal(12, 2)), N'Cancelled', 1, CAST(N'2026-06-30T10:35:13.7616447' AS DateTime2), 12)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (12, 6, 17, CAST(N'2026-06-30' AS Date), CAST(N'2026-06-30' AS Date), CAST(N'2026-07-29' AS Date), N'Active', N'Tôi muốn tập yoga để có dánhg đẹp', N'Trần Hà Linh', CAST(N'2026-06-30T10:42:08.4337287' AS DateTime2), NULL, NULL, 0, CAST(1500000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
 INSERT [dbo].[PTRegistrations] ([PTRegistrationID], [MemberID], [PTServicePriceID], [PreferredStartDate], [StartDate], [EndDate], [Status], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [TotalAmount], [PaymentStatus], [ProcessedByUserID], [ProcessedAt], [PurchasedSessions]) VALUES (13, 6, 5, CAST(N'2026-06-30' AS Date), CAST(N'2026-06-30' AS Date), CAST(N'2026-07-29' AS Date), N'Active', N'', N'Trần Hà Linh', CAST(N'2026-06-30T10:56:53.4668020' AS DateTime2), NULL, NULL, 0, CAST(1400000.00 AS Decimal(12, 2)), N'Paid', NULL, NULL, 12)
@@ -1907,5 +1907,124 @@ BEGIN
     SET IDENTITY_INSERT dbo.FAQ OFF;
     DBCC CHECKIDENT (N'dbo.FAQ', RESEED, 15);
 END;
+GO
+
+-------------------------------------------------------------------------------
+-- BỔ SUNG: DỮ LIỆU CHẤM CÔNG DEMO CHO NHÂN VIÊN VÀ PT
+-------------------------------------------------------------------------------
+PRINT N'Generating Demo Staff PT Attendance...';
+GO
+
+DECLARE @DemoNote nvarchar(500) = N'DEMO_ATTENDANCE_2026_07_01_TO_26';
+DECLARE @StartDate date = CAST(N'2026-07-01' AS date);
+DECLARE @EndDate date = CAST(N'2026-07-26' AS date);
+
+;WITH DemoUsers AS
+(
+    SELECT v.UserID, v.UserRole, v.UserOffset
+    FROM (VALUES
+        (2, N'Staff', 0),
+        (3, N'PT',    1),
+        (5, N'PT',    2)
+    ) v(UserID, UserRole, UserOffset)
+    INNER JOIN dbo.Users u
+        ON u.UserID = v.UserID
+       AND u.IsDeleted = 0
+),
+DemoDates AS
+(
+    SELECT @StartDate AS WorkDate
+    UNION ALL
+    SELECT DATEADD(DAY, 1, WorkDate)
+    FROM DemoDates
+    WHERE WorkDate < @EndDate
+),
+DemoShifts AS
+(
+    SELECT *
+    FROM (VALUES
+        (N'Morning',   8 * 60,       12 * 60,      0),
+        (N'Afternoon', 13 * 60 + 15, 16 * 60 + 45, 1),
+        (N'Evening',   17 * 60,      20 * 60 + 30, 2)
+    ) v(ShiftBlock, ShiftStartMinute, ShiftEndMinute, ShiftOffset)
+),
+DemoRows AS
+(
+    SELECT
+        u.UserID,
+        u.UserRole,
+        d.WorkDate,
+        s.ShiftBlock,
+        s.ShiftStartMinute,
+        s.ShiftEndMinute,
+        (DATEDIFF(DAY, @StartDate, d.WorkDate) + u.UserOffset + (s.ShiftOffset * 2)) % 6 AS DemoPattern
+    FROM DemoDates d
+    CROSS JOIN DemoShifts s
+    CROSS JOIN DemoUsers u
+)
+INSERT INTO dbo.StaffPTAttendance
+    (UserID, UserRole, CheckedInAt, CheckedOutAt, ShiftBlock,
+     Status, CheckedBy, Note, CreatedBy, CreatedDate,
+     UpdatedBy, UpdatedDate, IsDeleted)
+SELECT
+    r.UserID,
+    r.UserRole,
+    DATEADD(MINUTE,
+        r.ShiftStartMinute
+        + CASE r.DemoPattern
+            WHEN 1 THEN 10
+            WHEN 3 THEN 10
+            ELSE 2
+          END,
+        CAST(r.WorkDate AS datetime2)),
+    CASE
+        WHEN r.DemoPattern = 4 THEN NULL
+        ELSE DATEADD(MINUTE,
+            r.ShiftEndMinute
+            + CASE r.DemoPattern
+                WHEN 2 THEN -20
+                WHEN 3 THEN -20
+                ELSE 5
+              END,
+            CAST(r.WorkDate AS datetime2))
+    END,
+    r.ShiftBlock,
+    N'Active',
+    1,
+    @DemoNote,
+    N'Demo Admin',
+    DATEADD(MINUTE,
+        r.ShiftStartMinute
+        + CASE r.DemoPattern
+            WHEN 1 THEN 10
+            WHEN 3 THEN 10
+            ELSE 2
+          END,
+        CAST(r.WorkDate AS datetime2)),
+    CASE WHEN r.DemoPattern = 4 THEN NULL ELSE N'1' END,
+    CASE
+        WHEN r.DemoPattern = 4 THEN NULL
+        ELSE DATEADD(MINUTE,
+            r.ShiftEndMinute
+            + CASE r.DemoPattern
+                WHEN 2 THEN -20
+                WHEN 3 THEN -20
+                ELSE 5
+              END,
+            CAST(r.WorkDate AS datetime2))
+    END,
+    0
+FROM DemoRows r
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.StaffPTAttendance existing
+    WHERE existing.UserID = r.UserID
+      AND existing.UserRole = r.UserRole
+      AND CAST(existing.CheckedInAt AS date) = r.WorkDate
+      AND existing.ShiftBlock = r.ShiftBlock
+      AND existing.IsDeleted = 0
+)
+OPTION (MAXRECURSION 100);
 GO
 

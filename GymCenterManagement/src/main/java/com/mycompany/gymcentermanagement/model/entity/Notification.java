@@ -159,14 +159,23 @@ public class Notification {
         this.recipientEmail = recipientEmail;
     }
 
+    /**
+     * Trả về thời gian đăng ở định dạng datetime-local để điền lại vào biểu mẫu quản lý.
+     */
     public String getPublishDateInputValue() {
         return toDateTimeLocalValue(publishDate);
     }
 
+    /**
+     * Trả về thời gian hết hạn ở định dạng datetime-local để điền lại vào biểu mẫu quản lý.
+     */
     public String getExpiryDateInputValue() {
         return toDateTimeLocalValue(expiryDate);
     }
 
+    /**
+     * Xác định trạng thái hiển thị của thông báo: Scheduled, Active hoặc Expired.
+     */
     public String getEffectiveStatus() {
         LocalDateTime now = LocalDateTime.now();
         if (publishDate != null && publishDate.isAfter(now)) {
@@ -178,10 +187,16 @@ public class Notification {
         return "Active";
     }
 
+    /**
+     * Kiểm tra thông báo có được gửi đến một tài khoản cụ thể hay không.
+     */
     public boolean isSpecificRecipient() {
         return "Specific".equalsIgnoreCase(targetRole);
     }
 
+    /**
+     * Trả về nhãn người nhận để hiển thị, ưu tiên role rồi tên, email hoặc mã tài khoản cụ thể.
+     */
     public String getRecipientLabel() {
         if (!isSpecificRecipient()) {
             return targetRole;
@@ -195,6 +210,9 @@ public class Notification {
         return recipientUserId != null ? "User #" + recipientUserId : "Tài khoản cụ thể";
     }
 
+    /**
+     * Định dạng LocalDateTime thành chuỗi phù hợp với input type datetime-local.
+     */
     private String toDateTimeLocalValue(LocalDateTime value) {
         if (value == null) {
             return "";

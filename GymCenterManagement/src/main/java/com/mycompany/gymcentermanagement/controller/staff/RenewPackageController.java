@@ -71,12 +71,12 @@ public class RenewPackageController extends HttpServlet {
                 }
             }
 
-            // Gói tập được phép gia hạn chính là gói tập gần nhất của hội viên
-            GymPackage allowedPackage = latestPkg.getGymPackage();
+            // Lấy danh sách tất cả các gói tập đang active để hiển thị cho người dùng chọn
+            List<GymPackage> allPackages = gymPackageService.getActivePackages();
 
             request.setAttribute("member", member);
             request.setAttribute("latestPkg", latestPkg);
-            request.setAttribute("allowedPackage", allowedPackage);
+            request.setAttribute("allPackages", allPackages);
             
             request.getRequestDispatcher("/WEB-INF/views/staff/package-renew.jsp").forward(request, response);
         } catch (SQLException | NumberFormatException ex) {
@@ -114,10 +114,10 @@ public class RenewPackageController extends HttpServlet {
                 return;
             }
 
-            // Bảo mật: Kiểm tra xem packageId muốn gia hạn có khớp với gói gần nhất không
+            // Bảo mật: Kiểm tra xem packageId muốn gia hạn có tồn tại không
             MemberPackage latestPkg = memberPackageService.getLatestPackageByMemberId(member.getMemberId());
-            if (latestPkg == null || latestPkg.getGymPackage() == null || latestPkg.getGymPackage().getPackageId() != packageId) {
-                request.setAttribute("errorMessage", "Yêu cầu gia hạn không hợp lệ. Chỉ có thể gia hạn đúng gói tập hiện tại.");
+            if (latestPkg == null || latestPkg.getGymPackage() == null) {
+                request.setAttribute("errorMessage", "Yêu cầu gia hạn không hợp lệ. Hội viên chưa có gói tập nào để gia hạn.");
                 doGet(request, response);
                 return;
             }

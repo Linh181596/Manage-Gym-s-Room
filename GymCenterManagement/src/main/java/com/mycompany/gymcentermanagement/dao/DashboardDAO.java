@@ -18,8 +18,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface DashboardDAO {
+    /** Lấy các chỉ số KPI tổng quan cho Admin Dashboard. */
     DashboardMetric getMetrics() throws SQLException;
+    /** Lấy xu hướng doanh thu theo khoảng thời gian và loại doanh thu đã chọn. */
     List<RevenuePoint> getRevenueTrend(RevenueChartFilter filter) throws SQLException;
+    /** Lấy danh sách hóa đơn gần đây với số lượng giới hạn. */
     List<DashboardInvoice> getRecentInvoices(int limit) throws SQLException;
+    /** Lấy các cảnh báo vận hành đang cần được xử lý. */
     List<DashboardAlert> getOperationalAlerts() throws SQLException;
 }

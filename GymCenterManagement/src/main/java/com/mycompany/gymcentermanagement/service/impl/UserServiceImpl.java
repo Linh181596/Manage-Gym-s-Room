@@ -127,6 +127,9 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    /**
+     * Tìm tất cả tài khoản theo điều kiện lọc để dùng khi không cần giới hạn phân trang.
+     */
     @Override
     public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status) {
         try {
@@ -137,6 +140,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Đếm số tài khoản phù hợp với điều kiện lọc để controller tính số trang.
+     */
     @Override
     public int countAccounts(String keyword, User.Role role, User.AccountStatus status) {
         try {
@@ -147,6 +153,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Tìm một trang tài khoản theo từ khóa, vai trò và trạng thái.
+     */
     @Override
     public List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit) {
         try {
@@ -157,6 +166,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Lấy tài khoản theo mã để phục vụ xem, sửa hoặc thực hiện thao tác quản trị.
+     */
     @Override
     public User getAccountById(int userId) {
         try {
@@ -211,6 +223,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Kiểm tra các quy tắc thay đổi thông tin, vai trò và trạng thái trước khi cập nhật tài khoản.
+     */
     @Override
     public AccountOperationResult updateManagedAccount(User user, User.Role requestedRole, int currentAdminId, String updatedBy) {
         try {
@@ -287,6 +302,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Đổi vai trò trực tiếp giữa Staff và Member, đồng thời ngăn Admin tự đổi vai trò của mình.
+     */
     @Override
     public AccountOperationResult changeManagedAccountRole(int targetUserId, User.Role newRole, int currentAdminId, String updatedBy) {
         try {
@@ -319,6 +337,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Cập nhật trạng thái tài khoản sau khi kiểm tra tự thao tác, lịch PT và nghĩa vụ gói tập của Member.
+     */
     @Override
     public AccountOperationResult updateAccountStatus(int targetUserId, User.AccountStatus status, int currentAdminId, String updatedBy) {
         try {
@@ -367,6 +388,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Khóa tài khoản được chỉ định bằng cách chuyển trạng thái sang Locked.
+     */
     @Override
     public AccountOperationResult lockAccount(int targetUserId, int currentAdminId, String updatedBy) {
         if (targetUserId == currentAdminId) {
@@ -385,6 +409,9 @@ public class UserServiceImpl implements UserService {
         return updateAccountStatus(targetUserId, User.AccountStatus.Locked, currentAdminId, updatedBy);
     }
 
+    /**
+     * Mở khóa tài khoản chỉ khi tài khoản đang có trạng thái Locked.
+     */
     @Override
     public AccountOperationResult unlockAccount(int targetUserId, String updatedBy) {
         try {
@@ -409,6 +436,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Vô hiệu hóa mềm tài khoản sau khi xác nhận không còn lịch PT hoặc gói tập đang ràng buộc.
+     */
     @Override
     public AccountOperationResult deactivateAccount(int targetUserId, int currentAdminId, String updatedBy) {
         try {
@@ -443,6 +473,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Sinh mật khẩu tạm mới, lưu mật khẩu đã băm và yêu cầu người dùng đổi mật khẩu ở lần đăng nhập sau.
+     */
     @Override
     public AccountOperationResult resetManagedPassword(int targetUserId, String updatedBy) {
         try {
@@ -518,16 +551,25 @@ public class UserServiceImpl implements UserService {
         return AccountOperationResult.success("Dữ liệu tài khoản hợp lệ.");
     }
 
+    /**
+     * Kiểm tra vai trò có thuộc phạm vi được phép tạo hoặc chuyển đổi trong Manage Accounts hay không.
+     */
     private boolean isStaffOrMember(User.Role role) {
         return role == User.Role.Staff || role == User.Role.Member;
     }
 
+    /**
+     * Kiểm tra trạng thái có phải là Active, Inactive hoặc Locked mà màn hình quản lý hỗ trợ hay không.
+     */
     private boolean isSupportedAccountStatus(User.AccountStatus status) {
         return status == User.AccountStatus.Active
                 || status == User.AccountStatus.Inactive
                 || status == User.AccountStatus.Locked;
     }
 
+    /**
+     * Chặn khóa hoặc vô hiệu hóa PT khi PT vẫn còn lịch dạy chưa được hủy hoặc hoàn tất.
+     */
     private AccountOperationResult validatePTScheduleBeforeRestrictedStatus(User account, User.AccountStatus targetStatus)
             throws SQLException {
         if (account.getRole() != User.Role.PT) {
@@ -545,6 +587,9 @@ public class UserServiceImpl implements UserService {
         return AccountOperationResult.success("OK");
     }
 
+    /**
+     * Kiểm tra gói Gym hoặc lịch PT đang ràng buộc trước khi hạn chế trạng thái của Member.
+     */
     private AccountOperationResult validateMemberBeforeRestrictedStatus(User account, User.AccountStatus targetStatus)
             throws SQLException {
         if (account.getRole() != User.Role.Member) {
@@ -565,6 +610,9 @@ public class UserServiceImpl implements UserService {
         return AccountOperationResult.success("OK");
     }
 
+    /**
+     * Chặn vô hiệu hóa Member khi còn lịch PT hoặc gói Gym đang hiệu lực.
+     */
     private AccountOperationResult validateMemberScheduleBeforeDeactivation(User account) throws SQLException {
         if (account.getRole() != User.Role.Member) {
             return AccountOperationResult.success("OK");
@@ -581,6 +629,9 @@ public class UserServiceImpl implements UserService {
         return AccountOperationResult.success("OK");
     }
 
+    /**
+     * Chuẩn hóa chuỗi đầu vào bằng cách bỏ khoảng trắng và trả về null với giá trị rỗng.
+     */
     private String normalizeBlank(String value) {
         if (value == null) {
             return null;
@@ -589,6 +640,9 @@ public class UserServiceImpl implements UserService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * Chuẩn hóa tên Admin thực hiện thao tác để lưu nhật ký tạo hoặc cập nhật tài khoản.
+     */
     private String normalizeActor(String actor) {
         String normalizedActor = normalizeBlank(actor);
         return normalizedActor != null ? normalizedActor : "Admin";

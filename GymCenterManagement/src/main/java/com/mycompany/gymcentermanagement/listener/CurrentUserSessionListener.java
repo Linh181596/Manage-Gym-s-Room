@@ -34,6 +34,7 @@ public class CurrentUserSessionListener implements HttpSessionListener, HttpSess
      * Dùng để nhận diện lúc User vừa đăng nhập thành công.
      */
     @Override
+    // Ghi nhận session ngay khi LoginController thêm currentUser sau khi xác thực thành công.
     public void attributeAdded(HttpSessionBindingEvent event) {
         if (CURRENT_USER_ATTRIBUTE.equals(event.getName()) && event.getValue() instanceof User user) {
             SessionRegistry.register(event.getSession(), user);
@@ -45,6 +46,7 @@ public class CurrentUserSessionListener implements HttpSessionListener, HttpSess
      * Dùng để cập nhật SessionRegistry nếu tài khoản đăng nhập thay đổi hoặc refresh thông tin User.
      */
     @Override
+    // Đồng bộ SessionRegistry nếu thông tin currentUser trong session bị thay thế.
     public void attributeReplaced(HttpSessionBindingEvent event) {
         HttpSession session = event.getSession();
         if (!CURRENT_USER_ATTRIBUTE.equals(event.getName())) {
@@ -67,6 +69,7 @@ public class CurrentUserSessionListener implements HttpSessionListener, HttpSess
      * Kích hoạt khi thuộc tính `currentUser` BỊ XÓA khỏi Session (ví dụ khi Logout).
      */
     @Override
+    // Hủy đăng ký session khi currentUser bị xóa, ví dụ trong quá trình logout.
     public void attributeRemoved(HttpSessionBindingEvent event) {
         if (CURRENT_USER_ATTRIBUTE.equals(event.getName()) && event.getValue() instanceof User user) {
             SessionRegistry.unregister(event.getSession(), user);
@@ -78,6 +81,7 @@ public class CurrentUserSessionListener implements HttpSessionListener, HttpSess
      * Dọn dẹp session id rác khỏi SessionRegistry để tránh tràn bộ nhớ.
      */
     @Override
+    // Dọn SessionRegistry khi session hết hạn hoặc bị invalidate bởi logout/filter.
     public void sessionDestroyed(HttpSessionEvent event) {
         SessionRegistry.unregister(event.getSession());
     }

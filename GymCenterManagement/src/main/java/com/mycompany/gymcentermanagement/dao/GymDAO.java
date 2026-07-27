@@ -50,7 +50,7 @@ public class GymDAO {
         String typePattern = normalizedType == null ? null : "%" + normalizedType + "%";
 
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, normalizedKeyword);
             ps.setString(2, keywordPattern);
             ps.setString(3, keywordPattern);
@@ -76,9 +76,10 @@ public class GymDAO {
      */
     public List<Map<String, String>> getMembers(String keyword, String memberType, int offset, int limit) {
         List<Map<String, String>> list = new ArrayList<>();
-        
+        // When offset is 0 and limit is Integer.MAX_VALUE, we can skip the OFFSET/FETCH
+        // NEXT to avoid SQL syntax issue or pagination overhead
         boolean usePagination = (limit != Integer.MAX_VALUE);
-        
+
         String sql = """
                 SELECT u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                        m.MemberID, m.MembershipStatus, m.CreatedDate,
@@ -94,15 +95,16 @@ public class GymDAO {
                 GROUP BY u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                          m.MemberID, m.MembershipStatus, m.CreatedDate
                 ORDER BY u.UserID DESC
-                """ + (usePagination ? " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY" : "");
-                
+                """
+                + (usePagination ? " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY" : "");
+
         String normalizedKeyword = blankToNull(keyword);
         String keywordPattern = normalizedKeyword == null ? null : "%" + normalizedKeyword + "%";
         String normalizedType = blankToNull(memberType);
         String typePattern = normalizedType == null ? null : "%" + normalizedType + "%";
 
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, normalizedKeyword);
             ps.setString(2, keywordPattern);
             ps.setString(3, keywordPattern);
@@ -110,7 +112,7 @@ public class GymDAO {
             ps.setString(5, normalizedType);
             ps.setString(6, typePattern);
             ps.setString(7, typePattern);
-            
+
             if (usePagination) {
                 ps.setInt(8, Math.max(0, offset));
                 ps.setInt(9, limit);
@@ -234,11 +236,12 @@ public class GymDAO {
 
             if (packageId != null) {
                 int memberId = findMemberId(conn, userId);
-                try (PreparedStatement psPackage = conn.prepareStatement("""
-                        INSERT INTO [dbo].[MemberPackages]
-                        (MemberID, PackageID, StartDate, EndDate, Status, CreatedBy, IsDeleted)
-                        VALUES (?, ?, CAST(GETDATE() AS date), DATEADD(month, ?, CAST(GETDATE() AS date)), 'Active', 'System', 0)
-                        """)) {
+                try (PreparedStatement psPackage = conn.prepareStatement(
+                        """
+                                INSERT INTO [dbo].[MemberPackages]
+                                (MemberID, PackageID, StartDate, EndDate, Status, CreatedBy, IsDeleted)
+                                VALUES (?, ?, CAST(GETDATE() AS date), DATEADD(month, ?, CAST(GETDATE() AS date)), 'Active', 'System', 0)
+                                """)) {
                     psPackage.setInt(1, memberId);
                     psPackage.setInt(2, packageId);
                     psPackage.setInt(3, durationMonths);
@@ -300,13 +303,21 @@ public class GymDAO {
             return true;
         } catch (Exception e) {
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
             e.printStackTrace();
             return false;
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -320,7 +331,7 @@ public class GymDAO {
         String sql = """
                 SELECT TOP 1 u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                        m.MemberID, m.MembershipStatus, m.CreatedDate,
-                       gp.PackageName, mp.EndDate, mp.Status AS PackageStatus
+                       gp.PackageName, mp.StartDate, mp.EndDate, mp.Status AS PackageStatus
                 FROM [dbo].[Users] u
                 INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
                 LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
@@ -329,14 +340,15 @@ public class GymDAO {
                 ORDER BY CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN 1 ELSE 2 END, mp.EndDate DESC
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String packageName = rs.getString("PackageName");
+                    Date startDate = rs.getDate("StartDate");
                     Date endDate = rs.getDate("EndDate");
                     String packageStatus = rs.getString("PackageStatus");
-                    
+
                     String type = "Chưa đăng ký gói";
                     if (packageName != null && "Active".equalsIgnoreCase(packageStatus)) {
                         if (endDate != null) {
@@ -357,6 +369,16 @@ public class GymDAO {
                     profile.put("email", safe(rs.getString("Email")));
                     profile.put("phone", safe(rs.getString("Phone")));
                     profile.put("type", type);
+
+                    // Thêm thông tin ngày bắt đầu và kết thúc
+                    if (startDate != null && endDate != null && "Active".equalsIgnoreCase(packageStatus)) {
+                        profile.put("packageStartDate", String.valueOf(startDate));
+                        profile.put("packageEndDate", String.valueOf(endDate));
+                    } else {
+                        profile.put("packageStartDate", "");
+                        profile.put("packageEndDate", "");
+                    }
+
                     profile.put("status", safe(rs.getString("Status")));
                     profile.put("date", String.valueOf(rs.getTimestamp("CreatedDate")));
                 }
@@ -368,32 +390,57 @@ public class GymDAO {
     }
 
     /**
-     * SQL lấy các gói dịch vụ của hội viên từ MemberPackages, GymPackages và hóa
-     * đơn liên quan để hiển thị lịch sử dịch vụ trong portal.
+     * SQL lấy lịch sử giao dịch của hội viên từ Invoices để hiển thị trong portal.
+     * Hiển thị Tên dịch vụ là 'Gói hội viên' hoặc 'Gói tập PT'.
+     * Tính toán Loại giao dịch dựa trên CreatedBy và loại package.
      */
     public List<Map<String, String>> getMemberServices(int userId) {
         List<Map<String, String>> services = new ArrayList<>();
         String sql = """
-                SELECT gp.PackageName, mp.StartDate, mp.EndDate, mp.Status, i.InvoiceID
-                FROM [dbo].[MemberPackages] mp
-                INNER JOIN [dbo].[GymPackages] gp ON mp.PackageID = gp.PackageID
-                INNER JOIN [dbo].[Members] m ON mp.MemberID = m.MemberID
-                LEFT JOIN [dbo].[Invoices] i ON mp.MemberPackageID = i.MemberPackageID AND i.IsDeleted = 0
-                WHERE m.UserID = ? AND mp.IsDeleted = 0 AND gp.IsDeleted = 0
-                ORDER BY mp.EndDate DESC
+                SELECT i.InvoiceID, i.Amount, i.PaymentDate, i.CreatedDate, i.Status, i.CreatedBy,
+                       i.MemberPackageID, i.PtRegistrationId
+                FROM [dbo].[Invoices] i
+                INNER JOIN [dbo].[Members] m ON i.MemberID = m.MemberID
+                WHERE m.UserID = ? AND i.IsDeleted = 0
+                ORDER BY COALESCE(i.PaymentDate, i.CreatedDate) DESC
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, String> map = new HashMap<>();
-                    map.put("serviceName", safe(rs.getString("PackageName")));
-                    map.put("startDate", String.valueOf(rs.getDate("StartDate")));
-                    map.put("endDate", String.valueOf(rs.getDate("EndDate")));
-                    map.put("status", safe(rs.getString("Status")));
                     int invoiceId = rs.getInt("InvoiceID");
-                    map.put("invoiceId", rs.wasNull() ? "" : String.valueOf(invoiceId));
+                    String createdBy = rs.getString("CreatedBy");
+                    Integer memberPkgId = (Integer) rs.getObject("MemberPackageID");
+                    Integer ptRegId = (Integer) rs.getObject("PtRegistrationId");
+
+                    String serviceName = "Dịch vụ khác";
+                    String transactionType = "Thanh toán";
+
+                    if (ptRegId != null) {
+                        serviceName = "Gói tập PT";
+                        transactionType = "Đăng ký Gói tập PT";
+                    } else if (memberPkgId != null) {
+                        serviceName = "Gói hội viên";
+                        if (createdBy != null && createdBy.startsWith("Transfer")) {
+                            transactionType = "Chuyển nhượng";
+                        } else {
+                            transactionType = "Đăng ký / Gia hạn";
+                        }
+                    }
+
+                    java.sql.Timestamp date = rs.getTimestamp("PaymentDate");
+                    if (date == null)
+                        date = rs.getTimestamp("CreatedDate");
+
+                    map.put("invoiceId", String.valueOf(invoiceId));
+                    map.put("serviceName", serviceName);
+                    map.put("transactionType", transactionType);
+                    map.put("transactionDate", date != null ? String.valueOf(date) : "");
+                    map.put("status", safe(rs.getString("Status")));
+                    map.put("amount", String.valueOf(rs.getBigDecimal("Amount")));
+
                     services.add(map);
                 }
             }
@@ -479,7 +526,7 @@ public class GymDAO {
                 VALUES (?, ?, ?, ?, 'Staff', 0)
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, title);
             ps.setString(2, content);
             ps.setInt(3, createdByUserId);
@@ -608,7 +655,7 @@ public class GymDAO {
                 ORDER BY n.PublishDate DESC
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, role);
             try (ResultSet rs = ps.executeQuery()) {
@@ -672,7 +719,7 @@ public class GymDAO {
                   )
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, notificationId);
             ps.setString(3, targetRole);
@@ -712,7 +759,7 @@ public class GymDAO {
                     VALUES (source.NotificationID, source.UserID, 1, SYSDATETIME(), SYSDATETIME());
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, notificationId);
             ps.setInt(2, userId);
             ps.executeUpdate();
@@ -794,7 +841,7 @@ public class GymDAO {
                 """;
 
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, userId);
             ps.setString(3, role);
@@ -821,7 +868,7 @@ public class GymDAO {
                 ORDER BY r.RoleLevel DESC
                 """;
         try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -846,8 +893,6 @@ public class GymDAO {
             }
         }
     }
-
-
 
     /**
      * SQL tìm MemberID theo UserID sau khi tạo hội viên để liên kết gói tập.
