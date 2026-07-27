@@ -39,6 +39,9 @@ public class ManageNotificationController extends HttpServlet {
     private final NotificationService notificationService = new NotificationServiceImpl();
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Điều phối yêu cầu GET để hiển thị danh sách, mở form tạo/sửa hoặc xóa mềm thông báo.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -78,6 +81,9 @@ public class ManageNotificationController extends HttpServlet {
         }
     }
 
+    /**
+     * Nhận dữ liệu form để tạo hoặc cập nhật thông báo, kiểm tra dữ liệu và xử lý ảnh tải lên.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -176,6 +182,9 @@ public class ManageNotificationController extends HttpServlet {
         }
     }
 
+    /**
+     * Tải thông báo theo mã, chuẩn bị danh sách người nhận và hiển thị biểu mẫu chỉnh sửa.
+     */
     private void handleEdit(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
@@ -191,6 +200,9 @@ public class ManageNotificationController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/notification-form.jsp").forward(request, response);
     }
 
+    /**
+     * Xóa mềm thông báo theo mã rồi chuyển về danh sách kèm thông báo kết quả.
+     */
     private void handleDelete(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
@@ -201,12 +213,18 @@ public class ManageNotificationController extends HttpServlet {
                 + URLEncoder.encode(message, StandardCharsets.UTF_8));
     }
 
+    /**
+     * Nạp dữ liệu danh sách thông báo có phân trang và chuyển sang trang quản lý thông báo.
+     */
     private void showList(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         loadListData(request);
         request.getRequestDispatcher("/WEB-INF/views/admin/notification-list.jsp").forward(request, response);
     }
 
+    /**
+     * Tính thông tin phân trang, tải trang thông báo hiện tại và gắn dữ liệu vào request.
+     */
     private void loadListData(HttpServletRequest request) throws SQLException {
         int page = PaginationHelper.parseInt(request.getParameter("page"), 1);
         int pageSize = PaginationHelper.normalizePageSize(PaginationHelper.parseInt(request.getParameter("pageSize"), 10));
@@ -223,6 +241,9 @@ public class ManageNotificationController extends HttpServlet {
         PaginationHelper.setPaginationAttributes(request, page, pageSize, totalItems, queryBase, "thông báo");
     }
 
+    /**
+     * Kiểm tra tiêu đề, nội dung, người nhận, thời gian đăng và thời gian hết hạn của thông báo.
+     */
     private String validateForm(String title, String content, String deliveryMode, String targetRole,
             Integer recipientUserId, LocalDateTime publishDate, LocalDateTime expiryDate) {
         if (title == null || title.isEmpty() || content == null || content.isEmpty()) {
@@ -259,6 +280,9 @@ public class ManageNotificationController extends HttpServlet {
         return null;
     }
 
+    /**
+     * Giữ lại dữ liệu đã nhập, gắn lỗi và hiển thị lại biểu mẫu tạo hoặc chỉnh sửa thông báo.
+     */
     private void forwardFormWithError(HttpServletRequest request, HttpServletResponse response,
             Notification notification, String errorMessage, boolean creating)
             throws ServletException, IOException {
@@ -272,10 +296,16 @@ public class ManageNotificationController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/notification-form.jsp").forward(request, response);
     }
 
+    /**
+     * Loại bỏ khoảng trắng đầu cuối của dữ liệu biểu mẫu và giữ null nếu tham số không tồn tại.
+     */
     private String trim(String value) {
         return value == null ? null : value.trim();
     }
 
+    /**
+     * Chuyển giá trị datetime-local từ biểu mẫu sang LocalDateTime; trả về null khi không hợp lệ.
+     */
     private LocalDateTime parseDateTime(String value) {
         String trimmed = trim(value);
         if (trimmed == null || trimmed.isEmpty()) {
@@ -288,6 +318,9 @@ public class ManageNotificationController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuyển chuỗi mã người nhận hoặc mã thông báo sang số nguyên một cách an toàn.
+     */
     private Integer parseInteger(String value) {
         String trimmed = trim(value);
         if (trimmed == null || trimmed.isEmpty()) {
@@ -300,11 +333,17 @@ public class ManageNotificationController extends HttpServlet {
         }
     }
 
+    /**
+     * Tải tối đa 500 tài khoản Active để Admin chọn người nhận cụ thể trong biểu mẫu.
+     */
     private void loadFormData(HttpServletRequest request) throws SQLException {
         request.setAttribute("recipientUsers",
                 userDAO.searchAccounts(null, null, User.AccountStatus.Active, 0, 500));
     }
 
+    /**
+     * Kiểm tra và lưu ảnh thông báo hợp lệ vào thư mục upload, sau đó trả về đường dẫn ảnh tương đối.
+     */
     private String saveUploadedImage(HttpServletRequest request) throws IOException, ServletException {
         Part part = request.getPart("notificationImage");
         if (part == null || part.getSize() == 0) {
@@ -339,6 +378,9 @@ public class ManageNotificationController extends HttpServlet {
         return NOTIFICATION_UPLOAD_DIR + "/" + uniqueFileName;
     }
 
+    /**
+     * Lấy phần mở rộng của tên tệp ảnh để kiểm tra định dạng được phép.
+     */
     private String getFileExtension(String fileName) {
         int lastDotIndex = fileName.lastIndexOf('.');
         if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
@@ -347,6 +389,9 @@ public class ManageNotificationController extends HttpServlet {
         return fileName.substring(lastDotIndex + 1).toLowerCase();
     }
 
+    /**
+     * Kiểm tra phần mở rộng ảnh có nằm trong danh sách JPG, JPEG, PNG, GIF hoặc WEBP hay không.
+     */
     private boolean isAllowedExtension(String extension) {
         for (String allowed : ALLOWED_IMAGE_EXTENSIONS) {
             if (allowed.equals(extension)) {

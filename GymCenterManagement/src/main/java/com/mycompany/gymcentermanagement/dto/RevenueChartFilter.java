@@ -39,6 +39,9 @@ public class RevenueChartFilter {
     private LocalDate toDate;
     private String groupBy = GROUP_DAY;
 
+    /**
+     * Tạo bộ lọc doanh thu từ tham số request, sau đó chuẩn hóa khoảng ngày và cách nhóm dữ liệu biểu đồ.
+     */
     public static RevenueChartFilter fromRequest(String range, String fromDateValue, String toDateValue, String revenueType) {
         RevenueChartFilter filter = new RevenueChartFilter();
         filter.range = isValidRange(range) ? range : RANGE_THIS_MONTH;
@@ -49,6 +52,9 @@ public class RevenueChartFilter {
         return filter;
     }
 
+    /**
+     * Chuyển khoảng thời gian tương đối hoặc tùy chọn thành ngày bắt đầu/kết thúc hợp lệ.
+     */
     private void normalize(LocalDate today) {
         if (RANGE_CUSTOM.equals(range)) {
             if (fromDate == null || toDate == null) {
@@ -81,6 +87,9 @@ public class RevenueChartFilter {
         groupBy = resolveGroupBy(fromDate, toDate);
     }
 
+    /**
+     * Chọn nhóm biểu đồ theo ngày, tuần hoặc tháng dựa trên độ dài của khoảng thời gian.
+     */
     private static String resolveGroupBy(LocalDate fromDate, LocalDate toDate) {
         long days = ChronoUnit.DAYS.between(fromDate, toDate) + 1;
         if (days <= 31) {
@@ -92,6 +101,9 @@ public class RevenueChartFilter {
         return GROUP_MONTH;
     }
 
+    /**
+     * Kiểm tra giá trị khoảng thời gian có thuộc các lựa chọn Dashboard hỗ trợ hay không.
+     */
     private static boolean isValidRange(String value) {
         return RANGE_LAST_7_DAYS.equals(value)
                 || RANGE_LAST_30_DAYS.equals(value)
@@ -101,12 +113,18 @@ public class RevenueChartFilter {
                 || RANGE_CUSTOM.equals(value);
     }
 
+    /**
+     * Kiểm tra loại doanh thu có phải là tất cả, gói Gym hoặc dịch vụ PT hay không.
+     */
     private static boolean isValidRevenueType(String value) {
         return TYPE_ALL.equals(value)
                 || TYPE_GYM_PACKAGE.equals(value)
                 || TYPE_PT_SERVICE.equals(value);
     }
 
+    /**
+     * Chuyển chuỗi ngày từ request sang LocalDate; trả về null khi dữ liệu rỗng hoặc sai định dạng.
+     */
     private static LocalDate parseDate(String value) {
         if (value == null || value.trim().isEmpty()) {
             return null;
@@ -118,30 +136,51 @@ public class RevenueChartFilter {
         }
     }
 
+    /**
+     * Trả về loại khoảng thời gian đang được áp dụng cho biểu đồ doanh thu.
+     */
     public String getRange() {
         return range;
     }
 
+    /**
+     * Trả về loại doanh thu đang được lọc trên Dashboard.
+     */
     public String getRevenueType() {
         return revenueType;
     }
 
+    /**
+     * Trả về ngày bắt đầu đã được chuẩn hóa cho truy vấn doanh thu.
+     */
     public LocalDate getFromDate() {
         return fromDate;
     }
 
+    /**
+     * Trả về ngày kết thúc đã được chuẩn hóa cho truy vấn doanh thu.
+     */
     public LocalDate getToDate() {
         return toDate;
     }
 
+    /**
+     * Trả về ngày bắt đầu dưới dạng chuỗi để điền lại vào ô lọc trên giao diện.
+     */
     public String getFromDateValue() {
         return fromDate != null ? fromDate.toString() : "";
     }
 
+    /**
+     * Trả về ngày kết thúc dưới dạng chuỗi để điền lại vào ô lọc trên giao diện.
+     */
     public String getToDateValue() {
         return toDate != null ? toDate.toString() : "";
     }
 
+    /**
+     * Trả về đơn vị nhóm dữ liệu doanh thu của biểu đồ: ngày, tuần hoặc tháng.
+     */
     public String getGroupBy() {
         return groupBy;
     }

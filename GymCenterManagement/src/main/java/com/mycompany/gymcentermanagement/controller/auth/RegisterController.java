@@ -34,6 +34,7 @@ public class RegisterController extends HttpServlet {
     private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
+    // Hiển thị trang đăng ký khi người dùng gửi GET /register; bước này chưa ghi dữ liệu vào cơ sở dữ liệu.
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Điều hướng người dùng tới trang giao diện đăng ký ban đầu (Bước 1 & 2)
@@ -41,6 +42,7 @@ public class RegisterController extends HttpServlet {
     }
 
     @Override
+    // Nhận POST từ form đăng ký, validate dữ liệu, tạo User/Member/token xác minh và gửi email kích hoạt.
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Cấu hình mã hóa ký tự nhận dữ liệu tiếng Việt không bị lỗi font

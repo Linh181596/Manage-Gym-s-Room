@@ -25,6 +25,7 @@ public class User {
     private AccountStatus accountStatus;
     private boolean mustChangePassword; //add new attribute for change pass
 
+    // Cho biết user vừa xác thực có bị buộc chuyển sang luồng đổi mật khẩu trước khi vào dashboard hay không.
     public boolean isMustChangePassword() { //new getter
         return mustChangePassword;
     }
@@ -70,6 +71,7 @@ public class User {
     }
 
     // Getters and Setters
+    // Trả về ID dùng để tạo token, kiểm tra trạng thái và gắn session với user.
     public int getUserId() {
         return userId;
     }
@@ -82,14 +84,17 @@ public class User {
         return email;
     }
 
+    // Gán email đã được RegisterController validate để lưu vào bản ghi Users mới.
     public void setEmail(String email) {
         this.email = email;
     }
 
+    // Trả về hash mật khẩu lưu trong DB để LoginController so sánh với hash của mật khẩu nhập vào.
     public String getPasswordHash() {
         return passwordHash;
     }
 
+    // Gán mật khẩu đã băm SHA-256; RegisterController không lưu mật khẩu thô xuống cơ sở dữ liệu.
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
     }
@@ -98,6 +103,7 @@ public class User {
         return fullName;
     }
 
+    // Gán họ tên từ form đăng ký vào cột DisplayName của Users.
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
@@ -106,6 +112,7 @@ public class User {
         return phoneNumber;
     }
 
+    // Gán số điện thoại đã kiểm tra trùng lặp để lưu vào Users.
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
@@ -118,18 +125,22 @@ public class User {
         this.avatarPath = avatarPath;
     }
 
+    // Trả về role để LoginController và AuthenticationFilter điều hướng, phân quyền sau đăng nhập.
     public Role getRole() {
         return role;
     }
 
+    // Gán role Member mặc định cho tài khoản được tạo từ form đăng ký công khai.
     public void setRole(Role role) {
         this.role = role;
     }
 
+    // Trả về trạng thái tài khoản để chặn user Inactive hoặc Locked trong luồng xác thực.
     public AccountStatus getAccountStatus() {
         return accountStatus;
     }
 
+    // Gán trạng thái Inactive khi đăng ký; trạng thái sẽ đổi thành Active sau khi xác minh email.
     public void setAccountStatus(AccountStatus accountStatus) {
         this.accountStatus = accountStatus;
     }

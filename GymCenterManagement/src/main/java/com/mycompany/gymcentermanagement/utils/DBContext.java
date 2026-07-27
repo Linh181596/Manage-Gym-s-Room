@@ -64,6 +64,7 @@ public class DBContext {
      * @return Đối tượng Connection đã kết nối với database
      * @throws SQLException nếu có lỗi xảy ra hoặc hết thời gian chờ
      */
+    // Cấp một kết nối từ HikariCP để UserDAOImpl thực hiện truy vấn Users và User_Tokens.
     public static Connection getConnection() throws SQLException {
         if (dataSource == null) {
             throw new SQLException("HikariCP datasource is not initialized.");
@@ -74,6 +75,7 @@ public class DBContext {
     /**
      * Closes the HikariCP DataSource.
      */
+    // Đóng connection pool khi ứng dụng dừng để giải phóng các kết nối cơ sở dữ liệu.
     public static void shutdown() {
         if (dataSource != null) {
             dataSource.close();

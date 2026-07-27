@@ -14,5 +14,6 @@ import com.mycompany.gymcentermanagement.dto.RevenueChartFilter;
 import java.sql.SQLException;
 
 public interface DashboardService {
+    /** Tải toàn bộ KPI, biểu đồ doanh thu, hóa đơn gần đây và cảnh báo vận hành cho Admin Dashboard. */
     AdminDashboardData getAdminDashboardData(RevenueChartFilter revenueFilter) throws SQLException;
 }

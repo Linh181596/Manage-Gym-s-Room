@@ -48,6 +48,7 @@ public class EmailUtils {
      * @param token   The verification token value.
      * @return true if sent successfully, false otherwise.
      */
+    // Gửi email xác minh bằng base URL mặc định lấy từ file cấu hình mail.properties.
     public static boolean sendVerificationEmail(String toEmail, String token) {
         String baseUrl = properties.getProperty("app.base.url", "http://localhost:8080/GymCenterManagement");
         return sendVerificationEmail(toEmail, token, baseUrl);
@@ -61,6 +62,7 @@ public class EmailUtils {
      * @param baseUrl The dynamic base URL of the application.
      * @return true if sent successfully, false otherwise.
      */
+    // Tạo link /verify?token=... và gửi email kích hoạt tài khoản Member vừa đăng ký qua SMTP.
     public static boolean sendVerificationEmail(String toEmail, String token, String baseUrl) {
         // Thiết lập cấu hình kết nối SMTP Server
         Properties props = new Properties();
@@ -241,12 +243,12 @@ public class EmailUtils {
     }
 
     /**
-     * Sends a password reset email containing a one-time reset link.
+     * Gửi email chứa liên kết đặt lại mật khẩu một lần, kèm token hợp lệ trong thời gian giới hạn.
      *
-     * @param toEmail The recipient's email address.
-     * @param token   The password reset token value.
-     * @param baseUrl The dynamic base URL of the application.
-     * @return true if sent successfully, false otherwise.
+     * @param toEmail Email người nhận.
+     * @param token Token đặt lại mật khẩu.
+     * @param baseUrl URL gốc động của ứng dụng.
+     * @return true nếu gửi thành công, false nếu gửi thất bại.
      */
     public static boolean sendPasswordResetEmail(String toEmail, String token, String baseUrl) {
         // Tương tự hàm xác thực, thiết lập kết nối SMTP

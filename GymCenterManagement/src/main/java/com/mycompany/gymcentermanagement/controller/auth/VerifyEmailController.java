@@ -24,6 +24,7 @@ public class VerifyEmailController extends HttpServlet {
     private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
+    // Nhận token từ link email, kích hoạt tài khoản hợp lệ và chuyển người dùng về trang đăng nhập.
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Trích xuất chuỗi tham số mã định danh Token từ đường dẫn URL người dùng click vào (Bước 9 & 10)
@@ -58,6 +59,7 @@ public class VerifyEmailController extends HttpServlet {
     }
 
     @Override
+    // Cho phép form gửi token bằng POST nhưng tái sử dụng cùng luồng xác minh của doGet.
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Cho phép nhập token thủ công và xử lý chung thông qua doGet

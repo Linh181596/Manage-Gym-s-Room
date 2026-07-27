@@ -65,6 +65,7 @@ public class Member {
         return gender;
     }
 
+    // Gán giới tính tùy chọn từ form đăng ký vào hồ sơ Member.
     public void setGender(String gender) {
         this.gender = gender;
     }
@@ -73,6 +74,7 @@ public class Member {
         return dateOfBirth;
     }
 
+    // Gán ngày sinh đã được kiểm tra hợp lệ và điều kiện tối thiểu 14 tuổi.
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
@@ -129,6 +131,7 @@ public class Member {
         return address;
     }
 
+    // Gán địa chỉ tùy chọn từ form đăng ký vào hồ sơ Member.
     public void setAddress(String address) {
         this.address = address;
     }
@@ -137,6 +140,7 @@ public class Member {
         return membershipStatus;
     }
 
+    // Gán Pending khi tạo hồ sơ; VerifyEmailController sẽ đổi trạng thái này sang Active sau xác minh.
     public void setMembershipStatus(String membershipStatus) {
         this.membershipStatus = membershipStatus;
     }

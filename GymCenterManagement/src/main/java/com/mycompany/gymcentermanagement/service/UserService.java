@@ -52,28 +52,40 @@ public interface UserService {
      */
     boolean updateProfile(User user);
 
+    /** Tìm toàn bộ tài khoản theo từ khóa, vai trò và trạng thái cho chức năng quản lý tài khoản. */
     List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status);
 
+    /** Đếm số tài khoản thỏa điều kiện lọc để tính phân trang. */
     int countAccounts(String keyword, User.Role role, User.AccountStatus status);
 
+    /** Tìm tài khoản theo điều kiện lọc trong một trang dữ liệu xác định. */
     List<User> searchAccounts(String keyword, User.Role role, User.AccountStatus status, int offset, int limit);
 
+    /** Lấy thông tin chi tiết một tài khoản theo mã người dùng. */
     User getAccountById(int userId);
 
+    /** Tạo tài khoản Staff hoặc Member do Admin quản lý và trả về kết quả cùng mật khẩu tạm khi thành công. */
     AccountOperationResult createManagedAccount(User user, String createdBy);
 
+    /** Cập nhật thông tin, trạng thái và vai trò hợp lệ của một tài khoản được quản lý. */
     AccountOperationResult updateManagedAccount(User user, User.Role requestedRole, int currentAdminId, String updatedBy);
 
+    /** Đổi vai trò giữa Staff và Member cho tài khoản đủ điều kiện. */
     AccountOperationResult changeManagedAccountRole(int targetUserId, User.Role newRole, int currentAdminId, String updatedBy);
 
+    /** Cập nhật trạng thái Active, Locked hoặc Inactive sau khi kiểm tra các ràng buộc nghiệp vụ. */
     AccountOperationResult updateAccountStatus(int targetUserId, User.AccountStatus status, int currentAdminId, String updatedBy);
 
+    /** Khóa tài khoản và ngăn Admin khóa chính tài khoản đang đăng nhập. */
     AccountOperationResult lockAccount(int targetUserId, int currentAdminId, String updatedBy);
 
+    /** Mở khóa một tài khoản hiện đang có trạng thái Locked. */
     AccountOperationResult unlockAccount(int targetUserId, String updatedBy);
 
+    /** Vô hiệu hóa mềm tài khoản sau khi kiểm tra các lịch và gói dịch vụ còn ràng buộc. */
     AccountOperationResult deactivateAccount(int targetUserId, int currentAdminId, String updatedBy);
 
+    /** Sinh mật khẩu tạm mới, bắt buộc đổi mật khẩu ở lần đăng nhập sau và trả mật khẩu tạm cho controller. */
     AccountOperationResult resetManagedPassword(int targetUserId, String updatedBy);
 
     boolean updateBasicUserInfo(User user);
