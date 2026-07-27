@@ -75,68 +75,6 @@ public class PersonalTrainerServiceImpl implements PersonalTrainerService {
         return personalTrainerDAO.findPTByUserId(userId);
     }
 
-    /**
-     * Cập nhật trạng thái hoạt động của PT (bởi Admin/Staff).
-     * Luồng nghiệp vụ: Sử dụng Transaction. Cập nhật Status trong bảng PersonalTrainers.
-     * Đồng thời đồng bộ AccountStatus trong bảng Users.
-     * [BR-CONS-28]: If the PT status is set to Inactive, the system must automatically lock the corresponding User account.
-     * [BR-ACT-20], [BR-ACT-21]: Admin can manage PT status.
-     * 
-     * @param ptId PTID cần cập nhật
-     * @param status Trạng thái mới (Active/Inactive)
-     * @return true nếu thành công
-     */
-    @Override
-    public boolean updatePTStatus(int ptId, String status) {
-        Connection conn = null;
-        try {
-            conn = DBContext.getConnection();
-            conn.setAutoCommit(false);
-
-            ((BaseDAO) personalTrainerDAO).setConnection(conn);
-            ((BaseDAO) userDAO).setConnection(conn);
-
-            PersonalTrainer pt = personalTrainerDAO.findById(ptId);
-            if (pt == null) {
-                conn.rollback();
-                return false;
-            }
-
-            boolean ptUpdated = personalTrainerDAO.updateTrainerStatus(ptId, status, "System");
-
-            User.AccountStatus userStatus = "Active".equalsIgnoreCase(status) ? User.AccountStatus.Active : User.AccountStatus.Locked;
-            boolean userUpdated = userDAO.updateAccountStatus(pt.getUserId(), userStatus, "System");
-
-            if (ptUpdated && userUpdated) {
-                conn.commit();
-                return true;
-            } else {
-                conn.rollback();
-                return false;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            return false;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            ((BaseDAO) personalTrainerDAO).setConnection(null);
-            ((BaseDAO) userDAO).setConnection(null);
-        }
-    }
 
     /**
      * Cập nhật toàn bộ thông tin PT (bởi Admin).
