@@ -55,6 +55,7 @@ public class ManageCheckinController extends HttpServlet {
         request.setAttribute("attendanceAllowed",
                 isAttendanceAllowed(shift, date, LocalDate.now(), LocalTime.now()));
         request.setAttribute("checkoutAllowed", isCheckoutAllowed(date, LocalDate.now()));
+        request.setAttribute("recordActionsAllowed", isRecordActionsAllowed(date, LocalDate.now()));
         request.setAttribute("attendanceBlockedMessage",
                 getAttendanceBlockedMessage(shift, date, LocalDate.now(), LocalTime.now()));
 
@@ -93,12 +94,20 @@ public class ManageCheckinController extends HttpServlet {
         try {
             switch (action) {
                 case "checkout" -> {
-                    if (validateCheckoutDate(session, date)) {
+                    if (validateMutableAttendanceRecord(request, session)) {
                         handleCheckout(request, session, actorUserId);
                     }
                 }
-                case "undoCheckout" -> handleUndoCheckout(request, session, actorUserId);
-                case "cancel" -> handleCancel(request, session, actorUserId);
+                case "undoCheckout" -> {
+                    if (validateMutableAttendanceRecord(request, session)) {
+                        handleUndoCheckout(request, session, actorUserId);
+                    }
+                }
+                case "cancel" -> {
+                    if (validateMutableAttendanceRecord(request, session)) {
+                        handleCancel(request, session, actorUserId);
+                    }
+                }
                 case "checkin" -> {
                     if (validateAttendanceTime(session, shift, date)) {
                         handleCheckin(request, session, shift, date, actorUserId, actorName);
@@ -233,6 +242,27 @@ public class ManageCheckinController extends HttpServlet {
         return false;
     }
 
+    private boolean validateMutableAttendanceRecord(HttpServletRequest request, HttpSession session) throws SQLException {
+        int attendanceId = parseAttendanceId(request);
+        if (attendanceId <= 0) {
+            setFlash(session, "error", "Bản ghi điểm danh không hợp lệ.");
+            return false;
+        }
+
+        StaffPTAttendance attendance = attendanceService.findById(attendanceId);
+        if (attendance == null || attendance.getAttendanceId() <= 0 || attendance.getAttendanceDate() == null) {
+            setFlash(session, "error", "Không tìm thấy bản ghi điểm danh cần cập nhật.");
+            return false;
+        }
+
+        if (isRecordActionsAllowed(attendance.getAttendanceDate(), LocalDate.now())) {
+            return true;
+        }
+
+        setFlash(session, "error", "Ngày điểm danh đã kết thúc, không thể sửa, hoàn tác hoặc hủy bản ghi của ngày đó.");
+        return false;
+    }
+
     private boolean validateCheckoutDate(HttpSession session, LocalDate selectedDate) {
         if (isCheckoutAllowed(selectedDate, LocalDate.now())) {
             return true;
@@ -247,6 +277,10 @@ public class ManageCheckinController extends HttpServlet {
 
     static boolean isCheckoutAllowed(LocalDate selectedDate, LocalDate currentDate) {
         return selectedDate.equals(currentDate);
+    }
+
+    static boolean isRecordActionsAllowed(LocalDate selectedDate, LocalDate currentDate) {
+        return selectedDate != null && selectedDate.equals(currentDate);
     }
 
     static String getAttendanceBlockedMessage(String shift, LocalDate selectedDate,

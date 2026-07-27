@@ -18,6 +18,7 @@
     String memberType = request.getParameter("memberType") != null ? request.getParameter("memberType") : "";
     String contextPath = request.getContextPath();
     String errorMessage = (String) request.getAttribute("errorMessage");
+    String successMessage = (String) request.getAttribute("successMessage");
 %>
 
 <!-- Staff Member Management Content -->
@@ -38,6 +39,12 @@
     <% if (errorMessage != null) { %>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fa fa-exclamation-circle me-2"></i><%= errorMessage %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if (successMessage != null) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa fa-check-circle me-2"></i><%= successMessage %>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <% } %>
@@ -133,6 +140,7 @@
                                         String userId = member.get("userId");
                                         String status = member.get("status");
                                         boolean isActive = "Active".equalsIgnoreCase(status);
+                                        boolean hasActivePackage = "true".equalsIgnoreCase(member.get("hasActivePackage"));
                                 %>
                                     <tr>
                                         <td><strong>#<%= userId %></strong></td>
@@ -174,12 +182,21 @@
                                                         <i class="fa fa-exchange-alt"></i> Chuyển nhượng
                                                     </a>
                                                     <%-- Nút thay đổi trạng thái hội viên thành Locked (khóa tài khoản) --%>
-                                                    <a href="<%= contextPath %>/staff/members/toggle?userId=<%= userId %>&targetStatus=Locked" 
-                                                       class="btn btn-sm btn-outline-warning" 
-                                                       onclick="return confirm('Bạn có chắc chắn muốn KHÓA hội viên này?')" 
-                                                       title="Khóa tài khoản">
-                                                        <i class="fa fa-lock"></i> Khóa
-                                                    </a>
+                                                    <% if (hasActivePackage) { %>
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-warning"
+                                                                title="Không thể khóa hội viên đang có gói tập còn hạn"
+                                                                disabled>
+                                                            <i class="fa fa-lock"></i> Khóa
+                                                        </button>
+                                                    <% } else { %>
+                                                        <a href="<%= contextPath %>/staff/members/toggle?userId=<%= userId %>&targetStatus=Locked" 
+                                                           class="btn btn-sm btn-outline-warning" 
+                                                           onclick="return confirm('Bạn có chắc chắn muốn KHÓA hội viên này?')" 
+                                                           title="Khóa tài khoản">
+                                                            <i class="fa fa-lock"></i> Khóa
+                                                        </a>
+                                                    <% } %>
                                                 <% } else { %>
                                                     <%-- Nút thay đổi trạng thái hội viên thành Active (mở khóa tài khoản) --%>
                                                     <a href="<%= contextPath %>/staff/members/toggle?userId=<%= userId %>&targetStatus=Active" 
@@ -197,12 +214,21 @@
                                                     <i class="fa fa-bell"></i> Nhắc nhở
                                                 </a>
                                                 <%-- Nút xóa vĩnh viễn dữ liệu hội viên khỏi hệ thống --%>
-                                                <a href="<%= contextPath %>/staff/members/delete?userId=<%= userId %>" 
-                                                   class="btn btn-sm btn-outline-danger" 
-                                                   onclick="return confirm('CẢNH BÁO: Bạn có thực sự chắc chắn muốn XÓA HỘI VIÊN này khỏi hệ thống không?')" 
-                                                   title="Xóa vĩnh viễn">
-                                                    <i class="fa fa-trash-alt"></i> Xóa
-                                                </a>
+                                                <% if (hasActivePackage) { %>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            title="Không thể xóa hội viên đang có gói tập còn hạn"
+                                                            disabled>
+                                                        <i class="fa fa-trash-alt"></i> Xóa
+                                                    </button>
+                                                <% } else { %>
+                                                    <a href="<%= contextPath %>/staff/members/delete?userId=<%= userId %>" 
+                                                       class="btn btn-sm btn-outline-danger" 
+                                                       onclick="return confirm('CẢNH BÁO: Bạn có thực sự chắc chắn muốn XÓA HỘI VIÊN này khỏi hệ thống không?')" 
+                                                       title="Xóa vĩnh viễn">
+                                                        <i class="fa fa-trash-alt"></i> Xóa
+                                                    </a>
+                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>

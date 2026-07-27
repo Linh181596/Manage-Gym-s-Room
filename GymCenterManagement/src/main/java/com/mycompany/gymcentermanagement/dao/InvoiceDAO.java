@@ -20,4 +20,5 @@ public interface InvoiceDAO {
     List<Invoice> findAll() throws SQLException;
     int countAll() throws SQLException;
     List<Invoice> findAllPaginated(int offset, int limit) throws SQLException;
+    Invoice findByPtRegistrationId(int ptRegistrationId) throws SQLException;
 }

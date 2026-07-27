@@ -21,6 +21,8 @@ public class StaffPTAttendance {
 
     private static final DateTimeFormatter DISPLAY_DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter DISPLAY_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("HH:mm");
 
     /** Ca làm việc */
     public enum ShiftBlock {
@@ -56,6 +58,11 @@ public class StaffPTAttendance {
     private String targetFullName;      // tên người được điểm danh
     private String targetEmail;
     private String checkedByName;       // tên staff thực hiện điểm danh
+    private String workStatusKey;
+    private String workStatusKeys;
+    private String workStatusLabel;
+    private String workStatusBadgeClass;
+    private String workStatusIconClass;
 
     public StaffPTAttendance() {
     }
@@ -100,6 +107,10 @@ public class StaffPTAttendance {
         return formatDateTime(checkedInAt);
     }
 
+    public String getCheckedInTimeDisplay() {
+        return formatTime(checkedInAt);
+    }
+
     public void setCheckedInAt(LocalDateTime checkedInAt) {
         this.checkedInAt = checkedInAt;
     }
@@ -110,6 +121,10 @@ public class StaffPTAttendance {
 
     public String getCheckedOutAtDisplay() {
         return formatDateTime(checkedOutAt);
+    }
+
+    public String getCheckedOutTimeDisplay() {
+        return formatTime(checkedOutAt);
     }
 
     public void setCheckedOutAt(LocalDateTime checkedOutAt) {
@@ -214,6 +229,46 @@ public class StaffPTAttendance {
         this.checkedByName = checkedByName;
     }
 
+    public String getWorkStatusKey() {
+        return workStatusKey;
+    }
+
+    public void setWorkStatusKey(String workStatusKey) {
+        this.workStatusKey = workStatusKey;
+    }
+
+    public String getWorkStatusKeys() {
+        return workStatusKeys;
+    }
+
+    public void setWorkStatusKeys(String workStatusKeys) {
+        this.workStatusKeys = workStatusKeys;
+    }
+
+    public String getWorkStatusLabel() {
+        return workStatusLabel;
+    }
+
+    public void setWorkStatusLabel(String workStatusLabel) {
+        this.workStatusLabel = workStatusLabel;
+    }
+
+    public String getWorkStatusBadgeClass() {
+        return workStatusBadgeClass;
+    }
+
+    public void setWorkStatusBadgeClass(String workStatusBadgeClass) {
+        this.workStatusBadgeClass = workStatusBadgeClass;
+    }
+
+    public String getWorkStatusIconClass() {
+        return workStatusIconClass;
+    }
+
+    public void setWorkStatusIconClass(String workStatusIconClass) {
+        this.workStatusIconClass = workStatusIconClass;
+    }
+
     /** Label hiển thị ca làm việc bằng tiếng Việt */
     public String getShiftLabel() {
         if (shiftBlock == null) return "";
@@ -242,6 +297,10 @@ public class StaffPTAttendance {
 
     private String formatDateTime(LocalDateTime value) {
         return value == null ? "" : value.format(DISPLAY_DATE_TIME_FORMATTER);
+    }
+
+    private String formatTime(LocalDateTime value) {
+        return value == null ? "" : value.format(DISPLAY_TIME_FORMATTER);
     }
 
     @Override

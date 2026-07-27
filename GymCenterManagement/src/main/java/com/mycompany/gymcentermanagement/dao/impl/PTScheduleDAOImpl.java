@@ -151,8 +151,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                          req.ProposedEndTime AS RescheduleProposedEndTime,
                          req.Reason AS RescheduleReason,
                          req.SenderUserID AS RescheduleSenderUserID,
-                         req.ResponseReason AS RescheduleResponseReason,
-                         req.EscalationReason AS RescheduleEscalationReason
+                         req.ResponseReason AS RescheduleResponseReason
                     FROM PTSchedules s
                     JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
                     JOIN Members m ON r.MemberID = m.MemberID
@@ -223,7 +222,6 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                         dto.setRescheduleReason(rs.getString("RescheduleReason"));
                         dto.setRescheduleSenderUserId(rs.getInt("RescheduleSenderUserID"));
                         dto.setRescheduleResponseReason(rs.getString("RescheduleResponseReason"));
-                        dto.setRescheduleEscalationReason(rs.getString("RescheduleEscalationReason"));
                     }
                     list.add(dto);
                 }
@@ -754,8 +752,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                          req.ProposedEndTime AS RescheduleProposedEndTime,
                          req.Reason AS RescheduleReason,
                          req.SenderUserID AS RescheduleSenderUserID,
-                         req.ResponseReason AS RescheduleResponseReason,
-                         req.EscalationReason AS RescheduleEscalationReason
+                         req.ResponseReason AS RescheduleResponseReason
                     FROM PTSchedules s
                     JOIN PTRegistrations r ON s.PTRegistrationID = r.PTRegistrationID
                     JOIN PTServicePrices sp ON r.PTServicePriceID = sp.PTServicePriceID
@@ -815,7 +812,6 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                         dto.setRescheduleReason(rs.getString("RescheduleReason"));
                         dto.setRescheduleSenderUserId(rs.getInt("RescheduleSenderUserID"));
                         dto.setRescheduleResponseReason(rs.getString("RescheduleResponseReason"));
-                        dto.setRescheduleEscalationReason(rs.getString("RescheduleEscalationReason"));
                     }
                     list.add(dto);
                 }
@@ -846,7 +842,7 @@ public class PTScheduleDAOImpl implements PTScheduleDAO {
                     RespondedByUserID = ?, 
                     RespondedAt = SYSDATETIME(), 
                     UpdatedDate = SYSDATETIME() 
-                WHERE PTScheduleID = ? AND Status IN ('Pending', 'Escalated')
+                WHERE PTScheduleID = ? AND Status = 'Pending'
                 """;
         
         Connection conn = null;

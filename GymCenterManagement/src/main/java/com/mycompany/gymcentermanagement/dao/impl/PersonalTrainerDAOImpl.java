@@ -863,45 +863,6 @@ public class PersonalTrainerDAOImpl extends BaseDAO implements PersonalTrainerDA
         }
     }
 
-    /**
-     * Cập nhật trạng thái làm việc của Huấn luyện viên.
-     * Luồng nghiệp vụ: Chỉ cập nhật cờ Status ('Active' / 'Inactive') của PT. 
-     * Gọi từ service khi đồng bộ trạng thái.
-     * 
-     * @param ptId ID của PT
-     * @param status Trạng thái mới
-     * @param updatedBy Người thực hiện
-     * @return true nếu thành công
-     */
-    @Override
-    public boolean updateTrainerStatus(int ptId, String status, String updatedBy) {
-        // SQL: Cập nhật trường Status trong bảng PersonalTrainers
-        String sqlPT = """
-                    UPDATE PersonalTrainers
-                    SET Status = ?,
-                        UpdatedBy = ?,
-                        UpdatedDate = GETDATE()
-                    WHERE PTID = ?
-                      AND IsDeleted = 0
-                """;
-
-        Connection conn = null;
-        PreparedStatement ps = null;
-
-        try {
-            conn = getActiveConnection();
-            ps = conn.prepareStatement(sqlPT);
-            ps.setString(1, status);
-            ps.setString(2, updatedBy);
-            ps.setInt(3, ptId);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            closeResource(conn, ps, null);
-        }
-    }
 
     /**
      * Xóa mềm hồ sơ Huấn luyện viên.

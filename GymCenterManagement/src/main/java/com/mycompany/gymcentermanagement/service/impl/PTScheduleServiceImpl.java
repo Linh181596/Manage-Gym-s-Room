@@ -275,6 +275,29 @@ public class PTScheduleServiceImpl implements PTScheduleService {
             return "Lỗi hệ thống khi lưu lịch tập và cập nhật ngày bắt đầu/kết thúc gói tập.";
         }
 
+        // Gửi thông báo cho hội viên khi lịch tập tự động được tạo thành công
+        try {
+            Member member = memberDAO.findById(reg.getMemberId());
+            if (member != null) {
+                Notification memberNotif = new Notification();
+                memberNotif.setTitle("Lịch tập cá nhân đã được thiết lập");
+                memberNotif.setContent("Huấn luyện viên " + reg.getPtDisplayName() 
+                        + " đã thiết lập thành công lịch tập cố định cho bạn."
+                        + " Ngày bắt đầu: " + actualStart.format(formatter) 
+                        + ", ngày kết thúc dự kiến: " + actualEnd.format(formatter) 
+                        + " (Tổng số: " + totalSessions + " buổi).");
+                memberNotif.setCreatedBy(createdByUserId);
+                memberNotif.setTargetRole("Specific");
+                memberNotif.setCreatedByRole("PT");
+                memberNotif.setCreatedDate(LocalDateTime.now());
+                memberNotif.setPublishDate(LocalDateTime.now());
+                memberNotif.setRecipientUserId(member.getUserId());
+                notificationDAO.insert(memberNotif);
+            }
+        } catch (Exception e) {
+            System.err.println("Không thể gửi thông báo xếp lịch tự động cho hội viên: " + e.getMessage());
+        }
+
         return "SUCCESS";
     }
 
@@ -374,6 +397,24 @@ public class PTScheduleServiceImpl implements PTScheduleService {
                     origNotif.setPublishDate(LocalDateTime.now());
                     origNotif.setRecipientUserId(originalPt.getUserId());
                     notificationDAO.insert(origNotif);
+                }
+
+                // Gửi thông báo cho hội viên (Member) để họ biết HLV dạy hôm đó bị thay đổi
+                if (member != null) {
+                    Notification memberNotif = new Notification();
+                    memberNotif.setTitle("Thông báo thay đổi Huấn luyện viên dạy học");
+                    memberNotif.setContent("Ca học của bạn vào ngày " + schedule.getSessionDate()
+                            + " khung giờ " + schedule.getStartTime().toString().substring(0, 5)
+                            + " - " + schedule.getEndTime().toString().substring(0, 5)
+                            + " sẽ được hướng dẫn bởi HLV " + pt.getDisplayName()
+                            + " (thay cho HLV " + originalPtName + "). Lý do: " + reason);
+                    memberNotif.setCreatedBy(substituteByUserId);
+                    memberNotif.setTargetRole("Specific");
+                    memberNotif.setCreatedByRole("Staff");
+                    memberNotif.setCreatedDate(LocalDateTime.now());
+                    memberNotif.setPublishDate(LocalDateTime.now());
+                    memberNotif.setRecipientUserId(member.getUserId());
+                    notificationDAO.insert(memberNotif);
                 }
 
             } catch (Exception e) {

@@ -189,16 +189,34 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>
-                                    <div class="fw-bold text-dark">${invoice.memberPackage.gymPackage.packageName}</div>
-                                    <div class="small text-muted italic">${invoice.memberPackage.gymPackage.description}</div>
-                                    <div class="small text-primary mt-1 fw-medium">
-                                        <i class="fa fa-calendar-check me-1"></i> Thời gian hiệu lực: 
-                                        ${invoice.memberPackage.startDate.dayOfMonth}/${invoice.memberPackage.startDate.monthValue}/${invoice.memberPackage.startDate.year} đến 
-                                        ${invoice.memberPackage.endDate.dayOfMonth}/${invoice.memberPackage.endDate.monthValue}/${invoice.memberPackage.endDate.year}
-                                    </div>
-                                </td>
-                                <td class="text-center fw-semibold text-dark">${invoice.memberPackage.gymPackage.durationMonths} Tháng</td>
+                                <c:choose>
+                                    <c:when test="${not empty invoice.memberPackage}">
+                                        <td>
+                                            <div class="fw-bold text-dark">${invoice.memberPackage.gymPackage.packageName}</div>
+                                            <div class="small text-muted italic">${invoice.memberPackage.gymPackage.description}</div>
+                                            <div class="small text-primary mt-1 fw-medium">
+                                                <i class="fa fa-calendar-check me-1"></i> Thời gian hiệu lực: 
+                                                ${invoice.memberPackage.startDate.dayOfMonth}/${invoice.memberPackage.startDate.monthValue}/${invoice.memberPackage.startDate.year} đến 
+                                                ${invoice.memberPackage.endDate.dayOfMonth}/${invoice.memberPackage.endDate.monthValue}/${invoice.memberPackage.endDate.year}
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-semibold text-dark">${invoice.memberPackage.gymPackage.durationMonths} Tháng</td>
+                                    </c:when>
+                                    <c:when test="${not empty ptRegistrationDTO}">
+                                        <td>
+                                            <div class="fw-bold text-dark">Gói PT: ${ptRegistrationDTO.packageName}</div>
+                                            <div class="small text-muted italic">HLV: ${ptRegistrationDTO.ptDisplayName}</div>
+                                            <div class="small text-primary mt-1 fw-medium">
+                                                <i class="fa fa-calendar-check me-1"></i> Thời gian hiệu lực (dự kiến): 
+                                                ${ptRegistrationDTO.preferredStartDate.dayOfMonth}/${ptRegistrationDTO.preferredStartDate.monthValue}/${ptRegistrationDTO.preferredStartDate.year}
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-semibold text-dark">${ptRegistrationDTO.numberOfSessions} Buổi</td>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <td colspan="2">Thông tin gói không khả dụng</td>
+                                    </c:otherwise>
+                                </c:choose>
                                 <td class="text-end fw-bold text-primary fs-6">
                                     <fmt:formatNumber value="${invoice.amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                 </td>
