@@ -177,11 +177,6 @@
                                                             <i class="fa fa-times-circle me-1"></i> Đổi lịch bị từ chối
                                                         </div>
                                                     </c:when>
-                                                    <c:when test="${s.rescheduleStatus == 'Escalated'}">
-                                                        <div class="text-warning small fw-bold text-center mt-3">
-                                                            <i class="fa fa-balance-scale me-1"></i> Đang nhờ Admin can thiệp
-                                                        </div>
-                                                    </c:when>
                                                 </c:choose>
                                             </c:if>
                                         </c:when>
@@ -265,13 +260,6 @@
                                                                  </c:otherwise>
                                                              </c:choose>
                                                         </c:when>
-                                                         <c:when test="${s.rescheduleStatus == 'Escalated'}">
-                                                             <button type="button" class="btn btn-sm btn-warning text-dark mt-3 w-100 fw-bold"
-                                                                     data-bs-toggle="modal"
-                                                                     data-bs-target="#viewRescheduleModal_${s.scheduleId}">
-                                                                  <i class="fa fa-balance-scale me-1"></i> Chờ Admin hỗ trợ
-                                                             </button>
-                                                         </c:when>
                                                     </c:choose>
                                                 </c:otherwise>
                                             </c:choose>
@@ -390,23 +378,13 @@
                                 </div>
                             </c:if>
 
-                            <c:if test="${not empty s.rescheduleEscalationReason}">
-                                <div class="mb-3 p-3 bg-light border-start border-3 border-warning rounded">
-                                    <div class="fw-semibold text-warning small">Lý do yêu cầu hỗ trợ đổi lịch:</div>
-                                    <div class="text-dark italic mt-1" style="font-style: italic;">
-                                        "${s.rescheduleEscalationReason}"
-                                    </div>
-                                </div>
-                            </c:if>
-
                             <div class="d-flex align-items-center mb-3">
                                 <div class="fw-semibold me-2">Trạng thái:</div>
-                                <span class="badge bg-${s.rescheduleStatus == 'Pending' ? 'info' : (s.rescheduleStatus == 'Approved' ? 'success' : (s.rescheduleStatus == 'Rejected' ? 'danger' : 'warning'))} px-3 py-2 fs-7">
+                                <span class="badge bg-${s.rescheduleStatus == 'Pending' ? 'info' : (s.rescheduleStatus == 'Approved' ? 'success' : 'danger')} px-3 py-2 fs-7">
                                     <c:choose>
                                         <c:when test="${s.rescheduleStatus == 'Pending'}">Đang chờ</c:when>
                                         <c:when test="${s.rescheduleStatus == 'Approved'}">Đã duyệt</c:when>
                                         <c:when test="${s.rescheduleStatus == 'Rejected'}">Bị từ chối</c:when>
-                                        <c:when test="${s.rescheduleStatus == 'Escalated'}">Yêu cầu hỗ trợ (Gửi lên Admin)</c:when>
                                         <c:otherwise>${s.rescheduleStatus}</c:otherwise>
                                     </c:choose>
                                 </span>
@@ -457,17 +435,13 @@
         </c:if>
 
         <!-- Modal: Phản hồi yêu cầu đổi lịch (Phía Người Nhận hoặc Staff/Admin) -->
-        <c:if test="${not empty s.rescheduleRequestId && (s.rescheduleStatus == 'Pending' || s.rescheduleStatus == 'Escalated') && (s.rescheduleSenderUserId != sessionScope.currentUser.userId || sessionScope.currentUser.role == 'Staff' || sessionScope.currentUser.role == 'Admin')}">
+        <c:if test="${not empty s.rescheduleRequestId && s.rescheduleStatus == 'Pending' && (s.rescheduleSenderUserId != sessionScope.currentUser.userId || sessionScope.currentUser.role == 'Staff' || sessionScope.currentUser.role == 'Admin')}">
             <div class="modal fade" id="respondRescheduleModal_${s.scheduleId}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content border-danger border-2">
                         <div class="modal-header bg-danger text-white">
                             <h5 class="modal-title fw-bold">
-                                <i class="fa fa-bell me-1"></i> 
-                                <c:choose>
-                                    <c:when test="${s.rescheduleStatus == 'Escalated'}">Staff/Admin Xử lý hỗ trợ đổi lịch</c:when>
-                                    <c:otherwise>Xử lý yêu cầu đổi lịch tập</c:otherwise>
-                                </c:choose>
+                                <i class="fa fa-bell me-1"></i> Xử lý yêu cầu đổi lịch tập
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -512,22 +486,12 @@
                                 <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/pt/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">
 
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold text-dark">Ý kiến phản hồi / Lý do yêu cầu hỗ trợ (nếu từ chối/yêu cầu hỗ trợ)</label>
-                                    <textarea name="responseReason" class="form-control" rows="2" placeholder="Nhập ý kiến hoặc lý do từ chối/yêu cầu hỗ trợ..."></textarea>
+                                    <label class="form-label fw-semibold text-dark">Ý kiến phản hồi (bắt buộc nếu từ chối)</label>
+                                    <textarea name="responseReason" class="form-control" rows="2" placeholder="Nhập ý kiến hoặc lý do từ chối..."></textarea>
                                 </div>
 
                                 <div class="modal-footer bg-light px-0 pb-0">
-                                    <div class="d-flex justify-content-between align-items-center w-100">
-                                        <c:choose>
-                                            <c:when test="${s.rescheduleStatus == 'Escalated'}">
-                                                <span class="badge bg-warning text-dark"><i class="fa fa-balance-scale me-1"></i> Chờ Admin hỗ trợ</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <button type="submit" name="action" value="escalate" class="btn btn-warning fw-bold text-dark">
-                                                    <i class="fa fa-balance-scale me-1"></i> Yêu cầu hỗ trợ đổi lịch
-                                                </button>
-                                            </c:otherwise>
-                                        </c:choose>
+                                    <div class="d-flex justify-content-end align-items-center w-100">
                                         <div>
                                             <%-- Nút submit hành động từ chối yêu cầu đổi lịch --%>
                                             <button type="submit" name="action" value="reject" class="btn btn-danger fw-bold me-2">
@@ -606,14 +570,14 @@
         document.querySelectorAll('form[action$="/reschedule-request/respond"]').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 const actionBtn = e.submitter;
-                if (actionBtn && (actionBtn.value === 'escalate' || actionBtn.value === 'reject')) {
+                if (actionBtn && actionBtn.value === 'reject') {
                     const textarea = form.querySelector('textarea[name="responseReason"]');
                     if (textarea && textarea.value.trim() === '') {
                         e.preventDefault();
                         Swal.fire({
                             icon: 'warning',
                             title: 'Lưu ý!',
-                            text: 'Vui lòng nhập lý do phản hồi hoặc lý do yêu cầu hỗ trợ đổi lịch!',
+                            text: 'Vui lòng nhập lý do từ chối yêu cầu đổi lịch!',
                             confirmButtonText: 'Đồng ý'
                         });
                     }

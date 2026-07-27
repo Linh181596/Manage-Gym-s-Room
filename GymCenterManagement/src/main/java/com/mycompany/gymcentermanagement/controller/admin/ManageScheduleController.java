@@ -37,9 +37,6 @@ public class ManageScheduleController extends HttpServlet {
             List<PTRegistrationDTO> pendingRegistrations = ptRegistrationService.getPendingRegistrations();
             req.setAttribute("pendingRegistrations", pendingRegistrations);
 
-            // Escalated reschedule requests (Tab 3)
-            List<RescheduleRequestDetailDTO> escalatedRequests = rescheduleRequestService.getEscalatedRequests();
-            req.setAttribute("escalatedRequests", escalatedRequests);
 
             // Active PT list for substitution
             List<PersonalTrainer> activeTrainers = personalTrainerService.getActiveTrainers();
