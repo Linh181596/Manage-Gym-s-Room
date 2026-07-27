@@ -95,46 +95,89 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new SQLException("Failed to update invoice status.");
             }
             
-            // Kích hoạt gói tập tương ứng của thành viên (chuyển sang Active)
+            // Kích hoạt/Cập nhật gói tập tương ứng của thành viên
             if (inv.getMemberPackageId() != null) {
                 MemberPackage mp = mpDAO.findById(inv.getMemberPackageId());
                 if (mp == null) {
                     throw new SQLException("Associated Member Package not found.");
                 }
-                mp.setStatus("Active");
+                
+                String createdBy = inv.getCreatedBy() != null ? inv.getCreatedBy() : "";
+                
+                if (createdBy.startsWith("Transfer;")) {
+                    // Xử lý Transfer
+                    int senderPkgId = -1;
+                    int transferMonths = 0;
+                    String[] parts = createdBy.split(";");
+                    for (String part : parts) {
+                        if (part.startsWith("SPkg:")) {
+                            senderPkgId = Integer.parseInt(part.split(":")[1]);
+                        } else if (part.startsWith("TMths:")) {
+                            transferMonths = Integer.parseInt(part.split(":")[1]);
+                        }
+                    }
+                    
+                    if (senderPkgId != -1 && transferMonths > 0) {
+                        long transferDays = transferMonths * 30L;
+                        // 1. Trừ ngày của Sender
+                        MemberPackage senderPkg = mpDAO.findById(senderPkgId);
+                        if (senderPkg != null) {
+                            java.time.LocalDate newSenderEndDate = senderPkg.getEndDate().minusDays(transferDays);
+                            senderPkg.setEndDate(newSenderEndDate);
+                            if (newSenderEndDate.isBefore(java.time.LocalDate.now()) || newSenderEndDate.isEqual(java.time.LocalDate.now())) {
+                                senderPkg.setStatus("Expired");
+                            }
+                            senderPkg.setUpdatedBy("Transferred by StaffUserID: " + staffUserId);
+                            senderPkg.setUpdatedDate(LocalDateTime.now());
+                            mpDAO.update(senderPkg);
+                        }
+                        
+                        // 2. Cộng ngày cho Receiver
+                        java.time.LocalDate baseDate = mp.getEndDate();
+                        if ("Pending".equals(mp.getStatus())) {
+                            // Người nhận chưa có gói, gói Pending đã set EndDate sẵn lúc Transfer rồi.
+                            mp.setStatus("Active");
+                        } else {
+                            // Người nhận đã có gói, cộng dồn
+                            if ("Expired".equals(mp.getStatus()) || baseDate == null || baseDate.isBefore(java.time.LocalDate.now())) {
+                                baseDate = java.time.LocalDate.now();
+                            }
+                            mp.setEndDate(baseDate.plusDays(transferDays));
+                            mp.setStatus("Active");
+                        }
+                    }
+                } else if (createdBy.startsWith("Renew;")) {
+                    // Xử lý Renew
+                    int renewPackageId = mp.getPackageId(); // Fallback
+                    String[] parts = createdBy.split(";");
+                    for (String part : parts) {
+                        if (part.startsWith("PackageID:")) {
+                            renewPackageId = Integer.parseInt(part.split(":")[1]);
+                        }
+                    }
+
+                    com.mycompany.gymcentermanagement.dao.GymPackageDAO gpDAO = new com.mycompany.gymcentermanagement.dao.impl.GymPackageDAOImpl(conn);
+                    com.mycompany.gymcentermanagement.model.entity.GymPackage gp = gpDAO.findById(renewPackageId);
+                    if (gp != null) {
+                        java.time.LocalDate baseDate = mp.getEndDate();
+                        if ("Expired".equals(mp.getStatus()) || baseDate == null || baseDate.isBefore(java.time.LocalDate.now())) {
+                            baseDate = java.time.LocalDate.now();
+                        }
+                        mp.setEndDate(baseDate.plusMonths(gp.getDurationMonths()));
+                        mp.setPackageId(renewPackageId); // Cập nhật gói mới
+                        mp.setStatus("Active");
+                    }
+                } else {
+                    // Xử lý Register (New)
+                    mp.setStatus("Active");
+                }
+                
                 mp.setUpdatedBy("StaffUserID: " + staffUserId);
                 mp.setUpdatedDate(LocalDateTime.now());
                 
                 boolean updatePackageSuccess = mpDAO.update(mp);
                 if (!updatePackageSuccess) {
-                    throw new SQLException("Failed to activate Member Package.");
-                }
-
-                // Tự động đóng gói của người gửi nếu đây là giao dịch chuyển nhượng (Transfer)
-                if (inv.getCreatedBy() != null && inv.getCreatedBy().startsWith("Transfer;SenderPackageID:")) {
-                    try {
-                        String[] parts = inv.getCreatedBy().split(";");
-                        int senderPkgId = -1;
-                        for (String part : parts) {
-                            if (part.startsWith("SenderPackageID:")) {
-                                senderPkgId = Integer.parseInt(part.split(":")[1]);
-                                break;
-                            }
-                        }
-                        if (senderPkgId != -1) {
-                            MemberPackage senderPkg = mpDAO.findById(senderPkgId);
-                            if (senderPkg != null) {
-                                senderPkg.setStatus("Expired");
-                                senderPkg.setEndDate(java.time.LocalDate.now()); // Đặt EndDate về Hôm nay
-                                senderPkg.setUpdatedBy("Transferred by StaffUserID: " + staffUserId);
-                                senderPkg.setUpdatedDate(LocalDateTime.now());
-                                mpDAO.update(senderPkg);
-                            }
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Lỗi đóng gói người gửi khi xử lý chuyển nhượng: " + e.getMessage());
-                        // Ghi log lỗi nhưng không rollback để tránh treo tiền khách hàng đã thanh toán
-                    }
+                    throw new SQLException("Failed to activate/update Member Package.");
                 }
             }
             
@@ -216,39 +259,81 @@ public class InvoiceServiceImpl implements InvoiceService {
                 if (mp == null) {
                     throw new SQLException("Associated Member Package not found.");
                 }
-                mp.setStatus("Active");
+                
+                String createdBy = inv.getCreatedBy() != null ? inv.getCreatedBy() : "";
+                
+                if (createdBy.startsWith("Transfer;")) {
+                    // Xử lý Transfer
+                    int senderPkgId = -1;
+                    int transferMonths = 0;
+                    String[] parts = createdBy.split(";");
+                    for (String part : parts) {
+                        if (part.startsWith("SPkg:")) {
+                            senderPkgId = Integer.parseInt(part.split(":")[1]);
+                        } else if (part.startsWith("TMths:")) {
+                            transferMonths = Integer.parseInt(part.split(":")[1]);
+                        }
+                    }
+                    
+                    if (senderPkgId != -1 && transferMonths > 0) {
+                        long transferDays = transferMonths * 30L;
+                        // 1. Trừ ngày của Sender
+                        MemberPackage senderPkg = mpDAO.findById(senderPkgId);
+                        if (senderPkg != null) {
+                            java.time.LocalDate newSenderEndDate = senderPkg.getEndDate().minusDays(transferDays);
+                            senderPkg.setEndDate(newSenderEndDate);
+                            if (newSenderEndDate.isBefore(java.time.LocalDate.now()) || newSenderEndDate.isEqual(java.time.LocalDate.now())) {
+                                senderPkg.setStatus("Expired");
+                            }
+                            senderPkg.setUpdatedBy("Transferred by System: VNPAY");
+                            senderPkg.setUpdatedDate(LocalDateTime.now());
+                            mpDAO.update(senderPkg);
+                        }
+                        
+                        // 2. Cộng ngày cho Receiver
+                        java.time.LocalDate baseDate = mp.getEndDate();
+                        if ("Pending".equals(mp.getStatus())) {
+                            mp.setStatus("Active");
+                        } else {
+                            if ("Expired".equals(mp.getStatus()) || baseDate == null || baseDate.isBefore(java.time.LocalDate.now())) {
+                                baseDate = java.time.LocalDate.now();
+                            }
+                            mp.setEndDate(baseDate.plusDays(transferDays));
+                            mp.setStatus("Active");
+                        }
+                    }
+                } else if (createdBy.startsWith("Renew;")) {
+                    // Xử lý Renew
+                    int renewPackageId = mp.getPackageId(); // Fallback
+                    String[] parts = createdBy.split(";");
+                    for (String part : parts) {
+                        if (part.startsWith("PackageID:")) {
+                            renewPackageId = Integer.parseInt(part.split(":")[1]);
+                        }
+                    }
+
+                    com.mycompany.gymcentermanagement.dao.GymPackageDAO gpDAO = new com.mycompany.gymcentermanagement.dao.impl.GymPackageDAOImpl(conn);
+                    com.mycompany.gymcentermanagement.model.entity.GymPackage gp = gpDAO.findById(renewPackageId);
+                    if (gp != null) {
+                        java.time.LocalDate baseDate = mp.getEndDate();
+                        if ("Expired".equals(mp.getStatus()) || baseDate == null || baseDate.isBefore(java.time.LocalDate.now())) {
+                            baseDate = java.time.LocalDate.now();
+                        }
+                        mp.setEndDate(baseDate.plusMonths(gp.getDurationMonths()));
+                        mp.setPackageId(renewPackageId); // Cập nhật gói mới
+                        mp.setStatus("Active");
+                    }
+                } else {
+                    // Xử lý Register (New)
+                    mp.setStatus("Active");
+                }
+                
                 mp.setUpdatedBy("System: VNPAY");
                 mp.setUpdatedDate(LocalDateTime.now());
                 
                 boolean updatePackageSuccess = mpDAO.update(mp);
                 if (!updatePackageSuccess) {
-                    throw new SQLException("Failed to activate Member Package.");
-                }
-
-                // Tự động đóng gói của người gửi nếu đây là giao dịch chuyển nhượng (Transfer)
-                if (inv.getCreatedBy() != null && inv.getCreatedBy().startsWith("Transfer;SenderPackageID:")) {
-                    try {
-                        String[] parts = inv.getCreatedBy().split(";");
-                        int senderPkgId = -1;
-                        for (String part : parts) {
-                            if (part.startsWith("SenderPackageID:")) {
-                                senderPkgId = Integer.parseInt(part.split(":")[1]);
-                                break;
-                            }
-                        }
-                        if (senderPkgId != -1) {
-                            MemberPackage senderPkg = mpDAO.findById(senderPkgId);
-                            if (senderPkg != null) {
-                                senderPkg.setStatus("Expired");
-                                senderPkg.setEndDate(java.time.LocalDate.now()); // Đặt EndDate về Hôm nay
-                                senderPkg.setUpdatedBy("Transferred by System: VNPAY");
-                                senderPkg.setUpdatedDate(LocalDateTime.now());
-                                mpDAO.update(senderPkg);
-                            }
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Lỗi đóng gói người gửi khi xử lý chuyển nhượng: " + e.getMessage());
-                    }
+                    throw new SQLException("Failed to activate/update Member Package.");
                 }
             }
             
