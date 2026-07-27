@@ -37,6 +37,10 @@ import java.util.Map;
 public class ManageMemberController extends HttpServlet {
 
     private final GymDAO gymDAO = new GymDAO();
+    private static final String ACTIVE_PACKAGE_LOCK_MESSAGE =
+            "Không thể khóa tài khoản hội viên vì hội viên đang có gói tập còn hạn.";
+    private static final String ACTIVE_PACKAGE_DELETE_MESSAGE =
+            "Không thể xóa tài khoản hội viên vì hội viên đang có gói tập còn hạn.";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -70,6 +74,7 @@ public class ManageMemberController extends HttpServlet {
 
     private void showMemberList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        consumeFlashMessages(request);
         
         String keyword = request.getParameter("searchKeyword");
         String memberType = request.getParameter("memberType");
@@ -155,9 +160,24 @@ public class ManageMemberController extends HttpServlet {
         try {
             int userId = Integer.parseInt(request.getParameter("userId"));
             String targetStatus = request.getParameter("targetStatus");
-            gymDAO.updateMemberStatus(userId, targetStatus);
+            if ("Locked".equals(targetStatus) && gymDAO.hasActiveMemberGymPackage(userId)) {
+                setFlash(request, "errorMessage", ACTIVE_PACKAGE_LOCK_MESSAGE);
+                response.sendRedirect(request.getContextPath() + "/staff/members");
+                return;
+            }
+
+            boolean updated = gymDAO.updateMemberStatus(userId, targetStatus);
+            if (updated) {
+                String message = "Locked".equals(targetStatus)
+                        ? "Khóa tài khoản hội viên thành công."
+                        : "Mở khóa tài khoản hội viên thành công.";
+                setFlash(request, "successMessage", message);
+            } else {
+                setFlash(request, "errorMessage", "Không thể cập nhật trạng thái tài khoản hội viên.");
+            }
         } catch (NumberFormatException e) {
             e.printStackTrace();
+            setFlash(request, "errorMessage", "Mã hội viên không hợp lệ.");
         }
         response.sendRedirect(request.getContextPath() + "/staff/members");
     }
@@ -167,9 +187,21 @@ public class ManageMemberController extends HttpServlet {
         
         try {
             int userId = Integer.parseInt(request.getParameter("userId"));
-            gymDAO.deleteMember(userId);
+            if (gymDAO.hasActiveMemberGymPackage(userId)) {
+                setFlash(request, "errorMessage", ACTIVE_PACKAGE_DELETE_MESSAGE);
+                response.sendRedirect(request.getContextPath() + "/staff/members");
+                return;
+            }
+
+            boolean deleted = gymDAO.deleteMember(userId);
+            if (deleted) {
+                setFlash(request, "successMessage", "Xóa tài khoản hội viên thành công.");
+            } else {
+                setFlash(request, "errorMessage", "Không thể xóa tài khoản hội viên.");
+            }
         } catch (NumberFormatException e) {
             e.printStackTrace();
+            setFlash(request, "errorMessage", "Mã hội viên không hợp lệ.");
         }
         response.sendRedirect(request.getContextPath() + "/staff/members");
     }
@@ -193,5 +225,25 @@ public class ManageMemberController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/members");
     }
 
+    private void consumeFlashMessages(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return;
+        }
+        transferFlashMessage(request, session, "errorMessage");
+        transferFlashMessage(request, session, "successMessage");
+    }
+
+    private void transferFlashMessage(HttpServletRequest request, HttpSession session, String key) {
+        Object value = session.getAttribute(key);
+        if (value != null) {
+            request.setAttribute(key, value);
+            session.removeAttribute(key);
+        }
+    }
+
+    private void setFlash(HttpServletRequest request, String key, String message) {
+        request.getSession().setAttribute(key, message);
+    }
 
 }

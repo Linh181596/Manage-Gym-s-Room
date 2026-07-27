@@ -255,6 +255,12 @@ public class UserServiceImpl implements UserService {
                 return ptScheduleCheck;
             }
 
+            AccountOperationResult memberRestrictedStatusCheck =
+                    validateMemberBeforeRestrictedStatus(existing, user.getAccountStatus());
+            if (!memberRestrictedStatusCheck.isSuccess()) {
+                return memberRestrictedStatusCheck;
+            }
+
             user.setRole(targetRole);
             AccountOperationResult validation = validateAccountData(user, user.getUserId());
             if (!validation.isSuccess()) {
@@ -341,6 +347,12 @@ public class UserServiceImpl implements UserService {
             AccountOperationResult ptScheduleCheck = validatePTScheduleBeforeRestrictedStatus(existing, status);
             if (!ptScheduleCheck.isSuccess()) {
                 return ptScheduleCheck;
+            }
+
+            AccountOperationResult memberRestrictedStatusCheck =
+                    validateMemberBeforeRestrictedStatus(existing, status);
+            if (!memberRestrictedStatusCheck.isSuccess()) {
+                return memberRestrictedStatusCheck;
             }
 
             boolean updated = userDAO.updateAccountStatus(targetUserId, status, normalizeActor(updatedBy));
@@ -528,6 +540,26 @@ public class UserServiceImpl implements UserService {
 
         if (userDAO.hasBlockingPTSchedule(account.getUserId())) {
             return AccountOperationResult.failure(PT_BLOCKING_SCHEDULE_MESSAGE);
+        }
+
+        return AccountOperationResult.success("OK");
+    }
+
+    private AccountOperationResult validateMemberBeforeRestrictedStatus(User account, User.AccountStatus targetStatus)
+            throws SQLException {
+        if (account.getRole() != User.Role.Member) {
+            return AccountOperationResult.success("OK");
+        }
+
+        if (targetStatus == User.AccountStatus.Locked) {
+            if (userDAO.hasBlockingMemberGymPackage(account.getUserId())) {
+                return AccountOperationResult.failure(MEMBER_BLOCKING_GYM_PACKAGE_MESSAGE);
+            }
+            return AccountOperationResult.success("OK");
+        }
+
+        if (targetStatus == User.AccountStatus.Inactive) {
+            return validateMemberScheduleBeforeDeactivation(account);
         }
 
         return AccountOperationResult.success("OK");

@@ -67,7 +67,8 @@ public class GymDAO {
         String sql = """
                 SELECT u.UserID, u.DisplayName, u.Email, u.Phone, u.Status,
                        m.MemberID, m.MembershipStatus, m.CreatedDate,
-                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN gp.PackageName END), m.MembershipStatus) AS MembershipType
+                       COALESCE(MAX(CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN gp.PackageName END), m.MembershipStatus) AS MembershipType,
+                       MAX(CASE WHEN mp.Status = 'Active' AND mp.EndDate >= CAST(GETDATE() AS date) THEN 1 ELSE 0 END) AS HasActivePackage
                 FROM [dbo].[Users] u
                 INNER JOIN [dbo].[Members] m ON u.UserID = m.UserID
                 LEFT JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID AND mp.IsDeleted = 0
@@ -109,6 +110,7 @@ public class GymDAO {
                     map.put("email", safe(rs.getString("Email")));
                     map.put("phone", safe(rs.getString("Phone")));
                     map.put("membershipType", safe(rs.getString("MembershipType")));
+                    map.put("hasActivePackage", String.valueOf(rs.getInt("HasActivePackage") > 0));
                     map.put("membershipStatus", safe(rs.getString("MembershipStatus")));
                     map.put("date", String.valueOf(rs.getTimestamp("CreatedDate")));
                     map.put("status", safe(rs.getString("Status")));
@@ -256,6 +258,11 @@ public class GymDAO {
             conn = DBContext.getConnection();
             conn.setAutoCommit(false);
 
+            if (hasActiveMemberGymPackage(conn, userId)) {
+                conn.rollback();
+                return false;
+            }
+
             String sqlMember = "UPDATE [dbo].[Members] SET IsDeleted = 1, UpdatedDate = SYSDATETIME() WHERE UserID = ?";
             try (PreparedStatement psMember = conn.prepareStatement(sqlMember)) {
                 psMember.setInt(1, userId);
@@ -376,14 +383,47 @@ public class GymDAO {
                 SET Status = ?, UpdatedBy = 'System', UpdatedDate = SYSDATETIME()
                 WHERE UserID = ? AND IsDeleted = 0
                 """;
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, status);
-            ps.setInt(2, userId);
-            return ps.executeUpdate() > 0;
+        try (Connection conn = DBContext.getConnection()) {
+            if ("Locked".equals(status) && hasActiveMemberGymPackage(conn, userId)) {
+                return false;
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, status);
+                ps.setInt(2, userId);
+                return ps.executeUpdate() > 0;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public boolean hasActiveMemberGymPackage(int userId) {
+        try (Connection conn = DBContext.getConnection()) {
+            return hasActiveMemberGymPackage(conn, userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean hasActiveMemberGymPackage(Connection conn, int userId) throws SQLException {
+        String sql = """
+                SELECT 1
+                FROM [dbo].[Members] m
+                INNER JOIN [dbo].[MemberPackages] mp ON m.MemberID = mp.MemberID
+                WHERE m.UserID = ?
+                  AND m.IsDeleted = 0
+                  AND mp.IsDeleted = 0
+                  AND mp.Status = 'Active'
+                  AND mp.EndDate >= CAST(GETDATE() AS date)
+                """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
         }
     }
 
