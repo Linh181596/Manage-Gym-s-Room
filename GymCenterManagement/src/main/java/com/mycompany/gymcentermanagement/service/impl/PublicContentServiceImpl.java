@@ -44,6 +44,9 @@ public class PublicContentServiceImpl implements PublicContentService {
         return publicContentDAO.findPublishedByType(type);
     }
 
+    /**
+     * Lấy danh sách Blog đã đăng theo từ khóa, danh mục và phân trang.
+     */
     @Override
     public List<PublicContent> getPublishedByType(ContentType type, String keyword, String category, int page, int pageSize) throws SQLException {
         int safePage = Math.max(1, page);
@@ -52,21 +55,33 @@ public class PublicContentServiceImpl implements PublicContentService {
         return publicContentDAO.findPublishedByType(type, keyword, category, offset, safePageSize);
     }
 
+    /**
+     * Đếm số nội dung đã đăng theo bộ lọc để phục vụ phân trang public.
+     */
     @Override
     public int countPublishedByType(ContentType type, String keyword, String category) throws SQLException {
         return publicContentDAO.countPublishedByType(type, keyword, category);
     }
 
+    /**
+     * Lấy chi tiết nội dung đã đăng để hiển thị cho khách hoặc hội viên.
+     */
     @Override
     public PublicContent getPublishedById(int contentId, ContentType type) throws SQLException {
         return publicContentDAO.findPublishedById(contentId, type);
     }
 
+    /**
+     * Lấy danh sách tất cả nội dung chưa xóa mềm cho màn quản lý Blog & Policies.
+     */
     @Override
     public List<PublicContent> getManagementList() throws SQLException {
         return publicContentDAO.findAllForManagement();
     }
 
+    /**
+     * Lấy chi tiết nội dung theo id để hiển thị form chỉnh sửa.
+     */
     @Override
     public PublicContent getById(int contentId) throws SQLException {
         return publicContentDAO.findById(contentId);
@@ -114,6 +129,9 @@ public class PublicContentServiceImpl implements PublicContentService {
         publicContentDAO.softDelete(contentId);
     }
 
+    /**
+     * Kiểm tra dữ liệu bắt buộc và chuẩn hóa nội dung trước khi lưu.
+     */
     private void validateContent(PublicContent content) {
         if (content == null) {
             throw new IllegalArgumentException("Noi dung khong hop le.");
@@ -138,6 +156,9 @@ public class PublicContentServiceImpl implements PublicContentService {
         }
     }
 
+    /**
+     * Áp dụng quyền quản lý nội dung; Staff chỉ được lưu bản nháp.
+     */
     private void normalizePermissions(PublicContent content, User currentUser) {
         if (currentUser == null || (currentUser.getRole() != User.Role.Admin && currentUser.getRole() != User.Role.Staff)) {
             throw new SecurityException("Ban khong co quyen quan ly noi dung.");
@@ -147,12 +168,18 @@ public class PublicContentServiceImpl implements PublicContentService {
         }
     }
 
+    /**
+     * Kiểm tra người thao tác có quyền Admin trước khi xóa nội dung.
+     */
     private void requireAdmin(User currentUser) {
         if (currentUser == null || currentUser.getRole() != User.Role.Admin) {
             throw new SecurityException("Chi Admin moi duoc xoa noi dung.");
         }
     }
 
+    /**
+     * Gán thời điểm đăng nếu nội dung được xuất bản và xóa thời điểm đăng nếu chưa xuất bản.
+     */
     private void applyPublishedAt(PublicContent content) {
         if (content.getStatus() == ContentStatus.Published && content.getPublishedAt() == null) {
             content.setPublishedAt(LocalDateTime.now());
@@ -162,6 +189,9 @@ public class PublicContentServiceImpl implements PublicContentService {
         }
     }
 
+    /**
+     * Kiểm tra chuỗi null hoặc rỗng.
+     */
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }

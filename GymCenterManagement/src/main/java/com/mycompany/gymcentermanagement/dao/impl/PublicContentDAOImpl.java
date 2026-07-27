@@ -17,10 +17,16 @@ import java.util.List;
 
 public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
 
+    /**
+     * Lấy kết nối hiện tại nếu DAO đang chạy trong transaction, nếu không thì mở kết nối mới.
+     */
     private Connection getActiveConnection() throws SQLException {
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * Chuyển một dòng ResultSet từ bảng PublicContents thành đối tượng PublicContent.
+     */
     private PublicContent mapContent(ResultSet rs) throws SQLException {
         PublicContent content = new PublicContent();
         content.setContentId(rs.getInt("ContentID"));
@@ -57,10 +63,11 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
      * @param limit Số lượng muốn lấy
      * @return Danh sách nội dung
      * @throws SQLException 
+     *
+     * SQL trong hàm này dùng để lấy TOP nội dung đã Published mới nhất theo loại nội dung.
      */
     @Override
     public List<PublicContent> findFeaturedPublished(ContentType type, int limit) throws SQLException {
-        // SQL: Lấy TOP(limit) nội dung có trạng thái Published, ưu tiên ngày PublishedAt
         String sql = """
                 SELECT TOP (?) *
                 FROM PublicContents
@@ -73,6 +80,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         });
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy toàn bộ nội dung đã Published theo loại Blog hoặc Policy.
+     */
     @Override
     public List<PublicContent> findPublishedByType(ContentType type) throws SQLException {
         String sql = """
@@ -84,6 +94,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         return queryList(sql, stmt -> stmt.setString(1, type.name()));
     }
 
+    /**
+     * SQL trong hàm này dùng để tìm nội dung đã Published theo từ khóa, danh mục và phân trang.
+     */
     @Override
     public List<PublicContent> findPublishedByType(ContentType type, String keyword, String category, int offset, int limit) throws SQLException {
         String searchPattern = toSearchPattern(keyword);
@@ -108,6 +121,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         });
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm nội dung đã Published theo từ khóa và danh mục cho phân trang.
+     */
     @Override
     public int countPublishedByType(ContentType type, String keyword, String category) throws SQLException {
         String searchPattern = toSearchPattern(keyword);
@@ -137,6 +153,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy chi tiết một nội dung đã Published theo id và loại nội dung.
+     */
     @Override
     public PublicContent findPublishedById(int contentId, ContentType type) throws SQLException {
         String sql = """
@@ -150,6 +169,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         });
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy toàn bộ nội dung chưa xóa mềm cho màn quản lý Blog & Policies.
+     */
     @Override
     public List<PublicContent> findAllForManagement() throws SQLException {
         String sql = """
@@ -162,12 +184,18 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         });
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy chi tiết một nội dung chưa xóa mềm theo id.
+     */
     @Override
     public PublicContent findById(int contentId) throws SQLException {
         String sql = "SELECT * FROM PublicContents WHERE ContentID = ? AND IsDeleted = 0";
         return queryOne(sql, stmt -> stmt.setInt(1, contentId));
     }
 
+    /**
+     * Tạo mẫu LIKE từ từ khóa tìm kiếm để truyền vào SQL lọc nội dung.
+     */
     private String toSearchPattern(String keyword) {
         String normalized = trimToNull(keyword);
         if (normalized == null) {
@@ -176,6 +204,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         return "%" + normalized + "%";
     }
 
+    /**
+     * Cắt khoảng trắng và trả về null nếu chuỗi rỗng.
+     */
     private String trimToNull(String value) {
         if (value == null || value.trim().isEmpty()) {
             return null;
@@ -183,6 +214,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         return value.trim();
     }
 
+    /**
+     * SQL trong hàm này dùng để thêm nội dung Blog/Policy mới và lấy khóa chính vừa sinh.
+     */
     @Override
     public boolean insert(PublicContent content) throws SQLException {
         Connection conn = null;
@@ -211,6 +245,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để cập nhật nội dung Blog/Policy chưa bị xóa mềm.
+     */
     @Override
     public boolean update(PublicContent content) throws SQLException {
         Connection conn = null;
@@ -241,6 +278,8 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
      * @param contentId ID
      * @return true nếu thành công
      * @throws SQLException 
+     *
+     * SQL trong hàm này dùng để xóa mềm nội dung bằng cách đặt IsDeleted = 1.
      */
     @Override
     public boolean softDelete(int contentId) throws SQLException {
@@ -248,7 +287,6 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         PreparedStatement stmt = null;
         try {
             conn = getActiveConnection();
-            // SQL: Đánh dấu IsDeleted = 1 để xóa mềm
             stmt = conn.prepareStatement("UPDATE PublicContents SET IsDeleted = 1, UpdatedAt = SYSDATETIME() WHERE ContentID = ?");
             stmt.setInt(1, contentId);
             return stmt.executeUpdate() > 0;
@@ -257,6 +295,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         }
     }
 
+    /**
+     * Gán dữ liệu nội dung vào PreparedStatement dùng chung cho INSERT và UPDATE.
+     */
     private void bindContentForSave(PreparedStatement stmt, PublicContent content) throws SQLException {
         stmt.setString(1, content.getTitle());
         stmt.setString(2, content.getSummary());
@@ -268,11 +309,17 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
         stmt.setTimestamp(8, content.getPublishedAt() == null ? null : Timestamp.valueOf(content.getPublishedAt()));
     }
 
+    /**
+     * Chạy truy vấn trả về một nội dung duy nhất hoặc null nếu không có dữ liệu.
+     */
     private PublicContent queryOne(String sql, StatementBinder binder) throws SQLException {
         List<PublicContent> items = queryList(sql, binder);
         return items.isEmpty() ? null : items.get(0);
     }
 
+    /**
+     * Chạy truy vấn danh sách nội dung và ánh xạ từng dòng sang PublicContent.
+     */
     private List<PublicContent> queryList(String sql, StatementBinder binder) throws SQLException {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -294,6 +341,9 @@ public class PublicContentDAOImpl extends BaseDAO implements PublicContentDAO {
 
     @FunctionalInterface
     private interface StatementBinder {
+        /**
+         * Gán tham số cho PreparedStatement trước khi thực thi SQL.
+         */
         void bind(PreparedStatement stmt) throws SQLException;
     }
 }

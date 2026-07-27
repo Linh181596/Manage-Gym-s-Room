@@ -311,7 +311,14 @@
                                 <c:when test="${empty contents}">
                                     <div class="col-12 text-center text-muted py-5">
                                         <i class="fa fa-file-alt fa-3x mb-3 d-block"></i>
-                                        Chưa có bài viết được đăng.
+                                        <c:choose>
+                                            <c:when test="${not empty keyword or not empty selectedCategory}">
+                                                Không tìm thấy kết quả phù hợp.
+                                            </c:when>
+                                            <c:otherwise>
+                                                Chưa có bài viết được đăng.
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </c:when>
                                 <c:otherwise>
