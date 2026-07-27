@@ -94,13 +94,20 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Trạng thái thiết lập <span class="text-danger">*</span></label>
-                    <select class="form-select" name="status" required>
-                        <option value="">Chọn trạng thái</option>
-                        <option value="Available" ${equipment.status == 'Available' || empty equipment.status ? 'selected' : ''}>Hoạt động bình thường</option>
-                        <option value="Maintenance" ${equipment.status == 'Maintenance' ? 'selected' : ''}>Đang bảo trì</option>
-                        <option value="Broken" ${equipment.status == 'Broken' ? 'selected' : ''}>Hỏng hóc</option>
-                    </select>
+                    <label class="form-label fw-semibold">Trạng thái thiết bị</label>
+                    <c:choose>
+                        <c:when test="${edit}">
+                            <select class="form-select" name="status" required>
+                                <option value="">Chọn trạng thái</option>
+                                <option value="Available" ${equipment.status == 'Available' || empty equipment.status ? 'selected' : ''}>Hoạt động bình thường</option>
+                                <option value="Maintenance" ${equipment.status == 'Maintenance' ? 'selected' : ''}>Đang bảo trì</option>
+                                <option value="Broken" ${equipment.status == 'Broken' ? 'selected' : ''}>Hỏng hóc</option>
+                            </select>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="form-control bg-light text-muted">Hoạt động bình thường</div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
                 
                 <div class="col-12">

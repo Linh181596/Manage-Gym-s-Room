@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class EquipmentIssue {
+    private static final DateTimeFormatter DATE_TIME_DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     private int issueId;
     private int equipmentId;
     private int reportedBy;
@@ -162,7 +164,15 @@ public class EquipmentIssue {
         if (reportedAt == null) {
             return "";
         }
-        return reportedAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        return reportedAt.format(DATE_TIME_DISPLAY_FORMAT);
+    }
+
+    public String getCreatedDateDisplay() {
+        return createdDate == null ? "" : createdDate.format(DATE_TIME_DISPLAY_FORMAT);
+    }
+
+    public String getUpdatedDateDisplay() {
+        return updatedDate == null ? "" : updatedDate.format(DATE_TIME_DISPLAY_FORMAT);
     }
 
     // Normalize old/new issue type codes so every screen shows one Vietnamese label.

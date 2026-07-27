@@ -34,28 +34,15 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
     private final MemberDashboardDAO dashboardDAO = new MemberDashboardDAOImpl();
 
     /**
-     * Lấy dữ liệu tổng hợp cho Member Dashboard.
-     * Luồng nghiệp vụ:
-     * 1. Đếm số lịch hẹn sắp tới của hội viên.
-     * 2. Lấy thông tin gói tập hiện tại và tính toán số ngày còn lại.
-     * 3. Tính tổng chi tiêu trong tháng hiện tại.
-     * 4. Đếm số lượng thông báo chưa đọc của tài khoản.
-     * 5. Lấy danh sách buổi tập sắp tới và hóa đơn gần đây.
-     * 6. Lấy xu hướng chi tiêu trong 6 tháng gần nhất, điền dữ liệu cho các tháng thiếu và chuẩn hóa JSON.
-     * 
-     * @param memberId ID của hội viên
-     * @param userId ID của người dùng (tài khoản)
-     * @return Dữ liệu dashboard cho Member
-     * @throws SQLException Nếu có lỗi truy xuất CSDL
+     * Tổng hợp KPI, gói tập, thông báo, lịch tập, hóa đơn và dữ liệu biểu đồ chi
+     * tiêu cho dashboard hội viên.
      */
     @Override
     public MemberDashboardData getMemberDashboardData(int memberId, int userId) throws SQLException {
         MemberDashboardData data = new MemberDashboardData();
         
-        // 1. KPI đếm số lịch hẹn sắp tới
         data.setUpcomingAppointmentsCount(dashboardDAO.countUpcomingAppointments(memberId));
         
-        // 2. KPI thông tin gói tập hiện tại và số ngày còn lại
         Map<String, Object> pkgInfo = dashboardDAO.getActivePackageInfo(memberId);
         if (pkgInfo != null && !pkgInfo.isEmpty()) {
             String pkgName = (String) pkgInfo.get("packageName");
@@ -69,17 +56,13 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
             }
         }
         
-        // 3. KPI tổng chi tiêu tháng này
         data.setSpendThisMonth(dashboardDAO.getSpendThisMonth(memberId));
         
-        // 4. KPI số lượng thông báo
         data.setUnreadNotificationsCount(dashboardDAO.countNotifications(userId));
         
-        // 5. Nạp danh sách buổi tập sắp tới và hóa đơn gần đây
         data.setUpcomingSessions(dashboardDAO.getUpcomingSessions(memberId, 5));
         data.setRecentInvoices(dashboardDAO.getRecentInvoices(memberId, 5));
         
-        // 6. Xử lý biểu đồ chi tiêu hàng tháng (6 tháng gần nhất)
         List<RevenuePoint> trendPoints = dashboardDAO.getMonthlySpendTrend(memberId, TREND_MONTHS);
         List<RevenuePoint> filledPoints = fillMissingSpendMonths(trendPoints);
         data.setSpendChartLabelsJson(buildLabelsJson(filledPoints));
@@ -88,6 +71,10 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
         return data;
     }
 
+    /**
+     * Điền đủ các tháng còn thiếu trong chuỗi dữ liệu chi tiêu để biểu đồ luôn
+     * có đủ số tháng cần hiển thị.
+     */
     private List<RevenuePoint> fillMissingSpendMonths(List<RevenuePoint> rawPoints) {
         Map<LocalDate, BigDecimal> spendByMonth = rawPoints.stream()
                 .filter(point -> point.getRevenueDate() != null)
@@ -109,12 +96,18 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Chuyển danh sách tháng của biểu đồ chi tiêu thành chuỗi JSON array.
+     */
     private String buildLabelsJson(List<RevenuePoint> points) {
         return points.stream()
                 .map(point -> "\"" + point.getRevenueDate().format(CHART_MONTH_FORMAT) + "\"")
                 .collect(Collectors.joining(",", "[", "]"));
     }
 
+    /**
+     * Chuyển danh sách giá trị chi tiêu của biểu đồ thành chuỗi JSON array.
+     */
     private String buildValuesJson(List<RevenuePoint> points) {
         return points.stream()
                 .map(point -> point.getAmount().toPlainString())

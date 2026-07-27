@@ -213,7 +213,7 @@
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="fa fa-info-circle fa-2x d-block mb-2"></i>
-                                Không tìm thấy lịch bảo trì phù hợp.
+                                Không tìm thấy kết quả phù hợp.
                             </td>
                         </tr>
                     </c:if>

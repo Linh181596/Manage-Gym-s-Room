@@ -181,6 +181,15 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
             }
             
+            if (inv.getPtRegistrationId() != null) {
+                String sql = "UPDATE PTRegistrations SET Status = 'Active', PaymentStatus = 'Paid', UpdatedBy = ?, UpdatedDate = GETDATE() WHERE PTRegistrationID = ?";
+                try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, "StaffUserID: " + staffUserId);
+                    ps.setInt(2, inv.getPtRegistrationId());
+                    ps.executeUpdate();
+                }
+            }
+            
             // Commit toàn bộ giao dịch nếu các bước trên đều thành công
             conn.commit();
             success = true;
@@ -337,6 +346,15 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
             }
             
+            if (inv.getPtRegistrationId() != null) {
+                String sql = "UPDATE PTRegistrations SET Status = 'Active', PaymentStatus = 'Paid', UpdatedBy = ?, UpdatedDate = GETDATE() WHERE PTRegistrationID = ?";
+                try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, "System: VNPAY");
+                    ps.setInt(2, inv.getPtRegistrationId());
+                    ps.executeUpdate();
+                }
+            }
+            
             conn.commit();
             success = true;
         } catch (SQLException e) {
@@ -361,19 +379,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         return success;
     }
 
-    /**
-     * Hủy hóa đơn đang chờ thanh toán.
-     * Luồng nghiệp vụ:
-     * 1. [BR-CONS-10]: Nếu hóa đơn không được thanh toán trong 48h, hệ thống (hoặc Staff) có thể hủy đơn và release slot.
-     * 2. Cập nhật trạng thái Invoice thành Cancelled.
-     * 3. Đánh dấu xóa mềm (delete) cho MemberPackage liên quan để nhả slot.
-     * 4. [Transaction]: Thực hiện trong transaction.
-     * 
-     * @param invoiceId ID hóa đơn
-     * @param staffUserId Người hủy
-     * @return true nếu thành công
-     * @throws SQLException 
-     */
     @Override
     public boolean cancelInvoice(int invoiceId, int staffUserId) throws SQLException {
         Connection conn = null;
@@ -414,6 +419,16 @@ public class InvoiceServiceImpl implements InvoiceService {
                 }
             }
             
+            // 4. Cancel PT Registration if associated
+            if (inv.getPtRegistrationId() != null) {
+                String sql = "UPDATE PTRegistrations SET Status = 'Cancelled', UpdatedBy = ?, UpdatedDate = GETDATE() WHERE PTRegistrationID = ?";
+                try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, "StaffUserID: " + staffUserId);
+                    ps.setInt(2, inv.getPtRegistrationId());
+                    ps.executeUpdate();
+                }
+            }
+            
             conn.commit();
             success = true;
         } catch (SQLException e) {
@@ -436,5 +451,38 @@ public class InvoiceServiceImpl implements InvoiceService {
         }
         
         return success;
+    }
+
+    @Override
+    public Invoice getOrCreateInvoiceForPTRegistration(int ptRegId, int staffUserId) throws SQLException {
+        InvoiceDAO invDAO = new InvoiceDAOImpl();
+        Invoice existingInvoice = invDAO.findByPtRegistrationId(ptRegId);
+        if (existingInvoice != null) {
+            return existingInvoice;
+        }
+
+        // We need to fetch PTRegistration to get details
+        com.mycompany.gymcentermanagement.dao.PTRegistrationDAO ptDAO = new com.mycompany.gymcentermanagement.dao.impl.PTRegistrationDAOImpl();
+        com.mycompany.gymcentermanagement.dto.PTRegistrationDTO regDTO = ptDAO.getRegistrationById(ptRegId);
+        
+        if (regDTO == null) {
+            throw new SQLException("PT Registration not found.");
+        }
+
+        Invoice newInvoice = new Invoice();
+        newInvoice.setMemberId(regDTO.getMemberId());
+        newInvoice.setPtRegistrationId(ptRegId);
+        newInvoice.setAmount(java.math.BigDecimal.valueOf(regDTO.getTotalAmount()));
+        newInvoice.setPaymentMethod("Cash");
+        newInvoice.setStatus("Pending");
+        newInvoice.setProcessBy(staffUserId);
+        newInvoice.setCreatedBy("StaffUserID: " + staffUserId);
+        
+        boolean inserted = invDAO.insert(newInvoice);
+        if (inserted) {
+            return invDAO.findByPtRegistrationId(ptRegId);
+        }
+        
+        throw new SQLException("Failed to create Invoice for PT Registration.");
     }
 }

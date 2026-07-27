@@ -36,6 +36,9 @@ public class ManagePublicContentController extends HttpServlet {
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     private final PublicContentService publicContentService = new PublicContentServiceImpl();
 
+    /**
+     * Xử lý các yêu cầu GET của màn quản lý Blog & Policies: danh sách, tạo, sửa và xóa mềm.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -67,6 +70,9 @@ public class ManagePublicContentController extends HttpServlet {
         }
     }
 
+    /**
+     * Xử lý lưu nội dung Blog hoặc Policy từ form quản lý.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -82,6 +88,9 @@ public class ManagePublicContentController extends HttpServlet {
         }
     }
 
+    /**
+     * Hiển thị danh sách nội dung công khai để Staff/Admin quản lý.
+     */
     private void showList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
@@ -92,6 +101,9 @@ public class ManagePublicContentController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/content/content-list.jsp").forward(request, response);
     }
 
+    /**
+     * Mở form tạo hoặc cập nhật nội dung công khai.
+     */
     private void showForm(HttpServletRequest request, HttpServletResponse response, PublicContent content, String formTitle)
             throws ServletException, IOException {
         request.setAttribute("content", content);
@@ -100,6 +112,9 @@ public class ManagePublicContentController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/content/content-form.jsp").forward(request, response);
     }
 
+    /**
+     * Đọc dữ liệu nội dung từ form và xử lý ảnh đại diện nếu nội dung là Blog.
+     */
     private PublicContent bindContent(HttpServletRequest request) throws IOException, ServletException {
         PublicContent content = bindContentWithoutUpload(request);
         if (content.getContentType() == ContentType.POLICY) {
@@ -113,6 +128,9 @@ public class ManagePublicContentController extends HttpServlet {
         return content;
     }
 
+    /**
+     * Đọc dữ liệu nội dung từ form mà không xử lý upload để dùng khi cần giữ lại dữ liệu nhập.
+     */
     private PublicContent bindContentWithoutUpload(HttpServletRequest request) {
         PublicContent content = new PublicContent();
         String idParam = request.getParameter("contentId");
@@ -130,6 +148,9 @@ public class ManagePublicContentController extends HttpServlet {
         return content;
     }
 
+    /**
+     * Xử lý ảnh đại diện Blog tải lên và trả về đường dẫn ảnh để lưu vào nội dung.
+     */
     private String resolveThumbnailUrl(HttpServletRequest request) throws IOException, ServletException {
         Part imagePart = request.getPart("thumbnailFile");
         if (imagePart == null || imagePart.getSize() == 0) {
@@ -154,6 +175,9 @@ public class ManagePublicContentController extends HttpServlet {
         return UPLOAD_DIR.substring(1) + "/" + fileName;
     }
 
+    /**
+     * Lấy phần mở rộng của tên tệp ảnh đại diện để kiểm tra định dạng hợp lệ.
+     */
     private String extensionOf(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
@@ -162,24 +186,39 @@ public class ManagePublicContentController extends HttpServlet {
         return fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Đọc id nội dung từ request cho các thao tác sửa hoặc xóa.
+     */
     private int parseId(HttpServletRequest request) {
         return Integer.parseInt(request.getParameter("id"));
     }
 
+    /**
+     * Lấy người dùng hiện tại từ session.
+     */
     private User getCurrentUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         return session == null ? null : (User) session.getAttribute("currentUser");
     }
 
+    /**
+     * Kiểm tra người dùng hiện tại có vai trò Admin hay không.
+     */
     private boolean isAdmin(HttpServletRequest request) {
         User user = getCurrentUser(request);
         return user != null && user.getRole() == User.Role.Admin;
     }
 
+    /**
+     * Cắt khoảng trắng hai đầu chuỗi và giữ null nếu giá trị ban đầu là null.
+     */
     private String trim(String value) {
         return value == null ? null : value.trim();
     }
 
+    /**
+     * Redirect về danh sách quản lý nội dung kèm thông báo thành công.
+     */
     private void redirectWithMessage(HttpServletRequest request, HttpServletResponse response, String message)
             throws IOException {
         response.sendRedirect(request.getContextPath() + "/staff/public-content?successMsg="

@@ -52,11 +52,18 @@
                                    value="assets/uploads/pt-certificate/${fn:substring(rawCertPath, 8, fn:length(rawCertPath))}"/>
                         </c:if>
                     </c:if>
-                    <a href="${pageContext.request.contextPath}${finalCertPath.startsWith('/') ? '' : '/'}${finalCertPath}"
-                       target="_blank"
-                       class="text-primary fw-bold ms-2">
-                        <i class="fa fa-file-pdf me-1"></i>${pt.certificateFileName}
-                    </a>
+                    <c:choose>
+                        <c:when test="${not empty finalCertPath and not empty pt.certificateFileName}">
+                            <a href="${pageContext.request.contextPath}${finalCertPath.startsWith('/') ? '' : '/'}${finalCertPath}"
+                               target="_blank"
+                               class="text-primary fw-bold ms-2">
+                                <i class="fa fa-file-pdf me-1"></i>${pt.certificateFileName}
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="text-muted ms-2"><i class="fa fa-info-circle me-1"></i>Hiện chưa có chứng chỉ.</span>
+                        </c:otherwise>
+                    </c:choose>
                 </p>
                 <p><strong>Giới thiệu bản thân (Bio):</strong></p>
                 <div class="p-3 bg-white rounded border" style="min-height: 100px;">

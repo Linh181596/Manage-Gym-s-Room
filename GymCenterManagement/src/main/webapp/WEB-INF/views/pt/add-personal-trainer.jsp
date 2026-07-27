@@ -115,7 +115,7 @@
                                 <div class="col-md-6">
                                     <label for="certificateFile" class="form-label fw-semibold text-secondary">Tải lên Chứng chỉ HLV</label>
                                     <input type="file" id="certificateFile" name="certificateFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                                    <small class="text-muted d-block mt-1 small">Định dạng hỗ trợ: PDF, JPG, PNG.</small>
+                                    <small class="text-muted d-block mt-1 small">Định dạng hỗ trợ: PDF, JPG, PNG, JPEG.</small>
                                 </div>
 
                                 <!-- Biography/Description -->
@@ -129,6 +129,7 @@
                             <div class="d-flex justify-content-end gap-2 border-top pt-3">
                                 <a href="${pageContext.request.contextPath}/pt/list" class="btn btn-outline-secondary px-4 py-2">Hủy bỏ</a>
                                 <%-- Nút submit form gửi thông tin đăng ký tạo tài khoản PT mới lên server --%>
+                                <%-- Step 2: POST /staff/pt/add (AddPersonalTrainerController) --%>
                                 <button type="submit" class="btn btn-primary px-5 py-2 shadow-sm"><i class="fa fa-save me-1"></i> Tạo tài khoản PT</button>
                             </div>
                         </form>

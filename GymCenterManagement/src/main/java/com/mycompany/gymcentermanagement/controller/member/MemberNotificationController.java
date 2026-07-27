@@ -34,6 +34,10 @@ public class MemberNotificationController extends HttpServlet {
 
     private final GymDAO gymDAO = new GymDAO();
 
+    /**
+     * Kiểm tra đúng role Member, tải danh sách thông báo và nếu có notiId thì
+     * đánh dấu đã đọc rồi mở chi tiết.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -46,7 +50,6 @@ public class MemberNotificationController extends HttpServlet {
             return;
         }
         
-        // Ensure that only members can access their notification mailbox
         if (currentUser.getRole() != User.Role.Member) {
             request.setAttribute("errorMessage", "Cần quyền Member để truy cập hộp thư thông báo.");
             request.getRequestDispatcher("/WEB-INF/views/common/error-403.jsp").forward(request, response);
@@ -80,6 +83,10 @@ public class MemberNotificationController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/member/notifications.jsp").forward(request, response);
     }
 
+    /**
+     * Xử lý thao tác đánh dấu tất cả thông báo của Member là đã đọc, sau đó lưu
+     * kết quả vào session để hiển thị sau redirect.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -108,6 +115,10 @@ public class MemberNotificationController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/member/notifications");
     }
 
+    /**
+     * Chuyển thông báo thành công/lỗi sau thao tác cập nhật thông báo từ session
+     * sang request và xóa khỏi session để chỉ hiện một lần.
+     */
     private void transferFeedbackMessage(HttpSession session, HttpServletRequest request) {
         if (session == null) {
             return;

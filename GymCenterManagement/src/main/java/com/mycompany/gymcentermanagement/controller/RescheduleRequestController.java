@@ -56,8 +56,6 @@ public class RescheduleRequestController extends HttpServlet {
                 String toastMsg = "Đã đồng ý yêu cầu đổi lịch!";
                 if ("reject".equalsIgnoreCase(action)) {
                     toastMsg = "Đã từ chối yêu cầu đổi lịch!";
-                } else if ("escalate".equalsIgnoreCase(action)) {
-                    toastMsg = "Đã gửi yêu cầu hỗ trợ đổi lịch lên Admin/Staff!";
                 }
                 session.setAttribute("toastMsg", toastMsg);
             } else {
