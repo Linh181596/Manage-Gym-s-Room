@@ -1,0 +1,29 @@
+@startuml Update_Blog_Policy_Sequence_Diagram
+title 3.20.4 Update Blog & Policy - Sequence Diagram
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+autoactivate on
+
+actor "Staff/Admin" as User
+boundary "Blog & Policy Form" as Form
+control "ManagePublicContentController" as Controller
+control "PublicContentService" as Service
+entity "PublicContentDAO" as DAO
+database "Database" as DB
+boundary "content-list.jsp" as ListView
+
+User -> Form: Submit updated blog or policy
+Form -> Controller: POST /staff/public-content
+Controller -> Controller: Read update data
+Controller -> Service: save(content, currentUser)
+Service -> Service: Validate content and permission
+Service -> DAO: update(content)
+DAO -> DB: Update blog or policy
+DB --> DAO: Update result
+DAO --> Service: Update result
+Service --> Controller: Save successful
+Controller -> ListView: Redirect to content list
+ListView --> User: Display updated content list
+
+@enduml

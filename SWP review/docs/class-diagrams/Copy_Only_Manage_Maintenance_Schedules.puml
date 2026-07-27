@@ -1,0 +1,79 @@
+@startuml Manage_Maintenance_Schedules_Implementation_Class_Diagram
+title Manage Maintenance Schedules - Implementation Class Diagram
+skinparam monochrome true
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Use Case Module: Manage Maintenance Schedules" {
+
+  class ManageMaintenanceScheduleController <<Controller>> {
+    Role: handle maintenance schedule screens
+    Main actions: list, create, edit, detail, approve, reject, cancel
+    Uses: MaintenanceScheduleService
+  }
+
+  class MaintenanceScheduleService <<Service>> {
+    Role: process business logic for maintenance schedules
+    Main actions: validate data, create/update schedules, control status flow
+    Coordinates: schedule, equipment, equipment issue data
+  }
+
+  class MaintenanceScheduleDAO <<DAO>> {
+    Role: access MaintenanceSchedules table
+    Main actions: search, find, insert, update status, soft delete/cancel
+    Maps data to: MaintenanceSchedule
+  }
+
+  class MaintenanceSchedule <<Entity / DTO>> {
+    Role: represent one maintenance schedule record
+    Main data: schedule id, equipment id, issue id, date, type, status
+    Completion data: note, image, approval info, deleted flag
+  }
+
+  class Statistics <<Value Object>> {
+    Role: summarize schedule counts by status
+    Main data: total, scheduled, in progress, pending approval, completed, cancelled
+  }
+}
+
+package "Referenced Classes From Equipment Module" {
+
+  class EquipmentDAO <<DAO>> {
+    Role: provide equipment data for maintenance schedule module
+    Main actions: find active equipment, find by id, recalculate status
+  }
+
+  class EquipmentIssueDAO <<DAO>> {
+    Role: provide related equipment issue data
+    Main actions: find issue, check issue status, update issue status
+  }
+
+  class Equipment <<Entity>> {
+    Role: represent equipment selected for maintenance
+  }
+
+  class EquipmentIssue <<Entity>> {
+    Role: represent issue linked to a corrective schedule
+  }
+}
+
+class User <<Entity>> {
+  Role: represent current staff/admin actor
+  Main data: user id, full name, role
+}
+
+ManageMaintenanceScheduleController --> MaintenanceScheduleService
+ManageMaintenanceScheduleController --> MaintenanceSchedule
+ManageMaintenanceScheduleController --> User
+
+MaintenanceScheduleService --> MaintenanceScheduleDAO
+MaintenanceScheduleService --> EquipmentDAO
+MaintenanceScheduleService --> EquipmentIssueDAO
+MaintenanceScheduleService --> Statistics
+
+MaintenanceScheduleDAO --> MaintenanceSchedule
+MaintenanceSchedule --> Equipment
+MaintenanceSchedule --> EquipmentIssue
+
+@enduml

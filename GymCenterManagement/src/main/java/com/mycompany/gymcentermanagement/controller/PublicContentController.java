@@ -31,6 +31,9 @@ public class PublicContentController extends HttpServlet {
     );
     private final PublicContentService publicContentService = new PublicContentServiceImpl();
 
+    /**
+     * Xử lý trang public Blog và Policies, gồm xem danh sách, lọc blog, phân trang và xem chi tiết.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -100,6 +103,9 @@ public class PublicContentController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuyển tham số trang sang số nguyên và đảm bảo số trang tối thiểu là 1.
+     */
     private int parsePage(String pageParam) {
         if (pageParam == null || pageParam.isBlank()) {
             return 1;
@@ -107,6 +113,9 @@ public class PublicContentController extends HttpServlet {
         return Math.max(1, Integer.parseInt(pageParam));
     }
 
+    /**
+     * Cắt khoảng trắng và trả về null nếu chuỗi rỗng để dùng cho bộ lọc.
+     */
     private String trim(String value) {
         if (value == null || value.trim().isEmpty()) {
             return null;

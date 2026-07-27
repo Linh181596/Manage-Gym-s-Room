@@ -1,0 +1,64 @@
+@startuml Manage_Equipment_Issues_Implementation_Class_Diagram
+title Manage Equipment Issues - Implementation Class Diagram
+skinparam monochrome true
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Use Case Module: Manage Equipment Issues" {
+
+  class ManageEquipmentIssueController <<Controller>> {
+    Role: handle equipment issue management screens
+    Main actions: list, create, edit, detail equipment issue
+    Uses: EquipmentService
+  }
+
+  class EquipmentService <<Service>> {
+    Role: process issue business logic
+    Main actions: validate issue, create issue, update issue, update issue status
+    Coordinates: issue status and equipment status
+  }
+
+  class EquipmentIssueDAO <<DAO>> {
+    Role: access EquipmentIssues table
+    Main actions: search, count, find, insert, update, update status
+    Maps data to: EquipmentIssue
+  }
+
+  class EquipmentIssue <<Entity>> {
+    Role: represent one equipment issue record
+    Main data: issue id, equipment id, reporter, issue type, description
+    State data: image, reported time, status, audit fields, deleted flag
+  }
+}
+
+package "Referenced Classes" {
+
+  class EquipmentDAO <<DAO>> {
+    Role: provide equipment data and recalculate equipment status
+    Main actions: find equipment, recalculate status
+  }
+
+  class Equipment <<Entity>> {
+    Role: represent equipment affected by the issue
+  }
+
+  class User <<Entity>> {
+    Role: represent reporter or staff/admin actor
+  }
+}
+
+ManageEquipmentIssueController --> EquipmentService
+ManageEquipmentIssueController --> EquipmentIssue
+ManageEquipmentIssueController --> User
+
+EquipmentService --> EquipmentIssueDAO
+EquipmentService --> EquipmentDAO
+EquipmentService --> EquipmentIssue
+
+EquipmentIssueDAO --> EquipmentIssue
+EquipmentDAO --> Equipment
+Equipment "1" --> "0..*" EquipmentIssue
+EquipmentIssue --> User
+
+@enduml

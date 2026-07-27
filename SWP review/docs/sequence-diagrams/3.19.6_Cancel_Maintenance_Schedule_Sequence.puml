@@ -1,0 +1,29 @@
+@startuml Cancel_Maintenance_Schedule_Sequence_Diagram
+title 3.19.6 Cancel Maintenance Schedule - Sequence Diagram
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+autoactivate on
+
+actor "Admin" as Admin
+boundary "Maintenance Schedule Page" as Page
+control "ManageMaintenanceScheduleController" as Controller
+control "MaintenanceScheduleService" as Service
+entity "MaintenanceScheduleDAO" as DAO
+database "Database" as DB
+boundary "maintenance-schedule-list.jsp" as ListView
+
+Admin -> Page: Cancel a schedule
+Page -> Controller: POST cancel schedule
+Controller -> Controller: Check Admin role
+Controller -> Service: cancel(id, adminName)
+Service -> Service: Validate schedule can be cancelled
+Service -> DAO: cancel(id)
+DAO -> DB: Update status to Cancelled
+DB --> DAO: Cancel result
+DAO --> Service: Cancel result
+Service --> Controller: Cancel successful
+Controller -> ListView: Redirect to schedule list
+ListView --> Admin: Display updated list
+
+@enduml

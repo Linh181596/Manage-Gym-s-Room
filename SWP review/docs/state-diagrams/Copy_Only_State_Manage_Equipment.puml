@@ -1,0 +1,22 @@
+@startuml Manage_Equipment_State_Diagram
+title Manage Equipment - State Diagram
+skinparam monochrome true
+skinparam shadowing false
+
+[*] --> Available : Create equipment
+
+Available --> Broken : Issue is reported
+Broken --> Maintenance : Issue is being handled
+Maintenance --> Available : Issue resolved or maintenance completed
+
+Available --> Maintenance : Set under maintenance
+Maintenance --> Broken : Serious issue found
+Broken --> Available : Mark as available
+
+Available --> Deleted : Delete equipment
+Maintenance --> Deleted : Delete equipment
+Broken --> Deleted : Delete equipment
+
+Deleted --> [*]
+
+@enduml

@@ -1,0 +1,101 @@
+@startuml Equipment_Management_Swimlane_Activity_Diagram
+title Figure 7: Equipment Management Swimlane Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 42
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Receive Equipment Management request;
+:Identify actor role and selected process;
+
+if (Admin?) then (Yes)
+  |Admin|
+  :Choose equipment, issue,\nreport, or maintenance process;
+  |System|
+  :Verify Admin permission;
+
+else (Staff)
+  |Staff|
+  :Choose equipment, issue,\nor maintenance task;
+  |System|
+  :Verify Staff permission;
+endif
+
+if (Report process?) then (Yes)
+  |System|
+  :Verify Admin report access;
+  :Collect equipment, issue,\nand maintenance data;
+  :Calculate status counts\nand availability summary;
+  :Display report dashboard;
+
+elseif (Equipment process?) then (Yes)
+  if (Admin?) then (Yes)
+    |Admin|
+    :Create, update, delete,\nsearch, or view equipment;
+  else (No)
+    |Staff|
+    :Search, view, or update\npermitted equipment data;
+  endif
+
+  |System|
+  :Validate equipment code,\ntype, dates, status, and image;
+  if (Valid equipment request?) then (Yes)
+    :Save equipment change\nor soft delete record;
+    :Refresh equipment list;
+  else (No)
+    :Show validation message;
+  endif
+
+elseif (Issue process?) then (Yes)
+  if (Admin?) then (Yes)
+    |Admin|
+    :Search, view, report,\nor update equipment issue;
+  else (No)
+    |Staff|
+    :Search, view, report,\nor update equipment issue;
+  endif
+
+  |System|
+  :Validate equipment issue data\nand target equipment;
+  if (Valid issue request?) then (Yes)
+    :Create Pending issue\nor update issue status;
+    :Sync equipment status\nBroken, Maintenance, or Available;
+  else (No)
+    :Show validation message;
+  endif
+
+else (Maintenance process)
+  if (Admin?) then (Yes)
+    |Admin|
+    :Create, edit, cancel,\napprove, or reject schedule;
+  else (No)
+    |Staff|
+    :View assigned work,\nstart maintenance,\nor submit completion;
+  endif
+
+  |System|
+  :Validate schedule, equipment,\ntype, dates, and status rule;
+  if (Valid maintenance request?) then (Yes)
+    :Update maintenance status\nScheduled, InProgress,\nPendingApproval, Completed,\nor Cancelled;
+    :Update related issue/equipment\nwhen completion is approved;
+  else (No)
+    :Show validation message;
+  endif
+endif
+
+|System|
+:Display final result;
+stop
+@enduml

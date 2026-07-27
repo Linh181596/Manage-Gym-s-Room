@@ -1,0 +1,68 @@
+@startuml Equipment_Reports_Implementation_Class_Diagram
+title Equipment Reports - Implementation Class Diagram
+skinparam monochrome true
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Use Case Module: Equipment Reports" {
+
+  class EquipmentReportController <<Controller>> {
+    Role: handle admin equipment report page
+    Main actions: load report data, set pagination, forward report view
+    Uses: EquipmentService
+  }
+
+  class EquipmentService <<Service>> {
+    Role: build report data for equipment dashboard
+    Main actions: count equipment, count issues, load equipment with issue counts
+    Creates: ReportData
+  }
+
+  class ReportData <<Value Object>> {
+    Role: hold calculated equipment report result
+    Main data: equipment counts, issue counts, equipment list, recent issues
+    Display data: total equipment, active rate, issue totals
+  }
+
+  class EquipmentDAO <<DAO>> {
+    Role: access equipment report data
+    Main actions: count active equipment, count by status, find equipment with issue counts
+    Maps data to: Equipment
+  }
+
+  class EquipmentIssueDAO <<DAO>> {
+    Role: access issue report data
+    Main actions: count by status, find recent issues
+    Maps data to: EquipmentIssue
+  }
+
+  class Equipment <<Entity>> {
+    Role: represent equipment row in the report
+    Report data: status, issue count, latest issue id
+  }
+
+  class EquipmentIssue <<Entity>> {
+    Role: represent recent issue row in the report
+    Report data: equipment info, reporter, status, reported time
+  }
+}
+
+class User <<Entity>> {
+  Role: represent admin actor
+}
+
+EquipmentReportController --> EquipmentService
+EquipmentReportController --> User
+
+EquipmentService --> EquipmentDAO
+EquipmentService --> EquipmentIssueDAO
+EquipmentService --> ReportData
+
+EquipmentDAO --> Equipment
+EquipmentIssueDAO --> EquipmentIssue
+
+ReportData --> Equipment
+ReportData --> EquipmentIssue
+
+@enduml

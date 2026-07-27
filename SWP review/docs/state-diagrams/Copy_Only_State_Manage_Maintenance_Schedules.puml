@@ -1,0 +1,18 @@
+@startuml Manage_Maintenance_Schedules_State_Diagram
+title Manage Maintenance Schedules - State Diagram
+skinparam monochrome true
+skinparam shadowing false
+
+[*] --> Scheduled : Create maintenance schedule
+
+Scheduled --> InProgress : Start maintenance
+InProgress --> PendingApproval : Submit completion result
+PendingApproval --> Completed : Admin approves result
+PendingApproval --> InProgress : Admin rejects result
+
+Scheduled --> Cancelled : Admin cancels schedule
+
+Completed --> [*]
+Cancelled --> [*]
+
+@enduml

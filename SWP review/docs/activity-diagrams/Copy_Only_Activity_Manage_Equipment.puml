@@ -1,0 +1,59 @@
+@startuml Manage_Equipment_Activity_Diagram
+title Figure 1: Manage Equipment Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 38
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Identify actor role;
+
+if (Admin?) then (Yes)
+  |Admin|
+  :Open equipment screen;
+  :Search or view equipment;
+  |System|
+  :Display equipment list/detail;
+
+  |Admin|
+  :Choose create, edit, or delete;
+  |System|
+  :Validate equipment data and permission;
+  if (Valid?) then (Yes)
+    :Save equipment change;
+    :Refresh list and report data;
+  else (No)
+    :Show validation message;
+  endif
+else (Staff)
+  |Staff|
+  :Open equipment screen;
+  :Search or view equipment;
+  |System|
+  :Display equipment list/detail;
+
+  |Staff|
+  :Update permitted equipment data;
+  |System|
+  :Validate update data;
+  if (Valid?) then (Yes)
+    :Save equipment update;
+    :Refresh equipment list;
+  else (No)
+    :Show validation message;
+  endif
+endif
+
+stop
+@enduml

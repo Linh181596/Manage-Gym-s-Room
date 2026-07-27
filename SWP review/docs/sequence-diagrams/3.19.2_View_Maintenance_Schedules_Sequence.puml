@@ -1,0 +1,27 @@
+@startuml View_Maintenance_Schedules_Sequence_Diagram
+title 3.19.2 View Maintenance Schedules - Sequence Diagram
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+autoactivate on
+
+actor "Admin/Staff" as User
+boundary "Maintenance Schedule Page" as Page
+control "ManageMaintenanceScheduleController" as Controller
+control "MaintenanceScheduleService" as Service
+entity "MaintenanceScheduleDAO" as DAO
+database "Database" as DB
+boundary "maintenance-schedule-list.jsp" as View
+
+User -> Page: Open maintenance schedule list
+Page -> Controller: GET /staff/maintenance-schedules
+Controller -> Service: search schedules with filters
+Service -> DAO: search(...)
+DAO -> DB: Query maintenance schedules
+DB --> DAO: Schedule data
+DAO --> Service: Schedule list
+Service --> Controller: Schedule list
+Controller -> View: Forward schedule list
+View --> User: Display maintenance schedules
+
+@enduml

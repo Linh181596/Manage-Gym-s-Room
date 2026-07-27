@@ -1,0 +1,55 @@
+@startuml Manage_Equipment_Issues_Activity_Diagram
+title Figure 2: Manage Equipment Issues Activity Diagram
+!pragma useVerticalIf on
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 38
+skinparam defaultTextAlignment center
+skinparam ArrowThickness 1.1
+skinparam activity {
+  BorderColor Black
+  BackgroundColor White
+  DiamondBorderColor Black
+  DiamondBackgroundColor White
+}
+
+|System|
+start
+:Identify actor role;
+
+if (Admin?) then (Yes)
+  |Admin|
+  :Open issue screen;
+  :Search, view, report, or update issue;
+else (Staff)
+  |Staff|
+  :Open issue screen;
+  :Search, view, report, or update issue;
+endif
+
+|System|
+:Display issue list/detail when requested;
+
+if (New issue?) then (Yes)
+  :Validate issue information;
+  if (Valid?) then (Yes)
+    :Create issue with Pending status;
+    :Recalculate equipment status;
+  else (No)
+    :Show validation message;
+  endif
+else (Update issue)
+  :Validate issue update;
+  if (Valid?) then (Yes)
+    :Save issue update;
+    :Recalculate equipment status if status changed;
+  else (No)
+    :Show validation message;
+  endif
+endif
+
+:Display operation result;
+stop
+@enduml

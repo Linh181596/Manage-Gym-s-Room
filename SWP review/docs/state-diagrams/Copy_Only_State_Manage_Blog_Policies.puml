@@ -1,0 +1,20 @@
+@startuml Manage_Blog_Policies_State_Diagram
+title Manage Blog & Policies - State Diagram
+skinparam monochrome true
+skinparam shadowing false
+
+[*] --> Draft : Create blog or policy
+
+Draft --> Published : Admin publishes content
+Published --> Hidden : Hide content
+Hidden --> Published : Publish again
+Published --> Draft : Edit as draft
+Hidden --> Draft : Edit as draft
+
+Draft --> Deleted : Delete content
+Published --> Deleted : Delete content
+Hidden --> Deleted : Delete content
+
+Deleted --> [*]
+
+@enduml

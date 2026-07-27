@@ -1,0 +1,28 @@
+@startuml View_Blog_Policy_Sequence_Diagram
+title 3.20.3 View Blog & Policy - Sequence Diagram
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+autoactivate on
+
+actor "User" as User
+boundary "Blog/Policy Page" as Page
+control "PublicContentController" as Controller
+control "PublicContentService" as Service
+entity "PublicContentDAO" as DAO
+database "Database" as DB
+boundary "public content view" as View
+
+User -> Page: Open blogs or policies
+Page -> Controller: GET /blogs or /policies
+Controller -> Controller: Determine content type
+Controller -> Service: get published content
+Service -> DAO: find published content
+DAO -> DB: Query published blog or policy
+DB --> DAO: Content data
+DAO --> Service: Blog or policy list/detail
+Service --> Controller: Blog or policy data
+Controller -> View: Forward content data
+View --> User: Display blog or policy
+
+@enduml

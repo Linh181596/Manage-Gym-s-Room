@@ -1,0 +1,29 @@
+@startuml Update_Maintenance_Schedule_Sequence_Diagram
+title 3.19.5 Update Maintenance Schedule - Sequence Diagram
+skinparam monochrome true
+skinparam shadowing false
+autonumber
+autoactivate on
+
+actor "Admin/Staff" as User
+boundary "Maintenance Schedule Form" as Form
+control "ManageMaintenanceScheduleController" as Controller
+control "MaintenanceScheduleService" as Service
+entity "MaintenanceScheduleDAO" as DAO
+database "Database" as DB
+boundary "maintenance-schedule-detail.jsp" as DetailView
+
+User -> Form: Submit updated schedule
+Form -> Controller: POST update schedule
+Controller -> Controller: Read update data
+Controller -> Service: update schedule
+Service -> Service: Validate status and input data
+Service -> DAO: update schedule data
+DAO -> DB: Update maintenance schedule
+DB --> DAO: Update result
+DAO --> Service: Update result
+Service --> Controller: Update successful
+Controller -> DetailView: Redirect to schedule detail
+DetailView --> User: Display updated schedule
+
+@enduml

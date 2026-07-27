@@ -1,0 +1,21 @@
+@startuml View_Equipment_Reports_State_Diagram
+title View Equipment Reports - State Diagram
+skinparam monochrome true
+skinparam shadowing false
+
+[*] --> ReportRequested : Admin opens report page
+
+ReportRequested --> AccessChecking : Check admin permission
+AccessChecking --> LoadingData : Permission valid
+AccessChecking --> AccessDenied : Permission invalid
+
+LoadingData --> CalculatingStatistics : Load equipment and issue data
+CalculatingStatistics --> ReportReady : Build report data
+ReportReady --> ReportDisplayed : Display report page
+
+ReportDisplayed --> LoadingData : Change page or refresh report
+
+AccessDenied --> [*]
+ReportDisplayed --> [*]
+
+@enduml

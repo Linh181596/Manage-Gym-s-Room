@@ -23,10 +23,16 @@ import com.mycompany.gymcentermanagement.model.entity.EquipmentIssue;
 import com.mycompany.gymcentermanagement.utils.DBContext;
 
 public class EquipmentIssueDAO {
+    /**
+     * SQL trong hàm này dùng để lấy toàn bộ sự cố chưa xóa mềm theo bộ lọc, không giới hạn phân trang thực tế.
+     */
     public List<EquipmentIssue> search(String keyword, String status) throws SQLException {
         return search(keyword, status, 0, Integer.MAX_VALUE);
     }
 
+    /**
+     * SQL trong hàm này dùng để tìm sự cố thiết bị theo từ khóa, trạng thái và phân trang.
+     */
     public List<EquipmentIssue> search(String keyword, String status, int offset, int limit) throws SQLException {
         ensureIssueImageColumn();
         StringBuilder sql = new StringBuilder("""
@@ -55,6 +61,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm số sự cố thỏa bộ lọc cho phân trang.
+     */
     public int countSearch(String keyword, String status) throws SQLException {
         ensureIssueImageColumn();
         StringBuilder sql = new StringBuilder("""
@@ -74,6 +83,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy chi tiết một sự cố theo id kèm thông tin thiết bị và người báo cáo.
+     */
     public EquipmentIssue findById(int issueId) throws SQLException {
         ensureIssueImageColumn();
         String sql = """
@@ -92,6 +104,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để thêm báo cáo sự cố mới và lấy khóa chính vừa sinh.
+     */
     public int create(Connection connection, EquipmentIssue issue) throws SQLException {
         ensureIssueImageColumn(connection);
         String sql = """
@@ -117,6 +132,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để cập nhật trạng thái sự cố và người cập nhật.
+     */
     public boolean updateStatus(Connection connection, int issueId, String status, String updatedBy) throws SQLException {
         String sql = "UPDATE EquipmentIssues SET Status = ?, UpdatedBy = ?, UpdatedDate = SYSDATETIME() WHERE IssueID = ? AND IsDeleted = 0";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -127,6 +145,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để cập nhật thông tin sự cố chưa bị xóa mềm.
+     */
     public boolean update(Connection connection, EquipmentIssue issue) throws SQLException {
         ensureIssueImageColumn(connection);
         String sql = """
@@ -148,6 +169,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy chi tiết một sự cố theo id trên kết nối có sẵn.
+     */
     public EquipmentIssue findById(Connection connection, int issueId) throws SQLException {
         ensureIssueImageColumn(connection);
         String sql = "SELECT i.*, e.EquipmentCode, e.EquipmentName, COALESCE(NULLIF(i.CreatedBy, ''), u.DisplayName) AS ReporterName FROM EquipmentIssues i INNER JOIN Equipments e ON e.EquipmentID = i.EquipmentID INNER JOIN Users u ON u.UserID = i.ReportedBy WHERE i.IssueID = ? AND i.IsDeleted = 0";
@@ -159,6 +183,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm số sự cố theo từng trạng thái cho thống kê.
+     */
     public Map<String, Integer> countByStatus() throws SQLException {
         ensureIssueImageColumn();
         String sql = "SELECT Status, COUNT(*) AS Total FROM EquipmentIssues WHERE IsDeleted = 0 GROUP BY Status";
@@ -173,6 +200,9 @@ public class EquipmentIssueDAO {
         return counts;
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy danh sách sự cố liên quan đến một thiết bị.
+     */
     public List<EquipmentIssue> findByEquipmentId(int equipmentId) throws SQLException {
         ensureIssueImageColumn();
         String sql = """
@@ -196,6 +226,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy các sự cố mới nhất cho trang báo cáo.
+     */
     public List<EquipmentIssue> findRecent(int limit) throws SQLException {
         ensureIssueImageColumn();
         String sql = """
@@ -219,12 +252,18 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * Gán danh sách tham số động vào PreparedStatement theo đúng thứ tự điều kiện lọc.
+     */
     private void bind(PreparedStatement statement, List<Object> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
             statement.setObject(i + 1, params.get(i));
         }
     }
 
+    /**
+     * Bổ sung điều kiện lọc động vào SQL tìm kiếm sự cố thiết bị.
+     */
     private void appendSearchFilters(StringBuilder sql, List<Object> params, String keyword, String status) {
         if (keyword != null && !keyword.isBlank()) {
             sql.append(" AND (e.EquipmentCode LIKE ? OR e.EquipmentName LIKE ? OR i.Description LIKE ?)");
@@ -239,6 +278,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * Chuyển một dòng ResultSet từ bảng EquipmentIssues thành đối tượng EquipmentIssue.
+     */
     private EquipmentIssue mapIssue(ResultSet resultSet) throws SQLException {
         EquipmentIssue issue = new EquipmentIssue();
         issue.setIssueId(resultSet.getInt("IssueID"));
@@ -263,9 +305,11 @@ public class EquipmentIssueDAO {
         return issue;
     }
 
-    // Runtime guard for older DB copies; the SQL migration file is the preferred fix.
     private static boolean checkedIssueImageColumn = false;
 
+    /**
+     * SQL trong hàm này dùng để mở kết nối và kiểm tra cột ảnh sự cố cho các bản DB cũ.
+     */
     private void ensureIssueImageColumn() throws SQLException {
         if (checkedIssueImageColumn) {
             return;
@@ -275,6 +319,9 @@ public class EquipmentIssueDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để kiểm tra và bổ sung cột IssueImageURL cho các bản DB cũ nếu còn thiếu.
+     */
     private void ensureIssueImageColumn(Connection connection) throws SQLException {
         if (checkedIssueImageColumn) {
             return;
