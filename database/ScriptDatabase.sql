@@ -839,6 +839,16 @@ INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberI
 INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (130, 13, 3, 6, CAST(N'2026-07-31' AS Date), CAST(N'18:45:00' AS Time), CAST(N'20:15:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-06-30T10:58:20.9633333' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (131, 13, 3, 6, CAST(N'2026-08-05' AS Date), CAST(N'18:45:00' AS Time), CAST(N'20:15:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-06-30T10:58:20.9633333' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (132, 13, 3, 6, CAST(N'2026-08-07' AS Date), CAST(N'18:45:00' AS Time), CAST(N'20:15:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-06-30T10:58:20.9633333' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (133, 3, 3, 1, CAST(N'2026-07-28' AS Date), CAST(N'08:15:00' AS Time), CAST(N'09:45:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (134, 5, 4, 1, CAST(N'2026-07-28' AS Date), CAST(N'08:15:00' AS Time), CAST(N'09:45:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (135, 6, 6, 1, CAST(N'2026-07-28' AS Date), CAST(N'08:15:00' AS Time), CAST(N'09:45:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (136, 12, 9, 6, CAST(N'2026-07-28' AS Date), CAST(N'08:15:00' AS Time), CAST(N'09:45:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (137, 14, 7, 6, CAST(N'2026-07-28' AS Date), CAST(N'08:15:00' AS Time), CAST(N'09:45:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (138, 3, 3, 1, CAST(N'2026-07-28' AS Date), CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (139, 5, 4, 1, CAST(N'2026-07-28' AS Date), CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (140, 6, 6, 1, CAST(N'2026-07-28' AS Date), CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (141, 12, 9, 6, CAST(N'2026-07-28' AS Date), CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+INSERT [dbo].[PTSchedules] ([PTScheduleID], [PTRegistrationID], [PTID], [MemberID], [SessionDate], [StartTime], [EndTime], [SessionStatus], [PTAttendanceResult], [CreatedByUserID], [Note], [CreatedBy], [CreatedDate], [UpdatedBy], [UpdatedDate], [IsDeleted], [OriginalPTID], [SubstituteReason], [SubstituteByUserID], [SubstituteAt], [CancelledByUserID], [CancelledAt], [CancellationReason]) VALUES (142, 14, 7, 6, CAST(N'2026-07-28' AS Date), CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time), N'Upcoming', N'Pending', 1, NULL, NULL, CAST(N'2026-07-27T21:00:00.000' AS DateTime2), NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 SET IDENTITY_INSERT [dbo].[PTSchedules] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PTServicePrices] ON 
@@ -1611,199 +1621,19 @@ GO
 ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [CK_Users_Status]
 GO
 GO
-ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_EscalatedBy] FOREIGN KEY([EscalatedByUserID])
-REFERENCES [dbo].[Users] ([UserID])
 GO
-ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_EscalatedBy]
 GO
-ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_PTSchedules] FOREIGN KEY([PTScheduleID])
-REFERENCES [dbo].[PTSchedules] ([PTScheduleID])
 GO
-ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_PTSchedules]
 GO
-ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_Receiver] FOREIGN KEY([ReceiverUserID])
-REFERENCES [dbo].[Users] ([UserID])
 GO
-ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_Receiver]
 GO
-ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_RespondedBy] FOREIGN KEY([RespondedByUserID])
-REFERENCES [dbo].[Users] ([UserID])
 GO
-ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_RespondedBy]
-GO
-ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [FK_RescheduleRequests_Sender] FOREIGN KEY([SenderUserID])
-REFERENCES [dbo].[Users] ([UserID])
-GO
-ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [FK_RescheduleRequests_Sender]
-GO
-ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [FK_StaffPTAttendance_CheckedBy] FOREIGN KEY([CheckedBy])
-REFERENCES [dbo].[Users] ([UserID])
-GO
-ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [FK_StaffPTAttendance_CheckedBy]
-GO
-ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [FK_StaffPTAttendance_Users] FOREIGN KEY([UserID])
-REFERENCES [dbo].[Users] ([UserID])
-GO
-ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [FK_StaffPTAttendance_Users]
-GO
-ALTER TABLE [dbo].[Staffs]  WITH CHECK ADD  CONSTRAINT [FK_Staffs_Users] FOREIGN KEY([UserID])
-REFERENCES [dbo].[Users] ([UserID])
-GO
-ALTER TABLE [dbo].[Staffs] CHECK CONSTRAINT [FK_Staffs_Users]
-GO
-ALTER TABLE [dbo].[User_Tokens]  WITH CHECK ADD  CONSTRAINT [FK_UserTokens_Users] FOREIGN KEY([UserID])
-REFERENCES [dbo].[Users] ([UserID])
-ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[User_Tokens] CHECK CONSTRAINT [FK_UserTokens_Users]
 GO
-ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_Roles] FOREIGN KEY([RoleID])
-REFERENCES [dbo].[Roles] ([RoleID])
-ON DELETE CASCADE
-GO
 ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_Roles]
 GO
-ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_Users] FOREIGN KEY([UserID])
-REFERENCES [dbo].[Users] ([UserID])
-ON DELETE CASCADE
-GO
 ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_Users]
-GO
-ALTER TABLE [dbo].[EquipmentIssues]  WITH CHECK ADD  CONSTRAINT [CK_EquipmentIssues_Status] CHECK  (([Status]='Resolved' OR [Status]='InProgress' OR [Status]='Pending'))
-GO
-ALTER TABLE [dbo].[EquipmentIssues] CHECK CONSTRAINT [CK_EquipmentIssues_Status]
-GO
-ALTER TABLE [dbo].[Equipments]  WITH CHECK ADD  CONSTRAINT [CK_Equipments_Status] CHECK  (([Status]='Broken' OR [Status]='Maintenance' OR [Status]='Available'))
-GO
-ALTER TABLE [dbo].[Equipments] CHECK CONSTRAINT [CK_Equipments_Status]
-GO
-ALTER TABLE [dbo].[GymPackages]  WITH CHECK ADD  CONSTRAINT [CK_GymPackages_Duration] CHECK  (([DurationMonths]>(0)))
-GO
-ALTER TABLE [dbo].[GymPackages] CHECK CONSTRAINT [CK_GymPackages_Duration]
-GO
-ALTER TABLE [dbo].[GymPackages]  WITH CHECK ADD  CONSTRAINT [CK_GymPackages_Price] CHECK  (([Price]>=(0)))
-GO
-ALTER TABLE [dbo].[GymPackages] CHECK CONSTRAINT [CK_GymPackages_Price]
-GO
-ALTER TABLE [dbo].[GymPackages]  WITH CHECK ADD  CONSTRAINT [CK_GymPackages_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
-GO
-ALTER TABLE [dbo].[GymPackages] CHECK CONSTRAINT [CK_GymPackages_Status]
-GO
-ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Amount] CHECK  (([Amount]>=(0)))
-GO
-ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Amount]
-GO
-ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [CK_Invoices_Status] CHECK  (([Status]='Cancelled' OR [Status]='Pending' OR [Status]='Paid'))
-GO
-ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [CK_Invoices_Status]
-GO
-ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Status] CHECK  (([Status]='Scheduled' OR [Status]='InProgress' OR [Status]='PendingApproval' OR [Status]='Completed' OR [Status]='Cancelled'))
-GO
-ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Status]
-GO
-ALTER TABLE [dbo].[MaintenanceSchedules]  WITH CHECK ADD  CONSTRAINT [CK_MaintenanceSchedules_Type] CHECK  (([MaintenanceType]='Preventive' OR [MaintenanceType]='Corrective'))
-GO
-ALTER TABLE [dbo].[MaintenanceSchedules] CHECK CONSTRAINT [CK_MaintenanceSchedules_Type]
-GO
-ALTER TABLE [dbo].[MemberPackages]  WITH CHECK ADD  CONSTRAINT [CK_MemberPackages_Status] CHECK  (([Status]='Expired' OR [Status]='Active' OR [Status]='Pending'))
-GO
-ALTER TABLE [dbo].[MemberPackages] CHECK CONSTRAINT [CK_MemberPackages_Status]
-GO
-ALTER TABLE [dbo].[Members]  WITH CHECK ADD  CONSTRAINT [CK_Members_Status] CHECK  (([MembershipStatus]='Pending' OR [MembershipStatus]='Inactive' OR [MembershipStatus]='Active'))
-GO
-ALTER TABLE [dbo].[Members] CHECK CONSTRAINT [CK_Members_Status]
-GO
-ALTER TABLE [dbo].[PersonalTrainers]  WITH CHECK ADD  CONSTRAINT [CK_PersonalTrainers_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
-GO
-ALTER TABLE [dbo].[PersonalTrainers] CHECK CONSTRAINT [CK_PersonalTrainers_Status]
-GO
-ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_Duration] CHECK  (([DurationMonths]>(0)))
-GO
-ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_Duration]
-GO
-ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_NumberOfSessions] CHECK  (([NumberOfSessions]>(0)))
-GO
-ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_NumberOfSessions]
-GO
-ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_Sessions] CHECK  (([NumberOfSessions]>(0)))
-GO
-ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_Sessions]
-GO
-ALTER TABLE [dbo].[PTPackageTypes]  WITH CHECK ADD  CONSTRAINT [CK_PTPackageTypes_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
-GO
-ALTER TABLE [dbo].[PTPackageTypes] CHECK CONSTRAINT [CK_PTPackageTypes_Status]
-GO
-ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_PaymentStatus] CHECK  (([PaymentStatus]='Cancelled' OR [PaymentStatus]='Paid' OR [PaymentStatus]='Unpaid'))
-GO
-ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_PaymentStatus]
-GO
-ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_PurchasedSessions] CHECK  (([PurchasedSessions]>(0)))
-GO
-ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_PurchasedSessions]
-GO
-ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_Status] CHECK  (([Status]='Cancelled' OR [Status]='Completed' OR [Status]='Active' OR [Status]='Pending'))
-GO
-ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_Status]
-GO
-ALTER TABLE [dbo].[PTRegistrations]  WITH CHECK ADD  CONSTRAINT [CK_PTRegistrations_TotalAmount] CHECK  (([TotalAmount]>=(0)))
-GO
-ALTER TABLE [dbo].[PTRegistrations] CHECK CONSTRAINT [CK_PTRegistrations_TotalAmount]
-GO
-ALTER TABLE [dbo].[PTSchedules]  WITH CHECK ADD  CONSTRAINT [CK_PTSchedules_Attendance] CHECK  (([PTAttendanceResult]='Absent' OR [PTAttendanceResult]='Attended' OR [PTAttendanceResult]='Pending'))
-GO
-ALTER TABLE [dbo].[PTSchedules] CHECK CONSTRAINT [CK_PTSchedules_Attendance]
-GO
-ALTER TABLE [dbo].[PTSchedules]  WITH CHECK ADD  CONSTRAINT [CK_PTSchedules_Status] CHECK  (([SessionStatus]='Cancelled' OR [SessionStatus]='Completed' OR [SessionStatus]='Upcoming'))
-GO
-ALTER TABLE [dbo].[PTSchedules] CHECK CONSTRAINT [CK_PTSchedules_Status]
-GO
-ALTER TABLE [dbo].[PTSchedules]  WITH CHECK ADD  CONSTRAINT [CK_PTSchedules_Time] CHECK  (([StartTime]<[EndTime]))
-GO
-ALTER TABLE [dbo].[PTSchedules] CHECK CONSTRAINT [CK_PTSchedules_Time]
-GO
-ALTER TABLE [dbo].[PTServicePrices]  WITH CHECK ADD  CONSTRAINT [CK_PTServicePrices_Price] CHECK  (([Price]>=(0)))
-GO
-ALTER TABLE [dbo].[PTServicePrices] CHECK CONSTRAINT [CK_PTServicePrices_Price]
-GO
-ALTER TABLE [dbo].[PTServicePrices]  WITH CHECK ADD  CONSTRAINT [CK_PTServicePrices_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
-GO
-ALTER TABLE [dbo].[PTServicePrices] CHECK CONSTRAINT [CK_PTServicePrices_Status]
-GO
-ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [CK_RescheduleRequests_Status] CHECK  (([Status]='Escalated' OR [Status]='Rejected' OR [Status]='Approved' OR [Status]='Pending'))
-GO
-ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [CK_RescheduleRequests_Status]
-GO
-ALTER TABLE [dbo].[RescheduleRequests]  WITH CHECK ADD  CONSTRAINT [CK_RescheduleRequests_Time] CHECK  (([ProposedStartTime]<[ProposedEndTime]))
-GO
-ALTER TABLE [dbo].[RescheduleRequests] CHECK CONSTRAINT [CK_RescheduleRequests_Time]
-GO
-ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Role] CHECK  (([UserRole]='PT' OR [UserRole]='Staff'))
-GO
-ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Role]
-GO
-ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Shift] CHECK  (([ShiftBlock]='Evening' OR [ShiftBlock]='Afternoon' OR [ShiftBlock]='Morning'))
-GO
-ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Shift]
-GO
-ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Status] CHECK  (([Status]='Cancelled' OR [Status]='Active'))
-GO
-ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Status]
-GO
-ALTER TABLE [dbo].[StaffPTAttendance]  WITH CHECK ADD  CONSTRAINT [CK_StaffPTAttendance_Time] CHECK  (([CheckedOutAt] IS NULL OR [CheckedOutAt]>=[CheckedInAt]))
-GO
-ALTER TABLE [dbo].[StaffPTAttendance] CHECK CONSTRAINT [CK_StaffPTAttendance_Time]
-GO
-ALTER TABLE [dbo].[Staffs]  WITH CHECK ADD  CONSTRAINT [CK_Staffs_Status] CHECK  (([Status]='Inactive' OR [Status]='Active'))
-GO
-ALTER TABLE [dbo].[Staffs] CHECK CONSTRAINT [CK_Staffs_Status]
-GO
-ALTER TABLE [dbo].[User_Tokens]  WITH CHECK ADD  CONSTRAINT [CK_UserTokens_Type] CHECK  (([TokenType]='REMEMBER_ME' OR [TokenType]='RESET_PASSWORD' OR [TokenType]='VERIFICATION'))
-GO
-ALTER TABLE [dbo].[User_Tokens] CHECK CONSTRAINT [CK_UserTokens_Type]
-GO
-ALTER TABLE [dbo].[Users]  WITH CHECK ADD  CONSTRAINT [CK_Users_Status] CHECK  (([Status]='Locked' OR [Status]='Inactive' OR [Status]='Active'))
-GO
-ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [CK_Users_Status]
 GO
 USE [master]
 GO
@@ -1904,6 +1734,149 @@ BEGIN
 
     CREATE INDEX IX_FAQ_Status ON dbo.FAQ(status);
 END;
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+SET ANSI_WARNINGS ON
+GO
+SET CONCAT_NULL_YIELDS_NULL ON
+GO
+SET ARITHABORT ON
+GO
+SET NUMERIC_ROUNDABORT OFF
+GO
+
+USE [GymCenterManagement]
+GO
+
+DECLARE @DemoNote nvarchar(500) = N'DEMO_ATTENDANCE_2026_07_01_TO_26';
+DECLARE @StartDate date = CAST(N'2026-07-01' AS date);
+DECLARE @EndDate date = CAST(N'2026-07-26' AS date);
+
+;WITH DemoUsers AS
+(
+    SELECT v.UserID, v.UserRole, v.UserOffset
+    FROM (VALUES
+        (2, N'Staff', 0),
+        (3, N'PT',    1),
+        (5, N'PT',    2)
+    ) v(UserID, UserRole, UserOffset)
+    INNER JOIN dbo.Users u
+        ON u.UserID = v.UserID
+       AND u.IsDeleted = 0
+),
+DemoDates AS
+(
+    SELECT @StartDate AS WorkDate
+    UNION ALL
+    SELECT DATEADD(DAY, 1, WorkDate)
+    FROM DemoDates
+    WHERE WorkDate < @EndDate
+),
+DemoShifts AS
+(
+    SELECT *
+    FROM (VALUES
+        (N'Morning',   8 * 60,       12 * 60,      0),
+        (N'Afternoon', 13 * 60 + 15, 16 * 60 + 45, 1),
+        (N'Evening',   17 * 60,      20 * 60 + 30, 2)
+    ) v(ShiftBlock, ShiftStartMinute, ShiftEndMinute, ShiftOffset)
+),
+DemoRows AS
+(
+    SELECT
+        u.UserID,
+        u.UserRole,
+        d.WorkDate,
+        s.ShiftBlock,
+        s.ShiftStartMinute,
+        s.ShiftEndMinute,
+        (DATEDIFF(DAY, @StartDate, d.WorkDate) + u.UserOffset + (s.ShiftOffset * 2)) % 6 AS DemoPattern
+    FROM DemoDates d
+    CROSS JOIN DemoShifts s
+    CROSS JOIN DemoUsers u
+)
+INSERT INTO dbo.StaffPTAttendance
+    (UserID, UserRole, CheckedInAt, CheckedOutAt, ShiftBlock,
+     Status, CheckedBy, Note, CreatedBy, CreatedDate,
+     UpdatedBy, UpdatedDate, IsDeleted)
+SELECT
+    r.UserID,
+    r.UserRole,
+    DATEADD(MINUTE,
+        r.ShiftStartMinute
+        + CASE r.DemoPattern
+            WHEN 1 THEN 10
+            WHEN 3 THEN 10
+            ELSE 2
+          END,
+        CAST(r.WorkDate AS datetime2)),
+    CASE
+        WHEN r.DemoPattern = 4 THEN NULL
+        ELSE DATEADD(MINUTE,
+            r.ShiftEndMinute
+            + CASE r.DemoPattern
+                WHEN 2 THEN -20
+                WHEN 3 THEN -20
+                ELSE 5
+              END,
+            CAST(r.WorkDate AS datetime2))
+    END,
+    r.ShiftBlock,
+    N'Active',
+    1,
+    @DemoNote,
+    N'Demo Admin',
+    DATEADD(MINUTE,
+        r.ShiftStartMinute
+        + CASE r.DemoPattern
+            WHEN 1 THEN 10
+            WHEN 3 THEN 10
+            ELSE 2
+          END,
+        CAST(r.WorkDate AS datetime2)),
+    CASE WHEN r.DemoPattern = 4 THEN NULL ELSE N'1' END,
+    CASE
+        WHEN r.DemoPattern = 4 THEN NULL
+        ELSE DATEADD(MINUTE,
+            r.ShiftEndMinute
+            + CASE r.DemoPattern
+                WHEN 2 THEN -20
+                WHEN 3 THEN -20
+                ELSE 5
+              END,
+            CAST(r.WorkDate AS datetime2))
+    END,
+    0
+FROM DemoRows r
+WHERE NOT EXISTS
+(
+    SELECT 1
+    FROM dbo.StaffPTAttendance existing
+    WHERE existing.UserID = r.UserID
+      AND existing.UserRole = r.UserRole
+      AND existing.AttendanceDate = r.WorkDate
+      AND existing.ShiftBlock = r.ShiftBlock
+      AND existing.IsDeleted = 0
+)
+OPTION (MAXRECURSION 100);
+GO
+
+SELECT
+    UserID,
+    UserRole,
+    COUNT(*) AS DemoRecords,
+    MIN(AttendanceDate) AS FromDate,
+    MAX(AttendanceDate) AS ToDate
+FROM dbo.StaffPTAttendance
+WHERE Note = N'DEMO_ATTENDANCE_2026_07_01_TO_26'
+GROUP BY UserID, UserRole
+ORDER BY UserRole, UserID;
 GO
 
 -- Reset FAQ data to the approved selectable FAQ set.
