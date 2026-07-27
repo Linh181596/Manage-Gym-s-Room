@@ -92,13 +92,8 @@
                     <div class="mb-4">
                         <label for="transferMonths" class="form-label fw-bold text-dark"><i class="fa fa-calendar-alt me-1 text-muted"></i> 2. Số tháng chuyển nhượng <span class="text-danger">*</span></label>
                         <select class="form-select form-select-lg border-2 fw-bold text-primary" id="transferMonths" name="transferMonths" required>
-                            <option value="" disabled selected>-- Chọn số tháng (Tối thiểu 6, tối đa 12) --</option>
+                            <option value="" disabled selected>-- Chọn số tháng (6 hoặc 12 tháng) --</option>
                             <option value="6">6 tháng</option>
-                            <option value="7">7 tháng</option>
-                            <option value="8">8 tháng</option>
-                            <option value="9">9 tháng</option>
-                            <option value="10">10 tháng</option>
-                            <option value="11">11 tháng</option>
                             <option value="12">12 tháng</option>
                         </select>
                         <div class="form-text text-muted">Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí chuyển nhượng (60,000đ/tháng).</div>

@@ -341,8 +341,8 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             }
 
             // 2. Validate số tháng chuyển
-            if (transferMonths < 6 || transferMonths > 12) {
-                throw new SQLException("Số tháng chuyển nhượng phải từ 6 đến 12 tháng.");
+            if (transferMonths != 6 && transferMonths != 12) {
+                throw new SQLException("Số tháng chuyển nhượng phải là 6 hoặc 12 tháng.");
             }
             long transferDays = transferMonths * 30L;
 

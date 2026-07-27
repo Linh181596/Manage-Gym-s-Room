@@ -55,15 +55,15 @@
                         <c:choose>
                             <c:when test="${not empty latestPkg and latestPkg.status eq 'Active'}">
                                 <div class="p-3 bg-white rounded border border-success border-2">
-                                    <div class="fw-bold text-success fs-6"><i class="fa fa-check-circle me-1"></i> ${latestPkg.gymPackage.packageName}</div>
+                                    <div class="fw-bold text-success fs-6"><i class="fa fa-check-circle me-1"></i> Gói hội viên</div>
                                     <div class="small text-muted mt-1"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu: ${latestPkg.startDate}</div>
                                     <div class="small text-dark fw-bold"><i class="fa fa-calendar-check me-1"></i> Ngày hết hạn: ${latestPkg.endDate}</div>
-                                    <div class="small text-muted"><i class="fa fa-clock me-1"></i> Giá trị: ${latestPkg.gymPackage.durationMonths} Tháng</div>
+                                    <div class="small text-muted"><i class="fa fa-clock me-1"></i> Giá trị: ${latestPkg.calculatedDurationMonths} Tháng</div>
                                 </div>
                             </c:when>
                             <c:when test="${not empty latestPkg and latestPkg.status eq 'Expired'}">
                                 <div class="p-3 bg-white rounded border border-warning border-dashed border-2 text-warning">
-                                    <div class="fw-bold fs-6"><i class="fa fa-exclamation-triangle me-1"></i> ${latestPkg.gymPackage.packageName} (Đã hết hạn)</div>
+                                    <div class="fw-bold fs-6"><i class="fa fa-exclamation-triangle me-1"></i> Gói hội viên (Đã hết hạn)</div>
                                     <div class="small mt-1"><i class="fa fa-calendar-times me-1"></i> Ngày hết hạn cũ: ${latestPkg.endDate}</div>
                                     <div class="small"><i class="fa fa-info-circle me-1"></i> Gói gia hạn mới sẽ được kích hoạt kể từ <strong>Hôm nay</strong>.</div>
                                 </div>
