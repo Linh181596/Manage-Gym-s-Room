@@ -30,6 +30,10 @@ public class MemberPortalController extends HttpServlet {
 
     private final GymDAO gymDAO = new GymDAO();
 
+    /**
+     * Kiểm tra đăng nhập, xác định hội viên cần xem, kiểm tra quyền Staff/Admin
+     * khi xem hộ, rồi tải hồ sơ và dịch vụ của hội viên.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -46,7 +50,6 @@ public class MemberPortalController extends HttpServlet {
         String viewMemberIdStr = request.getParameter("viewMemberId");
         
         if (viewMemberIdStr != null && !viewMemberIdStr.trim().isEmpty()) {
-            // Staff and Admin are allowed to view other members' profiles
             if (currentUser.getRole() != User.Role.Staff && currentUser.getRole() != User.Role.Admin) {
                 request.setAttribute("errorMessage", "Bạn không có quyền xem thông tin của hội viên khác.");
                 request.getRequestDispatcher("/WEB-INF/views/common/error-403.jsp").forward(request, response);
@@ -59,7 +62,6 @@ public class MemberPortalController extends HttpServlet {
                 return;
             }
         } else if (currentUser.getRole() != User.Role.Member) {
-            // Staff/Admin accessing /member/portal directly without viewMemberId parameter
             request.setAttribute("errorMessage", "Vui lòng chọn một hội viên cụ thể từ danh sách quản lý để xem.");
             request.getRequestDispatcher("/WEB-INF/views/common/error-403.jsp").forward(request, response);
             return;

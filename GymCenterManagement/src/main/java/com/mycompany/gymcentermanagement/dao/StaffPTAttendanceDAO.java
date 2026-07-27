@@ -2,8 +2,6 @@
  * =========================================================================
  * @file          : StaffPTAttendanceDAO.java
  * @description   : Giao diện định nghĩa các thao tác truy xuất dữ liệu điểm danh Staff và PT.
- *                  Hỗ trợ UC 2.3.4 (Manage Staff & PT Check-ins) và
- *                  UC 2.3.5 (View Staff & PT Work History).
  * @author        : Nguyễn Trí Linh (linhnt)
  * @created       : 2026-06-26
  * @last_modified : 2026-06-26 bởi Antigravity Agent
@@ -30,10 +28,19 @@ public interface StaffPTAttendanceDAO {
          */
         int create(StaffPTAttendance attendance) throws SQLException;
 
+        /**
+         * Ghi giờ ra cho một bản ghi điểm danh.
+         */
         boolean checkout(int attendanceId, int checkedBy) throws SQLException;
 
+        /**
+         * Hoàn tác giờ ra của một bản ghi điểm danh.
+         */
         boolean undoCheckout(int attendanceId, int updatedBy) throws SQLException;
 
+        /**
+         * Hủy mềm một bản ghi điểm danh.
+         */
         boolean cancel(int attendanceId, int cancelledBy) throws SQLException;
 
         /**

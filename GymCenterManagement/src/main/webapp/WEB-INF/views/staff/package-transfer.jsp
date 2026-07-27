@@ -76,9 +76,10 @@
                         <select class="form-select form-select-lg border-2" id="receiverSelect" name="receiverId" size="5" style="height: 140px; overflow-y: auto;" required>
                             <c:forEach var="m" items="${activeMembers}">
                                 <option value="${m.userId}" 
-                                        data-name="${m.userDetails.fullName}" 
+                                        data-name="${m.userDetails.fullName}"
                                         data-email="${m.userDetails.email}"
-                                        data-phone="${m.userDetails.phoneNumber}">
+                                        data-phone="${m.userDetails.phoneNumber}"
+                                        data-enddate="${receiverEndDateMap[m.memberId] != null ? receiverEndDateMap[m.memberId] : ''}">
                                     ${m.userDetails.fullName} (Mã: MEM-${m.memberId} | SĐT: ${m.userDetails.phoneNumber})
                                 </option>
                             </c:forEach>
@@ -87,14 +88,15 @@
                         <div class="form-text text-muted">Hội viên người gửi không được hiển thị trong danh sách này.</div>
                     </div>
 
-                    <!-- Fixed Transfer Fee input -->
+                    <!-- Number of Months input -->
                     <div class="mb-4">
-                        <label for="transferFee" class="form-label fw-bold text-dark"><i class="fa fa-receipt me-1 text-muted"></i> 2. Phí dịch vụ chuyển nhượng (₫) <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white fw-bold text-dark">₫</span>
-                            <input type="number" id="transferFee" name="transferFee" class="form-control border-2 fw-bold text-primary" value="100000" required>
-                        </div>
-                        <div class="form-text text-muted">Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí này.</div>
+                        <label for="transferMonths" class="form-label fw-bold text-dark"><i class="fa fa-calendar-alt me-1 text-muted"></i> 2. Số tháng chuyển nhượng <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-lg border-2 fw-bold text-primary" id="transferMonths" name="transferMonths" required>
+                            <option value="" disabled selected>-- Chọn số tháng (6 hoặc 12 tháng) --</option>
+                            <option value="6">6 tháng</option>
+                            <option value="12">12 tháng</option>
+                        </select>
+                        <div class="form-text text-muted">Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí chuyển nhượng (60,000đ/tháng).</div>
                     </div>
 
                     <!-- Notes/Reason -->
@@ -148,7 +150,7 @@
                     <div class="border-top pt-4 mt-auto">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted fw-bold">Tổng phí chuyển nhượng:</span>
-                            <span class="fs-3 fw-extrabold text-primary" id="feeAmountText">₫100,000</span>
+                            <span class="fs-3 fw-extrabold text-primary" id="feeAmountText">₫0</span>
                         </div>
                         <div class="alert alert-warning small border-0 py-2 px-3 mb-0" role="alert">
                             <i class="fa fa-info-circle me-1"></i> Lưu ý: Khi Receiver thanh toán xong hóa đơn phí, gói tập của Sender sẽ <strong>lập tức kết thúc (Expired)</strong> và gói của Receiver mới bắt đầu có hiệu lực <strong>(Active)</strong>.
@@ -174,16 +176,19 @@
         }, false);
 
         // Xử lý update phí chuyển nhượng
-        const transferFeeInput = document.getElementById("transferFee");
+        const transferMonthsSelect = document.getElementById("transferMonths");
         const feeAmountText = document.getElementById("feeAmountText");
+        let currentTransferMonths = 0;
         
         function formatVND(value) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value).replace('₫', '₫');
         }
 
-        transferFeeInput.addEventListener("input", function() {
-            const val = parseFloat(this.value) || 0;
-            feeAmountText.innerText = formatVND(val);
+        transferMonthsSelect.addEventListener("change", function() {
+            currentTransferMonths = parseInt(this.value) || 0;
+            const fee = currentTransferMonths * 60000;
+            feeAmountText.innerText = formatVND(fee);
+            updateSummaries();
         });
 
         // Receiver Search Filter
@@ -211,18 +216,50 @@
         const summarySender = document.getElementById("summarySenderContainer");
         const senderRadios = document.querySelectorAll(".sender-pkg-radio");
         let currentRemainingDays = 0;
+        let selectedPkgName = "";
+        const submitBtn = document.querySelector("button[type='submit']");
 
-        // Hàm cập nhật bản tóm tắt thông tin người nhận gói tập và tính toán thời gian hiệu lực mới
-        function updateReceiverSummary() {
-            const selectedOpt = receiverSelect.options[receiverSelect.selectedIndex];
-            if (selectedOpt && currentRemainingDays > 0) {
-                const name = selectedOpt.getAttribute("data-name");
-                const phone = selectedOpt.getAttribute("data-phone");
-                const id = selectedOpt.value;
+        function updateSummaries() {
+            const selectedReceiverOpt = receiverSelect.options[receiverSelect.selectedIndex];
+            const transferDays = currentTransferMonths * 30;
+            
+            // Validate transfer days
+            if (currentRemainingDays > 0 && transferDays > 0 && transferDays > currentRemainingDays) {
+                summarySender.innerHTML = `
+                    <small class="text-dark fw-bold"><i class="fa fa-box me-1"></i> Gói tập: \${selectedPkgName}</small>
+                    <br/>
+                    <div class="alert alert-danger p-2 mt-2 mb-0 small"><i class="fa fa-exclamation-triangle"></i> Gói tập không đủ thời hạn để chuyển (\${transferDays} ngày > \${currentRemainingDays} ngày).</div>
+                `;
+                submitBtn.disabled = true;
+            } else if (currentRemainingDays > 0) {
+                const remainingAfter = currentRemainingDays - transferDays;
+                summarySender.innerHTML = `
+                    <small class="text-dark fw-bold"><i class="fa fa-box me-1"></i> Gói tập: \${selectedPkgName}</small>
+                    <br/>
+                    <small class="text-danger fw-bold"><i class="fa fa-arrow-right me-1"></i> Chuyển đi: \${transferDays > 0 ? transferDays : '...'} ngày</small>
+                    <br/>
+                    <small class="text-success fw-bold"><i class="fa fa-check me-1"></i> Còn lại sau chuyển: \${transferDays > 0 ? remainingAfter : currentRemainingDays} ngày</small>
+                `;
+                summarySender.classList.remove("text-muted");
+                submitBtn.disabled = false;
+            } else {
+                summarySender.innerHTML = `<i class="fa fa-box me-1"></i> Chưa chọn gói tập.`;
+                submitBtn.disabled = false;
+            }
+
+            if (selectedReceiverOpt && transferDays > 0 && currentRemainingDays >= transferDays) {
+                const name = selectedReceiverOpt.getAttribute("data-name");
+                const phone = selectedReceiverOpt.getAttribute("data-phone");
+                const id = selectedReceiverOpt.value;
+                const existingEndDateStr = selectedReceiverOpt.getAttribute("data-enddate");
 
                 let startDate = new Date(); 
+                if (existingEndDateStr) {
+                    startDate = new Date(existingEndDateStr);
+                }
+                
                 let endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + currentRemainingDays);
+                endDate.setDate(endDate.getDate() + transferDays);
 
                 const startStr = startDate.toLocaleDateString('vi-VN');
                 const endStr = endDate.toLocaleDateString('vi-VN');
@@ -230,13 +267,15 @@
                 summaryReceiver.innerHTML = `
                     <div class="fw-bold text-dark fs-6">\${name}</div>
                     <div class="small text-muted"><i class="fa fa-id-card me-1"></i> Mã: MEM-\${id} | SĐT: \${phone}</div>
-                    <div class="small text-success fw-bold mt-2"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu: Hôm nay (\${startStr})</div>
-                    <div class="small text-success fw-bold"><i class="fa fa-calendar-check me-1"></i> Hạn sử dụng gói tập được nhận: \${endStr} (\${currentRemainingDays} ngày)</div>
+                    <div class="small text-success fw-bold mt-2"><i class="fa fa-calendar-alt me-1"></i> Ngày bắt đầu: \${existingEndDateStr ? 'Nối tiếp gói cũ (' + startStr + ')' : 'Hôm nay (' + startStr + ')'}</div>
+                    <div class="small text-success fw-bold"><i class="fa fa-calendar-check me-1"></i> Hạn sử dụng gói tập được nhận: \${endStr} (\${transferDays} ngày)</div>
                 `;
                 summaryReceiver.classList.remove("text-muted");
                 summaryReceiver.classList.add("border-solid");
-            } else if (selectedOpt) {
-                summaryReceiver.innerHTML = `<i class="fa fa-info-circle me-1"></i> Vui lòng chọn gói tập để tính toán thời gian.`;
+            } else if (selectedReceiverOpt) {
+                summaryReceiver.innerHTML = `<i class="fa fa-info-circle me-1"></i> Vui lòng chọn gói tập và số tháng chuyển hợp lệ.`;
+            } else {
+                summaryReceiver.innerHTML = `<i class="fa fa-user-circle me-1"></i> Chưa chọn người nhận.`;
             }
         }
 
@@ -244,19 +283,13 @@
             radio.addEventListener("change", function() {
                 if (this.checked) {
                     currentRemainingDays = parseInt(this.getAttribute("data-days")) || 0;
-                    const pkgName = this.getAttribute("data-name");
-                    summarySender.innerHTML = `
-                        <small class="text-dark fw-bold"><i class="fa fa-box me-1"></i> Gói tập: \${pkgName}</small>
-                        <br/>
-                        <small class="text-danger fw-bold"><i class="fa fa-hourglass-half me-1"></i> Chuyển đi: \${currentRemainingDays} ngày tập</small>
-                    `;
-                    summarySender.classList.remove("text-muted");
-                    updateReceiverSummary();
+                    selectedPkgName = this.getAttribute("data-name");
+                    updateSummaries();
                 }
             });
         });
 
-        receiverSelect.addEventListener("change", updateReceiverSummary);
+        receiverSelect.addEventListener("change", updateSummaries);
     });
 </script>
 

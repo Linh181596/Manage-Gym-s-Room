@@ -22,5 +22,5 @@ public interface MemberPackageService {
     MemberPackage getLatestPackageByMemberId(int memberId) throws SQLException;
     List<MemberPackage> findAllActivePackagesByMemberId(int memberId) throws SQLException;
     Invoice renewMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException;
-    Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, double transferFee, int staffUserId, String note) throws SQLException;
+    Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, int transferMonths, int staffUserId, String note) throws SQLException;
 }

@@ -781,13 +781,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     /**
-     * Kiểm tra sự tồn tại của email.
-     * Luồng nghiệp vụ: Truy vấn vào bảng Users để xem có bản ghi nào trùng email và chưa bị xóa (IsDeleted = 0).
-     * [BR-CONS-02]: Each email address must be unique in the system.
-     * 
-     * @param email Email cần kiểm tra
-     * @return true nếu tồn tại
-     * @throws SQLException nếu có lỗi CSDL
+     * SQL kiểm tra trong bảng Users có email trùng và chưa bị xóa mềm hay
+     * không.
      */
     @Override
     // Kiểm tra email đã được dùng bởi một tài khoản chưa xóa trước khi cho phép đăng ký mới.
@@ -799,7 +794,6 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         try {
             conn = getActiveConnection();
 
-            // SQL: Kiểm tra tồn tại email trong hệ thống, loại trừ các tài khoản đã bị xóa mềm (IsDeleted = 0)
             String sql = """
                         SELECT 1
                         FROM Users
@@ -819,13 +813,8 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
     }
 
     /**
-     * Kiểm tra sự tồn tại của số điện thoại.
-     * Luồng nghiệp vụ: Truy vấn vào bảng Users để xem có bản ghi nào trùng phone và chưa bị xóa.
-     * [BR-CONS-40]: Each phone number must be unique in the system for User accounts.
-     * 
-     * @param phone Số điện thoại cần kiểm tra
-     * @return true nếu tồn tại
-     * @throws SQLException nếu có lỗi CSDL
+     * SQL kiểm tra trong bảng Users có số điện thoại trùng và chưa bị xóa mềm
+     * hay không.
      */
     @Override
     // Kiểm tra số điện thoại đã được dùng bởi một tài khoản chưa xóa trước khi đăng ký hoặc cập nhật hồ sơ.
@@ -837,18 +826,16 @@ public class UserDAOImpl extends BaseDAO implements UserDAO {
         try {
             conn = getActiveConnection();
 
-            // SQL: Kiểm tra tồn tại số điện thoại trong hệ thống, loại trừ các tài khoản đã bị xóa mềm (IsDeleted = 0)
             String sql = "SELECT 1 FROM Users WHERE Phone = ? AND IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, phone);
             rs = stmt.executeQuery();
 
-            return rs.next(); // Trả về true nếu số điện thoại đã tồn tại
+            return rs.next();
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw e; // Bắt buộc ném lỗi ra ngoài để Controller có thể hiển thị thông báo thay vì
-                     // nuốt lỗi
+            throw e;
         } finally {
             if (rs != null)
                 try {

@@ -76,8 +76,14 @@ public interface UserDAO {
 
     // --- New Auth & Verification Methods ---
     
+    /**
+     * Kiểm tra email đã tồn tại trong hệ thống hay chưa.
+     */
     boolean checkEmailExists(String email) throws SQLException;
 
+    /**
+     * Kiểm tra số điện thoại đã tồn tại trong hệ thống hay chưa.
+     */
     boolean checkPhoneExists(String phone) throws SQLException;
     
     boolean registerMember(User user, Member member, UserToken token) throws SQLException;

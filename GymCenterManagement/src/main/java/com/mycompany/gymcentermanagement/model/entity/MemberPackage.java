@@ -161,4 +161,11 @@ public class MemberPackage {
                 ", status='" + status + '\'' +
                 '}';
     }
+
+    public long getCalculatedDurationMonths() {
+        if (startDate != null && endDate != null) {
+            return java.time.temporal.ChronoUnit.MONTHS.between(startDate, endDate);
+        }
+        return 0;
+    }
 }

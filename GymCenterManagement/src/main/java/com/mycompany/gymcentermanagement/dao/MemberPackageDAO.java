@@ -21,4 +21,5 @@ public interface MemberPackageDAO {
     boolean insert(MemberPackage mp) throws SQLException;
     boolean update(MemberPackage mp) throws SQLException;
     boolean delete(int memberPackageId) throws SQLException;
+    boolean hasAnyPackage(int memberId) throws SQLException;
 }
