@@ -45,7 +45,13 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         Invoice inv = new Invoice();
         inv.setInvoiceId(rs.getInt("InvoiceID"));
         inv.setMemberId(rs.getInt("MemberID"));
-        inv.setProcessBy(rs.getInt("ProcessBy"));
+        
+        int procId = rs.getInt("ProcessBy");
+        if (!rs.wasNull()) {
+            inv.setProcessBy(procId);
+        } else {
+            inv.setProcessBy(null);
+        }
         
         int mpId = rs.getInt("MemberPackageID");
         if (!rs.wasNull()) {
@@ -91,10 +97,12 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             m.setUserDetails(uMem);
             inv.setMember(m);
             
-            User uProc = new User();
-            uProc.setUserId(rs.getInt("ProcessBy"));
-            uProc.setFullName(rs.getString("ProcessorName"));
-            inv.setProcessByUser(uProc);
+            if (inv.getProcessBy() != null) {
+                User uProc = new User();
+                uProc.setUserId(rs.getInt("ProcessBy"));
+                uProc.setFullName(rs.getString("ProcessorName"));
+                inv.setProcessByUser(uProc);
+            }
             
             if (inv.getMemberPackageId() != null) {
                 MemberPackage mp = new MemberPackage();
@@ -139,7 +147,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
-                         "INNER JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
                          "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
                          "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
                          "WHERE i.InvoiceID = ? AND i.IsDeleted = 0";
@@ -178,7 +186,12 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, inv.getMemberId());
-            stmt.setInt(2, inv.getProcessBy());
+            
+            if (inv.getProcessBy() != null) {
+                stmt.setInt(2, inv.getProcessBy());
+            } else {
+                stmt.setNull(2, java.sql.Types.INTEGER);
+            }
             
             if (inv.getMemberPackageId() != null) {
                 stmt.setInt(3, inv.getMemberPackageId());
@@ -194,7 +207,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             
             stmt.setBigDecimal(5, inv.getAmount());
             stmt.setString(6, inv.getPaymentMethod());
-            stmt.setTimestamp(7, inv.getPaymentDate() != null ? Timestamp.valueOf(inv.getPaymentDate()) : new Timestamp(System.currentTimeMillis()));
+            stmt.setTimestamp(7, inv.getPaymentDate() != null ? Timestamp.valueOf(inv.getPaymentDate()) : null);
             stmt.setString(8, inv.getStatus());
             stmt.setString(9, inv.getCreatedBy());
             stmt.setTimestamp(10, inv.getCreatedDate() != null ? Timestamp.valueOf(inv.getCreatedDate()) : new Timestamp(System.currentTimeMillis()));
@@ -234,7 +247,12 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
                          "WHERE InvoiceID = ? AND IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, inv.getMemberId());
-            stmt.setInt(2, inv.getProcessBy());
+            
+            if (inv.getProcessBy() != null) {
+                stmt.setInt(2, inv.getProcessBy());
+            } else {
+                stmt.setNull(2, java.sql.Types.INTEGER);
+            }
             
             if (inv.getMemberPackageId() != null) {
                 stmt.setInt(3, inv.getMemberPackageId());
@@ -277,7 +295,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
-                         "INNER JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
                          "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
                          "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
                          "WHERE i.IsDeleted = 0 " +
@@ -324,7 +342,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
-                         "INNER JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
                          "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
                          "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
                          "WHERE i.IsDeleted = 0 " +

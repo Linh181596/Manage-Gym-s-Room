@@ -249,9 +249,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                 throw new SQLException("Invoice is already processed (Status: " + inv.getStatus() + ").");
             }
             
-            // 2. Update Invoice Status to Paid
             inv.setStatus("Paid");
-            inv.setPaymentMethod("Chuyển khoản VNPAY");
+            inv.setPaymentMethod("VNPay");
             inv.setPaymentDate(LocalDateTime.now());
             // No processBy for online payment or set it to 0
             inv.setUpdatedBy("System: VNPAY");

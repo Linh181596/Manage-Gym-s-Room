@@ -17,6 +17,7 @@ import java.util.List;
 
 public interface MemberPackageService {
     List<Member> getActiveMembers() throws SQLException;
+    Invoice registerMemberPackage(int memberId, int packageId, String paymentMethod) throws SQLException;
     Invoice registerMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException;
     MemberPackage getActivePackageByMemberId(int memberId) throws SQLException;
     MemberPackage getLatestPackageByMemberId(int memberId) throws SQLException;

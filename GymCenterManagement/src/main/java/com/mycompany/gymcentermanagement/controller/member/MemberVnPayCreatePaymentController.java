@@ -21,6 +21,11 @@ public class MemberVnPayCreatePaymentController extends HttpServlet {
     private final InvoiceService invoiceService = new InvoiceServiceImpl();
 
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doPost(req, resp);
+    }
+
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String invoiceIdStr = req.getParameter("invoiceId");
         if (invoiceIdStr == null || invoiceIdStr.isEmpty()) {
@@ -62,7 +67,8 @@ public class MemberVnPayCreatePaymentController extends HttpServlet {
             } else {
                 vnp_Params.put("vnp_Locale", "vn");
             }
-            vnp_Params.put("vnp_ReturnUrl", VnPayConfig.vnp_ReturnUrl);
+            String returnUrl = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath() + "/member/vnpay-return";
+            vnp_Params.put("vnp_ReturnUrl", returnUrl);
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
             Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));

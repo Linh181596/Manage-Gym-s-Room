@@ -18,11 +18,11 @@ import java.time.LocalDateTime;
 public class Invoice {
     private int invoiceId;
     private int memberId;
-    private int processBy; // UserID of staff/admin who processes it
+    private Integer processBy; // UserID of staff/admin who processes it, nullable for self-service
     private Integer memberPackageId; // nullable
     private Integer ptRegistrationId; // nullable
     private BigDecimal amount;
-    private String paymentMethod; // 'Cash'
+    private String paymentMethod; // 'Cash', 'VNPay'
     private LocalDateTime paymentDate;
     private String status; // 'Paid', 'Pending', 'Cancelled'
     
@@ -41,7 +41,7 @@ public class Invoice {
     public Invoice() {
     }
 
-    public Invoice(int invoiceId, int memberId, int processBy, Integer memberPackageId, Integer ptRegistrationId, BigDecimal amount, String paymentMethod, LocalDateTime paymentDate, String status) {
+    public Invoice(int invoiceId, int memberId, Integer processBy, Integer memberPackageId, Integer ptRegistrationId, BigDecimal amount, String paymentMethod, LocalDateTime paymentDate, String status) {
         this.invoiceId = invoiceId;
         this.memberId = memberId;
         this.processBy = processBy;
@@ -69,11 +69,11 @@ public class Invoice {
         this.memberId = memberId;
     }
 
-    public int getProcessBy() {
+    public Integer getProcessBy() {
         return processBy;
     }
 
-    public void setProcessBy(int processBy) {
+    public void setProcessBy(Integer processBy) {
         this.processBy = processBy;
     }
 
