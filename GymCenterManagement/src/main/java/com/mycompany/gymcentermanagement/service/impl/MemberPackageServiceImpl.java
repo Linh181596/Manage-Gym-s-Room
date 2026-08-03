@@ -427,6 +427,102 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 }
             }
         }
+        return pendingInvoice;
+    }
+
+    /**
+     * Gia hạn gói tập (Dành cho Member tự gia hạn).
+     */
+    @Override
+    public Invoice renewMemberPackage(int memberId, int packageId, String paymentMethod) throws SQLException {
+        Connection conn = null;
+        Invoice pendingInvoice = null;
+
+        try {
+            conn = DBContext.getConnection();
+            conn.setAutoCommit(false);
+
+            GymPackageDAO gpDAO = new GymPackageDAOImpl(conn);
+            MemberPackageDAO mpDAO = new MemberPackageDAOImpl(conn);
+            InvoiceDAO invDAO = new InvoiceDAOImpl(conn);
+
+            // Kiểm tra gói tập có tồn tại và Active không
+            GymPackage gp = gpDAO.findById(packageId);
+            if (gp == null || !"Active".equals(gp.getStatus())) {
+                throw new SQLException("Gói tập hệ thống không khả dụng.");
+            }
+
+            // Tìm gói tập hiện tại của member
+            MemberPackage latestPkg = mpDAO.findLatestByMemberId(memberId);
+            if (latestPkg == null) {
+                throw new SQLException("Hội viên chưa có gói tập nào để gia hạn. Vui lòng Đăng ký mới.");
+            }
+            
+            // Chỉ cho phép gia hạn khi gói tập còn dưới 1 tháng
+            if (latestPkg.getEndDate() != null && LocalDate.now().plusMonths(1).isBefore(latestPkg.getEndDate())) {
+                throw new SQLException("Bạn chỉ có thể gia hạn khi gói tập hiện tại còn thời hạn dưới 1 tháng.");
+            }
+
+            // Không cho phép gia hạn nếu đã hết hạn quá 3 ngày
+            if (latestPkg.getEndDate() != null && latestPkg.getEndDate().plusDays(3).isBefore(LocalDate.now())) {
+                throw new SQLException("Gói tập của bạn đã hết hạn quá 3 ngày. Vui lòng đăng ký gói mới thay vì gia hạn.");
+            }
+
+            // Validate: Không cho phép tạo nhiều hóa đơn chờ cho gói này
+            String checkPendingSql = "SELECT TOP 1 1 FROM Invoices WHERE MemberPackageID = ? AND Status = 'Pending' AND IsDeleted = 0";
+            try (PreparedStatement checkPendingStmt = conn.prepareStatement(checkPendingSql)) {
+                checkPendingStmt.setInt(1, latestPkg.getMemberPackageId());
+                try (ResultSet rs = checkPendingStmt.executeQuery()) {
+                    if (rs.next()) {
+                        throw new SQLException(
+                                "Bạn đang có một hóa đơn chờ thanh toán cho gói tập này. Vui lòng thanh toán hoặc hủy trước khi gia hạn.");
+                    }
+                }
+            }
+
+            // TẠO HÓA ĐƠN THAY VÌ TẠO GÓI TẬP MỚI
+            pendingInvoice = new Invoice();
+            pendingInvoice.setMemberId(memberId);
+            MemberDAO memberDAO = new com.mycompany.gymcentermanagement.dao.impl.MemberDAOImpl(conn);
+            Member member = memberDAO.findById(memberId);
+            pendingInvoice.setProcessBy(member != null ? member.getUserId() : 1);
+            pendingInvoice.setMemberPackageId(latestPkg.getMemberPackageId());
+            pendingInvoice.setAmount(gp.getPrice());
+            pendingInvoice.setPaymentMethod(paymentMethod);
+            pendingInvoice.setStatus("Pending");
+            
+            // Sử dụng TransactionData để lưu Meta-data an toàn
+            JsonObject tData = new JsonObject();
+            tData.addProperty("action", "renew");
+            tData.addProperty("packageId", packageId);
+            pendingInvoice.setTransactionData(tData.toString());
+            
+            pendingInvoice.setCreatedBy("Member Self-Renewal"); 
+            pendingInvoice.setPaymentDate(LocalDateTime.now());
+            pendingInvoice.setCreatedDate(LocalDateTime.now());
+
+            boolean insertInvoiceSuccess = invDAO.insert(pendingInvoice);
+            if (!insertInvoiceSuccess) {
+                throw new SQLException("Failed to create renewal invoice.");
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException ex) {
+                }
+            }
+        }
 
         return pendingInvoice;
     }

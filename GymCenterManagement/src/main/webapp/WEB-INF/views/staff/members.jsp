@@ -169,12 +169,7 @@
                                                     <i class="fa fa-eye"></i> Hồ sơ
                                                 </a>
                                                 <% if (isActive) { %>
-                                                    <%-- Nút chuyển hướng sang tính năng gia hạn gói tập cho hội viên --%>
-                                                    <a href="<%= contextPath %>/staff/package/renew?memberId=<%= userId %>" 
-                                                       class="btn btn-sm btn-outline-success" 
-                                                       title="Gia hạn gói tập">
-                                                        <i class="fa fa-history"></i> Gia hạn
-                                                    </a>
+
                                                     <%-- Nút chuyển hướng sang tính năng chuyển nhượng gói tập --%>
                                                     <a href="<%= contextPath %>/staff/package/transfer?senderId=<%= userId %>" 
                                                        class="btn btn-sm btn-outline-danger" 

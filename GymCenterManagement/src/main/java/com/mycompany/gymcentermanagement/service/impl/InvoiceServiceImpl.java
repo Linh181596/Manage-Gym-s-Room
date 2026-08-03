@@ -271,7 +271,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
             
             inv.setStatus("Paid");
-            inv.setPaymentMethod("VNPay");
+            inv.setPaymentMethod("Banking");
             inv.setPaymentDate(LocalDateTime.now());
             // No processBy for online payment or set it to 0
             inv.setUpdatedBy("System: VNPAY");

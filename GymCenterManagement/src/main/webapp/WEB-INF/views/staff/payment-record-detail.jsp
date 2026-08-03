@@ -126,7 +126,14 @@
                                 <i class="fa fa-check-circle fs-3 me-3 text-success"></i>
                                 <div>
                                     <h6 class="alert-heading fw-bold mb-0 text-success">THANH TOÁN THÀNH CÔNG</h6>
-                                    <span class="small text-muted">Hóa đơn này đã được thanh toán bằng tiền mặt. Gói tập liên kết hiện đã được kích hoạt (<strong>Hoạt động</strong>).</span>
+                                    <c:choose>
+                                        <c:when test="${invoice.paymentMethod == 'Banking' || invoice.paymentMethod == 'VNPay'}">
+                                            <span class="small text-muted">Hóa đơn này đã được thanh toán trực tuyến qua Chuyển khoản / VNPAY. Gói tập liên kết hiện đã được kích hoạt (<strong>Hoạt động</strong>).</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="small text-muted">Hóa đơn này đã được thanh toán bằng tiền mặt. Gói tập liên kết hiện đã được kích hoạt (<strong>Hoạt động</strong>).</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                             </div>
                             <span class="badge bg-success rounded-pill px-3 py-1 no-print"><i class="fa fa-check"></i> Đã thanh toán</span>
@@ -170,7 +177,16 @@
                     <div class="col-md-6 text-md-end">
                         <h6 class="text-uppercase text-secondary fw-bold small mb-2">Người thực hiện / Đăng ký</h6>
                         <div class="fw-bold text-dark fs-6">${invoice.processByUser.fullName}</div>
-                        <div class="small text-muted">Vai trò: Lễ tân / Nhân viên</div>
+                        <div class="small text-muted">
+                            Vai trò: 
+                            <c:choose>
+                                <c:when test="${invoice.processByUser.role == 'Admin'}">Quản trị viên</c:when>
+                                <c:when test="${invoice.processByUser.role == 'Staff'}">Lễ tân / Nhân viên</c:when>
+                                <c:when test="${invoice.processByUser.role == 'Member'}">Hội viên</c:when>
+                                <c:when test="${invoice.processByUser.role == 'PT'}">Huấn luyện viên</c:when>
+                                <c:otherwise>Hệ thống</c:otherwise>
+                            </c:choose>
+                        </div>
                         <c:if test="${not empty invoice.paymentDate}">
                             <div class="small text-dark fw-bold mt-1">Ngày thanh toán: ${invoice.paymentDate.dayOfMonth}/${invoice.paymentDate.monthValue}/${invoice.paymentDate.year}</div>
                         </c:if>
@@ -319,26 +335,22 @@
                                     <i class="fa fa-times-circle me-1"></i> Hủy hóa đơn
                                 </button>
                                 
-                                <c:if test="${invoice.paymentMethod == 'VNPay' || invoice.paymentMethod == 'Banking'}">
-                                    <form action="${pageContext.request.contextPath}/staff/vnpay-create" method="post">
-                                        <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
-                                        <%-- Nút submit form khởi tạo giao dịch thanh toán qua cổng VNPAY --%>
-                                        <button type="submit" class="btn btn-lg btn-primary px-4 shadow-sm">
-                                            <i class="fa fa-credit-card me-1"></i> Thanh toán qua VNPAY
-                                        </button>
-                                    </form>
-                                </c:if>
+                                <form action="${pageContext.request.contextPath}/staff/vnpay-create" method="post">
+                                    <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                                    <%-- Nút submit form khởi tạo giao dịch thanh toán qua cổng VNPAY --%>
+                                    <button type="submit" class="btn btn-lg btn-primary px-4 shadow-sm">
+                                        <i class="fa fa-credit-card me-1"></i> Thanh toán qua VNPAY
+                                    </button>
+                                </form>
 
-                                <c:if test="${invoice.paymentMethod == 'Cash'}">
-                                    <form action="${backUrl}" method="post">
-                                        <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
-                                        <input type="hidden" name="action" value="pay" />
-                                        <%-- Nút submit form xác nhận đã thu tiền mặt và cập nhật trạng thái hóa đơn thành Paid --%>
-                                        <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
-                                            <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
-                                        </button>
-                                    </form>
-                                </c:if>
+                                <form action="${backUrl}" method="post">
+                                    <input type="hidden" name="invoiceId" value="${invoice.invoiceId}" />
+                                    <input type="hidden" name="action" value="pay" />
+                                    <%-- Nút submit form xác nhận đã thu tiền mặt và cập nhật trạng thái hóa đơn thành Paid --%>
+                                    <button type="submit" class="btn btn-lg btn-success px-5 shadow-sm-success">
+                                        <i class="fa fa-check-double me-1"></i> Xác nhận thu tiền mặt
+                                    </button>
+                                </form>
                             </div>
                         </c:if>
                     </c:if>

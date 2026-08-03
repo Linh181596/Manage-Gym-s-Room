@@ -2078,3 +2078,367 @@ WHERE NOT EXISTS
 OPTION (MAXRECURSION 100);
 GO
 
+-- Seed data for member@gym.com (UserID = 4)
+IF NOT EXISTS (SELECT 1 FROM [dbo].[Members] WHERE UserID = 4)
+BEGIN
+    INSERT INTO [dbo].[Members] ([UserID], [MembershipStatus], [CreatedDate], [IsDeleted])
+    VALUES (4, 'Active', GETDATE(), 0);
+END
+GO
+
+DECLARE @MemberID INT = (SELECT MemberID FROM [dbo].[Members] WHERE UserID = 4);
+DECLARE @PackageID INT = (SELECT TOP 1 PackageID FROM [dbo].[GymPackages] WHERE PackageName = N'Gói Gym 1 Tháng');
+
+-- Insert a MemberPackage for this member that ends in < 1 month (e.g. 15 days from now)
+-- First expire any existing packages to avoid conflicts
+UPDATE [dbo].[MemberPackages]
+SET Status = 'Expired', EndDate = DATEADD(day, -100, GETDATE())
+WHERE MemberID = @MemberID;
+
+INSERT INTO [dbo].[MemberPackages] ([MemberID], [PackageID], [StartDate], [EndDate], [Status], [CreatedDate], [IsDeleted])
+VALUES (@MemberID, @PackageID, DATEADD(day, -15, GETDATE()), DATEADD(day, 15, GETDATE()), 'Active', GETDATE(), 0);
+GO
+
+
+-- =========================================
+-- Import Equipment & Blog Policies Data
+-- =========================================
+USE [GymCenterManagement]
+GO
+
+SET XACT_ABORT ON;
+
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    DECLARE @ReporterID int;
+
+    SELECT TOP (1) @ReporterID = u.UserID
+    FROM dbo.Users u
+    INNER JOIN dbo.UserRoles ur ON ur.UserID = u.UserID
+    INNER JOIN dbo.Roles r ON r.RoleID = ur.RoleID
+    WHERE u.Status = 'Active'
+      AND u.IsDeleted = 0
+      AND r.RoleName IN ('Admin', 'Staff')
+    ORDER BY r.RoleLevel ASC, u.UserID ASC;
+
+    IF @ReporterID IS NULL
+    BEGIN
+        THROW 51001, 'No active Admin or Staff user was found for EquipmentIssues.ReportedBy.', 1;
+    END;
+
+    DELETE ms
+    FROM dbo.MaintenanceSchedules ms
+    INNER JOIN dbo.Equipments e ON e.EquipmentID = ms.EquipmentID
+    WHERE e.EquipmentCode LIKE 'TB-%';
+
+    DELETE ei
+    FROM dbo.EquipmentIssues ei
+    INNER JOIN dbo.Equipments e ON e.EquipmentID = ei.EquipmentID
+    WHERE e.EquipmentCode LIKE 'TB-%';
+
+    DELETE FROM dbo.Equipments
+    WHERE EquipmentCode LIKE 'TB-%';
+
+    DELETE FROM dbo.PublicContents
+    WHERE Title IN (
+        N'Chuẩn bị trước buổi tập đầu tiên',
+        N'Khởi động trước khi tập sức mạnh',
+        N'Chọn nhịp cardio phù hợp cho người mới',
+        N'Uống nước đúng cách khi luyện tập',
+        N'Ngày nghỉ và phục hồi cơ bắp',
+        N'Sử dụng máy tập an toàn',
+        N'Nguyên tắc giữ form khi tập tạ',
+        N'Ghi lại tiến độ tập luyện',
+        N'Giãn cơ sau buổi tập',
+        N'Văn hóa sử dụng không gian tập chung',
+        N'Cách chọn mức tạ phù hợp',
+        N'Ăn uống trước và sau buổi tập',
+        N'Khi nào nên hỏi nhân viên hỗ trợ',
+        N'Xây dựng lịch tập hằng tuần',
+        N'Thói quen phục hồi sau tập',
+        N'Quy định sử dụng thẻ hội viên',
+        N'Chính sách bảo lưu gói tập',
+        N'Quy định an toàn thiết bị',
+        N'Quy định vệ sinh khu tập',
+        N'Quy định sử dụng tủ đồ',
+        N'Quy định khách tham quan',
+        N'Chính sách hủy buổi tập PT',
+        N'Quy định xác nhận thanh toán',
+        N'Khai báo tình trạng sức khỏe',
+        N'Quy định sử dụng phòng Studio',
+        N'Quy định chụp ảnh và quay video',
+        N'Quy định báo hỏng thiết bị',
+        N'Cập nhật thông tin tài khoản',
+        N'Quy trình xem xét hoàn tiền',
+        N'Quy định trước giờ đóng cửa'
+    );
+
+    DECLARE @Equipments TABLE (
+        EquipmentCode varchar(50) NOT NULL,
+        EquipmentName nvarchar(100) NOT NULL,
+        EquipmentType nvarchar(50) NOT NULL,
+        PurchaseDate date NOT NULL,
+        WarrantyDate date NOT NULL,
+        Location nvarchar(100) NOT NULL,
+        Status varchar(50) NOT NULL
+    );
+
+    INSERT INTO @Equipments (EquipmentCode, EquipmentName, EquipmentType, PurchaseDate, WarrantyDate, Location, Status)
+    VALUES
+    ('TB-001', N'Máy chạy bộ cao cấp 01', N'Cardio', '2025-01-05', '2028-01-05', N'Khu Cardio A', 'Available'),
+    ('TB-002', N'Máy đi bộ trên không 02', N'Cardio', '2025-01-12', '2028-01-12', N'Khu Cardio A', 'Maintenance'),
+    ('TB-003', N'Xe đạp tập spin 03', N'Cardio', '2025-02-02', '2028-02-02', N'Khu Cardio B', 'Broken'),
+    ('TB-004', N'Ghế đẩy ngực 04', N'Ta', '2025-02-18', '2028-02-18', N'Khu tạ tự do', 'Available'),
+    ('TB-005', N'Khung gánh tạ 05', N'Ta', '2025-03-04', '2028-03-04', N'Khu tạ tự do', 'Maintenance'),
+    ('TB-006', N'Bộ tạ tay 06', N'Ta', '2025-03-19', '2028-03-19', N'Khu tạ tự do', 'Available'),
+    ('TB-007', N'Máy kéo xô 07', N'May keo', '2025-04-01', '2028-04-01', N'Khu máy tập A', 'Broken'),
+    ('TB-008', N'Máy kéo cáp đôi 08', N'May keo', '2025-04-16', '2028-04-16', N'Khu máy tập A', 'Maintenance'),
+    ('TB-009', N'Máy đạp chân 09', N'May keo', '2025-05-03', '2028-05-03', N'Khu máy tập B', 'Available'),
+    ('TB-010', N'Dây thừng tập thể lực 10', N'Phu kien', '2025-05-17', '2027-05-17', N'Khu chức năng', 'Available'),
+    ('TB-011', N'Bộ bóng tạ 11', N'Phu kien', '2025-06-01', '2027-06-01', N'Khu chức năng', 'Maintenance'),
+    ('TB-012', N'Kệ thảm yoga 12', N'Phu kien', '2025-06-14', '2027-06-14', N'Phòng Studio', 'Available'),
+    ('TB-013', N'Máy đo chỉ số cơ thể 13', N'Khac', '2025-07-02', '2028-07-02', N'Khu lễ tân', 'Broken'),
+    ('TB-014', N'Cân khu thay đồ 14', N'Khac', '2025-07-18', '2027-07-18', N'Khu thay đồ', 'Available'),
+    ('TB-015', N'Trạm giãn cơ 15', N'Khac', '2025-08-05', '2028-08-05', N'Khu phục hồi', 'Maintenance');
+
+    INSERT INTO dbo.Equipments
+        (EquipmentCode, EquipmentName, EquipmentType, PurchaseDate, WarrantyDate, Location, ImageURL, Status, CreatedBy, CreatedDate, IsDeleted)
+    SELECT
+        EquipmentCode,
+        EquipmentName,
+        EquipmentType,
+        PurchaseDate,
+        WarrantyDate,
+        Location,
+        NULL,
+        Status,
+        N'Admin',
+        SYSDATETIME(),
+        0
+    FROM @Equipments;
+
+    DECLARE @Issues TABLE (
+        IssueNo int NOT NULL,
+        EquipmentCode varchar(50) NOT NULL,
+        IssueType nvarchar(100) NOT NULL,
+        Description nvarchar(max) NOT NULL,
+        Status varchar(20) NOT NULL,
+        ReportedAt datetime2(7) NOT NULL
+    );
+
+    INSERT INTO @Issues (IssueNo, EquipmentCode, IssueType, Description, Status, ReportedAt)
+    VALUES
+    (1, 'TB-001', N'Hư hỏng', N'Băng tải máy chạy bộ lệch nhẹ khi chạy ở tốc độ cao.', 'Pending', '2026-07-01T08:15:00'),
+    (2, 'TB-002', N'Tiếng ồn', N'Quạt bảng điều khiển phát tiếng ồn sau khi khởi động.', 'InProgress', '2026-07-02T09:20:00'),
+    (3, 'TB-003', N'Mất an toàn', N'Khóa dừng khẩn cấp bị lỏng và cần kiểm tra lại.', 'Resolved', '2026-07-03T10:25:00'),
+    (4, 'TB-004', N'Hư hỏng', N'Đệm ghế đẩy ngực bị rách ở mép ngoài.', 'Pending', '2026-07-04T11:30:00'),
+    (5, 'TB-005', N'Sai lệch thông số', N'Móc an toàn của khung gánh tạ chưa cân hai bên.', 'InProgress', '2026-07-05T12:35:00'),
+    (6, 'TB-006', N'Cần vệ sinh', N'Tay cầm bộ tạ cần vệ sinh sâu sau giờ cao điểm.', 'Resolved', '2026-07-06T13:40:00'),
+    (7, 'TB-007', N'Hư hỏng', N'Dây cáp máy kéo xô bị trượt khi dùng tải nặng.', 'Pending', '2026-07-07T14:45:00'),
+    (8, 'TB-008', N'Tiếng ồn', N'Bánh ròng rọc phát tiếng lách cách khi kéo cáp.', 'InProgress', '2026-07-08T15:50:00'),
+    (9, 'TB-009', N'Sai lệch thông số', N'Vạch chỉnh vị trí ghế của máy đạp chân không chính xác.', 'Resolved', '2026-07-09T16:55:00'),
+    (10, 'TB-010', N'Hư hỏng', N'Đầu bọc dây thừng tập thể lực bị nứt.', 'Pending', '2026-07-10T08:05:00'),
+    (11, 'TB-011', N'Cần vệ sinh', N'Bộ bóng tạ cần lau bề mặt và kiểm tra độ bám.', 'InProgress', '2026-07-11T09:10:00'),
+    (12, 'TB-012', N'Hư hỏng', N'Kệ thảm yoga thiếu một vít ở khung dưới.', 'Resolved', '2026-07-12T10:15:00'),
+    (13, 'TB-013', N'Sai lệch thông số', N'Máy đo chỉ số cơ thể bị lệch kết quả sau khi khởi động.', 'Pending', '2026-07-13T11:20:00'),
+    (14, 'TB-014', N'Tiếng ồn', N'Mặt cân khu thay đồ rung khi hội viên sử dụng.', 'InProgress', '2026-07-14T12:25:00'),
+    (15, 'TB-015', N'Cần vệ sinh', N'Tay nắm trạm giãn cơ cần vệ sinh và kiểm tra độ chắc.', 'Resolved', '2026-07-15T13:30:00');
+
+    INSERT INTO dbo.EquipmentIssues
+        (EquipmentID, ReportedBy, IssueType, Description, ReportedAt, Status, CreatedBy, CreatedDate, IsDeleted, IssueImageURL)
+    SELECT
+        e.EquipmentID,
+        @ReporterID,
+        i.IssueType,
+        i.Description,
+        i.ReportedAt,
+        i.Status,
+        N'Staff',
+        SYSDATETIME(),
+        0,
+        NULL
+    FROM @Issues i
+    INNER JOIN dbo.Equipments e ON e.EquipmentCode = i.EquipmentCode
+    WHERE e.IsDeleted = 0;
+
+    DECLARE @Schedules TABLE (
+        ScheduleNo int NOT NULL,
+        EquipmentCode varchar(50) NOT NULL,
+        IssueNo int NULL,
+        ScheduledDate date NOT NULL,
+        MaintenanceType varchar(20) NOT NULL,
+        Description nvarchar(max) NOT NULL,
+        Status varchar(20) NOT NULL,
+        CompletionDate datetime2(7) NULL,
+        CompletionNote nvarchar(max) NULL,
+        SubmittedForApprovalAt datetime2(7) NULL,
+        SubmittedBy nvarchar(50) NULL,
+        RequestedIssueResolution bit NOT NULL,
+        ApprovedBy nvarchar(50) NULL,
+        ApprovedAt datetime2(7) NULL,
+        ApprovalNote nvarchar(max) NULL
+    );
+
+    INSERT INTO @Schedules
+        (ScheduleNo, EquipmentCode, IssueNo, ScheduledDate, MaintenanceType, Description, Status,
+         CompletionDate, CompletionNote, SubmittedForApprovalAt, SubmittedBy, RequestedIssueResolution,
+         ApprovedBy, ApprovedAt, ApprovalNote)
+    VALUES
+    (1, 'TB-001', 1, '2026-08-01', 'Corrective', N'Kiểm tra độ cân bằng băng tải máy chạy bộ.', 'Scheduled', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL),
+    (2, 'TB-002', 2, '2026-08-02', 'Corrective', N'Kiểm tra quạt bảng điều khiển và nắp động cơ.', 'InProgress', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL),
+    (3, 'TB-003', NULL, '2026-08-03', 'Preventive', N'Kiểm tra an toàn định kỳ cho xe đạp tập spin.', 'Completed', '2026-08-03T16:30:00', N'Đã kiểm tra định kỳ, không cần thay linh kiện.', NULL, NULL, 0, N'Admin', '2026-08-03T17:00:00', N'Đã duyệt sau khi kiểm tra trực quan.'),
+    (4, 'TB-004', 4, '2026-08-04', 'Corrective', N'Thay phần đệm bị rách của ghế đẩy ngực.', 'PendingApproval', '2026-08-04T15:20:00', N'Đã thay đệm và vệ sinh lại ghế.', '2026-08-04T15:25:00', N'Staff', 1, NULL, NULL, NULL),
+    (5, 'TB-005', 5, '2026-08-05', 'Corrective', N'Căn chỉnh lại móc an toàn của khung gánh tạ.', 'Scheduled', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL),
+    (6, 'TB-006', NULL, '2026-08-06', 'Preventive', N'Kiểm tra kệ tạ tay và nhãn trọng lượng.', 'Cancelled', NULL, NULL, NULL, NULL, 0, NULL, NULL, N'Hủy để dời lịch do bảo trì sàn tập.'),
+    (7, 'TB-007', 7, '2026-08-07', 'Corrective', N'Thay dây cáp và kiểm tra tải nặng của máy kéo xô.', 'InProgress', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL),
+    (8, 'TB-008', 8, '2026-08-08', 'Corrective', N'Bôi trơn ròng rọc và kiểm tra vòng bi.', 'PendingApproval', '2026-08-08T14:10:00', N'Đã vệ sinh ròng rọc và giảm tiếng ồn vòng bi.', '2026-08-08T14:20:00', N'Staff', 0, NULL, NULL, NULL),
+    (9, 'TB-009', NULL, '2026-08-09', 'Preventive', N'Hiệu chỉnh định kỳ máy đạp chân.', 'Completed', '2026-08-09T13:00:00', N'Đã hiệu chỉnh và kiểm tra lại vạch chỉnh ghế.', NULL, NULL, 0, N'Admin', '2026-08-09T13:30:00', N'Đã duyệt.'),
+    (10, 'TB-010', 10, '2026-08-10', 'Corrective', N'Thay đầu bọc dây thừng tập thể lực.', 'Scheduled', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL),
+    (11, 'TB-011', 11, '2026-08-11', 'Corrective', N'Ve sinh bộ bóng tạ và kiểm tra độ bám.', 'InProgress', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL),
+    (12, 'TB-012', NULL, '2026-08-12', 'Preventive', N'Siết lại vít khung kệ thảm yoga.', 'Completed', '2026-08-12T10:30:00', N'Đã cố định khung và kiểm tra độ chắc của kệ.', NULL, NULL, 0, N'Admin', '2026-08-12T11:00:00', N'Đã duyệt.'),
+    (13, 'TB-013', 13, '2026-08-13', 'Corrective', N'Hiệu chỉnh lại cảm biến máy đo chỉ số cơ thể.', 'PendingApproval', '2026-08-13T16:15:00', N'Đã hiệu chỉnh cảm biến và chờ Admin kiểm tra.', '2026-08-13T16:25:00', N'Staff', 1, NULL, NULL, NULL),
+    (14, 'TB-014', 14, '2026-08-14', 'Corrective', N'Kiểm tra chân đế cân ở khu thay đồ.', 'Cancelled', NULL, NULL, NULL, NULL, 0, NULL, NULL, N'Hủy do linh kiện thay thế về chậm.'),
+    (15, 'TB-015', NULL, '2026-08-15', 'Preventive', N'Ve sinh và kiểm tra tay nắm trạm giãn cơ.', 'Scheduled', NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL);
+
+    INSERT INTO dbo.MaintenanceSchedules
+        (EquipmentID, IssueID, ScheduledDate, MaintenanceType, Description, Status,
+         CompletionDate, CompletionNote, CompletionImageURL, SubmittedForApprovalAt,
+         SubmittedBy, RequestedIssueResolution, ApprovedBy, ApprovedAt, ApprovalNote,
+         CreatedBy, CreatedDate, IsDeleted)
+    SELECT
+        e.EquipmentID,
+        issueMatch.IssueID,
+        s.ScheduledDate,
+        s.MaintenanceType,
+        s.Description,
+        s.Status,
+        s.CompletionDate,
+        s.CompletionNote,
+        NULL,
+        s.SubmittedForApprovalAt,
+        s.SubmittedBy,
+        s.RequestedIssueResolution,
+        s.ApprovedBy,
+        s.ApprovedAt,
+        s.ApprovalNote,
+        N'Admin',
+        SYSDATETIME(),
+        0
+    FROM @Schedules s
+    INNER JOIN dbo.Equipments e ON e.EquipmentCode = s.EquipmentCode
+    OUTER APPLY (
+        SELECT TOP (1) ei.IssueID
+        FROM dbo.EquipmentIssues ei
+        WHERE ei.EquipmentID = e.EquipmentID
+          AND ei.CreatedBy = N'Staff'
+          AND ei.Description = (
+              SELECT i.Description
+              FROM @Issues i
+              WHERE i.IssueNo = s.IssueNo
+          )
+          AND ei.IsDeleted = 0
+        ORDER BY ei.IssueID DESC
+    ) issueMatch
+    WHERE e.IsDeleted = 0;
+
+    UPDATE e
+    SET Status = CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM dbo.EquipmentIssues ei
+                WHERE ei.EquipmentID = e.EquipmentID
+                  AND ei.Status = 'Pending'
+                  AND ei.IsDeleted = 0
+            ) THEN 'Broken'
+            WHEN EXISTS (
+                SELECT 1
+                FROM dbo.EquipmentIssues ei
+                WHERE ei.EquipmentID = e.EquipmentID
+                  AND ei.Status = 'InProgress'
+                  AND ei.IsDeleted = 0
+            ) OR EXISTS (
+                SELECT 1
+                FROM dbo.MaintenanceSchedules ms
+                WHERE ms.EquipmentID = e.EquipmentID
+                  AND ms.Status IN ('InProgress', 'PendingApproval')
+                  AND ms.IsDeleted = 0
+            ) THEN 'Maintenance'
+            ELSE 'Available'
+        END,
+        UpdatedBy = N'Admin',
+        UpdatedDate = SYSDATETIME()
+    FROM dbo.Equipments e
+    WHERE e.EquipmentCode LIKE 'TB-%'
+      AND e.IsDeleted = 0;
+
+    DECLARE @Contents TABLE (
+        Title nvarchar(200) NOT NULL,
+        Summary nvarchar(500) NOT NULL,
+        Body nvarchar(max) NOT NULL,
+        ContentType varchar(20) NOT NULL,
+        Category nvarchar(100) NULL,
+        Status varchar(20) NOT NULL,
+        PublishedAt datetime2(7) NULL
+    );
+
+    INSERT INTO @Contents (Title, Summary, Body, ContentType, Category, Status, PublishedAt)
+    VALUES
+    (N'Chuẩn bị trước buổi tập đầu tiên', N'Danh sách việc cần chuẩn bị cho hội viên mới.', N'Hội viên nên mang nước, khăn, giày tập và đến sớm để nhân viên kiểm tra thông tin, hướng dẫn khu vực tập và nhắc lại các quy định an toàn cơ bản.', 'BLOG', N'Hướng dẫn tập luyện', 'Published', '2026-07-01T08:00:00'),
+    (N'Khởi động trước khi tập sức mạnh', N'Khởi động đúng giúp giảm rủi ro chấn thương.', N'Các hiệp khởi động nhẹ giúp cơ thể nóng lên, cải thiện biên độ vận động và giúp hội viên làm quen động tác trước khi tăng mức tạ.', 'BLOG', N'An toàn tập luyện', 'Published', '2026-07-02T08:00:00'),
+    (N'Chọn nhịp cardio phù hợp cho người mới', N'Cách bắt đầu cardio mà không quá sức.', N'Hội viên mới nên chọn nhịp tập còn kiểm soát được hơi thở, sau đó tăng dần thời lượng hoặc cường độ qua từng tuần.', 'BLOG', N'Cardio', 'Published', '2026-07-03T08:00:00'),
+    (N'Uống nước đúng cách khi luyện tập', N'Nhắc nhở đơn giản về bổ sung nước trong buổi tập.', N'Hãy uống từng ngụm nhỏ trước, trong và sau khi tập. Không nên chờ đến lúc quá khát vì hiệu suất vận động có thể đã giảm.', 'BLOG', N'Phục hồi', 'Draft', NULL),
+    (N'Ngày nghỉ và phục hồi cơ bắp', N'Phục hồi là một phần của tiến bộ tập luyện.', N'Ngày nghỉ giúp cơ và khớp thích nghi với cường độ tập. Đi bộ nhẹ, giãn cơ và ngủ đủ giấc giúp cơ thể hồi phục tốt hơn.', 'BLOG', N'Phục hồi', 'Published', '2026-07-05T08:00:00'),
+    (N'Sử dụng máy tập an toàn', N'Các bước kiểm tra máy trước khi bắt đầu.', N'Trước khi tập, hội viên nên chỉnh ghế, chọn mức tạ phù hợp và quan sát hướng chuyển động của máy. Khi chưa chắc chắn, hãy hỏi nhân viên.', 'BLOG', N'Thiết bị', 'Published', '2026-07-06T08:00:00'),
+    (N'Nguyên tắc giữ form khi tập tạ', N'Những điểm cần chú ý để thực hiện động tác ổn định.', N'Hội viên nên giữ tư thế chắc, kiểm soát tốc độ và ưu tiên kỹ thuật thay vì tăng tạ quá sớm.', 'BLOG', N'Tập sức mạnh', 'Hidden', NULL),
+    (N'Ghi lại tiến độ tập luyện', N'Nhật ký tập giúp buổi sau có kế hoạch rõ hơn.', N'Ghi bài tập, số hiệp, số lần lặp và cảm nhận sau buổi tập sẽ giúp hội viên điều chỉnh kế hoạch hiệu quả hơn.', 'BLOG', N'Hướng dẫn tập luyện', 'Published', '2026-07-08T08:00:00'),
+    (N'Giãn cơ sau buổi tập', N'Giãn cơ nhẹ giúp cơ thể hạ nhịp sau vận động.', N'Sau buổi tập, hội viên nên giãn cơ nhẹ, tránh ép đau và tập trung vào nhịp thở ổn định.', 'BLOG', N'Phục hồi', 'Published', '2026-07-09T08:00:00'),
+    (N'Văn hóa sử dụng không gian tập chung', N'Thói quen tốt giúp phòng tập gọn gàng hơn.', N'Hội viên nên trả dụng cụ về đúng vị trí, lau bề mặt thiết bị, giữ lối đi thông thoáng và chia sẻ máy tập khi phù hợp.', 'BLOG', N'Cộng đồng', 'Draft', NULL),
+    (N'Cách chọn mức tạ phù hợp', N'Mức tạ tốt là mức vẫn kiểm soát được kỹ thuật.', N'Hội viên nên chọn mức tạ đủ thử thách nhưng vẫn giữ được form đúng trong số lần lặp dự kiến. Nếu kỹ thuật sai, hãy giảm tải.', 'BLOG', N'Tập sức mạnh', 'Published', '2026-07-11T08:00:00'),
+    (N'Ăn uống trước và sau buổi tập', N'Gợi ý cơ bản về thời điểm bổ sung dinh dưỡng.', N'Một bữa ăn cân bằng trước buổi tập và bữa giàu protein sau buổi tập có thể hỗ trợ năng lượng và phục hồi.', 'BLOG', N'Dinh dưỡng', 'Published', '2026-07-12T08:00:00'),
+    (N'Khi nào nên hỏi nhân viên hỗ trợ', N'Nhân viên luôn có thể hỗ trợ khi thiết bị hoặc bài tập chưa rõ.', N'Hội viên nên hỏi nhân viên khi thiết bị hoạt động bất thường, động tác gây đau hoặc chưa biết cách điều chỉnh máy.', 'BLOG', N'Hỗ trợ', 'Published', '2026-07-13T08:00:00'),
+    (N'Xây dựng lịch tập hằng tuần', N'Lịch đơn giản thường dễ duy trì hơn.', N'Một lịch tập cân bằng giữa sức mạnh, cardio, linh hoạt và nghỉ ngơi sẽ dễ duy trì hơn lịch quá nặng nhưng thiếu phục hồi.', 'BLOG', N'Hướng dẫn tập luyện', 'Hidden', NULL),
+    (N'Thói quen phục hồi sau tập', N'Những việc nhỏ giúp hội viên quay lại buổi sau tốt hơn.', N'Hạ nhịp, uống nước, ăn đủ chất và ngủ đủ giấc là các thói quen giúp tiến độ tập luyện ổn định hơn.', 'BLOG', N'Phục hồi', 'Published', '2026-07-15T08:00:00'),
+    (N'Quy định sử dụng thẻ hội viên', N'Thẻ hội viên chỉ dùng cho đúng chủ tài khoản.', N'Thẻ hội viên là thông tin cá nhân và không được dùng chung. Nhân viên có thể xác minh danh tính khi dữ liệu check-in không khớp hồ sơ.', 'POLICY', N'Hội viên', 'Published', '2026-07-01T09:00:00'),
+    (N'Chính sách bảo lưu gói tập', N'Điều kiện gửi yêu cầu bảo lưu thời hạn gói tập.', N'Hội viên có thể gửi yêu cầu bảo lưu khi có lý do phù hợp. Nhân viên sẽ kiểm tra loại gói, trạng thái thanh toán và thông tin hỗ trợ trước khi xác nhận.', 'POLICY', N'Hội viên', 'Published', '2026-07-02T09:00:00'),
+    (N'Quy định an toàn thiết bị', N'Hội viên cần sử dụng thiết bị đúng hướng dẫn.', N'Hội viên nên dừng sử dụng khi thiết bị có dấu hiệu bất thường và báo ngay cho nhân viên để ghi nhận sự cố.', 'POLICY', N'Thiết bị', 'Published', '2026-07-03T09:00:00'),
+    (N'Quy định vệ sinh khu tập', N'Yêu cầu vệ sinh cơ bản trong khu vực tập luyện.', N'Hội viên cần lau thiết bị sau khi sử dụng, bỏ rác đúng nơi quy định và giữ không gian chung sạch sẽ cho người dùng tiếp theo.', 'POLICY', N'Cơ sở vật chất', 'Draft', NULL),
+    (N'Quy định sử dụng tủ đồ', N'Tủ đồ chỉ dùng tạm thời trong thời gian tập.', N'Tủ đồ dùng cho buổi tập trong ngày nếu không có thỏa thuận riêng. Phòng tập không chịu trách nhiệm với tài sản giá trị để ngoài kiểm soát.', 'POLICY', N'Cơ sở vật chất', 'Published', '2026-07-05T09:00:00'),
+    (N'Quy định khách tham quan', N'Khách tham quan cần đăng ký tại quầy lễ tân.', N'Khách tham quan phải đăng ký thông tin và tuân thủ nội quy phòng tập. Việc vào khu tập có thể bị giới hạn khi quá tải hoặc không đảm bảo an toàn.', 'POLICY', N'Ra vào', 'Published', '2026-07-06T09:00:00'),
+    (N'Chính sách hủy buổi tập PT', N'Quy định hủy lịch tập với huấn luyện viên cá nhân.', N'Hội viên cần thông báo trước thời hạn hủy lịch. Trường hợp hủy muộn có thể được tính là một buổi đã sử dụng tùy điều khoản gói PT.', 'POLICY', N'Dịch vụ PT', 'Hidden', NULL),
+    (N'Quy định xác nhận thanh toán', N'Gói tập được kích hoạt sau khi thanh toán được xác nhận.', N'Nhân viên sẽ kích hoạt gói sau khi xác nhận trạng thái thanh toán. Hội viên nên giữ thông tin giao dịch đến khi hóa đơn được ghi nhận.', 'POLICY', N'Thanh toán', 'Published', '2026-07-08T09:00:00'),
+    (N'Khai báo tình trạng sức khỏe', N'Hội viên nên thông báo vấn đề sức khỏe liên quan trước khi tập.', N'Trước khi tập, hội viên nên trao đổi với nhân viên hoặc PT về chấn thương, hạn chế vận động hoặc triệu chứng có thể ảnh hưởng đến an toàn.', 'POLICY', N'An toàn', 'Published', '2026-07-09T09:00:00'),
+    (N'Quy định sử dụng phòng Studio', N'Phòng Studio cần được sử dụng đúng lịch và đúng mục đích.', N'Hội viên nên vào lớp đúng giờ, làm theo hướng dẫn của huấn luyện viên và không tự ý vào phòng khi lớp khác đang diễn ra.', 'POLICY', N'Cơ sở vật chất', 'Draft', NULL),
+    (N'Quy định chụp ảnh và quay video', N'Việc ghi hình trong phòng tập phải tôn trọng quyền riêng tư.', N'Hội viên không nên quay chụp người khác khi chưa được đồng ý. Nhân viên có thể yêu cầu dừng ghi hình nếu ảnh hưởng đến riêng tư hoặc an toàn.', 'POLICY', N'Quyền riêng tư', 'Published', '2026-07-11T09:00:00'),
+    (N'Quy định báo hỏng thiết bị', N'Hội viên cần báo lỗi thay vì tiếp tục sử dụng thiết bị hỏng.', N'Khi thấy thiết bị hư hỏng, hội viên cần dừng sử dụng và báo nhân viên để ghi nhận sự cố, sắp xếp kiểm tra và bảo trì.', 'POLICY', N'Thiết bị', 'Published', '2026-07-12T09:00:00'),
+    (N'Cập nhật thông tin tài khoản', N'Hội viên nên giữ thông tin liên hệ chính xác.', N'Số điện thoại và thông tin hồ sơ cần được cập nhật khi thay đổi để nhân viên có thể liên hệ về gói tập, hóa đơn hoặc lịch hẹn.', 'POLICY', N'Tài khoản', 'Published', '2026-07-13T09:00:00'),
+    (N'Quy trình xem xét hoàn tiền', N'Yêu cầu hoàn tiền được xem xét theo điều kiện gói và mức sử dụng.', N'Việc hoàn tiền phụ thuộc vào điều khoản gói, trạng thái thanh toán và lịch sử sử dụng dịch vụ. Nhân viên sẽ thu thập thông tin trước khi quản lý xem xét.', 'POLICY', N'Thanh toán', 'Hidden', NULL),
+    (N'Quy định trước giờ đóng cửa', N'Hội viên cần hoàn tất buổi tập trước thời điểm đóng cửa.', N'Hội viên nên kết thúc bài tập và rời khu vực chung trước giờ đóng cửa để nhân viên thực hiện vệ sinh và kiểm tra an ninh.', 'POLICY', N'Cơ sở vật chất', 'Published', '2026-07-15T09:00:00');
+
+    INSERT INTO dbo.PublicContents
+        (Title, Summary, Body, ContentType, Category, ThumbnailURL, Status, PublishedAt, CreatedBy, CreatedAt, IsDeleted)
+    SELECT
+        Title,
+        Summary,
+        Body,
+        ContentType,
+        Category,
+        NULL,
+        Status,
+        PublishedAt,
+        N'Admin',
+        SYSDATETIME(),
+        0
+    FROM @Contents;
+
+    COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+    BEGIN
+        ROLLBACK TRANSACTION;
+    END;
+
+    THROW;
+END CATCH;
+GO

@@ -101,6 +101,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             User uMem = new User();
             uMem.setFullName(rs.getString("MemberName"));
             uMem.setEmail(rs.getString("MemberEmail"));
+            uMem.setPhoneNumber(rs.getString("MemberPhone"));
             m.setUserDetails(uMem);
             inv.setMember(m);
             
@@ -108,6 +109,10 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
                 User uProc = new User();
                 uProc.setUserId(rs.getInt("ProcessBy"));
                 uProc.setFullName(rs.getString("ProcessorName"));
+                String procRole = rs.getString("ProcessorRole");
+                if (procRole != null) {
+                    uProc.setRole(User.Role.valueOf(procRole));
+                }
                 inv.setProcessByUser(uProc);
             }
             
@@ -150,11 +155,13 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         try {
             conn = getActiveConnection();
             // SQL: Join Invoices với Members, Users (cho Member và Processor) và GymPackages
-            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_mem.Phone AS MemberPhone, u_proc.DisplayName AS ProcessorName, r_proc.RoleName AS ProcessorRole, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
                          "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN UserRoles ur_proc ON u_proc.UserID = ur_proc.UserID " +
+                         "LEFT JOIN Roles r_proc ON ur_proc.RoleID = r_proc.RoleID " +
                          "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
                          "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
                          "WHERE i.InvoiceID = ? AND i.IsDeleted = 0";
@@ -300,7 +307,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         
         try {
             conn = getActiveConnection();
-            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_mem.Phone AS MemberPhone, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
@@ -347,7 +354,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         List<Invoice> list = new ArrayList<>();
         try {
             conn = getActiveConnection();
-            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_mem.Phone AS MemberPhone, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
