@@ -126,7 +126,14 @@
                                 <i class="fa fa-check-circle fs-3 me-3 text-success"></i>
                                 <div>
                                     <h6 class="alert-heading fw-bold mb-0 text-success">THANH TOÁN THÀNH CÔNG</h6>
-                                    <span class="small text-muted">Hóa đơn này đã được thanh toán bằng tiền mặt. Gói tập liên kết hiện đã được kích hoạt (<strong>Hoạt động</strong>).</span>
+                                    <c:choose>
+                                        <c:when test="${invoice.paymentMethod == 'Banking' || invoice.paymentMethod == 'VNPay'}">
+                                            <span class="small text-muted">Hóa đơn này đã được thanh toán trực tuyến qua Chuyển khoản / VNPAY. Gói tập liên kết hiện đã được kích hoạt (<strong>Hoạt động</strong>).</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="small text-muted">Hóa đơn này đã được thanh toán bằng tiền mặt. Gói tập liên kết hiện đã được kích hoạt (<strong>Hoạt động</strong>).</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                             </div>
                             <span class="badge bg-success rounded-pill px-3 py-1 no-print"><i class="fa fa-check"></i> Đã thanh toán</span>
@@ -170,7 +177,16 @@
                     <div class="col-md-6 text-md-end">
                         <h6 class="text-uppercase text-secondary fw-bold small mb-2">Người thực hiện / Đăng ký</h6>
                         <div class="fw-bold text-dark fs-6">${invoice.processByUser.fullName}</div>
-                        <div class="small text-muted">Vai trò: Lễ tân / Nhân viên</div>
+                        <div class="small text-muted">
+                            Vai trò: 
+                            <c:choose>
+                                <c:when test="${invoice.processByUser.role == 'Admin'}">Quản trị viên</c:when>
+                                <c:when test="${invoice.processByUser.role == 'Staff'}">Lễ tân / Nhân viên</c:when>
+                                <c:when test="${invoice.processByUser.role == 'Member'}">Hội viên</c:when>
+                                <c:when test="${invoice.processByUser.role == 'PT'}">Huấn luyện viên</c:when>
+                                <c:otherwise>Hệ thống</c:otherwise>
+                            </c:choose>
+                        </div>
                         <c:if test="${not empty invoice.paymentDate}">
                             <div class="small text-dark fw-bold mt-1">Ngày thanh toán: ${invoice.paymentDate.dayOfMonth}/${invoice.paymentDate.monthValue}/${invoice.paymentDate.year}</div>
                         </c:if>
@@ -255,7 +271,17 @@
                     <div class="col-sm-6">
                         <div class="p-3 bg-light rounded">
                             <span class="small text-muted d-block">Phương thức thanh toán</span>
-                            <span class="fw-bold text-dark"><i class="fa fa-money-bill-wave text-success me-1"></i> ${invoice.paymentMethod} (Tiền mặt trực tiếp)</span>
+                            <c:choose>
+                                <c:when test="${invoice.paymentMethod == 'Cash'}">
+                                    <span class="fw-bold text-dark"><i class="fa fa-money-bill-wave text-success me-1"></i> Tiền mặt trực tiếp</span>
+                                </c:when>
+                                <c:when test="${invoice.paymentMethod == 'VNPay' || invoice.paymentMethod == 'Banking'}">
+                                    <span class="fw-bold text-dark"><i class="fa fa-credit-card text-primary me-1"></i> Chuyển khoản VNPAY</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="fw-bold text-dark"><i class="fa fa-money-check text-secondary me-1"></i> ${invoice.paymentMethod}</span>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
                     <div class="col-sm-6">

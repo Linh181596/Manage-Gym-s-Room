@@ -103,7 +103,6 @@
                             <a href="${pageContext.request.contextPath}/staff/equipment-issues" class="nav-item nav-link ${fn:contains(reqUri, '/staff/equipment-issues') ? 'active' : ''}"><i class="fa fa-exclamation-triangle me-2"></i>Sự cố thiết bị</a>
                             <a href="${pageContext.request.contextPath}/staff/maintenance-schedules" class="nav-item nav-link ${fn:contains(reqUri, '/staff/maintenance-schedules') ? 'active' : ''}"><i class="fa fa-tools me-2"></i>Lịch bảo trì</a>
                             <a href="${pageContext.request.contextPath}/staff/work-history" class="nav-item nav-link ${fn:contains(reqUri, '/staff/work-history') ? 'active' : ''}"><i class="fa fa-history me-2"></i>Lịch sử điểm danh</a>
-                            <a href="${pageContext.request.contextPath}/staff/register-package" class="nav-item nav-link ${fn:contains(reqUri, '/staff/register-package') ? 'active' : ''}"><i class="fa fa-user-plus me-2"></i>Đăng ký gói tập</a>
                             <a href="${pageContext.request.contextPath}/staff/record-payment" class="nav-item nav-link ${fn:contains(reqUri, '/staff/record-payment') ? 'active' : ''}"><i class="fa fa-cash-register me-2"></i>Thanh toán hóa đơn</a>
                             <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-check me-2"></i>Lịch đặt trước</a>
                         </c:when>
@@ -118,6 +117,7 @@
                         <c:when test="${role == 'Member'}">
                             <a href="${pageContext.request.contextPath}/member/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/member/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
                             <a href="${pageContext.request.contextPath}/member/portal" class="nav-item nav-link ${fn:contains(reqUri, '/member/portal') ? 'active' : ''}"><i class="fa fa-id-card me-2"></i>Thẻ & Gói tập</a>
+                            <a href="${pageContext.request.contextPath}/member/register-package" class="nav-item nav-link ${fn:contains(reqUri, '/member/register-package') ? 'active' : ''}"><i class="fa fa-dumbbell me-2"></i>Đăng ký gói tập</a>
                             <a href="${pageContext.request.contextPath}/member/schedule-dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/member/schedule-dashboard') ? 'active' : ''}"><i class="fa fa-calendar-plus me-2"></i>Lịch tập PT</a>
                             <a href="${pageContext.request.contextPath}/pt/list" class="nav-item nav-link ${fn:contains(reqUri, '/pt/list') || fn:contains(reqUri, '/pt/detail') || fn:contains(reqUri, '/member/pt/') ? 'active' : ''}"><i class="fa fa-user-tie me-2"></i>Thuê HLV (PT)</a>
                         </c:when>

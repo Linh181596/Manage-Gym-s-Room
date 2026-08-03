@@ -354,7 +354,7 @@ public class GymDAO {
                         if (endDate != null) {
                             java.time.LocalDate endLd = endDate.toLocalDate();
                             java.time.LocalDate todayLd = java.time.LocalDate.now();
-                            if (!endLd.isBefore(todayLd)) {
+                            if (!endLd.plusDays(3).isBefore(todayLd)) {
                                 type = packageName;
                             }
                         }
@@ -372,8 +372,15 @@ public class GymDAO {
 
                     // Thêm thông tin ngày bắt đầu và kết thúc
                     if (startDate != null && endDate != null && "Active".equalsIgnoreCase(packageStatus)) {
-                        profile.put("packageStartDate", String.valueOf(startDate));
-                        profile.put("packageEndDate", String.valueOf(endDate));
+                        java.time.LocalDate endLd = endDate.toLocalDate();
+                        java.time.LocalDate todayLd = java.time.LocalDate.now();
+                        if (!endLd.plusDays(3).isBefore(todayLd)) {
+                            profile.put("packageStartDate", String.valueOf(startDate));
+                            profile.put("packageEndDate", String.valueOf(endDate));
+                        } else {
+                            profile.put("packageStartDate", "");
+                            profile.put("packageEndDate", "");
+                        }
                     } else {
                         profile.put("packageStartDate", "");
                         profile.put("packageEndDate", "");

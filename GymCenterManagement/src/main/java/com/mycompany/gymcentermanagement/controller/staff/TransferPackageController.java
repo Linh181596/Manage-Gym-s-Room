@@ -109,13 +109,11 @@ public class TransferPackageController extends HttpServlet {
         String senderUserIdStr = request.getParameter("senderId");
         String senderPkgIdStr = request.getParameter("senderPkgId");
         String receiverUserIdStr = request.getParameter("receiverId");
-        String transferMonthsStr = request.getParameter("transferMonths");
         String note = request.getParameter("note");
 
         if (senderUserIdStr == null || senderUserIdStr.trim().isEmpty() ||
             senderPkgIdStr == null || senderPkgIdStr.trim().isEmpty() ||
-            receiverUserIdStr == null || receiverUserIdStr.trim().isEmpty() ||
-            transferMonthsStr == null || transferMonthsStr.trim().isEmpty()) {
+            receiverUserIdStr == null || receiverUserIdStr.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Thông tin chuyển nhượng không hợp lệ.");
             doGet(request, response);
             return;
@@ -125,7 +123,6 @@ public class TransferPackageController extends HttpServlet {
             int senderUserId = Integer.parseInt(senderUserIdStr);
             int senderPkgId = Integer.parseInt(senderPkgIdStr);
             int receiverUserId = Integer.parseInt(receiverUserIdStr);
-            int transferMonths = Integer.parseInt(transferMonthsStr);
 
             Member sender = memberDAO.findByUserId(senderUserId);
             Member receiver = memberDAO.findByUserId(receiverUserId);
@@ -137,7 +134,7 @@ public class TransferPackageController extends HttpServlet {
             }
 
             Invoice pendingInvoice = memberPackageService.transferMemberPackage(
-                    senderPkgId, receiver.getMemberId(), transferMonths, staffUserId, note);
+                    senderPkgId, receiver.getMemberId(), staffUserId, note);
             
             if (pendingInvoice != null) {
                 // Chuyển hướng đến hóa đơn chờ thanh toán phí chuyển nhượng
