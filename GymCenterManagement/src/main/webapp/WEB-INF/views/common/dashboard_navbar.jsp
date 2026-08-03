@@ -107,8 +107,7 @@
             </a>
             <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
                 <a href="${pageContext.request.contextPath}${sessionScope.currentUser.role == 'PT' ? '/pt/profile' : '/profile'}" class="dropdown-item">Hồ sơ cá nhân</a>
-                <a href="${pageContext.request.contextPath}/change-password" class="dropdown-item ${sessionScope.currentUser.role == 'PT' ? 'd-none' : ''}">Đổi mật khẩu</a>
-                <a href="#" class="dropdown-item">Cài đặt</a>
+                <a href="${pageContext.request.contextPath}/change-password" class="dropdown-item">Đổi mật khẩu</a>
                 <a href="${pageContext.request.contextPath}/logout" class="dropdown-item">Đăng xuất</a>
             </div>
         </div>

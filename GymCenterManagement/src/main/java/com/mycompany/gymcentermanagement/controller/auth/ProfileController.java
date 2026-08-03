@@ -43,6 +43,7 @@ public class ProfileController extends HttpServlet {
      * LUỒNG SỰ KIỆN CHÍNH: Đọc và hiển thị hồ sơ cá nhân của người dùng (Phương thức GET)
      */
     @Override
+    // Hiển thị hồ sơ của currentUser: kiểm tra session, tải DTO theo role và forward sang profile.jsp.
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -90,6 +91,7 @@ public class ProfileController extends HttpServlet {
      * LUỒNG SỰ KIỆN CHÍNH: Đón nhận yêu cầu cập nhật thông tin hồ sơ (Phương thức POST)
      */
     @Override
+    // Nhận dữ liệu cập nhật hồ sơ, chống sửa email, validate theo role rồi lưu qua UserDAO theo mô hình PRG.
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -310,6 +312,7 @@ public class ProfileController extends HttpServlet {
     /**
      * [Luồng ngoại lệ E2]: Kiểm soát định dạng và kích thước ràng buộc của tệp tin upload
      */
+    // Kiểm tra dung lượng tối đa 5MB và MIME type của avatar hoặc chứng chỉ PT trước khi ghi file lên server.
     private String validateFile(Part part, String type) {
         if (part.getSize() > 1024 * 1024 * 5) {
             return "Tệp tin tải lên thất bại do vượt quá dung lượng tối đa cho phép (Tối đa 5MB).";
@@ -330,6 +333,7 @@ public class ProfileController extends HttpServlet {
         return null;
     }
 
+    // Trích xuất tên file gốc từ header multipart để tạo tên file lưu trữ cho avatar hoặc chứng chỉ.
     private String getFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
         String[] tokens = contentDisp.split(";");
@@ -342,6 +346,7 @@ public class ProfileController extends HttpServlet {
         return "unknown_file";
     }
 
+    // Đếm số từ trong bio của PT để áp dụng giới hạn tối đa 500 từ.
     private int countWords(String text) {
         if (text == null || text.trim().isEmpty()) {
             return 0;

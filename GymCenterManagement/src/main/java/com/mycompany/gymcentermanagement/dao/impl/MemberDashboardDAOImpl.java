@@ -24,18 +24,32 @@ import java.util.Map;
 
 public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDAO {
 
+    /**
+     * Khởi tạo DAO với cơ chế tự mở connection từ DBContext.
+     */
     public MemberDashboardDAOImpl() {
         super();
     }
 
+    /**
+     * Khởi tạo DAO với connection có sẵn để dùng chung transaction hoặc phục vụ
+     * kiểm thử.
+     */
     public MemberDashboardDAOImpl(Connection connection) {
         super(connection);
     }
 
+    /**
+     * Trả về connection được truyền vào DAO hoặc tự mở connection mới từ
+     * DBContext.
+     */
     private Connection getActiveConnection() throws SQLException {
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * SQL đếm số buổi PTSchedules sắp tới của hội viên có trạng thái Upcoming.
+     */
     @Override
     public int countUpcomingAppointments(int memberId) throws SQLException {
         String sql = """
@@ -59,6 +73,9 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
         }
     }
 
+    /**
+     * SQL lấy gói tập active còn hạn mới nhất từ MemberPackages và GymPackages.
+     */
     @Override
     public Map<String, Object> getActivePackageInfo(int memberId) throws SQLException {
         String sql = """
@@ -91,6 +108,9 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
         return result;
     }
 
+    /**
+     * SQL tính tổng số tiền hóa đơn Paid trong tháng hiện tại của hội viên.
+     */
     @Override
     public BigDecimal getSpendThisMonth(int memberId) throws SQLException {
         String sql = """
@@ -115,6 +135,10 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
         }
     }
 
+    /**
+     * SQL lấy role của người dùng rồi đếm các thông báo còn hiệu lực chưa đọc mà
+     * người đó được phép xem.
+     */
     @Override
     public int countNotifications(int userId) throws SQLException {
         String roleSql = """
@@ -162,6 +186,10 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
         }
     }
 
+    /**
+     * SQL nhóm hóa đơn Paid theo tháng để lấy xu hướng chi tiêu gần đây của hội
+     * viên.
+     */
     @Override
     public List<RevenuePoint> getMonthlySpendTrend(int memberId, int months) throws SQLException {
         String sql = """
@@ -197,6 +225,10 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
         return list;
     }
 
+    /**
+     * SQL lấy các buổi tập PT sắp tới từ PTSchedules và thông tin PT/gói PT liên
+     * quan.
+     */
     @Override
     public List<Map<String, Object>> getUpcomingSessions(int memberId, int limit) throws SQLException {
         String sql = """
@@ -240,6 +272,10 @@ public class MemberDashboardDAOImpl extends BaseDAO implements MemberDashboardDA
         return list;
     }
 
+    /**
+     * SQL lấy các hóa đơn gần đây của hội viên từ Invoices và gói tập liên quan
+     * để hiển thị trên dashboard.
+     */
     @Override
     public List<DashboardInvoice> getRecentInvoices(int memberId, int limit) throws SQLException {
         String sql = """

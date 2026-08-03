@@ -43,6 +43,9 @@ public class ManageEquipmentController extends HttpServlet {
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     private final EquipmentService service = new EquipmentService();
 
+    /**
+     * Xử lý các yêu cầu GET của màn quản lý thiết bị: danh sách, tạo mới, sửa, xem chi tiết và xóa.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = action(request);
@@ -61,7 +64,9 @@ public class ManageEquipmentController extends HttpServlet {
                         request.setAttribute("error", "Chỉ Quản trị viên mới được phép thêm thiết bị mới.");
                         list(request, response);
                     } else {
-                        showForm(request, response, new Equipment(), false);
+                        Equipment equipment = new Equipment();
+                        equipment.setStatus(EquipmentService.STATUS_AVAILABLE);
+                        showForm(request, response, equipment, false);
                     }
                 }
                 case "edit" -> showEdit(request, response);
@@ -81,6 +86,9 @@ public class ManageEquipmentController extends HttpServlet {
         }
     }
 
+    /**
+     * Xử lý lưu thiết bị từ form tạo mới hoặc cập nhật thông tin thiết bị.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -114,6 +122,9 @@ public class ManageEquipmentController extends HttpServlet {
         }
     }
 
+    /**
+     * Hiển thị danh sách thiết bị theo bộ lọc, phân trang và thống kê nhanh theo trạng thái.
+     */
     private void list(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
@@ -140,6 +151,9 @@ public class ManageEquipmentController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "equipment-list.jsp").forward(request, response);
     }
 
+    /**
+     * Tải dữ liệu thiết bị cần sửa và chuyển sang form cập nhật.
+     */
     private void showEdit(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         Equipment equipment = service.getEquipment(parseInt(request.getParameter("id"), 0));
         if (equipment == null) {
@@ -149,6 +163,9 @@ public class ManageEquipmentController extends HttpServlet {
         showForm(request, response, equipment, true);
     }
 
+    /**
+     * Hiển thị chi tiết một thiết bị kèm danh sách sự cố liên quan đến thiết bị đó.
+     */
     private void showDetail(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         int id = parseInt(request.getParameter("id"), 0);
         Equipment equipment = service.getEquipment(id);
@@ -161,11 +178,17 @@ public class ManageEquipmentController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "equipment-detail.jsp").forward(request, response);
     }
 
+    /**
+     * Xóa mềm thiết bị theo mã thiết bị và ghi nhận người thực hiện thao tác.
+     */
     private void delete(HttpServletRequest request, HttpServletResponse response, String userFullName) throws SQLException, IOException {
         service.deleteEquipment(parseInt(request.getParameter("id"), 0), userFullName);
         response.sendRedirect(request.getContextPath() + "/staff/equipment?action=list");
     }
 
+    /**
+     * Mở form tạo hoặc sửa thiết bị với dữ liệu đã chuẩn bị sẵn.
+     */
     private void showForm(HttpServletRequest request, HttpServletResponse response, Equipment equipment, boolean edit)
             throws ServletException, IOException {
         request.setAttribute("equipment", equipment);
@@ -173,22 +196,28 @@ public class ManageEquipmentController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "equipment-form.jsp").forward(request, response);
     }
 
+    /**
+     * Đọc và chuẩn hóa dữ liệu thiết bị từ request khi form hợp lệ.
+     */
     private Equipment readEquipment(HttpServletRequest request, String userFullName) throws IOException, ServletException {
         Equipment equipment = new Equipment();
         equipment.setEquipmentId(parseInt(request.getParameter("id"), 0));
         equipment.setEquipmentCode(trim(request.getParameter("equipmentCode")));
         equipment.setEquipmentName(trim(request.getParameter("equipmentName")));
         equipment.setEquipmentType(trim(request.getParameter("equipmentType")));
-        equipment.setPurchaseDate(parseRequiredDate(request.getParameter("purchaseDate"), "Purchase date"));
-        equipment.setWarrantyDate(parseRequiredDate(request.getParameter("warrantyDate"), "Warranty date"));
+        equipment.setPurchaseDate(parseRequiredDate(request.getParameter("purchaseDate"), "Ngày mua"));
+        equipment.setWarrantyDate(parseRequiredDate(request.getParameter("warrantyDate"), "Ngày hết hạn bảo hành"));
         equipment.setLocation(trim(request.getParameter("location")));
         equipment.setImageUrl(resolveImageUrl(request));
-        equipment.setStatus(request.getParameter("status"));
+        equipment.setStatus(resolveStatusForSave(request, equipment.getEquipmentId()));
         equipment.setCreatedBy(userFullName);
         equipment.setUpdatedBy(userFullName);
         return equipment;
     }
 
+    /**
+     * Đọc tạm dữ liệu thiết bị khi form lỗi để giữ lại thông tin người dùng đã nhập.
+     */
     private Equipment readEquipmentLenient(HttpServletRequest request) {
         Equipment equipment = new Equipment();
         equipment.setEquipmentId(parseInt(request.getParameter("id"), 0));
@@ -197,7 +226,7 @@ public class ManageEquipmentController extends HttpServlet {
         equipment.setEquipmentType(trim(request.getParameter("equipmentType")));
         equipment.setLocation(trim(request.getParameter("location")));
         equipment.setImageUrl(trim(request.getParameter("imageUrl")));
-        equipment.setStatus(request.getParameter("status"));
+        equipment.setStatus(resolveStatusForSave(request, equipment.getEquipmentId()));
         String purchaseDate = request.getParameter("purchaseDate");
         if (purchaseDate != null && !purchaseDate.isBlank()) {
             try {
@@ -217,6 +246,9 @@ public class ManageEquipmentController extends HttpServlet {
         return equipment;
     }
 
+    /**
+     * Xử lý ảnh thiết bị tải lên và trả về đường dẫn ảnh dùng để lưu vào thiết bị.
+     */
     private String resolveImageUrl(HttpServletRequest request) throws IOException, ServletException {
         Part imagePart = request.getPart("imageFile");
         if (imagePart == null || imagePart.getSize() == 0) {
@@ -226,12 +258,12 @@ public class ManageEquipmentController extends HttpServlet {
         String submittedName = Path.of(imagePart.getSubmittedFileName()).getFileName().toString();
         String extension = extensionOf(submittedName);
         if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Only jpg, jpeg, png, gif or webp image files are allowed.");
+            throw new IllegalArgumentException("Chỉ cho phép tải lên ảnh định dạng jpg, jpeg, png, gif hoặc webp.");
         }
 
         String realUploadPath = getServletContext().getRealPath(UPLOAD_DIR);
         if (realUploadPath == null) {
-            throw new IOException("Cannot resolve image upload directory.");
+            throw new IOException("Không xác định được thư mục lưu ảnh thiết bị.");
         }
 
         Files.createDirectories(Path.of(realUploadPath));
@@ -241,35 +273,61 @@ public class ManageEquipmentController extends HttpServlet {
         return request.getContextPath() + UPLOAD_DIR + "/" + fileName;
     }
 
+    /**
+     * Lấy phần mở rộng của tên tệp ảnh để kiểm tra định dạng tải lên.
+     */
     private String extensionOf(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
-            throw new IllegalArgumentException("Image file must have a valid extension.");
+            throw new IllegalArgumentException("Tệp ảnh phải có phần mở rộng hợp lệ.");
         }
         return fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Chuyển chuỗi ngày bắt buộc từ form sang LocalDate và báo lỗi nếu thiếu hoặc sai định dạng.
+     */
     private LocalDate parseRequiredDate(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " is required.");
+            throw new IllegalArgumentException(fieldName + " là bắt buộc.");
         }
         try {
             return LocalDate.parse(value);
         } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException(fieldName + " is invalid.");
+            throw new IllegalArgumentException(fieldName + " không hợp lệ.");
         }
     }
 
+    /**
+     * Hiển thị lại trang danh sách thiết bị kèm thông báo lỗi.
+     */
     private void showError(HttpServletRequest request, HttpServletResponse response, Exception ex) throws ServletException, IOException {
         request.setAttribute("error", ex.getMessage());
         request.getRequestDispatcher(VIEW_DIR + "equipment-list.jsp").forward(request, response);
     }
 
+    /**
+     * Xác định action hiện tại của request, mặc định là danh sách nếu không truyền action.
+     */
     private String action(HttpServletRequest request) {
         String action = request.getParameter("action");
         return action == null || action.isBlank() ? "list" : action;
     }
 
+    /**
+     * Xác định trạng thái khi lưu thiết bị; tạo mới không nhận trạng thái từ form thì mặc định là Hoạt động.
+     */
+    private String resolveStatusForSave(HttpServletRequest request, int equipmentId) {
+        String status = request.getParameter("status");
+        if (equipmentId == 0 && (status == null || status.isBlank())) {
+            return EquipmentService.STATUS_AVAILABLE;
+        }
+        return status;
+    }
+
+    /**
+     * Chuyển chuỗi sang số nguyên và trả về giá trị mặc định nếu dữ liệu không hợp lệ.
+     */
     private int parseInt(String value, int fallback) {
         try {
             return value == null || value.isBlank() ? fallback : Integer.parseInt(value);
@@ -278,6 +336,9 @@ public class ManageEquipmentController extends HttpServlet {
         }
     }
 
+    /**
+     * Cắt khoảng trắng hai đầu chuỗi và giữ null nếu giá trị ban đầu là null.
+     */
     private String trim(String value) {
         return value == null ? null : value.trim();
     }

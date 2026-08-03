@@ -33,6 +33,7 @@ public final class SessionRegistry {
     /**
      * Đăng ký một phiên làm việc mới khi người dùng đăng nhập thành công.
      */
+    // Ghi nhận session của user vừa đăng nhập để có thể quản lý hoặc thu hồi các phiên sau này.
     public static void register(HttpSession session, User user) {
         if (session == null || user == null) {
             return;
@@ -51,6 +52,7 @@ public final class SessionRegistry {
     /**
      * Gỡ bỏ một phiên làm việc khi người dùng đăng xuất hoặc session hết hạn.
      */
+    // Gỡ session khỏi registry khi logout hoặc session timeout.
     public static void unregister(HttpSession session) {
         if (session == null) {
             return;
@@ -62,6 +64,7 @@ public final class SessionRegistry {
     /**
      * Gỡ bỏ phiên làm việc dựa trên Session ID.
      */
+    // Gỡ session theo ID khi listener không còn giữ trực tiếp đối tượng HttpSession.
     public static void unregister(String sessionId) {
         if (sessionId == null) {
             return;
@@ -77,6 +80,7 @@ public final class SessionRegistry {
     /**
      * Gỡ bỏ phiên làm việc hiệu quả hơn khi có thông tin User.
      */
+    // Gỡ session theo cả session và user để cập nhật nhanh danh sách phiên của tài khoản đó.
     public static void unregister(HttpSession session, User user) {
         if (session == null) {
             return;

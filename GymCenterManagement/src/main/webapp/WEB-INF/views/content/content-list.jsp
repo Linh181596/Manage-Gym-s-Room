@@ -156,6 +156,12 @@
                                     </td>
                                 </tr>
                             </c:forEach>
+                            <tr id="contentFilterEmpty" style="display: none;">
+                                <td colspan="7" class="text-center text-muted py-5">
+                                    <i class="fa fa-info-circle fa-3x mb-3 d-block text-secondary"></i>
+                                    Không tìm thấy kết quả phù hợp.
+                                </td>
+                            </tr>
                         </c:otherwise>
                     </c:choose>
                 </tbody>
@@ -171,6 +177,7 @@
         const statusFilter = document.getElementById("statusFilter");
         const resetButton = document.getElementById("resetFilters");
         const rows = document.querySelectorAll(".content-row");
+        const emptyRow = document.getElementById("contentFilterEmpty");
 
         function filterRows() {
             // Lấy từ khóa và chuyển thành chữ thường để tìm kiếm không phân biệt hoa thường
@@ -179,15 +186,23 @@
             const status = statusFilter.value;
 
             // Lặp qua từng dòng nội dung và so sánh dữ liệu với các bộ lọc
+            let visibleCount = 0;
             rows.forEach(row => {
                 const rowText = (row.dataset.search || "").toLowerCase();
                 const matchesText = !keyword || rowText.includes(keyword);
                 const matchesType = !type || row.dataset.type === type;
                 const matchesStatus = !status || row.dataset.status === status;
+                const visible = matchesText && matchesType && matchesStatus;
                 
                 // Ẩn/Hiện thẻ dòng tương ứng với kết quả lọc
-                row.style.display = matchesText && matchesType && matchesStatus ? "" : "none";
+                row.style.display = visible ? "" : "none";
+                if (visible) {
+                    visibleCount++;
+                }
             });
+            if (emptyRow) {
+                emptyRow.style.display = visibleCount === 0 ? "" : "none";
+            }
         }
 
         searchInput.addEventListener("input", filterRows);

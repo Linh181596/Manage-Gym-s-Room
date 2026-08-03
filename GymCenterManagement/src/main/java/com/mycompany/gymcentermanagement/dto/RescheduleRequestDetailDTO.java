@@ -29,7 +29,6 @@ public class RescheduleRequestDetailDTO {
     private String status;
     private String reason;
     private String responseReason;
-    private String escalationReason;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private boolean ptConflict;
@@ -231,13 +230,6 @@ public class RescheduleRequestDetailDTO {
         this.responseReason = responseReason;
     }
 
-    public String getEscalationReason() {
-        return escalationReason;
-    }
-
-    public void setEscalationReason(String escalationReason) {
-        this.escalationReason = escalationReason;
-    }
 
     public LocalDateTime getCreatedDate() {
         return createdDate;

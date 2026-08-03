@@ -14,7 +14,18 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface MemberDAO {
+    /**
+     * Lấy hội viên theo MemberID.
+     */
     Member findById(int memberId) throws SQLException;
+
+    /**
+     * Lấy hội viên theo UserID.
+     */
     Member findByUserId(int userId) throws SQLException;
+
+    /**
+     * Lấy danh sách hội viên chưa bị xóa.
+     */
     List<Member> findAllActive() throws SQLException;
 }

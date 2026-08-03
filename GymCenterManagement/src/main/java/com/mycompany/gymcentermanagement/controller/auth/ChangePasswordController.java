@@ -35,6 +35,9 @@ public class ChangePasswordController extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Hiển thị biểu mẫu đổi mật khẩu cho người dùng đang đăng nhập.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -50,6 +53,9 @@ public class ChangePasswordController extends HttpServlet {
         request.getRequestDispatcher(CHANGE_PASSWORD_VIEW).forward(request, response);
     }
 
+    /**
+     * Kiểm tra mật khẩu hiện tại, xác thực mật khẩu mới, cập nhật mật khẩu và thu hồi các phiên đăng nhập cũ.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -101,7 +107,7 @@ public class ChangePasswordController extends HttpServlet {
         }
 
         if (!PasswordUtils.checkPassword(currentPassword, user.getPasswordHash())) {
-            forwardWithError(request, response, user, "Current password is incorrect.");
+            forwardWithError(request, response, user, "Mật khẩu hiện tại không chính xác.");
             return;
         }
 
@@ -137,6 +143,9 @@ public class ChangePasswordController extends HttpServlet {
         redirectAfterSuccessfulChange(user, request, response);
     }
 
+    /**
+     * Lấy đối tượng User đang đăng nhập từ session; trả về null khi session không hợp lệ.
+     */
     private User getCurrentUser(HttpSession session) {
         if (session == null) {
             return null;
@@ -149,6 +158,9 @@ public class ChangePasswordController extends HttpServlet {
         return null;
     }
 
+    /**
+     * Chuẩn bị thông tin bắt buộc đổi mật khẩu và đường dẫn hủy để hiển thị trên biểu mẫu.
+     */
     private void prepareForm(HttpServletRequest request, User user) {
         boolean mandatoryChange = user.isMustChangePassword();
         request.setAttribute("mandatoryChange", mandatoryChange);
@@ -160,6 +172,9 @@ public class ChangePasswordController extends HttpServlet {
         }
     }
 
+    /**
+     * Gắn thông báo lỗi, chuẩn bị lại biểu mẫu và chuyển tiếp về trang đổi mật khẩu.
+     */
     private void forwardWithError(HttpServletRequest request, HttpServletResponse response, User user, String message)
             throws ServletException, IOException {
         request.setAttribute("error", message);
@@ -167,10 +182,16 @@ public class ChangePasswordController extends HttpServlet {
         request.getRequestDispatcher(CHANGE_PASSWORD_VIEW).forward(request, response);
     }
 
+    /**
+     * Kiểm tra chuỗi mật khẩu hoặc tham số có rỗng sau khi bỏ khoảng trắng hay không.
+     */
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
 
+    /**
+     * Kiểm tra mật khẩu mới có ít nhất 8 ký tự, bao gồm chữ cái và chữ số.
+     */
     private boolean isValidPassword(String password) {
         return password != null
                 && password.length() >= 8
@@ -178,6 +199,9 @@ public class ChangePasswordController extends HttpServlet {
                 && password.matches(".*\\d.*");
     }
 
+    /**
+     * Xóa cookie Remember Me trên trình duyệt sau khi người dùng đổi mật khẩu thành công.
+     */
     private void expireRememberMeCookie(HttpServletRequest request, HttpServletResponse response) {
         Cookie cleanCookie = new Cookie(REMEMBER_ME_COOKIE, "");
         cleanCookie.setMaxAge(0);
@@ -186,11 +210,17 @@ public class ChangePasswordController extends HttpServlet {
         response.addCookie(cleanCookie);
     }
 
+    /**
+     * Chuyển người dùng về trang đích theo vai trò sau khi đổi mật khẩu thành công.
+     */
     private void redirectAfterSuccessfulChange(User user, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.sendRedirect(getDefaultDestination(user, request));
     }
 
+    /**
+     * Xác định dashboard mặc định tương ứng với vai trò của người dùng.
+     */
     private String getDefaultDestination(User user, HttpServletRequest request) {
         String context = request.getContextPath();
         return switch (user.getRole()) {
@@ -201,6 +231,9 @@ public class ChangePasswordController extends HttpServlet {
         };
     }
 
+    /**
+     * Xác định URL quay lại an toàn; bắt buộc dùng dashboard khi người dùng đang phải đổi mật khẩu tạm.
+     */
     private String resolveCancelUrl(User user, HttpServletRequest request) {
         if (user.isMustChangePassword()) {
             return getDefaultDestination(user, request);

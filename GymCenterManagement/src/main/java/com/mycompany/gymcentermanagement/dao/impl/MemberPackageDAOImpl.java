@@ -354,4 +354,35 @@ public class MemberPackageDAOImpl extends BaseDAO implements MemberPackageDAO {
         }
         return list;
     }
+
+    /**
+     * Kiểm tra xem hội viên đã từng sở hữu gói tập nào chưa (kể cả Active, Expired hay Pending).
+     * Bỏ qua các gói đã bị xóa (IsDeleted = 1).
+     * Dùng để chặn đăng ký nhiều gói (chỉ cho phép sử dụng chức năng Gia hạn nếu đã có gói).
+     * 
+     * @param memberId ID của hội viên
+     * @return true nếu đã có gói, false nếu chưa
+     * @throws SQLException
+     */
+    @Override
+    public boolean hasAnyPackage(int memberId) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        boolean hasPackage = false;
+        
+        try {
+            conn = getActiveConnection();
+            String sql = "SELECT TOP 1 1 FROM MemberPackages WHERE MemberID = ? AND IsDeleted = 0";
+            stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, memberId);
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                hasPackage = true;
+            }
+        } finally {
+            closeResource(conn, stmt, rs);
+        }
+        return hasPackage;
+    }
 }

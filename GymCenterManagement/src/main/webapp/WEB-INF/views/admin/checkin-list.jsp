@@ -106,10 +106,10 @@
                                         </c:choose>
                                     </td>
                                     <td class="small text-muted">
-                                        <c:out value="${a.checkedInAtDisplay}" default="-"/>
+                                        <c:out value="${a.checkedInTimeDisplay}" default="-"/>
                                     </td>
                                     <td class="small text-muted">
-                                        <c:out value="${a.checkedOutAtDisplay}" default="-"/>
+                                        <c:out value="${a.checkedOutTimeDisplay}" default="-"/>
                                     </td>
                                     <td class="text-center">
                                         <div class="d-inline-flex gap-2 flex-wrap justify-content-center">
@@ -127,7 +127,7 @@
                                                     </button>
                                                 </form>
                                             </c:if>
-                                            <c:if test="${a.attendanceId > 0 && empty a.checkedOutAt}">
+                                            <c:if test="${recordActionsAllowed && a.attendanceId > 0 && empty a.checkedOutAt}">
                                                 <form method="post" action="${pageContext.request.contextPath}/admin/checkin"
                                                       onsubmit="return confirm('Xác nhận ghi giờ ra cho ${a.targetFullName}?')">
                                                     <input type="hidden" name="action" value="checkout">
@@ -140,7 +140,7 @@
                                                     </button>
                                                 </form>
                                             </c:if>
-                                            <c:if test="${a.attendanceId > 0 && not empty a.checkedOutAt}">
+                                            <c:if test="${recordActionsAllowed && a.attendanceId > 0 && not empty a.checkedOutAt}">
                                                 <form method="post" action="${pageContext.request.contextPath}/admin/checkin"
                                                       onsubmit="return confirm('Hoàn tác giờ ra cho ${a.targetFullName}?')">
                                                     <input type="hidden" name="action" value="undoCheckout">
@@ -153,7 +153,7 @@
                                                     </button>
                                                 </form>
                                             </c:if>
-                                            <c:if test="${a.attendanceId > 0}">
+                                            <c:if test="${recordActionsAllowed && a.attendanceId > 0}">
                                                 <form method="post" action="${pageContext.request.contextPath}/admin/checkin"
                                                       onsubmit="return confirm('Hủy bản ghi điểm danh này?')">
                                                     <input type="hidden" name="action" value="cancel">
@@ -165,6 +165,9 @@
                                                         <i class="fa fa-times me-1"></i>Hủy
                                                     </button>
                                                 </form>
+                                            </c:if>
+                                            <c:if test="${not recordActionsAllowed && a.attendanceId > 0}">
+                                                <span class="badge bg-secondary">Đã khóa</span>
                                             </c:if>
                                         </div>
                                     </td>

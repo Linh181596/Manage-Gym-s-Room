@@ -119,7 +119,6 @@ public class PTScheduleDetailDTO {
     private String rescheduleReason;
     private Integer rescheduleSenderUserId;
     private String rescheduleResponseReason;
-    private String rescheduleEscalationReason;
 
     public String getNote() {
         return note;
@@ -201,13 +200,6 @@ public class PTScheduleDetailDTO {
         this.rescheduleResponseReason = rescheduleResponseReason;
     }
 
-    public String getRescheduleEscalationReason() {
-        return rescheduleEscalationReason;
-    }
-
-    public void setRescheduleEscalationReason(String rescheduleEscalationReason) {
-        this.rescheduleEscalationReason = rescheduleEscalationReason;
-    }
 
     public int getPtId() {
         return ptId;

@@ -64,7 +64,7 @@ public class TransferPackageController extends HttpServlet {
             }
 
             if (senderPackages.isEmpty()) {
-                request.setAttribute("errorMessage", "Hội viên này hiện không có gói tập nào đủ điều kiện để chuyển nhượng (Thời hạn còn lại phải >= 1 ngày).");
+                request.setAttribute("errorMessage", "Hội viên này hiện không có gói tập nào đủ điều kiện để chuyển nhượng (Thời hạn còn lại phải >= 180 ngày).");
                 request.getRequestDispatcher("/WEB-INF/views/staff/members.jsp").forward(request, response);
                 return;
             }
@@ -73,10 +73,23 @@ public class TransferPackageController extends HttpServlet {
             List<Member> activeMembers = memberPackageService.getActiveMembers();
             activeMembers.removeIf(m -> m.getMemberId() == sender.getMemberId());
 
+            // Get latest package end date for each receiver to compute accurate transfer expiration date
+            java.util.Map<Integer, String> receiverEndDateMap = new java.util.HashMap<>();
+            for (Member m : activeMembers) {
+                MemberPackage latestPkg = memberPackageService.getLatestPackageByMemberId(m.getMemberId());
+                if (latestPkg != null && (latestPkg.getStatus().equals("Active") || latestPkg.getStatus().equals("Pending"))) {
+                    // Only pass if it's currently active or pending and in the future
+                    if (latestPkg.getEndDate().isAfter(LocalDate.now()) || latestPkg.getEndDate().isEqual(LocalDate.now())) {
+                        receiverEndDateMap.put(m.getMemberId(), latestPkg.getEndDate().toString());
+                    }
+                }
+            }
+
             request.setAttribute("sender", sender);
             request.setAttribute("senderPackages", senderPackages);
             request.setAttribute("remainingDaysMap", remainingDaysMap);
             request.setAttribute("activeMembers", activeMembers);
+            request.setAttribute("receiverEndDateMap", receiverEndDateMap);
 
             request.getRequestDispatcher("/WEB-INF/views/staff/package-transfer.jsp").forward(request, response);
         } catch (SQLException | NumberFormatException ex) {
@@ -96,13 +109,13 @@ public class TransferPackageController extends HttpServlet {
         String senderUserIdStr = request.getParameter("senderId");
         String senderPkgIdStr = request.getParameter("senderPkgId");
         String receiverUserIdStr = request.getParameter("receiverId");
-        String transferFeeStr = request.getParameter("transferFee");
+        String transferMonthsStr = request.getParameter("transferMonths");
         String note = request.getParameter("note");
 
         if (senderUserIdStr == null || senderUserIdStr.trim().isEmpty() ||
             senderPkgIdStr == null || senderPkgIdStr.trim().isEmpty() ||
             receiverUserIdStr == null || receiverUserIdStr.trim().isEmpty() ||
-            transferFeeStr == null || transferFeeStr.trim().isEmpty()) {
+            transferMonthsStr == null || transferMonthsStr.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Thông tin chuyển nhượng không hợp lệ.");
             doGet(request, response);
             return;
@@ -112,7 +125,7 @@ public class TransferPackageController extends HttpServlet {
             int senderUserId = Integer.parseInt(senderUserIdStr);
             int senderPkgId = Integer.parseInt(senderPkgIdStr);
             int receiverUserId = Integer.parseInt(receiverUserIdStr);
-            double transferFee = Double.parseDouble(transferFeeStr);
+            int transferMonths = Integer.parseInt(transferMonthsStr);
 
             Member sender = memberDAO.findByUserId(senderUserId);
             Member receiver = memberDAO.findByUserId(receiverUserId);
@@ -124,7 +137,7 @@ public class TransferPackageController extends HttpServlet {
             }
 
             Invoice pendingInvoice = memberPackageService.transferMemberPackage(
-                    senderPkgId, receiver.getMemberId(), transferFee, staffUserId, note);
+                    senderPkgId, receiver.getMemberId(), transferMonths, staffUserId, note);
             
             if (pendingInvoice != null) {
                 // Chuyển hướng đến hóa đơn chờ thanh toán phí chuyển nhượng

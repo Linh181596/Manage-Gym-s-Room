@@ -41,6 +41,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     private final EquipmentService service = new EquipmentService();
 
+    /**
+     * Xử lý các yêu cầu GET của màn quản lý sự cố thiết bị: danh sách, tạo mới và xem chi tiết.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = action(request);
@@ -73,6 +76,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         }
     }
 
+    /**
+     * Xử lý tạo báo cáo sự cố thiết bị từ form người dùng gửi lên.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
@@ -106,6 +112,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         }
     }
 
+    /**
+     * Hiển thị danh sách sự cố thiết bị theo từ khóa, trạng thái và phân trang.
+     */
     private void list(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
         String keyword = request.getParameter("keyword");
@@ -133,6 +142,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "issue-list.jsp").forward(request, response);
     }
 
+    /**
+     * Mở form báo cáo sự cố và nạp danh sách thiết bị để người dùng chọn.
+     */
     private void showForm(HttpServletRequest request, HttpServletResponse response, EquipmentIssue issue)
             throws SQLException, ServletException, IOException {
         request.setAttribute("issue", issue);
@@ -140,6 +152,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "issue-form.jsp").forward(request, response);
     }
 
+    /**
+     * Mở form cập nhật trạng thái sự cố khi có luồng chỉnh sửa trạng thái được gọi.
+     */
     private void showStatusForm(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         EquipmentIssue issue = service.getIssue(parseInt(request.getParameter("id"), 0));
         if (issue == null) {
@@ -151,6 +166,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "issue-form.jsp").forward(request, response);
     }
 
+    /**
+     * Hiển thị chi tiết một báo cáo sự cố thiết bị.
+     */
     private void showDetail(HttpServletRequest request, HttpServletResponse response) throws SQLException, ServletException, IOException {
         EquipmentIssue issue = service.getIssue(parseInt(request.getParameter("id"), 0));
         if (issue == null) {
@@ -161,6 +179,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "issue-detail.jsp").forward(request, response);
     }
 
+    /**
+     * Đọc dữ liệu form để tạo mới một báo cáo sự cố thiết bị.
+     */
     private EquipmentIssue readIssue(HttpServletRequest request, int userId, String userFullName) throws IOException, ServletException {
         EquipmentIssue issue = new EquipmentIssue();
         issue.setEquipmentId(parseInt(request.getParameter("equipmentId"), 0));
@@ -172,6 +193,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         return issue;
     }
 
+    /**
+     * Đọc dữ liệu form cho trường hợp cập nhật sự cố và giữ lại ảnh cũ nếu không tải ảnh mới.
+     */
     private EquipmentIssue readIssueForUpdate(HttpServletRequest request, String userFullName) throws IOException, ServletException {
         EquipmentIssue issue = new EquipmentIssue();
         issue.setEquipmentId(parseInt(request.getParameter("equipmentId"), 0));
@@ -193,6 +217,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         return issue;
     }
 
+    /**
+     * Đọc tạm dữ liệu sự cố khi form lỗi để trả lại dữ liệu người dùng đã nhập.
+     */
     private EquipmentIssue readIssueLenient(HttpServletRequest request, int userId, String userFullName) {
         EquipmentIssue issue = new EquipmentIssue();
         issue.setEquipmentId(parseInt(request.getParameter("equipmentId"), 0));
@@ -213,6 +240,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         return issue;
     }
 
+    /**
+     * Xử lý ảnh minh chứng sự cố tải lên và trả về đường dẫn ảnh để lưu cùng báo cáo.
+     */
     private String resolveIssueImageUrl(HttpServletRequest request) throws IOException, ServletException {
         Part imagePart = request.getPart("issueImageFile");
         if (imagePart == null || imagePart.getSize() == 0) {
@@ -222,12 +252,12 @@ public class ManageEquipmentIssueController extends HttpServlet {
         String submittedName = Path.of(imagePart.getSubmittedFileName()).getFileName().toString();
         String extension = extensionOf(submittedName);
         if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Only jpg, jpeg, png, gif or webp image files are allowed.");
+            throw new IllegalArgumentException("Chỉ cho phép tải lên ảnh định dạng jpg, jpeg, png, gif hoặc webp.");
         }
 
         String realUploadPath = getServletContext().getRealPath(UPLOAD_DIR);
         if (realUploadPath == null) {
-            throw new IOException("Cannot resolve issue image upload directory.");
+            throw new IOException("Không xác định được thư mục lưu ảnh sự cố.");
         }
 
         Files.createDirectories(Path.of(realUploadPath));
@@ -237,24 +267,36 @@ public class ManageEquipmentIssueController extends HttpServlet {
         return request.getContextPath() + UPLOAD_DIR + "/" + fileName;
     }
 
+    /**
+     * Lấy phần mở rộng của tên tệp ảnh sự cố để kiểm tra định dạng hợp lệ.
+     */
     private String extensionOf(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
-            throw new IllegalArgumentException("Image file must have a valid extension.");
+            throw new IllegalArgumentException("Tệp ảnh phải có phần mở rộng hợp lệ.");
         }
         return fileName.substring(dotIndex + 1).toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * Hiển thị lại trang danh sách sự cố kèm thông báo lỗi.
+     */
     private void showError(HttpServletRequest request, HttpServletResponse response, Exception ex) throws ServletException, IOException {
         request.setAttribute("error", ex.getMessage());
         request.getRequestDispatcher(VIEW_DIR + "issue-list.jsp").forward(request, response);
     }
 
+    /**
+     * Xác định action hiện tại của request, mặc định là danh sách nếu không truyền action.
+     */
     private String action(HttpServletRequest request) {
         String action = request.getParameter("action");
         return action == null || action.isBlank() ? "list" : action;
     }
 
+    /**
+     * Chuyển chuỗi sang số nguyên và trả về giá trị mặc định nếu dữ liệu không hợp lệ.
+     */
     private int parseInt(String value, int fallback) {
         try {
             return value == null || value.isBlank() ? fallback : Integer.parseInt(value);
@@ -263,6 +305,9 @@ public class ManageEquipmentIssueController extends HttpServlet {
         }
     }
 
+    /**
+     * Cắt khoảng trắng hai đầu chuỗi và giữ null nếu giá trị ban đầu là null.
+     */
     private String trim(String value) {
         return value == null ? null : value.trim();
     }

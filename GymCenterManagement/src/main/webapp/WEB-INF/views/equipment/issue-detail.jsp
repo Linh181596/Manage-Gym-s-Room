@@ -145,7 +145,7 @@
                         </div>
                         <div class="col-sm-6 mt-3">
                             <span class="text-muted d-block">Thời điểm cập nhật cuối</span>
-                            <span class="text-dark fw-semibold">${issue.updatedDate}</span>
+                            <span class="text-dark fw-semibold">${issue.updatedDateDisplay}</span>
                         </div>
                     </c:if>
                 </div>

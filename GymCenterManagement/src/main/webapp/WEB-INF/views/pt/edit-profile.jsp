@@ -55,10 +55,17 @@
                                 <c:set var="finalCertPath" value="assets/uploads/pt-certificate/${fn:substring(rawCertPath, 8, fn:length(rawCertPath))}" />
                             </c:if>
                         </c:if>
-                        <a href="${pageContext.request.contextPath}${finalCertPath.startsWith('/') ? '' : '/'}${finalCertPath}" target="_blank"
-                           class="btn btn-sm btn-primary py-0">
-                            <i class="fa fa-eye me-1"></i>Xem file
-                        </a>
+                        <c:choose>
+                            <c:when test="${not empty finalCertPath and not empty pt.certificateFileName}">
+                                <a href="${pageContext.request.contextPath}${finalCertPath.startsWith('/') ? '' : '/'}${finalCertPath}" target="_blank"
+                                   class="btn btn-sm btn-primary py-0">
+                                    <i class="fa fa-eye me-1"></i>Xem file
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="text-muted small"><i class="fa fa-info-circle me-1"></i>Hiện chưa có chứng chỉ.</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
             </div>

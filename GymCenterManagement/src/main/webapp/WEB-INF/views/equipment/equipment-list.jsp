@@ -215,7 +215,7 @@
                     <c:if test="${empty equipments}">
                         <tr>
                             <td colspan="7" class="text-center py-4 text-muted">
-                                <i class="fa fa-info-circle fa-2x mb-2 d-block"></i> Không tìm thấy thiết bị nào phù hợp.
+                                <i class="fa fa-info-circle fa-2x mb-2 d-block"></i> Không tìm thấy kết quả phù hợp.
                             </td>
                         </tr>
                     </c:if>

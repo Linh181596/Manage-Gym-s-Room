@@ -58,17 +58,19 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Mã thiết bị <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="equipmentCode" value="${equipment.equipmentCode}" required maxlength="50" placeholder="Ví dụ: eq-treadmill-01">
+                    <input type="text" class="form-control" name="equipmentCode" value="${equipment.equipmentCode}" required maxlength="50"
+                           data-required-message="Vui lòng nhập mã thiết bị." placeholder="Ví dụ: eq-treadmill-01">
                 </div>
                 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Tên thiết bị <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="equipmentName" value="${equipment.equipmentName}" required maxlength="100" placeholder="Ví dụ: Máy chạy bộ Matrix T50">
+                    <input type="text" class="form-control" name="equipmentName" value="${equipment.equipmentName}" required maxlength="100"
+                           data-required-message="Vui lòng nhập tên thiết bị." placeholder="Ví dụ: Máy chạy bộ Matrix T50">
                 </div>
                 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Loại thiết bị <span class="text-danger">*</span></label>
-                    <select class="form-select" name="equipmentType" required>
+                    <select class="form-select" name="equipmentType" required data-required-message="Vui lòng chọn loại thiết bị.">
                         <option value="">Chọn loại</option>
                         <option value="Cardio" ${equipment.equipmentType == 'Cardio' ? 'selected' : ''}>Cardio</option>
                         <option value="Ta" ${equipment.equipmentType == 'Ta' ? 'selected' : ''}>Tạ</option>
@@ -80,32 +82,45 @@
                 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Vị trí đặt <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="location" value="${equipment.location}" required maxlength="100" placeholder="Ví dụ: Khu Cardio, Tầng 1">
+                    <input type="text" class="form-control" name="location" value="${equipment.location}" required maxlength="100"
+                           data-required-message="Vui lòng nhập vị trí đặt thiết bị." placeholder="Ví dụ: Khu Cardio, Tầng 1">
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Ngày mua <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" name="purchaseDate" value="${equipment.purchaseDate}" required>
+                    <input type="date" class="form-control" name="purchaseDate" value="${equipment.purchaseDate}" required
+                           data-required-message="Vui lòng chọn ngày mua.">
                 </div>
                 
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Ngày hết hạn bảo hành <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control" name="warrantyDate" value="${equipment.warrantyDate}" required>
+                    <input type="date" class="form-control" name="warrantyDate" value="${equipment.warrantyDate}" required
+                           data-required-message="Vui lòng chọn ngày hết hạn bảo hành.">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Trạng thái thiết lập <span class="text-danger">*</span></label>
-                    <select class="form-select" name="status" required>
-                        <option value="">Chọn trạng thái</option>
-                        <option value="Available" ${equipment.status == 'Available' || empty equipment.status ? 'selected' : ''}>Hoạt động bình thường</option>
-                        <option value="Maintenance" ${equipment.status == 'Maintenance' ? 'selected' : ''}>Đang bảo trì</option>
-                        <option value="Broken" ${equipment.status == 'Broken' ? 'selected' : ''}>Hỏng hóc</option>
-                    </select>
+                    <label class="form-label fw-semibold">Trạng thái thiết bị</label>
+                    <c:choose>
+                        <c:when test="${edit}">
+                            <select class="form-select" name="status" required data-required-message="Vui lòng chọn trạng thái thiết bị.">
+                                <option value="">Chọn trạng thái</option>
+                                <option value="Available" ${equipment.status == 'Available' || empty equipment.status ? 'selected' : ''}>Hoạt động bình thường</option>
+                                <option value="Maintenance" ${equipment.status == 'Maintenance' ? 'selected' : ''}>Đang bảo trì</option>
+                                <option value="Broken" ${equipment.status == 'Broken' ? 'selected' : ''}>Hỏng hóc</option>
+                            </select>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="form-control bg-light text-muted">Hoạt động bình thường</div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
                 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Ảnh thiết bị <c:if test="${empty equipment.imageUrl}"><span class="text-danger">*</span></c:if></label>
-                    <input type="file" class="form-control" name="imageFile" accept="image/*" ${empty equipment.imageUrl ? 'required' : ''}>
+                    <input type="file" class="form-control" name="imageFile" accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+                           data-allowed-extensions="jpg,jpeg,png,gif,webp"
+                           data-file-message="Chỉ cho phép tải lên ảnh định dạng jpg, jpeg, png, gif hoặc webp."
+                           data-required-message="Vui lòng chọn ảnh thiết bị." ${empty equipment.imageUrl ? 'required' : ''}>
                     
                     <c:if test="${not empty equipment.imageUrl}">
                         <div class="mt-3">
@@ -128,6 +143,7 @@
     </div>
 </div>
 
+<script src="${pageContext.request.contextPath}/js/vietnamese-validation.js"></script>
 <script>
     const purchaseDateInput = document.querySelector('input[name="purchaseDate"]');
     const warrantyDateInput = document.querySelector('input[name="warrantyDate"]');

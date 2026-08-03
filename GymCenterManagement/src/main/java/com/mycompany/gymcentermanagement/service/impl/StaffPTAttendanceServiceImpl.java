@@ -22,28 +22,31 @@ public class StaffPTAttendanceServiceImpl implements StaffPTAttendanceService {
 
     private final StaffPTAttendanceDAO attendanceDAO;
 
+    /**
+     * Khởi tạo service với DAO JDBC mặc định.
+     */
     public StaffPTAttendanceServiceImpl() {
         this(new StaffPTAttendanceDAOImpl());
     }
 
+    /**
+     * Khởi tạo service với DAO được truyền vào để hỗ trợ kiểm thử hoặc tái sử
+     * dụng nguồn dữ liệu khác.
+     */
     StaffPTAttendanceServiceImpl(StaffPTAttendanceDAO attendanceDAO) {
         this.attendanceDAO = attendanceDAO;
     }
 
+    /**
+     * Kiểm tra người dùng đã được check-in trong cùng ca và cùng ngày hay chưa.
+     */
     @Override
     public boolean existsCheckinForShift(int userId, String shiftBlock, LocalDate date) throws SQLException {
         return attendanceDAO.existsCheckinForShift(userId, shiftBlock, date);
     }
 
     /**
-     * Điểm danh vào ca (Check-in).
-     * Luồng nghiệp vụ:
-     * 1. [BR-CONS-61]: Staff/PT phải có trạng thái Active mới được check-in (Nên validate ở Controller).
-     * 2. [BR-CONS-62]: Chỉ cho phép 1 check-in record per shift block per day (Controller gọi existsCheckinForShift trước).
-     * 
-     * @param attendance Dữ liệu check-in
-     * @return ID record vừa tạo
-     * @throws SQLException 
+     * Tạo bản ghi check-in mới và trả về mã bản ghi vừa tạo.
      */
     @Override
     public int checkinUser(StaffPTAttendance attendance) throws SQLException {
@@ -51,45 +54,56 @@ public class StaffPTAttendanceServiceImpl implements StaffPTAttendanceService {
     }
 
     /**
-     * Xác nhận hết ca (Check-out).
-     * Luồng nghiệp vụ:
-     * 1. [BR-CONS-60]: Sau khi checkout xong thì không được phép thay đổi giờ check-in (Update trực tiếp).
-     * 
-     * @param attendanceId ID điểm danh
-     * @param checkedBy Người xác nhận
-     * @return true nếu thành công
-     * @throws SQLException 
+     * Ghi giờ ra cho bản ghi điểm danh đang active.
      */
     @Override
     public boolean checkoutAttendance(int attendanceId, int checkedBy) throws SQLException {
         return attendanceDAO.checkout(attendanceId, checkedBy);
     }
 
+    /**
+     * Hoàn tác giờ ra của bản ghi điểm danh đã check-out.
+     */
     @Override
     public boolean undoCheckout(int attendanceId, int updatedBy) throws SQLException {
         return attendanceDAO.undoCheckout(attendanceId, updatedBy);
     }
 
+    /**
+     * Hủy mềm một bản ghi điểm danh.
+     */
     @Override
     public boolean cancelAttendance(int attendanceId, int cancelledBy) throws SQLException {
         return attendanceDAO.cancel(attendanceId, cancelledBy);
     }
 
+    /**
+     * Lấy danh sách Staff/PT kèm dữ liệu check-in của ca và ngày đang chọn.
+     */
     @Override
     public List<StaffPTAttendance> getCheckinStatusList(String shiftBlock, LocalDate date, String keyword) throws SQLException {
         return attendanceDAO.listUsersWithCheckinStatus(shiftBlock, date, keyword);
     }
 
+    /**
+     * Tìm lịch sử điểm danh theo bộ lọc và phân trang.
+     */
     @Override
     public List<StaffPTAttendance> searchHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword, int offset, int limit) throws SQLException {
         return attendanceDAO.searchHistory(userId, userRole, shiftBlock, fromDate, toDate, keyword, offset, limit);
     }
 
+    /**
+     * Đếm số bản ghi lịch sử điểm danh theo bộ lọc.
+     */
     @Override
     public int countHistory(int userId, String userRole, String shiftBlock, LocalDate fromDate, LocalDate toDate, String keyword) throws SQLException {
         return attendanceDAO.countHistory(userId, userRole, shiftBlock, fromDate, toDate, keyword);
     }
 
+    /**
+     * Lấy chi tiết một bản ghi điểm danh theo attendanceId.
+     */
     @Override
     public StaffPTAttendance findById(int attendanceId) throws SQLException {
         return attendanceDAO.findById(attendanceId);

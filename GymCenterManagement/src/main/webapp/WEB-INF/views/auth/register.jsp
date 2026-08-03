@@ -162,7 +162,6 @@
 
     <script>
         $(document).ready(function() {
-<<<<<<< HEAD
             // Only allow dates of birth for people who are at least 14 years old.
             const today = new Date();
             const latestAllowedDob = new Date(today.getFullYear() - 14, today.getMonth(), today.getDate());
@@ -190,11 +189,6 @@
             };
             dobInput.attr('max', formatDate(latestAllowedDob));
             dobInput.on('input change', validateMinimumAge);
-=======
-            // Giới hạn ngày sinh tối đa là ngày hôm nay (không cho phép chọn ngày ở tương lai)
-            const today = new Date().toISOString().split("T")[0];
-            $('#floatingDoB').attr('max', today);
->>>>>>> 791c22bac344832abd2b6ae2e693370264c69786
 
             // Xử lý logic ẩn/hiện hiển thị mật khẩu
             $('#togglePassword').click(function() {

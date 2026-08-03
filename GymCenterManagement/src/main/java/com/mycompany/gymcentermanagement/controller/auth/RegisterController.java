@@ -34,6 +34,7 @@ public class RegisterController extends HttpServlet {
     private final UserDAO userDAO = new UserDAOImpl();
 
     @Override
+    // Hiển thị trang đăng ký khi người dùng gửi GET /register; bước này chưa ghi dữ liệu vào cơ sở dữ liệu.
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Điều hướng người dùng tới trang giao diện đăng ký ban đầu (Bước 1 & 2)
@@ -41,6 +42,7 @@ public class RegisterController extends HttpServlet {
     }
 
     @Override
+    // Nhận POST từ form đăng ký, validate dữ liệu, tạo User/Member/token xác minh và gửi email kích hoạt.
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Cấu hình mã hóa ký tự nhận dữ liệu tiếng Việt không bị lỗi font
@@ -54,6 +56,13 @@ public class RegisterController extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
         String gender = request.getParameter("gender");
+        // Giới tính là trường không bắt buộc: chuyển lựa chọn trống của form thành NULL để phù hợp CHECK constraint của CSDL.
+        if (gender != null) {
+            gender = gender.trim();
+            if (gender.isEmpty()) {
+                gender = null;
+            }
+        }
         String dobStr = request.getParameter("dateOfBirth");
         String address = request.getParameter("address");
 
@@ -84,6 +93,13 @@ public class RegisterController extends HttpServlet {
         email = email.trim();
         phone = phone.trim();
         if (address != null) address = address.trim();
+
+        // Chỉ chấp nhận các giá trị giới tính mà giao diện và CSDL hỗ trợ; giá trị null vẫn hợp lệ.
+        if (gender != null && !gender.equals("Nam") && !gender.equals("Nữ") && !gender.equals("Khác")) {
+            request.setAttribute("error", "Giới tính không hợp lệ.");
+            request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+            return;
+        }
 
         // 2. Kiểm tra giới hạn độ dài tối đa (Max Length Validation) để khớp với DB và SRS
         if (displayName.length() > 100) {

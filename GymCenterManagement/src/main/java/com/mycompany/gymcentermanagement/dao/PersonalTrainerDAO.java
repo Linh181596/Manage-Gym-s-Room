@@ -53,15 +53,7 @@ public interface PersonalTrainerDAO {
      */
     public boolean insertPersonalTrainer(PersonalTrainer trainer);
 
-    /**
-     * Updates verified and public trainer information.
-     */
     public boolean updatePersonalTrainer(PersonalTrainer trainer);
-
-    /**
-     * Updates only trainer working status.
-     */
-    public boolean updateTrainerStatus(int ptId, String status, String updatedBy);
 
     /**
      * Soft deletes a Personal Trainer profile.

@@ -35,18 +35,33 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
     };
 
+    /**
+     * Khởi tạo DAO với cơ chế tự mở connection từ DBContext.
+     */
     public MembershipGrowthReportDAOImpl() {
         super();
     }
 
+    /**
+     * Khởi tạo DAO với connection có sẵn để dùng chung transaction hoặc phục vụ
+     * kiểm thử.
+     */
     public MembershipGrowthReportDAOImpl(Connection connection) {
         super(connection);
     }
 
+    /**
+     * Trả về connection được truyền vào DAO hoặc tự mở connection mới từ
+     * DBContext.
+     */
     private Connection getActiveConnection() throws SQLException {
         return (this.connection != null) ? this.connection : DBContext.getConnection();
     }
 
+    /**
+     * SQL lấy DISTINCT YEAR từ Members có liên kết Users chưa bị xóa để tạo
+     * danh sách năm có dữ liệu báo cáo.
+     */
     @Override
     public List<Integer> getAvailableYears() throws SQLException {
         List<Integer> years = new ArrayList<>();
@@ -75,6 +90,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return years;
     }
 
+    /**
+     * SQL dùng CTE CurrentMembers và PreviousMembers để đếm hội viên mới, active,
+     * hết hạn và số hội viên kỳ trước nhằm tính tỷ lệ tăng trưởng.
+     */
     @Override
     public MembershipGrowthSummary getSummary(int year, Integer month) throws SQLException {
         DateRange currentPeriod = buildPeriod(year, month);
@@ -144,6 +163,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return summary;
     }
 
+    /**
+     * Chọn nguồn dữ liệu biểu đồ theo năm hoặc theo tháng tùy bộ lọc tháng có
+     * được chọn hay không.
+     */
     @Override
     public List<MembershipGrowthChartPoint> getGrowthChart(int year, Integer month) throws SQLException {
         if (month == null) {
@@ -152,6 +175,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return getMonthGrowthChart(year, month);
     }
 
+    /**
+     * SQL dùng CTE MemberData để lấy danh sách hội viên trong kỳ, lọc theo trạng
+     * thái new/active/expired, từ khóa và phân trang bằng OFFSET/FETCH.
+     */
     @Override
     public List<MembershipGrowthMember> getMemberGrowthList(int year, Integer month, String status,
             String searchKeyword, int offset, int limit) throws SQLException {
@@ -188,6 +215,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return members;
     }
 
+    /**
+     * SQL dùng cùng CTE MemberData để đếm số hội viên thỏa bộ lọc, phục vụ tính
+     * tổng số trang.
+     */
     @Override
     public int countMembers(int year, Integer month, String status, String searchKeyword) throws SQLException {
         String sql = buildMemberDataCte()
@@ -214,24 +245,40 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         }
     }
 
+    /**
+     * Lấy danh sách hội viên mới bằng cách gọi hàm danh sách chung với trạng
+     * thái new.
+     */
     @Override
     public List<MembershipGrowthMember> getNewMembers(int year, Integer month, String searchKeyword,
             int offset, int limit) throws SQLException {
         return getMemberGrowthList(year, month, STATUS_NEW, searchKeyword, offset, limit);
     }
 
+    /**
+     * Lấy danh sách hội viên active bằng cách gọi hàm danh sách chung với trạng
+     * thái active.
+     */
     @Override
     public List<MembershipGrowthMember> getActiveMembers(int year, Integer month, String searchKeyword,
             int offset, int limit) throws SQLException {
         return getMemberGrowthList(year, month, STATUS_ACTIVE, searchKeyword, offset, limit);
     }
 
+    /**
+     * Lấy danh sách hội viên hết hạn bằng cách gọi hàm danh sách chung với trạng
+     * thái expired.
+     */
     @Override
     public List<MembershipGrowthMember> getExpiredMembers(int year, Integer month, String searchKeyword,
             int offset, int limit) throws SQLException {
         return getMemberGrowthList(year, month, STATUS_EXPIRED, searchKeyword, offset, limit);
     }
 
+    /**
+     * SQL tạo 12 dòng tháng bằng CTE MonthNumbers và LEFT JOIN Members để đếm số
+     * hội viên mới theo từng tháng trong năm.
+     */
     private List<MembershipGrowthChartPoint> getYearGrowthChart(int year) throws SQLException {
         List<MembershipGrowthChartPoint> points = new ArrayList<>();
         DateRange period = buildPeriod(year, null);
@@ -275,6 +322,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return points;
     }
 
+    /**
+     * SQL tạo dãy ngày trong tháng bằng CTE đệ quy DayNumbers và LEFT JOIN
+     * Members để đếm số hội viên mới theo từng ngày.
+     */
     private List<MembershipGrowthChartPoint> getMonthGrowthChart(int year, int month) throws SQLException {
         List<MembershipGrowthChartPoint> points = new ArrayList<>();
         DateRange period = buildPeriod(year, month);
@@ -323,6 +374,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return points;
     }
 
+    /**
+     * Tạo CTE LatestPackage và MemberData dùng chung cho truy vấn danh sách và
+     * truy vấn đếm hội viên.
+     */
     private String buildMemberDataCte() {
         return """
                 WITH LatestPackage AS (
@@ -365,6 +420,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
                 """;
     }
 
+    /**
+     * Gán tham số kỳ báo cáo, từ khóa và trạng thái vào PreparedStatement của
+     * các truy vấn dùng MemberData.
+     */
     private int bindMemberFilters(PreparedStatement stmt, int year, Integer month, String status,
             String searchKeyword) throws SQLException {
         DateRange period = buildPeriod(year, month);
@@ -386,6 +445,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return index;
     }
 
+    /**
+     * Chuyển một dòng ResultSet của báo cáo thành MembershipGrowthMember để JSP
+     * hiển thị.
+     */
     private MembershipGrowthMember mapMember(ResultSet rs) throws SQLException {
         MembershipGrowthMember member = new MembershipGrowthMember();
         member.setMemberId(rs.getInt("MemberID"));
@@ -408,6 +471,9 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return member;
     }
 
+    /**
+     * Tạo khoảng ngày bắt đầu/kết thúc cho năm hoặc tháng được chọn.
+     */
     private DateRange buildPeriod(int year, Integer month) {
         if (month == null) {
             LocalDate startDate = LocalDate.of(year, 1, 1);
@@ -418,6 +484,9 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return new DateRange(startDate, startDate.plusMonths(1));
     }
 
+    /**
+     * Tạo khoảng ngày của kỳ trước để so sánh tăng trưởng với kỳ hiện tại.
+     */
     private DateRange buildPreviousPeriod(int year, Integer month) {
         DateRange currentPeriod = buildPeriod(year, month);
         if (month == null) {
@@ -426,6 +495,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return new DateRange(currentPeriod.startDate.minusMonths(1), currentPeriod.startDate);
     }
 
+    /**
+     * Chuẩn hóa trạng thái báo cáo về new, active hoặc expired; trả về null nếu
+     * giá trị không hợp lệ.
+     */
     private String normalizeStatus(String status) {
         String normalized = normalizeBlank(status);
         if (normalized == null) {
@@ -438,6 +511,9 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         return null;
     }
 
+    /**
+     * Chuẩn hóa chuỗi null hoặc rỗng thành null, ngược lại trả về chuỗi đã trim.
+     */
     private String normalizeBlank(String value) {
         if (value == null || value.isBlank()) {
             return null;
@@ -449,6 +525,10 @@ public class MembershipGrowthReportDAOImpl extends BaseDAO implements Membership
         private final LocalDate startDate;
         private final LocalDate endDate;
 
+        /**
+         * Lưu khoảng ngày dạng [startDate, endDate) để dùng làm điều kiện lọc
+         * SQL.
+         */
         private DateRange(LocalDate startDate, LocalDate endDate) {
             this.startDate = startDate;
             this.endDate = endDate;

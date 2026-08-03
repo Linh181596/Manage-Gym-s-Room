@@ -31,6 +31,7 @@
                     <p class="text-secondary small mb-4">Tài khoản huấn luyện viên cá nhân mới đã được thiết lập thành công trong hệ thống.</p>
 
                     <!-- Account Details Box -->
+                    <!-- Step 10: Display creation success -->
                     <div class="bg-light rounded p-4 text-start mb-4 shadow-sm border">
                         <h6 class="text-dark fw-bold mb-3 border-bottom pb-2"><i class="fa fa-id-card text-primary me-2"></i>Thông tin đăng nhập tài khoản</h6>
                         

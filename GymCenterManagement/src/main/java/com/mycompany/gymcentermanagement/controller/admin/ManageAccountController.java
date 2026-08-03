@@ -40,6 +40,9 @@ public class ManageAccountController extends HttpServlet {
     private final UserService userService = new UserServiceImpl();
     private final UserDAO userDAO = new UserDAOImpl();
 
+    /**
+     * Điều phối các yêu cầu GET của màn hình quản lý tài khoản: danh sách, tạo mới hoặc mở form chỉnh sửa.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -64,6 +67,9 @@ public class ManageAccountController extends HttpServlet {
         }
     }
 
+    /**
+     * Điều phối các yêu cầu POST để lưu, khóa, mở khóa, đổi vai trò, đặt lại mật khẩu hoặc vô hiệu hóa tài khoản.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -100,6 +106,9 @@ public class ManageAccountController extends HttpServlet {
         }
     }
 
+    /**
+     * Lấy danh sách tài khoản theo từ khóa, vai trò, trạng thái và phân trang rồi chuyển dữ liệu sang trang danh sách.
+     */
     private void showAccountList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String keyword = normalizeBlank(request.getParameter("keyword"));
@@ -151,6 +160,9 @@ public class ManageAccountController extends HttpServlet {
         request.getRequestDispatcher(LIST_VIEW).forward(request, response);
     }
 
+    /**
+     * Khởi tạo dữ liệu mặc định và hiển thị biểu mẫu tạo tài khoản Staff hoặc Member.
+     */
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         User account = new User();
@@ -160,6 +172,9 @@ public class ManageAccountController extends HttpServlet {
         request.getRequestDispatcher(FORM_VIEW).forward(request, response);
     }
 
+    /**
+     * Tải tài khoản theo mã và hiển thị biểu mẫu chỉnh sửa hoặc chỉ xem khi tài khoản đã vô hiệu hóa.
+     */
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Integer userId = parseUserId(request);
@@ -181,6 +196,9 @@ public class ManageAccountController extends HttpServlet {
         request.getRequestDispatcher(FORM_VIEW).forward(request, response);
     }
 
+    /**
+     * Nhận dữ liệu biểu mẫu để tạo mới hoặc cập nhật tài khoản, gửi email thông báo và lưu thông báo kết quả.
+     */
     private void saveAccount(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Integer userId = parseUserIdFromValue(request.getParameter("userId"));
@@ -246,6 +264,9 @@ public class ManageAccountController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/accounts");
     }
 
+    /**
+     * Thực hiện một thao tác nhanh trên tài khoản gồm khóa, mở khóa, đặt lại mật khẩu hoặc vô hiệu hóa.
+     */
     private void runAccountAction(HttpServletRequest request, HttpServletResponse response, String action)
             throws IOException {
         Integer userId = parseUserId(request);
@@ -331,6 +352,9 @@ public class ManageAccountController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/accounts");
     }
 
+    /**
+     * Xử lý yêu cầu đổi vai trò trực tiếp của tài khoản và lưu thông báo kết quả vào phiên làm việc.
+     */
     private void changeRole(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         Integer userId = parseUserId(request);
@@ -365,6 +389,9 @@ public class ManageAccountController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/accounts");
     }
 
+    /**
+     * Gắn tài khoản, trạng thái cho phép và tiêu đề cần thiết vào request trước khi hiển thị biểu mẫu.
+     */
     private void prepareForm(HttpServletRequest request, User account, boolean isCreate, String formTitle) {
         request.setAttribute("account", account);
         request.setAttribute("isCreate", isCreate);
@@ -372,11 +399,17 @@ public class ManageAccountController extends HttpServlet {
         request.setAttribute("statuses", MANAGED_STATUSES);
     }
 
+    /**
+     * Lấy tài khoản Admin hiện đang đăng nhập từ session, nếu session tồn tại.
+     */
     private User getCurrentUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         return session != null ? (User) session.getAttribute("currentUser") : null;
     }
 
+    /**
+     * Chuẩn hóa tên người thực hiện để ghi nhận trường CreatedBy hoặc UpdatedBy của tài khoản.
+     */
     private String actorName(User currentUser) {
         if (currentUser == null || normalizeBlank(currentUser.getFullName()) == null) {
             return "Admin";
@@ -384,6 +417,9 @@ public class ManageAccountController extends HttpServlet {
         return currentUser.getFullName();
     }
 
+    /**
+     * Đọc mã tài khoản từ tham số id hoặc userId của request và chuyển thành số nguyên hợp lệ.
+     */
     private Integer parseUserId(HttpServletRequest request) {
         String rawId = request.getParameter("id");
         if (rawId == null) {
@@ -392,6 +428,9 @@ public class ManageAccountController extends HttpServlet {
         return parseUserIdFromValue(rawId);
     }
 
+    /**
+     * Chuyển chuỗi mã tài khoản sang số nguyên; trả về null khi dữ liệu rỗng hoặc sai định dạng.
+     */
     private Integer parseUserIdFromValue(String rawId) {
         try {
             String normalized = normalizeBlank(rawId);
@@ -401,6 +440,9 @@ public class ManageAccountController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuyển giá trị vai trò từ biểu mẫu sang enum User.Role một cách an toàn.
+     */
     private User.Role parseRole(String rawRole) {
         try {
             String normalized = normalizeBlank(rawRole);
@@ -410,6 +452,9 @@ public class ManageAccountController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuyển giá trị trạng thái từ biểu mẫu sang enum User.AccountStatus một cách an toàn.
+     */
     private User.AccountStatus parseStatus(String rawStatus) {
         try {
             String normalized = normalizeBlank(rawStatus);
@@ -419,6 +464,9 @@ public class ManageAccountController extends HttpServlet {
         }
     }
 
+    /**
+     * Loại bỏ khoảng trắng đầu cuối và quy đổi chuỗi rỗng thành null để xử lý tham số nhất quán.
+     */
     private String normalizeBlank(String value) {
         if (value == null) {
             return null;
@@ -427,10 +475,16 @@ public class ManageAccountController extends HttpServlet {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
+    /**
+     * Lưu thông báo tạm vào session để hiển thị sau khi controller chuyển hướng trang.
+     */
     private void setFlash(HttpServletRequest request, String key, String value) {
         request.getSession().setAttribute(key, value);
     }
 
+    /**
+     * Chuyển các thông báo tạm từ session sang request và xóa chúng khỏi session sau khi đã dùng.
+     */
     private void consumeFlashMessages(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -443,6 +497,9 @@ public class ManageAccountController extends HttpServlet {
         moveFlash(session, request, "temporaryPasswordEmail");
     }
 
+    /**
+     * Chuyển một thông báo tạm theo khóa chỉ định từ session sang request.
+     */
     private void moveFlash(HttpSession session, HttpServletRequest request, String key) {
         Object value = session.getAttribute(key);
         if (value != null) {

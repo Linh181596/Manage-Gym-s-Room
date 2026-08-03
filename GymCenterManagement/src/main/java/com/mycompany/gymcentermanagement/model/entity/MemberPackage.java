@@ -22,11 +22,11 @@ public class MemberPackage {
     private LocalDate startDate;
     private LocalDate endDate;
     private String status; // 'Active', 'Expired', 'Pending'
-    
+
     // Mapped entities (obtained via JOIN)
     private Member member;
     private GymPackage gymPackage;
-    
+
     // Audit Metadata
     private String createdBy;
     private LocalDateTime createdDate;
@@ -37,7 +37,8 @@ public class MemberPackage {
     public MemberPackage() {
     }
 
-    public MemberPackage(int memberPackageId, int memberId, int packageId, LocalDate startDate, LocalDate endDate, String status) {
+    public MemberPackage(int memberPackageId, int memberId, int packageId, LocalDate startDate, LocalDate endDate,
+            String status) {
         this.memberPackageId = memberPackageId;
         this.memberId = memberId;
         this.packageId = packageId;
@@ -160,5 +161,20 @@ public class MemberPackage {
                 ", endDate=" + endDate +
                 ", status='" + status + '\'' +
                 '}';
+    }
+
+    /**
+     * Calculates the duration of the package in months.
+     * Note: This is a business calculation, not a database field.
+     * 
+     * @return Duration in months (rounded to nearest integer).
+     */
+    public long getCalculatedDurationMonths() {
+        if (startDate != null && endDate != null) {
+            long days = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
+            // Convert days to months (approximate: 30 days per month)
+            return Math.round((double) days / 30.0);
+        }
+        return 0;
     }
 }

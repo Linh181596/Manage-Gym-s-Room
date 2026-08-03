@@ -41,6 +41,7 @@ public class PasswordUtils {
      * @param password Mật khẩu gốc.
      * @return Chuỗi băm (hash) dạng Hex của mật khẩu.
      */
+    // Băm password từ form Login hoặc Register bằng SHA-256 trước khi so sánh hoặc lưu vào PasswordHash của Users.
     public static String hashPassword(String password) {
         if (password == null) {
             return null;
@@ -71,6 +72,7 @@ public class PasswordUtils {
      * @param hashedPassword Mật khẩu đã được mã hóa lưu trữ ở Database.
      * @return true nếu mật khẩu khớp, false nếu sai.
      */
+    // Kiểm tra mật khẩu thô bằng cách băm lại rồi so sánh với hash đã lưu trong cơ sở dữ liệu.
     public static boolean checkPassword(String password, String hashedPassword) {
         if (password == null || hashedPassword == null) {
             return false;

@@ -24,10 +24,16 @@ import com.mycompany.gymcentermanagement.model.entity.Equipment;
 import com.mycompany.gymcentermanagement.utils.DBContext;
 
 public class EquipmentDAO {
+    /**
+     * SQL trong hàm này dùng để lấy toàn bộ thiết bị chưa xóa mềm theo bộ lọc, không giới hạn phân trang thực tế.
+     */
     public List<Equipment> search(String keyword, String status, String type) throws SQLException {
         return search(keyword, status, type, 0, Integer.MAX_VALUE);
     }
 
+    /**
+     * SQL trong hàm này dùng để tìm thiết bị chưa xóa mềm theo từ khóa, trạng thái, loại thiết bị và phân trang.
+     */
     public List<Equipment> search(String keyword, String status, String type, int offset, int limit) throws SQLException {
         ensureEquipmentTypeColumn();
         StringBuilder sql = new StringBuilder("SELECT * FROM Equipments WHERE IsDeleted = 0");
@@ -50,6 +56,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm số thiết bị thỏa điều kiện lọc cho phân trang.
+     */
     public int countSearch(String keyword, String status, String type) throws SQLException {
         ensureEquipmentTypeColumn();
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) AS Total FROM Equipments WHERE IsDeleted = 0");
@@ -64,10 +73,16 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy danh sách thiết bị chưa xóa mềm làm dữ liệu chọn trong form.
+     */
     public List<Equipment> findAllActive() throws SQLException {
         return search(null, null, null);
     }
 
+    /**
+     * SQL trong hàm này dùng để mở kết nối và lấy chi tiết một thiết bị theo id.
+     */
     public Equipment findById(int id) throws SQLException {
         ensureEquipmentTypeColumn();
         try (Connection connection = DBContext.getConnection()) {
@@ -75,6 +90,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy chi tiết một thiết bị chưa xóa mềm theo id trên kết nối có sẵn.
+     */
     public Equipment findById(Connection connection, int id) throws SQLException {
         String sql = "SELECT * FROM Equipments WHERE EquipmentID = ? AND IsDeleted = 0";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -88,6 +106,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để tính lại trạng thái thiết bị dựa trên sự cố mở và lịch bảo trì đang xử lý.
+     */
     public String recalculateStatus(Connection connection, int equipmentId, String updatedBy) throws SQLException {
         String statusSql = """
                 SELECT CASE
@@ -121,6 +142,9 @@ public class EquipmentDAO {
         return status;
     }
 
+    /**
+     * SQL trong hàm này dùng để thêm thiết bị mới và lấy khóa chính vừa sinh.
+     */
     public int create(Equipment equipment) throws SQLException {
         ensureEquipmentTypeColumn();
         String sql = """
@@ -141,6 +165,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để cập nhật thông tin thiết bị chưa bị xóa mềm.
+     */
     public boolean update(Equipment equipment) throws SQLException {
         ensureEquipmentTypeColumn();
         String sql = """
@@ -157,6 +184,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để xóa mềm thiết bị bằng cách đặt IsDeleted = 1.
+     */
     public boolean softDelete(int id, String updatedBy) throws SQLException {
         String sql = "UPDATE Equipments SET IsDeleted = 1, UpdatedBy = ?, UpdatedDate = SYSDATETIME() WHERE EquipmentID = ?";
         try (Connection connection = DBContext.getConnection();
@@ -167,6 +197,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để cập nhật trạng thái thiết bị và thời điểm cập nhật.
+     */
     public boolean updateStatus(Connection connection, int equipmentId, String status, String updatedBy) throws SQLException {
         String sql = "UPDATE Equipments SET Status = ?, UpdatedBy = ?, UpdatedDate = SYSDATETIME() WHERE EquipmentID = ? AND IsDeleted = 0";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -177,6 +210,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm số thiết bị theo từng trạng thái cho thống kê.
+     */
     public Map<String, Integer> countByStatus() throws SQLException {
         ensureEquipmentTypeColumn();
         String sql = "SELECT Status, COUNT(*) AS Total FROM Equipments WHERE IsDeleted = 0 GROUP BY Status";
@@ -191,10 +227,16 @@ public class EquipmentDAO {
         return counts;
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy danh sách thiết bị kèm số lượng sự cố, không giới hạn phân trang thực tế.
+     */
     public List<Equipment> findWithIssueCounts() throws SQLException {
         return findWithIssueCounts(0, Integer.MAX_VALUE);
     }
 
+    /**
+     * SQL trong hàm này dùng để lấy thiết bị kèm số lượng sự cố và mã sự cố mới nhất cho bảng báo cáo.
+     */
     public List<Equipment> findWithIssueCounts(int offset, int limit) throws SQLException {
         ensureEquipmentTypeColumn();
         String sql = """
@@ -224,6 +266,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * SQL trong hàm này dùng để đếm tổng số thiết bị chưa xóa mềm cho trang báo cáo.
+     */
     public int countActiveEquipments() throws SQLException {
         String sql = "SELECT COUNT(*) AS Total FROM Equipments WHERE IsDeleted = 0";
         try (Connection connection = DBContext.getConnection();
@@ -233,6 +278,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * Gán dữ liệu thiết bị vào PreparedStatement dùng chung cho câu INSERT và UPDATE.
+     */
     private void fillEquipmentStatement(PreparedStatement statement, Equipment equipment, boolean update) throws SQLException {
         statement.setString(1, equipment.getEquipmentCode());
         statement.setString(2, equipment.getEquipmentName());
@@ -249,12 +297,18 @@ public class EquipmentDAO {
         statement.setString(9, update ? equipment.getUpdatedBy() : equipment.getCreatedBy());
     }
 
+    /**
+     * Gán danh sách tham số động vào PreparedStatement theo đúng thứ tự điều kiện lọc.
+     */
     private void bind(PreparedStatement statement, List<Object> params) throws SQLException {
         for (int i = 0; i < params.size(); i++) {
             statement.setObject(i + 1, params.get(i));
         }
     }
 
+    /**
+     * Bổ sung điều kiện lọc động vào SQL tìm kiếm thiết bị.
+     */
     private void appendSearchFilters(StringBuilder sql, List<Object> params, String keyword, String status, String type) {
         if (keyword != null && !keyword.isBlank()) {
             sql.append(" AND (EquipmentCode LIKE ? OR EquipmentName LIKE ?)");
@@ -272,6 +326,9 @@ public class EquipmentDAO {
         }
     }
 
+    /**
+     * Chuyển một dòng ResultSet từ bảng Equipments thành đối tượng Equipment.
+     */
     private Equipment mapEquipment(ResultSet resultSet) throws SQLException {
         Equipment equipment = new Equipment();
         equipment.setEquipmentId(resultSet.getInt("EquipmentID"));
@@ -295,9 +352,11 @@ public class EquipmentDAO {
         return equipment;
     }
 
-    // Runtime guard for older DB copies; the SQL migration file is the preferred fix.
     private static boolean checkedEquipmentTypeColumn = false;
 
+    /**
+     * SQL trong hàm này dùng để kiểm tra và bổ sung cột EquipmentType cho các bản DB cũ nếu còn thiếu.
+     */
     private void ensureEquipmentTypeColumn() throws SQLException {
         if (checkedEquipmentTypeColumn) {
             return;

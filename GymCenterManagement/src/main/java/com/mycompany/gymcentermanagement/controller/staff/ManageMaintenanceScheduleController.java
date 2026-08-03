@@ -36,6 +36,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
 
     private final MaintenanceScheduleService service = new MaintenanceScheduleService();
 
+    /**
+     * Xử lý các yêu cầu GET của màn lịch bảo trì: danh sách, tạo mới, sửa và xem chi tiết.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -61,6 +64,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         }
     }
 
+    /**
+     * Xử lý các thao tác POST của lịch bảo trì: tạo, cập nhật tiến độ, hủy, duyệt và từ chối.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -108,6 +114,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         }
     }
 
+    /**
+     * Hiển thị danh sách lịch bảo trì theo bộ lọc thiết bị, trạng thái, loại bảo trì và phân trang.
+     */
     private void list(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         String keyword = trim(request.getParameter("keyword"));
@@ -143,6 +152,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "maintenance-schedule-list.jsp").forward(request, response);
     }
 
+    /**
+     * Mở form tạo lịch bảo trì với dữ liệu mặc định cho Admin.
+     */
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response, User user)
             throws SQLException, ServletException, IOException {
         requireAdmin(user);
@@ -155,23 +167,26 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "maintenance-schedule-form.jsp").forward(request, response);
     }
 
+    /**
+     * Mở form chỉnh sửa lịch bảo trì và kiểm tra quyền sửa theo vai trò hiện tại.
+     */
     private void showEditForm(HttpServletRequest request, HttpServletResponse response, User user)
             throws SQLException, ServletException, IOException {
         MaintenanceSchedule schedule = service.getById(parseRequiredId(request.getParameter("id")));
         if (schedule == null) {
-            throw new IllegalArgumentException("Maintenance schedule does not exist or has been deleted.");
+            throw new IllegalArgumentException("Lịch bảo trì không tồn tại hoặc đã bị xóa.");
         }
         if (user.getRole() == User.Role.Admin) {
             if (!MaintenanceScheduleService.STATUS_SCHEDULED.equals(schedule.getStatus())) {
-                throw new IllegalArgumentException("Only scheduled maintenance can be edited.");
+                throw new IllegalArgumentException("Chỉ lịch bảo trì đã lên lịch mới được chỉnh sửa.");
             }
         } else if (user.getRole() == User.Role.Staff) {
             if (!MaintenanceScheduleService.STATUS_SCHEDULED.equals(schedule.getStatus())
                     && !MaintenanceScheduleService.STATUS_IN_PROGRESS.equals(schedule.getStatus())) {
-                throw new IllegalArgumentException("Completed or cancelled schedules cannot be edited.");
+                throw new IllegalArgumentException("Không thể chỉnh sửa lịch đã hoàn tất hoặc đã hủy.");
             }
         } else {
-            throw new SecurityException("Unauthorized role.");
+            throw new SecurityException("Vai trò không có quyền thực hiện thao tác này.");
         }
         request.setAttribute("schedule", schedule);
         request.setAttribute("edit", true);
@@ -179,17 +194,23 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         request.getRequestDispatcher(VIEW_DIR + "maintenance-schedule-form.jsp").forward(request, response);
     }
 
+    /**
+     * Hiển thị chi tiết lịch bảo trì và các thông tin gửi duyệt nếu có.
+     */
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         MaintenanceSchedule schedule = service.getById(parseRequiredId(request.getParameter("id")));
         if (schedule == null) {
-            throw new IllegalArgumentException("Maintenance schedule does not exist or has been deleted.");
+            throw new IllegalArgumentException("Lịch bảo trì không tồn tại hoặc đã bị xóa.");
         }
         request.setAttribute("schedule", schedule);
         exposeFlash(request);
         request.getRequestDispatcher(VIEW_DIR + "maintenance-schedule-detail.jsp").forward(request, response);
     }
 
+    /**
+     * Tạo lịch bảo trì mới từ dữ liệu form và chuyển sang trang chi tiết sau khi tạo thành công.
+     */
     private void create(HttpServletRequest request, HttpServletResponse response, User user)
             throws SQLException, IOException {
         requireAdmin(user);
@@ -198,6 +219,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules?action=detail&id=" + id);
     }
 
+    /**
+     * Cập nhật lịch bảo trì; Admin sửa kế hoạch, Staff cập nhật tiến độ hoặc gửi kết quả chờ duyệt.
+     */
     private void update(HttpServletRequest request, HttpServletResponse response, User user)
             throws SQLException, IOException, ServletException {
         int id = parseRequiredId(request.getParameter("id"));
@@ -218,11 +242,14 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
                 setSuccess(request, "Đã cập nhật tiến độ bảo trì.");
             }
         } else {
-            throw new SecurityException("Unauthorized role.");
+            throw new SecurityException("Vai trò không có quyền thực hiện thao tác này.");
         }
         response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules?action=detail&id=" + id);
     }
 
+    /**
+     * Duyệt kết quả hoàn tất bảo trì do Staff gửi lên.
+     */
     private void approve(HttpServletRequest request, HttpServletResponse response, User user)
             throws SQLException, IOException {
         requireAdmin(user);
@@ -232,6 +259,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules?action=detail&id=" + id);
     }
 
+    /**
+     * Từ chối kết quả hoàn tất bảo trì và đưa lịch về trạng thái đang xử lý.
+     */
     private void reject(HttpServletRequest request, HttpServletResponse response, User user)
             throws SQLException, IOException {
         requireAdmin(user);
@@ -241,6 +271,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules?action=detail&id=" + id);
     }
 
+    /**
+     * Hủy lịch bảo trì theo yêu cầu của Admin.
+     */
     private void cancel(HttpServletRequest request, HttpServletResponse response, User user)
             throws SQLException, IOException {
         requireAdmin(user);
@@ -250,21 +283,24 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/staff/maintenance-schedules");
     }
 
+    /**
+     * Xử lý ảnh minh chứng hoàn tất bảo trì và trả về đường dẫn ảnh để lưu cùng lịch.
+     */
     private String resolveCompletionImageUrl(HttpServletRequest request) throws IOException, ServletException {
         Part imagePart = request.getPart("completionImageFile");
         if (imagePart == null || imagePart.getSize() == 0) {
-            throw new IllegalArgumentException("Completion image is required.");
+            throw new IllegalArgumentException("Ảnh hoàn tất bảo trì là bắt buộc.");
         }
 
         String submittedName = Path.of(imagePart.getSubmittedFileName()).getFileName().toString();
         String extension = extensionOf(submittedName);
         if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Only jpg, jpeg, png, gif or webp image files are allowed.");
+            throw new IllegalArgumentException("Chỉ cho phép tải lên ảnh định dạng jpg, jpeg, png, gif hoặc webp.");
         }
 
         String realUploadPath = getServletContext().getRealPath(UPLOAD_DIR);
         if (realUploadPath == null) {
-            throw new IOException("Cannot resolve maintenance image upload directory.");
+            throw new IOException("Không xác định được thư mục lưu ảnh bảo trì.");
         }
 
         Files.createDirectories(Path.of(realUploadPath));
@@ -274,6 +310,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         return request.getContextPath() + UPLOAD_DIR + "/" + fileName;
     }
 
+    /**
+     * Lấy phần mở rộng của tên tệp ảnh bảo trì để kiểm tra định dạng hợp lệ.
+     */
     private String extensionOf(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
@@ -282,14 +321,20 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         return fileName.substring(dotIndex + 1).toLowerCase();
     }
 
+    /**
+     * Đọc dữ liệu kế hoạch bảo trì từ form và bắt buộc phải có ngày bảo trì hợp lệ.
+     */
     private MaintenanceSchedule readPlanned(HttpServletRequest request) {
         MaintenanceSchedule schedule = readPlannedLenient(request);
         if (schedule.getScheduledDate() == null) {
-            throw new IllegalArgumentException("Scheduled date is required.");
+            throw new IllegalArgumentException("Ngày bảo trì là bắt buộc.");
         }
         return schedule;
     }
 
+    /**
+     * Đọc tạm dữ liệu kế hoạch bảo trì để giữ lại dữ liệu người dùng nhập khi form lỗi.
+     */
     private MaintenanceSchedule readPlannedLenient(HttpServletRequest request) {
         MaintenanceSchedule schedule = new MaintenanceSchedule();
         schedule.setMaintenanceScheduleId(parseInt(request.getParameter("id"), 0));
@@ -310,12 +355,18 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         return schedule;
     }
 
+    /**
+     * Nạp danh sách thiết bị, sự cố và ngày hiện tại để hiển thị trong form bảo trì.
+     */
     private void loadFormOptions(HttpServletRequest request) throws SQLException {
         request.setAttribute("equipments", service.getEquipmentOptions());
         request.setAttribute("issues", service.getAllIssueOptions());
         request.setAttribute("today", LocalDate.now());
     }
 
+    /**
+     * Gộp dữ liệu người dùng vừa nhập với dữ liệu hiện tại để hiển thị lại form khi cập nhật lỗi.
+     */
     private MaintenanceSchedule mergeCurrentForError(MaintenanceSchedule submitted, User user) throws SQLException {
         MaintenanceSchedule current = service.getById(submitted.getMaintenanceScheduleId());
         if (current == null) {
@@ -332,6 +383,9 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         return current;
     }
 
+    /**
+     * Lấy người dùng hiện tại từ session và chặn truy cập nếu không phải Admin hoặc Staff.
+     */
     private User currentUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("currentUser");
@@ -346,16 +400,25 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         return user;
     }
 
+    /**
+     * Kiểm tra người dùng hiện tại có quyền Admin trước khi cho thao tác quản trị.
+     */
     private void requireAdmin(User user) {
         if (user.getRole() != User.Role.Admin) {
-            throw new SecurityException("Only Admin may perform this action.");
+            throw new SecurityException("Chỉ Admin được thực hiện thao tác này.");
         }
     }
 
+    /**
+     * Lưu thông báo thành công vào session để hiển thị sau khi redirect.
+     */
     private void setSuccess(HttpServletRequest request, String message) {
         request.getSession().setAttribute("maintenanceSuccess", message);
     }
 
+    /**
+     * Đưa thông báo flash từ session ra request và xóa khỏi session sau khi đọc.
+     */
     private void exposeFlash(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -373,19 +436,28 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         }
     }
 
+    /**
+     * Xác định action hiện tại của request, mặc định là danh sách nếu không truyền action.
+     */
     private String action(HttpServletRequest request) {
         String action = request.getParameter("action");
         return action == null || action.isBlank() ? "list" : action;
     }
 
+    /**
+     * Chuyển tham số id bắt buộc sang số nguyên và báo lỗi nếu id không hợp lệ.
+     */
     private int parseRequiredId(String value) {
         int id = parseInt(value, 0);
         if (id <= 0) {
-            throw new IllegalArgumentException("Maintenance schedule is required.");
+            throw new IllegalArgumentException("Vui lòng chọn lịch bảo trì.");
         }
         return id;
     }
 
+    /**
+     * Chuyển chuỗi sang số nguyên và trả về giá trị mặc định nếu dữ liệu không hợp lệ.
+     */
     private int parseInt(String value, int fallback) {
         try {
             return value == null || value.isBlank() ? fallback : Integer.parseInt(value);
@@ -394,15 +466,24 @@ public class ManageMaintenanceScheduleController extends HttpServlet {
         }
     }
 
+    /**
+     * Chuyển chuỗi sang số nguyên dương hoặc trả về null nếu không có giá trị hợp lệ.
+     */
     private Integer nullablePositiveInt(String value) {
         int parsed = parseInt(value, 0);
         return parsed > 0 ? parsed : null;
     }
 
+    /**
+     * Cắt khoảng trắng hai đầu chuỗi và giữ null nếu giá trị ban đầu là null.
+     */
     private String trim(String value) {
         return value == null ? null : value.trim();
     }
 
+    /**
+     * Tạo returnUrl đã mã hóa để quay lại đúng trang danh sách và vị trí bảng sau khi xem chi tiết.
+     */
     private String buildEncodedReturnUrl(HttpServletRequest request) {
         StringBuilder returnUrl = new StringBuilder(request.getRequestURI().substring(request.getContextPath().length()));
         if (request.getQueryString() != null && !request.getQueryString().isBlank()) {

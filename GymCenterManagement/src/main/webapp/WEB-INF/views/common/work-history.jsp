@@ -13,53 +13,110 @@
 
     <div class="bg-light rounded p-3 mb-4">
         <form id="workHistoryFilterForm" method="get" action="${filterAction}" class="row g-3 align-items-end">
-            <c:if test="${adminView}">
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold">Vai trò</label>
-                    <select name="role" class="form-select">
-                        <option value="">Tất cả</option>
-                        <option value="Staff" ${filterRole eq 'Staff' ? 'selected' : ''}>Nhân viên</option>
-                        <option value="PT" ${filterRole eq 'PT' ? 'selected' : ''}>Huấn luyện viên</option>
-                    </select>
-                </div>
-            </c:if>
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Ca làm việc</label>
-                <select name="shift" class="form-select">
-                    <option value="">Tất cả</option>
-                    <option value="Morning" ${filterShift eq 'Morning' ? 'selected' : ''}>Sáng</option>
-                    <option value="Afternoon" ${filterShift eq 'Afternoon' ? 'selected' : ''}>Chiều</option>
-                    <option value="Evening" ${filterShift eq 'Evening' ? 'selected' : ''}>Tối</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Từ ngày</label>
-                <input type="date" id="fromDate" name="from" class="form-control" value="${filterFrom}" max="${filterTo}">
-                <div id="fromDateError" class="text-danger small mt-1 d-none">Từ ngày phải trước hoặc bằng đến ngày.</div>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Đến ngày</label>
-                <input type="date" id="toDate" name="to" class="form-control" value="${filterTo}" min="${filterFrom}">
-                <div id="toDateError" class="text-danger small mt-1 d-none">Đến ngày phải sau hoặc bằng từ ngày.</div>
-            </div>
-            <c:if test="${adminView}">
-                <div class="col-md-3">
-                    <label class="form-label fw-semibold">Tìm kiếm</label>
-                    <input type="text" name="keyword" class="form-control"
-                           placeholder="Tên hoặc email"
-                           value="${filterKeyword}">
-                </div>
-            </c:if>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="fa fa-search me-1"></i>Tìm kiếm
-                </button>
-            </div>
-            <div class="col-md-1">
-                <a href="${resetUrl}" class="btn btn-outline-secondary w-100">Xóa lọc</a>
-            </div>
+            <c:choose>
+                <c:when test="${adminView}">
+                    <c:if test="${not empty selectedWorkStatus}">
+                        <input type="hidden" name="status" value="${selectedWorkStatus}">
+                    </c:if>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Vai trò</label>
+                        <select name="role" class="form-select">
+                            <option value="">Tất cả</option>
+                            <option value="Staff" ${filterRole eq 'Staff' ? 'selected' : ''}>Nhân viên</option>
+                            <option value="PT" ${filterRole eq 'PT' ? 'selected' : ''}>Huấn luyện viên</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Ca làm việc</label>
+                        <select name="shift" class="form-select">
+                            <option value="Morning" ${selectedShift eq 'Morning' ? 'selected' : ''}>Sáng</option>
+                            <option value="Afternoon" ${selectedShift eq 'Afternoon' ? 'selected' : ''}>Chiều</option>
+                            <option value="Evening" ${selectedShift eq 'Evening' ? 'selected' : ''}>Tối</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Ngày</label>
+                        <input type="date" name="date" class="form-control" value="${selectedDate}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Tìm nhân viên hoặc huấn luyện viên</label>
+                        <input type="text" name="keyword" class="form-control"
+                               placeholder="Tên hoặc email"
+                               value="${filterKeyword}">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100" title="Tìm kiếm">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="${resetUrl}" class="btn btn-outline-secondary w-100" title="Xóa lọc">
+                            <i class="fa fa-undo"></i>
+                        </a>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <c:if test="${not empty selectedWorkStatus}">
+                        <input type="hidden" name="status" value="${selectedWorkStatus}">
+                    </c:if>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Ca làm việc</label>
+                        <select name="shift" class="form-select">
+                            <option value="">Tất cả</option>
+                            <option value="Morning" ${filterShift eq 'Morning' ? 'selected' : ''}>Sáng</option>
+                            <option value="Afternoon" ${filterShift eq 'Afternoon' ? 'selected' : ''}>Chiều</option>
+                            <option value="Evening" ${filterShift eq 'Evening' ? 'selected' : ''}>Tối</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Từ ngày</label>
+                        <input type="date" id="fromDate" name="from" class="form-control" value="${filterFrom}" max="${filterTo}">
+                        <div id="fromDateError" class="text-danger small mt-1 d-none">Từ ngày phải trước hoặc bằng đến ngày.</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Đến ngày</label>
+                        <input type="date" id="toDate" name="to" class="form-control" value="${filterTo}" min="${filterFrom}">
+                        <div id="toDateError" class="text-danger small mt-1 d-none">Đến ngày phải sau hoặc bằng từ ngày.</div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fa fa-search me-1"></i>Tìm kiếm
+                        </button>
+                    </div>
+                    <div class="col-md-1">
+                        <a href="${resetUrl}" class="btn btn-outline-secondary w-100">Xóa lọc</a>
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </form>
+        <c:if test="${adminView}">
+            <div class="small text-muted mt-2">
+                <i class="fa fa-clock me-1"></i>Khung giờ ca: ${shiftWindow}
+            </div>
+        </c:if>
     </div>
+
+    <c:if test="${not empty statusStats}">
+        <div class="row row-cols-1 row-cols-sm-2 ${adminView ? 'row-cols-lg-4' : 'row-cols-lg-3 row-cols-xl-6'} g-3 mb-4">
+            <c:forEach var="stat" items="${statusStats}">
+                <div class="col">
+                    <a href="${stat.url}" class="text-decoration-none">
+                        <div class="bg-white rounded border p-3 h-100 shadow-sm ${stat.active ? 'border-primary' : ''}">
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                <div>
+                                    <div class="text-muted small">${stat.label}</div>
+                                    <div class="h4 mb-0 text-dark fw-bold">${stat.count}</div>
+                                </div>
+                                <span class="badge ${stat.badgeClass} p-2">
+                                    <i class="fa ${stat.iconClass}"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </c:forEach>
+        </div>
+    </c:if>
 
     <c:choose>
         <c:when test="${not empty errorMessage}">
@@ -77,7 +134,7 @@
         <c:otherwise>
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <p class="text-muted small mb-0">
-                    ${adminView ? 'Tổng' : 'Tìm thấy'} <strong>${total}</strong> bản ghi.
+                    ${adminView ? 'Tổng' : 'Tìm thấy'} <strong>${total}</strong> ${adminView ? 'nhân sự' : 'bản ghi'}.
                 </p>
             </div>
 
@@ -87,35 +144,52 @@
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>Họ tên</th>
-                                <th>Email</th>
                                 <c:if test="${adminView}">
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
                                     <th>Vai trò</th>
                                 </c:if>
-                                <th>Ngày</th>
-                                <th>Ca</th>
+                                <c:if test="${not adminView}">
+                                    <th>Ngày</th>
+                                    <th>Ca</th>
+                                </c:if>
+                                <th>Trạng thái</th>
                                 <th>Giờ vào</th>
                                 <th>Giờ ra</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <c:set var="rowNum" value="${(currentPage - 1) * 20}" />
+                            <c:set var="rowNum" value="${(currentPage - 1) * pageSize}" />
                             <c:forEach var="a" items="${historyList}" varStatus="loop">
                                 <tr>
                                     <td class="text-muted small">${rowNum + loop.index + 1}</td>
-                                    <td class="fw-semibold">${a.targetFullName}</td>
-                                    <td class="text-muted small">${a.targetEmail}</td>
                                     <c:if test="${adminView}">
+                                        <td class="fw-semibold">${a.targetFullName}</td>
+                                        <td class="text-muted small">${a.targetEmail}</td>
                                         <td>
                                             <span class="badge ${a.userRole.name() eq 'PT' ? 'bg-info' : 'bg-secondary'}">
                                                 ${a.userRoleLabel}
                                             </span>
                                         </td>
                                     </c:if>
-                                    <td><c:out value="${a.attendanceDate}" default="-" /></td>
-                                    <td><span class="badge bg-light text-dark border">${a.shiftLabel}</span></td>
-                                    <td class="small text-muted"><c:out value="${a.checkedInAtDisplay}" default="-" /></td>
-                                    <td class="small text-muted"><c:out value="${a.checkedOutAtDisplay}" default="-" /></td>
+                                    <c:if test="${not adminView}">
+                                        <td><c:out value="${a.attendanceDate}" default="-" /></td>
+                                        <td><span class="badge bg-light text-dark border">${a.shiftLabel}</span></td>
+                                        <td>
+                                            <span class="badge ${a.workStatusBadgeClass}">
+                                                <i class="fa ${a.workStatusIconClass} me-1"></i>${a.workStatusLabel}
+                                            </span>
+                                        </td>
+                                    </c:if>
+                                    <c:if test="${adminView}">
+                                        <td>
+                                            <span class="badge ${a.workStatusBadgeClass}">
+                                                <i class="fa ${a.workStatusIconClass} me-1"></i>${a.workStatusLabel}
+                                            </span>
+                                        </td>
+                                    </c:if>
+                                    <td class="small text-muted"><c:out value="${a.checkedInTimeDisplay}" default="-" /></td>
+                                    <td class="small text-muted"><c:out value="${a.checkedOutTimeDisplay}" default="-" /></td>
                                 </tr>
                             </c:forEach>
                         </tbody>
@@ -123,49 +197,7 @@
                 </div>
             </div>
 
-            <c:if test="${totalPages > 1}">
-                <nav class="mt-4">
-                    <ul class="pagination justify-content-center flex-wrap">
-                        <c:url var="prevUrl" value="${historyBasePath}">
-                            <c:param name="page" value="${currentPage - 1}" />
-                            <c:param name="role" value="${filterRole}" />
-                            <c:param name="shift" value="${filterShift}" />
-                            <c:param name="from" value="${filterFrom}" />
-                            <c:param name="to" value="${filterTo}" />
-                            <c:param name="keyword" value="${filterKeyword}" />
-                        </c:url>
-                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                            <a class="page-link" href="${prevUrl}">&laquo; Trước</a>
-                        </li>
-
-                        <c:forEach begin="1" end="${totalPages}" var="p">
-                            <c:url var="pageUrl" value="${historyBasePath}">
-                                <c:param name="page" value="${p}" />
-                                <c:param name="role" value="${filterRole}" />
-                                <c:param name="shift" value="${filterShift}" />
-                                <c:param name="from" value="${filterFrom}" />
-                                <c:param name="to" value="${filterTo}" />
-                                <c:param name="keyword" value="${filterKeyword}" />
-                            </c:url>
-                            <li class="page-item ${p == currentPage ? 'active' : ''}">
-                                <a class="page-link" href="${pageUrl}">${p}</a>
-                            </li>
-                        </c:forEach>
-
-                        <c:url var="nextUrl" value="${historyBasePath}">
-                            <c:param name="page" value="${currentPage + 1}" />
-                            <c:param name="role" value="${filterRole}" />
-                            <c:param name="shift" value="${filterShift}" />
-                            <c:param name="from" value="${filterFrom}" />
-                            <c:param name="to" value="${filterTo}" />
-                            <c:param name="keyword" value="${filterKeyword}" />
-                        </c:url>
-                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                            <a class="page-link" href="${nextUrl}">Sau &raquo;</a>
-                        </li>
-                    </ul>
-                </nav>
-            </c:if>
+            <jsp:include page="pagination.jsp" />
         </c:otherwise>
     </c:choose>
 </div>
@@ -177,6 +209,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const toDate = document.getElementById('toDate');
     const fromDateError = document.getElementById('fromDateError');
     const toDateError = document.getElementById('toDateError');
+
+    if (!form || !fromDate || !toDate || !fromDateError || !toDateError) {
+        return;
+    }
 
     function validateDateRange() {
         const hasInvalidRange = fromDate.value && toDate.value && fromDate.value > toDate.value;
