@@ -25,6 +25,7 @@ public class Invoice {
     private String paymentMethod; // 'Cash', 'VNPay'
     private LocalDateTime paymentDate;
     private String status; // 'Paid', 'Pending', 'Cancelled'
+    private String transactionData; // JSON or metadata for the invoice transaction
     
     // Mapped entities (obtained via JOIN)
     private Member member;
@@ -123,6 +124,14 @@ public class Invoice {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getTransactionData() {
+        return transactionData;
+    }
+
+    public void setTransactionData(String transactionData) {
+        this.transactionData = transactionData;
     }
 
     public Member getMember() {

@@ -23,6 +23,7 @@ import com.mycompany.gymcentermanagement.model.entity.MemberPackage;
 import com.mycompany.gymcentermanagement.model.entity.Invoice;
 import com.mycompany.gymcentermanagement.service.MemberPackageService;
 import com.mycompany.gymcentermanagement.utils.DBContext;
+import com.google.gson.JsonObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -366,6 +367,11 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             if (latestPkg == null) {
                 throw new SQLException("Hội viên chưa có gói tập nào để gia hạn. Vui lòng Đăng ký mới.");
             }
+            
+            // Chỉ cho phép gia hạn khi gói tập còn dưới 1 tháng
+            if (latestPkg.getEndDate() != null && LocalDate.now().plusMonths(1).isBefore(latestPkg.getEndDate())) {
+                throw new SQLException("Bạn chỉ có thể gia hạn khi gói tập hiện tại còn thời hạn dưới 1 tháng.");
+            }
 
             // Validate: Không cho phép tạo nhiều hóa đơn chờ cho gói này
             String checkPendingSql = "SELECT TOP 1 1 FROM Invoices WHERE MemberPackageID = ? AND Status = 'Pending' AND IsDeleted = 0";
@@ -387,11 +393,15 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             pendingInvoice.setAmount(gp.getPrice());
             pendingInvoice.setPaymentMethod("Cash");
             pendingInvoice.setStatus("Pending");
-            pendingInvoice.setCreatedBy("Renew;PackageID:" + packageId + ";StaffUserID:" + staffUserId); // Đánh dấu là
-                                                                                                         // Renew và lưu
-                                                                                                         // lại
-                                                                                                         // PackageID
-                                                                                                         // mới
+            
+            // Sử dụng TransactionData để lưu Meta-data an toàn thay vì CreatedBy
+            JsonObject tData = new JsonObject();
+            tData.addProperty("action", "renew");
+            tData.addProperty("packageId", packageId);
+            tData.addProperty("staffUserId", staffUserId);
+            pendingInvoice.setTransactionData(tData.toString());
+            
+            pendingInvoice.setCreatedBy("StaffUserID: " + staffUserId); 
             pendingInvoice.setPaymentDate(LocalDateTime.now());
             pendingInvoice.setCreatedDate(LocalDateTime.now());
 
@@ -432,14 +442,13 @@ public class MemberPackageServiceImpl implements MemberPackageService {
      * 
      * @param senderPkgId      ID gói của người gửi
      * @param receiverMemberId ID hội viên nhận
-     * @param transferFee      Phí chuyển nhượng
      * @param staffUserId      Nhân viên xử lý
      * @param note             Ghi chú
      * @return Hóa đơn
      * @throws SQLException
      */
     @Override
-    public Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, int transferMonths, int staffUserId,
+    public Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, int staffUserId,
             String note) throws SQLException {
         Connection conn = null;
         Invoice pendingInvoice = null;
@@ -460,21 +469,12 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 throw new SQLException("Gói tập được chọn không trong trạng thái hoạt động.");
             }
 
-            // 2. Validate số tháng chuyển
-            if (transferMonths != 6 && transferMonths != 12) {
-                throw new SQLException("Số tháng chuyển nhượng phải là 6 hoặc 12 tháng.");
-            }
-            long transferDays = transferMonths * 30L;
-
             LocalDate today = LocalDate.now();
-            LocalDate effectiveStartDate = senderPackage.getStartDate().isAfter(today) ? senderPackage.getStartDate()
-                    : today;
-            long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(effectiveStartDate,
-                    senderPackage.getEndDate());
+            LocalDate effectiveStartDate = senderPackage.getStartDate().isAfter(today) ? senderPackage.getStartDate() : today;
+            long remainingDays = java.time.temporal.ChronoUnit.DAYS.between(effectiveStartDate, senderPackage.getEndDate());
 
-            if (remainingDays < transferDays) {
-                throw new SQLException("Gói tập không đủ thời hạn để chuyển nhượng (" + transferMonths + " tháng = "
-                        + transferDays + " ngày). Thời gian còn lại: " + remainingDays + " ngày.");
+            if (remainingDays <= 0) {
+                throw new SQLException("Gói tập đã hết hạn, không thể chuyển nhượng.");
             }
 
             // 3. Validate không có hóa đơn chờ
@@ -515,7 +515,7 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 receiverPackage.setMemberId(receiverMemberId);
                 receiverPackage.setPackageId(senderPackage.getPackageId());
                 receiverPackage.setStartDate(today);
-                receiverPackage.setEndDate(today.plusDays(transferDays));
+                receiverPackage.setEndDate(today.plusDays(remainingDays));
                 receiverPackage.setStatus("Pending");
                 receiverPackage.setCreatedBy(
                         "Transfer from Member ID: " + senderPackage.getMemberId() + ". Staff ID: " + staffUserId);
@@ -528,8 +528,8 @@ public class MemberPackageServiceImpl implements MemberPackageService {
                 receiverPkgId = receiverPackage.getMemberPackageId();
             }
 
-            // 5. Tạo hóa đơn chuyển nhượng
-            double transferFee = transferMonths * 60000.0; // Phí cố định 60k/tháng
+            // 5. Tạo hóa đơn chuyển nhượng (Phí = 5,000 VND / ngày còn lại)
+            double transferFee = remainingDays * 5000.0;
 
             pendingInvoice = new Invoice();
             pendingInvoice.setMemberId(receiverMemberId);
@@ -539,9 +539,15 @@ public class MemberPackageServiceImpl implements MemberPackageService {
             pendingInvoice.setPaymentMethod("Cash");
             pendingInvoice.setStatus("Pending");
 
-            // Lưu meta-data để lúc Payment sẽ tiến hành cắt ngày của Sender
-            pendingInvoice.setCreatedBy("Transfer;SPkg:" + senderPackage.getMemberPackageId() +
-                    ";TMths:" + transferMonths);
+            // Lưu meta-data bằng JSON thay vì CreatedBy String Split
+            JsonObject tData = new JsonObject();
+            tData.addProperty("action", "transfer");
+            tData.addProperty("senderPkgId", senderPackage.getMemberPackageId());
+            tData.addProperty("remainingDays", remainingDays);
+            tData.addProperty("staffUserId", staffUserId);
+            pendingInvoice.setTransactionData(tData.toString());
+            
+            pendingInvoice.setCreatedBy("StaffUserID: " + staffUserId);
             pendingInvoice.setPaymentDate(LocalDateTime.now());
             pendingInvoice.setCreatedDate(LocalDateTime.now());
 

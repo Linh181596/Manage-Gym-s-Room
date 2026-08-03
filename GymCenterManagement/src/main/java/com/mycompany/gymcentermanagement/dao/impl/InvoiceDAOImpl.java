@@ -72,6 +72,13 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         }
         
         inv.setStatus(rs.getString("Status"));
+        
+        try {
+            inv.setTransactionData(rs.getString("TransactionData"));
+        } catch (SQLException ex) {
+            // Tương thích ngược nếu DB chưa có cột này
+        }
+        
         inv.setCreatedBy(rs.getString("CreatedBy"));
         
         Timestamp createdTs = rs.getTimestamp("CreatedDate");
@@ -182,8 +189,8 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         try {
             conn = getActiveConnection();
             // SQL: Insert hóa đơn mới và trả về ID tự tăng
-            String sql = "INSERT INTO Invoices (MemberID, ProcessBy, MemberPackageID, PTRegistrationID, Amount, PaymentMethod, PaymentDate, Status, CreatedBy, CreatedDate, IsDeleted) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+            String sql = "INSERT INTO Invoices (MemberID, ProcessBy, MemberPackageID, PTRegistrationID, Amount, PaymentMethod, PaymentDate, Status, TransactionData, CreatedBy, CreatedDate, IsDeleted) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, inv.getMemberId());
             
@@ -209,8 +216,9 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             stmt.setString(6, inv.getPaymentMethod());
             stmt.setTimestamp(7, inv.getPaymentDate() != null ? Timestamp.valueOf(inv.getPaymentDate()) : null);
             stmt.setString(8, inv.getStatus());
-            stmt.setString(9, inv.getCreatedBy());
-            stmt.setTimestamp(10, inv.getCreatedDate() != null ? Timestamp.valueOf(inv.getCreatedDate()) : new Timestamp(System.currentTimeMillis()));
+            stmt.setString(9, inv.getTransactionData());
+            stmt.setString(10, inv.getCreatedBy());
+            stmt.setTimestamp(11, inv.getCreatedDate() != null ? Timestamp.valueOf(inv.getCreatedDate()) : new Timestamp(System.currentTimeMillis()));
             
             int rowsAffected = stmt.executeUpdate();
             success = (rowsAffected > 0);
@@ -243,7 +251,7 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         try {
             conn = getActiveConnection();
             // SQL: Update thông tin Invoice theo ID
-            String sql = "UPDATE Invoices SET MemberID = ?, ProcessBy = ?, MemberPackageID = ?, PTRegistrationID = ?, Amount = ?, PaymentMethod = ?, PaymentDate = ?, Status = ?, UpdatedBy = ?, UpdatedDate = ? " +
+            String sql = "UPDATE Invoices SET MemberID = ?, ProcessBy = ?, MemberPackageID = ?, PTRegistrationID = ?, Amount = ?, PaymentMethod = ?, PaymentDate = ?, Status = ?, TransactionData = ?, UpdatedBy = ?, UpdatedDate = ? " +
                          "WHERE InvoiceID = ? AND IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, inv.getMemberId());
@@ -270,9 +278,10 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             stmt.setString(6, inv.getPaymentMethod());
             stmt.setTimestamp(7, inv.getPaymentDate() != null ? Timestamp.valueOf(inv.getPaymentDate()) : null);
             stmt.setString(8, inv.getStatus());
-            stmt.setString(9, inv.getUpdatedBy());
-            stmt.setTimestamp(10, inv.getUpdatedDate() != null ? Timestamp.valueOf(inv.getUpdatedDate()) : new Timestamp(System.currentTimeMillis()));
-            stmt.setInt(11, inv.getInvoiceId());
+            stmt.setString(9, inv.getTransactionData());
+            stmt.setString(10, inv.getUpdatedBy());
+            stmt.setTimestamp(11, inv.getUpdatedDate() != null ? Timestamp.valueOf(inv.getUpdatedDate()) : new Timestamp(System.currentTimeMillis()));
+            stmt.setInt(12, inv.getInvoiceId());
             
             int rowsAffected = stmt.executeUpdate();
             success = (rowsAffected > 0);

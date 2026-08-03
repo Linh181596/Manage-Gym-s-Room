@@ -17,6 +17,7 @@ import com.mycompany.gymcentermanagement.model.entity.Invoice;
 import com.mycompany.gymcentermanagement.model.entity.MemberPackage;
 import com.mycompany.gymcentermanagement.service.InvoiceService;
 import com.mycompany.gymcentermanagement.utils.DBContext;
+import com.google.gson.JsonObject;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -102,31 +103,46 @@ public class InvoiceServiceImpl implements InvoiceService {
                     throw new SQLException("Associated Member Package not found.");
                 }
                 
+                JsonObject tData = null;
+                if (inv.getTransactionData() != null && !inv.getTransactionData().trim().isEmpty()) {
+                    try {
+                        tData = com.google.gson.JsonParser.parseString(inv.getTransactionData()).getAsJsonObject();
+                    } catch (Exception e) {
+                        // Bỏ qua lỗi parse JSON, dùng fallback
+                    }
+                }
+                
                 String createdBy = inv.getCreatedBy() != null ? inv.getCreatedBy() : "";
                 
-                if (createdBy.startsWith("Transfer;")) {
+                if ((tData != null && tData.has("action") && "transfer".equals(tData.get("action").getAsString())) || createdBy.startsWith("Transfer;")) {
                     // Xử lý Transfer
                     int senderPkgId = -1;
-                    int transferMonths = 0;
-                    String[] parts = createdBy.split(";");
-                    for (String part : parts) {
-                        if (part.startsWith("SPkg:")) {
-                            senderPkgId = Integer.parseInt(part.split(":")[1]);
-                        } else if (part.startsWith("TMths:")) {
-                            transferMonths = Integer.parseInt(part.split(":")[1]);
+                    long transferDays = 0;
+                    
+                    if (tData != null && tData.has("action") && "transfer".equals(tData.get("action").getAsString())) {
+                        senderPkgId = tData.get("senderPkgId").getAsInt();
+                        if (tData.has("remainingDays")) {
+                            transferDays = tData.get("remainingDays").getAsLong();
+                        } else if (tData.has("transferMonths")) {
+                            transferDays = tData.get("transferMonths").getAsInt() * 30L;
+                        }
+                    } else {
+                        String[] parts = createdBy.split(";");
+                        for (String part : parts) {
+                            if (part.startsWith("SPkg:")) {
+                                senderPkgId = Integer.parseInt(part.split(":")[1]);
+                            } else if (part.startsWith("TMths:")) {
+                                transferDays = Integer.parseInt(part.split(":")[1]) * 30L;
+                            }
                         }
                     }
                     
-                    if (senderPkgId != -1 && transferMonths > 0) {
-                        long transferDays = transferMonths * 30L;
-                        // 1. Trừ ngày của Sender
+                    if (senderPkgId != -1 && transferDays > 0) {
+                        // 1. Trừ ngày của Sender (Chuyển thành Expired)
                         MemberPackage senderPkg = mpDAO.findById(senderPkgId);
                         if (senderPkg != null) {
-                            java.time.LocalDate newSenderEndDate = senderPkg.getEndDate().minusDays(transferDays);
-                            senderPkg.setEndDate(newSenderEndDate);
-                            if (newSenderEndDate.isBefore(java.time.LocalDate.now()) || newSenderEndDate.isEqual(java.time.LocalDate.now())) {
-                                senderPkg.setStatus("Expired");
-                            }
+                            senderPkg.setEndDate(java.time.LocalDate.now()); // Kết thúc ngay lập tức
+                            senderPkg.setStatus("Expired");
                             senderPkg.setUpdatedBy("Transferred by StaffUserID: " + staffUserId);
                             senderPkg.setUpdatedDate(LocalDateTime.now());
                             mpDAO.update(senderPkg);
@@ -146,13 +162,18 @@ public class InvoiceServiceImpl implements InvoiceService {
                             mp.setStatus("Active");
                         }
                     }
-                } else if (createdBy.startsWith("Renew;")) {
+                } else if ((tData != null && tData.has("action") && "renew".equals(tData.get("action").getAsString())) || createdBy.startsWith("Renew;")) {
                     // Xử lý Renew
                     int renewPackageId = mp.getPackageId(); // Fallback
-                    String[] parts = createdBy.split(";");
-                    for (String part : parts) {
-                        if (part.startsWith("PackageID:")) {
-                            renewPackageId = Integer.parseInt(part.split(":")[1]);
+                    
+                    if (tData != null && tData.has("action") && "renew".equals(tData.get("action").getAsString())) {
+                        renewPackageId = tData.get("packageId").getAsInt();
+                    } else {
+                        String[] parts = createdBy.split(";");
+                        for (String part : parts) {
+                            if (part.startsWith("PackageID:")) {
+                                renewPackageId = Integer.parseInt(part.split(":")[1]);
+                            }
                         }
                     }
 
@@ -268,31 +289,46 @@ public class InvoiceServiceImpl implements InvoiceService {
                     throw new SQLException("Associated Member Package not found.");
                 }
                 
+                JsonObject tData = null;
+                if (inv.getTransactionData() != null && !inv.getTransactionData().trim().isEmpty()) {
+                    try {
+                        tData = com.google.gson.JsonParser.parseString(inv.getTransactionData()).getAsJsonObject();
+                    } catch (Exception e) {
+                        // Bỏ qua lỗi parse JSON, dùng fallback
+                    }
+                }
+                
                 String createdBy = inv.getCreatedBy() != null ? inv.getCreatedBy() : "";
                 
-                if (createdBy.startsWith("Transfer;")) {
+                if ((tData != null && tData.has("action") && "transfer".equals(tData.get("action").getAsString())) || createdBy.startsWith("Transfer;")) {
                     // Xử lý Transfer
                     int senderPkgId = -1;
-                    int transferMonths = 0;
-                    String[] parts = createdBy.split(";");
-                    for (String part : parts) {
-                        if (part.startsWith("SPkg:")) {
-                            senderPkgId = Integer.parseInt(part.split(":")[1]);
-                        } else if (part.startsWith("TMths:")) {
-                            transferMonths = Integer.parseInt(part.split(":")[1]);
+                    long transferDays = 0;
+                    
+                    if (tData != null && tData.has("action") && "transfer".equals(tData.get("action").getAsString())) {
+                        senderPkgId = tData.get("senderPkgId").getAsInt();
+                        if (tData.has("remainingDays")) {
+                            transferDays = tData.get("remainingDays").getAsLong();
+                        } else if (tData.has("transferMonths")) {
+                            transferDays = tData.get("transferMonths").getAsInt() * 30L;
+                        }
+                    } else {
+                        String[] parts = createdBy.split(";");
+                        for (String part : parts) {
+                            if (part.startsWith("SPkg:")) {
+                                senderPkgId = Integer.parseInt(part.split(":")[1]);
+                            } else if (part.startsWith("TMths:")) {
+                                transferDays = Integer.parseInt(part.split(":")[1]) * 30L;
+                            }
                         }
                     }
                     
-                    if (senderPkgId != -1 && transferMonths > 0) {
-                        long transferDays = transferMonths * 30L;
+                    if (senderPkgId != -1 && transferDays > 0) {
                         // 1. Trừ ngày của Sender
                         MemberPackage senderPkg = mpDAO.findById(senderPkgId);
                         if (senderPkg != null) {
-                            java.time.LocalDate newSenderEndDate = senderPkg.getEndDate().minusDays(transferDays);
-                            senderPkg.setEndDate(newSenderEndDate);
-                            if (newSenderEndDate.isBefore(java.time.LocalDate.now()) || newSenderEndDate.isEqual(java.time.LocalDate.now())) {
-                                senderPkg.setStatus("Expired");
-                            }
+                            senderPkg.setEndDate(java.time.LocalDate.now());
+                            senderPkg.setStatus("Expired");
                             senderPkg.setUpdatedBy("Transferred by System: VNPAY");
                             senderPkg.setUpdatedDate(LocalDateTime.now());
                             mpDAO.update(senderPkg);
@@ -310,13 +346,18 @@ public class InvoiceServiceImpl implements InvoiceService {
                             mp.setStatus("Active");
                         }
                     }
-                } else if (createdBy.startsWith("Renew;")) {
+                } else if ((tData != null && tData.has("action") && "renew".equals(tData.get("action").getAsString())) || createdBy.startsWith("Renew;")) {
                     // Xử lý Renew
                     int renewPackageId = mp.getPackageId(); // Fallback
-                    String[] parts = createdBy.split(";");
-                    for (String part : parts) {
-                        if (part.startsWith("PackageID:")) {
-                            renewPackageId = Integer.parseInt(part.split(":")[1]);
+                    
+                    if (tData != null && tData.has("action") && "renew".equals(tData.get("action").getAsString())) {
+                        renewPackageId = tData.get("packageId").getAsInt();
+                    } else {
+                        String[] parts = createdBy.split(";");
+                        for (String part : parts) {
+                            if (part.startsWith("PackageID:")) {
+                                renewPackageId = Integer.parseInt(part.split(":")[1]);
+                            }
                         }
                     }
 
