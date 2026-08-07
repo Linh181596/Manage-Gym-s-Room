@@ -47,20 +47,14 @@
                     </div>
 
                     <div class="row g-4 mb-4">
-                        <!-- Duration in Months -->
-                        <div class="col-md-6">
-                            <label for="durationMonths" class="form-label fw-bold text-dark"><i class="fa fa-calendar-alt me-1 text-muted"></i> Thời hạn sử dụng (Tháng) <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control form-control-lg border-2" id="durationMonths" name="durationMonths" value="${pkg.durationMonths > 0 ? pkg.durationMonths : ''}" placeholder="Ví dụ: 1" min="1" max="120" required>
-                            <div class="invalid-feedback">Hạn tập phải lớn hơn 0 tháng (Tối đa 120 tháng).</div>
-                        </div>
-
                         <!-- Number of Sessions -->
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="numberOfSessions" class="form-label fw-bold text-dark"><i class="fa fa-dumbbell me-1 text-muted"></i> Số buổi tập (Sessions) <span class="text-danger">*</span></label>
                             <input type="number" class="form-control form-control-lg border-2" id="numberOfSessions" name="numberOfSessions" value="${pkg.numberOfSessions > 0 ? pkg.numberOfSessions : ''}" placeholder="Ví dụ: 12" min="1" max="500" required>
                             <div class="invalid-feedback">Số buổi tập phải từ 1 đến 500 buổi.</div>
                         </div>
                     </div>
+                    <input type="hidden" id="durationMonths" name="durationMonths" value="${pkg.durationMonths > 0 ? pkg.durationMonths : '12'}">
 
                     <!-- Status Selection -->
                     <div class="mb-4">

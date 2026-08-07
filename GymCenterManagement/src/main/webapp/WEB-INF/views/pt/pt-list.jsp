@@ -305,6 +305,7 @@
                                 <c:choose>
                                     <c:when test="${sessionScope.currentUser != null}">
                                         <%-- Nút chuyển hướng xem chi tiết hồ sơ PT đối với user đã đăng nhập --%>
+                                        <!-- Step 4: Nút ra detail theo param của trainer id -->
                                         <a href="${pageContext.request.contextPath}/pt/detail?id=${trainer.ptId}" 
                                            class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center mt-auto shadow-sm">
                                                 Xem hồ sơ chi tiết <i class="fa fa-arrow-right ms-2"></i>

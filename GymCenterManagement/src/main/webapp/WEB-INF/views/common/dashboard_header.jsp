@@ -61,7 +61,7 @@
                     <c:if test="${empty reqUri}">
                         <c:set var="reqUri" value="${pageContext.request.requestURI}" />
                     </c:if>
-
+                    <!-- Step 1: PT List Button -> GET/PTListController-->
                     <c:choose>
                         <c:when test="${role == 'Admin'}">
                             <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-item nav-link ${fn:contains(reqUri, '/admin/dashboard') ? 'active' : ''}"><i class="fa fa-tachometer-alt me-2"></i>Bảng điều khiển</a>
@@ -104,7 +104,6 @@
                             <a href="${pageContext.request.contextPath}/staff/maintenance-schedules" class="nav-item nav-link ${fn:contains(reqUri, '/staff/maintenance-schedules') ? 'active' : ''}"><i class="fa fa-tools me-2"></i>Lịch bảo trì</a>
                             <a href="${pageContext.request.contextPath}/staff/work-history" class="nav-item nav-link ${fn:contains(reqUri, '/staff/work-history') ? 'active' : ''}"><i class="fa fa-history me-2"></i>Lịch sử điểm danh</a>
                             <a href="${pageContext.request.contextPath}/staff/record-payment" class="nav-item nav-link ${fn:contains(reqUri, '/staff/record-payment') ? 'active' : ''}"><i class="fa fa-cash-register me-2"></i>Thanh toán hóa đơn</a>
-                            <a href="#" class="nav-item nav-link"><i class="fa fa-calendar-check me-2"></i>Lịch đặt trước</a>
                         </c:when>
 
                             <c:when test="${role == 'PT'}">

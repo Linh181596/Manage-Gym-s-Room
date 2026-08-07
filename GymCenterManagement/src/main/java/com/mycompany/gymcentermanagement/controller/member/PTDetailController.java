@@ -37,6 +37,7 @@ public class PTDetailController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        //Step 5: Lấy id trên URL là id của trainer
         String ptIdRaw = request.getParameter("id");
 
         if (ptIdRaw == null || ptIdRaw.trim().isEmpty()) {

@@ -32,7 +32,7 @@ public class RescheduleRequestController extends HttpServlet {
         }
 
         String path = request.getServletPath();
-
+        //Trường hơp respond
         if ("/reschedule-request/respond".equals(path)) {
             int requestId = parseInt(request.getParameter("requestId"));
             String action = request.getParameter("action");

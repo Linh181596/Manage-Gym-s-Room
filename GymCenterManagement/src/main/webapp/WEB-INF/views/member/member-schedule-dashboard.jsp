@@ -201,6 +201,7 @@
             <div class="modal fade" id="rescheduleModalMember_${s.scheduleId}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
+                        <!-- Nhập input vào và gửi qua POST RescheduleRequestController -->
                         <form method="post" action="${pageContext.request.contextPath}/reschedule-request/create">
                             <div class="modal-header">
                                 <h5 class="modal-title fw-bold">${s.sessionStatus == 'Cancelled' ? 'Gửi yêu cầu xếp lịch bù' : 'Gửi yêu cầu đổi lịch tập'}</h5>
@@ -391,6 +392,7 @@
                                 </div>
                             </div>
 
+                            <!-- Data đẩy về  -->
                             <form method="post" action="${pageContext.request.contextPath}/reschedule-request/respond" class="w-100">
                                 <input type="hidden" name="requestId" value="${s.rescheduleRequestId}">
                                 <input type="hidden" name="returnUrl" value="${pageContext.request.contextPath}/member/schedule-dashboard${not empty param.refDate ? '?refDate='.concat(param.refDate) : ''}">

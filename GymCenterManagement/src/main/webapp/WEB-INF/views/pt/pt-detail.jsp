@@ -33,6 +33,7 @@
     <c:if test="${not empty trainer}">
         <div class="row g-4 mb-4">
             <!-- Left Side: Profile Card -->
+            <!-- Step 6: Hiển thị thông tin ra -->
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm text-center p-4">
                     <div class="bg-primary-gradient rounded-top position-absolute start-0 top-0 w-100"

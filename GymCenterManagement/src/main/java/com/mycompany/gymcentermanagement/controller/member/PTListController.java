@@ -47,6 +47,7 @@ public class PTListController extends HttpServlet {
                 "Phục hồi thể lực"
         );
 
+        //Step 2: Lấy tham số bên jsp để filter
         String[] selectedArray = request.getParameterValues("specializations");
         List<String> selectedSpecializations = new ArrayList<>();
 
@@ -69,6 +70,7 @@ public class PTListController extends HttpServlet {
             }
         }
 
+        //Step 3: Kiểm tra user role theo session
         HttpSession session = request.getSession(false);
             User currentUser =
             (session != null) ? (User) session.getAttribute("currentUser") : null;
@@ -76,6 +78,7 @@ public class PTListController extends HttpServlet {
             (currentUser.getRole() == User.Role.Admin
             || currentUser.getRole() == User.Role.Staff));
 
+        //Member/guest -> View active   |||   Staff/Admin view All
         String status = request.getParameter("status");
         if (status == null || status.trim().isEmpty()) {
             status = isManagement ? "All" : "Active";
@@ -117,6 +120,8 @@ public class PTListController extends HttpServlet {
             paginatedTrainers = trainers.subList(start, end);
         }
 
+
+        //Set ngược về JSP để check, lấy đối tượng
         request.setAttribute("trainers", paginatedTrainers);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
