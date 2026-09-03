@@ -88,15 +88,11 @@
                         <div class="form-text text-muted">Hội viên người gửi không được hiển thị trong danh sách này.</div>
                     </div>
 
-                    <!-- Number of Months input -->
+                    <!-- Information -->
                     <div class="mb-4">
-                        <label for="transferMonths" class="form-label fw-bold text-dark"><i class="fa fa-calendar-alt me-1 text-muted"></i> 2. Số tháng chuyển nhượng <span class="text-danger">*</span></label>
-                        <select class="form-select form-select-lg border-2 fw-bold text-primary" id="transferMonths" name="transferMonths" required>
-                            <option value="" disabled selected>-- Chọn số tháng (6 hoặc 12 tháng) --</option>
-                            <option value="6">6 tháng</option>
-                            <option value="12">12 tháng</option>
-                        </select>
-                        <div class="form-text text-muted">Gói người nhận sẽ ở trạng thái Pending đến khi thanh toán xong phí chuyển nhượng (60,000đ/tháng).</div>
+                        <div class="alert alert-info small border-0 py-2 px-3 mb-0" role="alert">
+                            <i class="fa fa-info-circle me-1"></i> Hệ thống sẽ tự động chuyển <strong>toàn bộ thời gian còn lại</strong> của gói tập sang người nhận. Phí chuyển nhượng được tính là 5,000 VND / ngày còn lại.
+                        </div>
                     </div>
 
                     <!-- Notes/Reason -->
@@ -175,21 +171,9 @@
             form.classList.add("was-validated");
         }, false);
 
-        // Xử lý update phí chuyển nhượng
-        const transferMonthsSelect = document.getElementById("transferMonths");
-        const feeAmountText = document.getElementById("feeAmountText");
-        let currentTransferMonths = 0;
-        
         function formatVND(value) {
             return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value).replace('₫', '₫');
         }
-
-        transferMonthsSelect.addEventListener("change", function() {
-            currentTransferMonths = parseInt(this.value) || 0;
-            const fee = currentTransferMonths * 60000;
-            feeAmountText.innerText = formatVND(fee);
-            updateSummaries();
-        });
 
         // Receiver Search Filter
         const receiverSearch = document.getElementById("receiverSearch");
@@ -221,33 +205,27 @@
 
         function updateSummaries() {
             const selectedReceiverOpt = receiverSelect.options[receiverSelect.selectedIndex];
-            const transferDays = currentTransferMonths * 30;
             
-            // Validate transfer days
-            if (currentRemainingDays > 0 && transferDays > 0 && transferDays > currentRemainingDays) {
+            const transferDays = currentRemainingDays;
+            
+            if (currentRemainingDays > 0) {
                 summarySender.innerHTML = `
                     <small class="text-dark fw-bold"><i class="fa fa-box me-1"></i> Gói tập: \${selectedPkgName}</small>
                     <br/>
-                    <div class="alert alert-danger p-2 mt-2 mb-0 small"><i class="fa fa-exclamation-triangle"></i> Gói tập không đủ thời hạn để chuyển (\${transferDays} ngày > \${currentRemainingDays} ngày).</div>
-                `;
-                submitBtn.disabled = true;
-            } else if (currentRemainingDays > 0) {
-                const remainingAfter = currentRemainingDays - transferDays;
-                summarySender.innerHTML = `
-                    <small class="text-dark fw-bold"><i class="fa fa-box me-1"></i> Gói tập: \${selectedPkgName}</small>
-                    <br/>
-                    <small class="text-danger fw-bold"><i class="fa fa-arrow-right me-1"></i> Chuyển đi: \${transferDays > 0 ? transferDays : '...'} ngày</small>
-                    <br/>
-                    <small class="text-success fw-bold"><i class="fa fa-check me-1"></i> Còn lại sau chuyển: \${transferDays > 0 ? remainingAfter : currentRemainingDays} ngày</small>
+                    <small class="text-danger fw-bold"><i class="fa fa-arrow-right me-1"></i> Chuyển đi toàn bộ: \${transferDays} ngày</small>
                 `;
                 summarySender.classList.remove("text-muted");
                 submitBtn.disabled = false;
+                
+                const fee = transferDays * 5000;
+                document.getElementById("feeAmountText").innerText = formatVND(fee);
             } else {
                 summarySender.innerHTML = `<i class="fa fa-box me-1"></i> Chưa chọn gói tập.`;
                 submitBtn.disabled = false;
+                document.getElementById("feeAmountText").innerText = formatVND(0);
             }
 
-            if (selectedReceiverOpt && transferDays > 0 && currentRemainingDays >= transferDays) {
+            if (selectedReceiverOpt && transferDays > 0) {
                 const name = selectedReceiverOpt.getAttribute("data-name");
                 const phone = selectedReceiverOpt.getAttribute("data-phone");
                 const id = selectedReceiverOpt.value;
@@ -273,7 +251,7 @@
                 summaryReceiver.classList.remove("text-muted");
                 summaryReceiver.classList.add("border-solid");
             } else if (selectedReceiverOpt) {
-                summaryReceiver.innerHTML = `<i class="fa fa-info-circle me-1"></i> Vui lòng chọn gói tập và số tháng chuyển hợp lệ.`;
+                summaryReceiver.innerHTML = `<i class="fa fa-info-circle me-1"></i> Vui lòng chọn gói tập để chuyển.`;
             } else {
                 summaryReceiver.innerHTML = `<i class="fa fa-user-circle me-1"></i> Chưa chọn người nhận.`;
             }

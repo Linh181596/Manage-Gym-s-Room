@@ -185,9 +185,18 @@
                         <div class="small text-muted"><i class="fa fa-envelope me-1"></i> Email: ${invoice.member.userDetails.email}</div>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <h6 class="text-uppercase text-secondary fw-bold small mb-2">Nhân viên thực hiện</h6>
-                        <div class="fw-bold text-dark fs-6">${invoice.processByUser.fullName}</div>
-                        <div class="small text-muted">Hỗ trợ thanh toán tại quầy</div>
+                        <c:choose>
+                            <c:when test="${invoice.paymentMethod == 'VNPay'}">
+                                <h6 class="text-uppercase text-secondary fw-bold small mb-2">Người thanh toán</h6>
+                                <div class="fw-bold text-dark fs-6">${invoice.processByUser.fullName}</div>
+                                <div class="small text-muted">Thanh toán trực tuyến (VNPay)</div>
+                            </c:when>
+                            <c:otherwise>
+                                <h6 class="text-uppercase text-secondary fw-bold small mb-2">Nhân viên thực hiện</h6>
+                                <div class="fw-bold text-dark fs-6">${invoice.processByUser.fullName}</div>
+                                <div class="small text-muted">Hỗ trợ thanh toán tại quầy</div>
+                            </c:otherwise>
+                        </c:choose>
                         <c:if test="${not empty invoice.paymentDate}">
                             <div class="small text-dark fw-bold mt-1">Ngày thanh toán: ${invoice.paymentDate.dayOfMonth}/${invoice.paymentDate.monthValue}/${invoice.paymentDate.year}</div>
                         </c:if>

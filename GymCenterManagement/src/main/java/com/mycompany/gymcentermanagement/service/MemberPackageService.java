@@ -17,10 +17,12 @@ import java.util.List;
 
 public interface MemberPackageService {
     List<Member> getActiveMembers() throws SQLException;
+    Invoice registerMemberPackage(int memberId, int packageId, String paymentMethod) throws SQLException;
     Invoice registerMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException;
     MemberPackage getActivePackageByMemberId(int memberId) throws SQLException;
     MemberPackage getLatestPackageByMemberId(int memberId) throws SQLException;
     List<MemberPackage> findAllActivePackagesByMemberId(int memberId) throws SQLException;
     Invoice renewMemberPackage(int memberId, int packageId, int staffUserId) throws SQLException;
-    Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, int transferMonths, int staffUserId, String note) throws SQLException;
+    Invoice renewMemberPackage(int memberId, int packageId, String paymentMethod) throws SQLException;
+    Invoice transferMemberPackage(int senderPkgId, int receiverMemberId, int staffUserId, String note) throws SQLException;
 }

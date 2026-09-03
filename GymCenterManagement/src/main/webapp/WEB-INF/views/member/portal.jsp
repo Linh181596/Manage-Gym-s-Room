@@ -38,6 +38,23 @@
         </a>
     </div>
 
+    <!-- Alert Messages -->
+    <% if (session.getAttribute("errorMessage") != null) { %>
+        <div class="alert alert-warning alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="fa fa-info-circle me-2"></i> <%= session.getAttribute("errorMessage") %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <% session.removeAttribute("errorMessage"); %>
+    <% } %>
+
+    <% if (session.getAttribute("successMessage") != null) { %>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="fa fa-check-circle me-2"></i> <%= session.getAttribute("successMessage") %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <% session.removeAttribute("successMessage"); %>
+    <% } %>
+
     <!-- Main Content Row -->
     <div class="row g-4">
         <!-- Profile Account Info Card -->
@@ -74,7 +91,10 @@
                                     String pkgEnd = profile.get("packageEndDate");
                                     if (pkgStart != null && !pkgStart.isEmpty()) {
                                 %>
-                                <span class="fw-bold text-success fs-6"><%= pkgStart %> đến <%= pkgEnd %></span>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-success fs-6"><%= pkgStart %> đến <%= pkgEnd %></span>
+                                    <a href="<%= contextPath %>/member/renew-package" class="btn btn-sm btn-outline-success"><i class="fa fa-history me-1"></i> Gia hạn</a>
+                                </div>
                                 <%  } else { %>
                                 <span class="fw-bold text-muted fs-6">Không có gói khả dụng</span>
                                 <%  } %>

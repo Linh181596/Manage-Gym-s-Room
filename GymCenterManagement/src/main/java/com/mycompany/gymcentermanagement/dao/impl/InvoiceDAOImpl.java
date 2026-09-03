@@ -45,7 +45,13 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         Invoice inv = new Invoice();
         inv.setInvoiceId(rs.getInt("InvoiceID"));
         inv.setMemberId(rs.getInt("MemberID"));
-        inv.setProcessBy(rs.getInt("ProcessBy"));
+        
+        int procId = rs.getInt("ProcessBy");
+        if (!rs.wasNull()) {
+            inv.setProcessBy(procId);
+        } else {
+            inv.setProcessBy(null);
+        }
         
         int mpId = rs.getInt("MemberPackageID");
         if (!rs.wasNull()) {
@@ -66,6 +72,13 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         }
         
         inv.setStatus(rs.getString("Status"));
+        
+        try {
+            inv.setTransactionData(rs.getString("TransactionData"));
+        } catch (SQLException ex) {
+            // Tương thích ngược nếu DB chưa có cột này
+        }
+        
         inv.setCreatedBy(rs.getString("CreatedBy"));
         
         Timestamp createdTs = rs.getTimestamp("CreatedDate");
@@ -88,13 +101,20 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             User uMem = new User();
             uMem.setFullName(rs.getString("MemberName"));
             uMem.setEmail(rs.getString("MemberEmail"));
+            uMem.setPhoneNumber(rs.getString("MemberPhone"));
             m.setUserDetails(uMem);
             inv.setMember(m);
             
-            User uProc = new User();
-            uProc.setUserId(rs.getInt("ProcessBy"));
-            uProc.setFullName(rs.getString("ProcessorName"));
-            inv.setProcessByUser(uProc);
+            if (inv.getProcessBy() != null) {
+                User uProc = new User();
+                uProc.setUserId(rs.getInt("ProcessBy"));
+                uProc.setFullName(rs.getString("ProcessorName"));
+                String procRole = rs.getString("ProcessorRole");
+                if (procRole != null) {
+                    uProc.setRole(User.Role.valueOf(procRole));
+                }
+                inv.setProcessByUser(uProc);
+            }
             
             if (inv.getMemberPackageId() != null) {
                 MemberPackage mp = new MemberPackage();
@@ -135,11 +155,13 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         try {
             conn = getActiveConnection();
             // SQL: Join Invoices với Members, Users (cho Member và Processor) và GymPackages
-            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_mem.Phone AS MemberPhone, u_proc.DisplayName AS ProcessorName, r_proc.RoleName AS ProcessorRole, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
-                         "INNER JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN UserRoles ur_proc ON u_proc.UserID = ur_proc.UserID " +
+                         "LEFT JOIN Roles r_proc ON ur_proc.RoleID = r_proc.RoleID " +
                          "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
                          "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
                          "WHERE i.InvoiceID = ? AND i.IsDeleted = 0";
@@ -174,11 +196,16 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         try {
             conn = getActiveConnection();
             // SQL: Insert hóa đơn mới và trả về ID tự tăng
-            String sql = "INSERT INTO Invoices (MemberID, ProcessBy, MemberPackageID, PTRegistrationID, Amount, PaymentMethod, PaymentDate, Status, CreatedBy, CreatedDate, IsDeleted) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+            String sql = "INSERT INTO Invoices (MemberID, ProcessBy, MemberPackageID, PTRegistrationID, Amount, PaymentMethod, PaymentDate, Status, TransactionData, CreatedBy, CreatedDate, IsDeleted) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setInt(1, inv.getMemberId());
-            stmt.setInt(2, inv.getProcessBy());
+            
+            if (inv.getProcessBy() != null) {
+                stmt.setInt(2, inv.getProcessBy());
+            } else {
+                stmt.setNull(2, java.sql.Types.INTEGER);
+            }
             
             if (inv.getMemberPackageId() != null) {
                 stmt.setInt(3, inv.getMemberPackageId());
@@ -194,10 +221,11 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             
             stmt.setBigDecimal(5, inv.getAmount());
             stmt.setString(6, inv.getPaymentMethod());
-            stmt.setTimestamp(7, inv.getPaymentDate() != null ? Timestamp.valueOf(inv.getPaymentDate()) : new Timestamp(System.currentTimeMillis()));
+            stmt.setTimestamp(7, inv.getPaymentDate() != null ? Timestamp.valueOf(inv.getPaymentDate()) : null);
             stmt.setString(8, inv.getStatus());
-            stmt.setString(9, inv.getCreatedBy());
-            stmt.setTimestamp(10, inv.getCreatedDate() != null ? Timestamp.valueOf(inv.getCreatedDate()) : new Timestamp(System.currentTimeMillis()));
+            stmt.setString(9, inv.getTransactionData());
+            stmt.setString(10, inv.getCreatedBy());
+            stmt.setTimestamp(11, inv.getCreatedDate() != null ? Timestamp.valueOf(inv.getCreatedDate()) : new Timestamp(System.currentTimeMillis()));
             
             int rowsAffected = stmt.executeUpdate();
             success = (rowsAffected > 0);
@@ -230,11 +258,16 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         try {
             conn = getActiveConnection();
             // SQL: Update thông tin Invoice theo ID
-            String sql = "UPDATE Invoices SET MemberID = ?, ProcessBy = ?, MemberPackageID = ?, PTRegistrationID = ?, Amount = ?, PaymentMethod = ?, PaymentDate = ?, Status = ?, UpdatedBy = ?, UpdatedDate = ? " +
+            String sql = "UPDATE Invoices SET MemberID = ?, ProcessBy = ?, MemberPackageID = ?, PTRegistrationID = ?, Amount = ?, PaymentMethod = ?, PaymentDate = ?, Status = ?, TransactionData = ?, UpdatedBy = ?, UpdatedDate = ? " +
                          "WHERE InvoiceID = ? AND IsDeleted = 0";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, inv.getMemberId());
-            stmt.setInt(2, inv.getProcessBy());
+            
+            if (inv.getProcessBy() != null) {
+                stmt.setInt(2, inv.getProcessBy());
+            } else {
+                stmt.setNull(2, java.sql.Types.INTEGER);
+            }
             
             if (inv.getMemberPackageId() != null) {
                 stmt.setInt(3, inv.getMemberPackageId());
@@ -252,9 +285,10 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
             stmt.setString(6, inv.getPaymentMethod());
             stmt.setTimestamp(7, inv.getPaymentDate() != null ? Timestamp.valueOf(inv.getPaymentDate()) : null);
             stmt.setString(8, inv.getStatus());
-            stmt.setString(9, inv.getUpdatedBy());
-            stmt.setTimestamp(10, inv.getUpdatedDate() != null ? Timestamp.valueOf(inv.getUpdatedDate()) : new Timestamp(System.currentTimeMillis()));
-            stmt.setInt(11, inv.getInvoiceId());
+            stmt.setString(9, inv.getTransactionData());
+            stmt.setString(10, inv.getUpdatedBy());
+            stmt.setTimestamp(11, inv.getUpdatedDate() != null ? Timestamp.valueOf(inv.getUpdatedDate()) : new Timestamp(System.currentTimeMillis()));
+            stmt.setInt(12, inv.getInvoiceId());
             
             int rowsAffected = stmt.executeUpdate();
             success = (rowsAffected > 0);
@@ -273,11 +307,11 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         
         try {
             conn = getActiveConnection();
-            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_mem.Phone AS MemberPhone, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
-                         "INNER JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
                          "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
                          "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
                          "WHERE i.IsDeleted = 0 " +
@@ -320,11 +354,11 @@ public class InvoiceDAOImpl extends BaseDAO implements InvoiceDAO {
         List<Invoice> list = new ArrayList<>();
         try {
             conn = getActiveConnection();
-            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
+            String sql = "SELECT i.*, u_mem.DisplayName AS MemberName, u_mem.Email AS MemberEmail, u_mem.Phone AS MemberPhone, u_proc.DisplayName AS ProcessorName, gp.PackageName, gp.DurationMonths, gp.Description, mp.StartDate, mp.EndDate " +
                          "FROM Invoices i " +
                          "INNER JOIN Members m ON i.MemberID = m.MemberID " +
                          "INNER JOIN Users u_mem ON m.UserID = u_mem.UserID " +
-                         "INNER JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
+                         "LEFT JOIN Users u_proc ON i.ProcessBy = u_proc.UserID " +
                          "LEFT JOIN MemberPackages mp ON i.MemberPackageID = mp.MemberPackageID " +
                          "LEFT JOIN GymPackages gp ON mp.PackageID = gp.PackageID " +
                          "WHERE i.IsDeleted = 0 " +
